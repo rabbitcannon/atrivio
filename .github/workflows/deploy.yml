@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Placeholder for deployment jobs
+  # Configure based on your hosting provider (Vercel, Railway, etc.)
+
+  deploy-api:
+    name: Deploy API
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy API
+        run: echo "Configure API deployment (e.g., Railway, Fly.io)"
+        # Add deployment steps here
+
+  deploy-web:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Web
+        run: echo "Configure Web deployment (e.g., Vercel)"
+        # Add deployment steps here
+
+  deploy-workers:
+    name: Deploy Workers
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [deploy-api]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Workers
+        run: echo "Configure Workers deployment"
+        # Add deployment steps here

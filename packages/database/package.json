@@ -1,0 +1,20 @@
+{
+  "name": "@haunt/database",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Haunt Platform Database - Migrations, Seeds, and Types",
+  "type": "module",
+  "scripts": {
+    "migrate": "echo 'Run migrations via Supabase CLI'",
+    "seed": "echo 'Run seeds via Supabase CLI'",
+    "generate-types": "supabase gen types typescript --local > types/database.types.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10"
+  },
+  "devDependencies": {
+    "supabase": "^1.226.4",
+    "typescript": "^5.7.2"
+  }
+}

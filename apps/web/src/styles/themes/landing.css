@@ -1,0 +1,104 @@
+/* Landing Page Theme
+ * A dark, atmospheric theme with purple/green accents
+ * Use data-theme="landing" on a parent element to apply
+ */
+
+[data-theme='landing'] {
+  /* Background layers */
+  --landing-bg-darkest: 240 40% 4%;
+  --landing-bg-dark: 240 29% 11%;
+  --landing-bg-card: 240 24% 15%;
+  --landing-bg-card-hover: 240 24% 18%;
+
+  /* Text colors */
+  --landing-text-primary: 0 0% 100%;
+  --landing-text-muted: 240 12% 68%;
+  --landing-text-subtle: 240 12% 50%;
+
+  /* Accent colors */
+  --landing-accent-primary: 270 73% 63%;
+  --landing-accent-primary-hover: 270 73% 70%;
+  --landing-accent-secondary: 160 100% 50%;
+  --landing-accent-secondary-hover: 160 100% 60%;
+
+  /* Borders */
+  --landing-border: 240 24% 24%;
+  --landing-border-subtle: 0 0% 100% / 0.06;
+
+  /* Shadows & Glows */
+  --landing-glow-primary: 270 73% 63% / 0.3;
+  --landing-glow-secondary: 160 100% 50% / 0.3;
+  --landing-shadow: 0 0% 0% / 0.5;
+
+  /* Gradients */
+  --landing-gradient-card: linear-gradient(
+    135deg,
+    hsl(var(--landing-bg-card)) 0%,
+    hsl(var(--landing-bg-dark)) 100%
+  );
+  --landing-gradient-hero: radial-gradient(
+    ellipse at top,
+    hsl(var(--landing-bg-dark)) 0%,
+    hsl(var(--landing-bg-darkest)) 70%
+  );
+
+  /* Spacing */
+  --landing-section-spacing: 6rem;
+  --landing-container-max: 1200px;
+
+  /* Animation */
+  --landing-transition-fast: 150ms ease;
+  --landing-transition-normal: 300ms ease;
+  --landing-transition-slow: 500ms ease;
+}
+
+/* Animations for landing page elements */
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes landing-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes landing-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px hsl(var(--landing-glow-primary));
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--landing-glow-primary));
+  }
+}
+
+@keyframes landing-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='landing'] * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

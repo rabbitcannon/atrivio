@@ -1,0 +1,36 @@
+{
+  "name": "haunt-platform",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Ultimate Haunt Platform - Multi-tenant haunt industry management system",
+  "author": "Haunt Platform Team",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "clean": "turbo clean && rm -rf node_modules",
+    "db:migrate": "pnpm --filter @haunt/database migrate",
+    "db:seed": "pnpm --filter @haunt/database seed",
+    "db:types": "pnpm --filter @haunt/database generate-types"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
