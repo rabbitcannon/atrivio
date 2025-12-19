@@ -55,10 +55,24 @@ docker compose -f infrastructure/docker/docker-compose.yml up -d
 pnpm dev
 ```
 
-**Supabase URLs:**
-- Studio (DB GUI): http://localhost:54323
-- API: http://localhost:54321
-- Database: localhost:54322
+**Supabase Local URLs:**
+| Service | URL |
+|---------|-----|
+| Studio (DB GUI) | http://localhost:54323 |
+| API | http://localhost:54321 |
+| Inbucket (email testing) | http://localhost:54324 |
+| Database | localhost:54322 |
+
+**Database Connection (TablePlus, etc.):**
+| Field | Value |
+|-------|-------|
+| Host | `127.0.0.1` |
+| Port | `54322` |
+| User | `postgres` |
+| Password | `postgres` |
+| Database | `postgres` |
+
+Connection string: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 
 ## Running Individual Apps
 

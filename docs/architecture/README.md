@@ -1,10 +1,10 @@
 # Architecture Documentation
 
-This folder contains architecture documentation for the Haunt Platform.
+This folder contains architecture documentation for the Attraction Platform.
 
 ## Overview
 
-The Haunt Platform is a multi-tenant SaaS application for the haunt industry, including:
+The Attraction Platform is a multi-tenant SaaS application for the attractions industry, including:
 - Haunted attractions
 - Escape rooms
 - Mazes
