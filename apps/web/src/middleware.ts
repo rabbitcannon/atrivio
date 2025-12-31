@@ -1,5 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import type { CookieOptions } from '@supabase/ssr';
+
+type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -19,16 +22,20 @@ export async function middleware(request: NextRequest) {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
+      setAll(cookiesToSet: CookieToSet[]) {
+        cookiesToSet.forEach(({ name, value }: CookieToSet) =>
           request.cookies.set(name, value)
         );
         supabaseResponse = NextResponse.next({
           request,
         });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
+        cookiesToSet.forEach(({ name, value, options }: CookieToSet) => {
+          if (options) {
+            supabaseResponse.cookies.set(name, value, options);
+          } else {
+            supabaseResponse.cookies.set(name, value);
+          }
+        });
       },
     },
   });
@@ -56,9 +63,16 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isAuthPath) {
+    // Check if user is super admin
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_super_admin')
+      .eq('id', user.id)
+      .single();
+
     // Redirect authenticated users away from auth pages
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = profile?.is_super_admin ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);
   }
 

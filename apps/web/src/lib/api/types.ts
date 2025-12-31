@@ -135,6 +135,7 @@ export interface Zone {
   capacity: number | null;
   color: string | null;
   sort_order: number;
+  staff_count?: number;
 }
 
 export interface AttractionListItem {
@@ -142,10 +143,13 @@ export interface AttractionListItem {
   name: string;
   slug: string;
   type: string;
+  type_name?: string;
   logo_url: string | null;
   cover_image_url: string | null;
   status: AttractionStatus;
   intensity_level: number | null;
+  capacity?: number | null;
+  zones_count?: number;
   address: Address | null;
   city: string | null;
   state: string | null;
@@ -159,6 +163,7 @@ export interface Attraction {
   name: string;
   slug: string;
   type: string;
+  type_name?: string;
   description: string | null;
   logo_url: string | null;
   cover_image_url: string | null;
@@ -176,6 +181,7 @@ export interface Attraction {
   settings: Record<string, unknown>;
   seo_metadata: Record<string, unknown> | null;
   zones: Zone[];
+  zones_count?: number;
   amenities: string[];
   current_season: Season | null;
   created_at: string;

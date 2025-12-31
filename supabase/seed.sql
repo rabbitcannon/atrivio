@@ -341,6 +341,81 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
+-- F5: PLATFORM ADMIN DATA
+-- ============================================================================
+
+-- Feature flags with various states (using valid hex UUIDs: 1f = feature flags)
+INSERT INTO public.feature_flags (id, key, name, description, enabled, rollout_percentage, org_ids, user_ids, metadata)
+VALUES
+  ('1f000000-0000-0000-0000-000000000001', 'virtual_queue_v2', 'Virtual Queue V2', 'New virtual queue system with SMS notifications and improved UX', FALSE, 25, '{}', '{}', '{"release_date": "2025-Q1", "ticket": "HAUNT-1234"}'),
+  ('1f000000-0000-0000-0000-000000000002', 'new_checkout_flow', 'Streamlined Checkout', 'One-page checkout experience with Apple Pay support', TRUE, 0, '{}', '{}', '{"a_b_test": true}'),
+  ('1f000000-0000-0000-0000-000000000003', 'staff_mobile_app', 'Staff Mobile App', 'Mobile app for staff to clock in/out and view schedules', FALSE, 0, ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[], '{}', '{"beta_org": true}'),
+  ('1f000000-0000-0000-0000-000000000004', 'advanced_analytics', 'Advanced Analytics Dashboard', 'Enhanced analytics with real-time metrics and forecasting', FALSE, 50, '{}', '{}', '{"premium_feature": true}'),
+  ('1f000000-0000-0000-0000-000000000005', 'ai_scheduling', 'AI-Powered Scheduling', 'Machine learning powered staff scheduling optimization', FALSE, 0, '{}', ARRAY['a0000000-0000-0000-0000-000000000002']::UUID[], '{"experimental": true}')
+ON CONFLICT (id) DO NOTHING;
+
+-- Platform announcements (using valid hex UUIDs: 2a = announcements)
+INSERT INTO public.platform_announcements (id, title, content, type, target_roles, starts_at, expires_at, is_dismissible, created_by)
+VALUES
+  ('2a000000-0000-0000-0000-000000000001', 'Welcome to Haunt Platform!', 'Thank you for joining the Haunt Platform. We''re excited to help you manage your attractions more effectively. Check out our getting started guide in the documentation.', 'feature', '{}', NOW() - INTERVAL '7 days', NULL, TRUE, 'a0000000-0000-0000-0000-000000000001'),
+  ('2a000000-0000-0000-0000-000000000002', 'New Feature: Real-time Analytics', 'We''ve launched real-time analytics for all attractions! Visit your dashboard to see live visitor counts, wait times, and more.', 'feature', ARRAY['owner', 'admin', 'manager']::org_role[], NOW() - INTERVAL '3 days', NOW() + INTERVAL '14 days', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+  ('2a000000-0000-0000-0000-000000000003', 'Scheduled Maintenance', 'We will be performing scheduled maintenance on January 15th from 2:00 AM - 4:00 AM EST. The platform may be unavailable during this time.', 'maintenance', '{}', NOW() - INTERVAL '1 day', NOW() + INTERVAL '5 days', FALSE, 'a0000000-0000-0000-0000-000000000001')
+ON CONFLICT (id) DO NOTHING;
+
+-- Audit logs showing recent platform activity (using valid hex UUIDs: 3b = audit logs)
+INSERT INTO public.audit_logs (id, actor_id, actor_type, action, resource_type, resource_id, org_id, changes, metadata, ip_address, created_at)
+VALUES
+  -- User management actions
+  ('3b000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'user', 'user.create', 'user', 'a0000000-0000-0000-0000-000000000002', NULL, '{"email": "owner@haunt.dev"}', '{}', '192.168.1.1', NOW() - INTERVAL '30 days'),
+  ('3b000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', 'user', 'org.create', 'organization', 'b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"name": "Nightmare Manor", "slug": "nightmare-manor"}', '{}', '192.168.1.2', NOW() - INTERVAL '29 days'),
+  ('3b000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.create', 'attraction', 'c0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"name": "The Haunted Mansion"}', '{}', '192.168.1.2', NOW() - INTERVAL '28 days'),
+  ('3b000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.create', 'attraction', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"name": "Terror Trail"}', '{}', '192.168.1.2', NOW() - INTERVAL '28 days'),
+  ('3b000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000002', 'user', 'member.invite', 'org_membership', 'd0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"email": "manager@haunt.dev", "role": "manager"}', '{}', '192.168.1.2', NOW() - INTERVAL '27 days'),
+  ('3b000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000003', 'user', 'invitation.accept', 'org_membership', 'd0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{}', '{}', '192.168.1.3', NOW() - INTERVAL '26 days'),
+
+  -- Staff management
+  ('3b000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.create', 'staff_profile', 'd0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', '{"employee_id": "NM-ACT-001", "name": "Jake Morrison"}', '{}', '192.168.1.3', NOW() - INTERVAL '20 days'),
+  ('3b000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.create', 'staff_profile', 'd0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001', '{"employee_id": "NM-ACT-002", "name": "Emily Rodriguez"}', '{}', '192.168.1.3', NOW() - INTERVAL '20 days'),
+  ('3b000000-0000-0000-0000-000000000009', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.skill_add', 'staff_skill', 'dd000000-0000-0000-0001-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"skill": "acting", "level": 5}', '{}', '192.168.1.3', NOW() - INTERVAL '19 days'),
+  ('3b000000-0000-0000-0000-00000000000a', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.certification_add', 'staff_certification', 'ee000000-0000-0000-0001-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"cert": "first_aid"}', '{}', '192.168.1.3', NOW() - INTERVAL '18 days'),
+
+  -- Attraction updates
+  ('3b000000-0000-0000-0000-00000000000b', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.update', 'attraction', 'c0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"status": {"from": "draft", "to": "active"}}', '{}', '192.168.1.2', NOW() - INTERVAL '15 days'),
+  ('3b000000-0000-0000-0000-00000000000c', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.update', 'attraction', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"status": {"from": "draft", "to": "active"}}', '{}', '192.168.1.2', NOW() - INTERVAL '15 days'),
+  ('3b000000-0000-0000-0000-00000000000d', 'a0000000-0000-0000-0000-000000000003', 'user', 'zone.create', 'zone', 'e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"name": "Entry Hall"}', '{}', '192.168.1.3', NOW() - INTERVAL '14 days'),
+  ('3b000000-0000-0000-0000-00000000000e', 'a0000000-0000-0000-0000-000000000003', 'user', 'season.create', 'season', 'f0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"name": "Halloween Season 2025", "year": 2025}', '{}', '192.168.1.3', NOW() - INTERVAL '10 days'),
+
+  -- Recent activity (last 7 days)
+  ('3b000000-0000-0000-0000-00000000000f', 'a0000000-0000-0000-0000-000000000004', 'user', 'time.clock_in', 'time_entry', 'aa000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{}', '{}', '192.168.1.4', NOW() - INTERVAL '5 days'),
+  ('3b000000-0000-0000-0000-000000000010', 'a0000000-0000-0000-0000-000000000004', 'user', 'time.clock_out', 'time_entry', 'aa000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{}', '{}', '192.168.1.4', NOW() - INTERVAL '5 days'),
+  ('3b000000-0000-0000-0000-000000000011', 'a0000000-0000-0000-0000-000000000003', 'user', 'time.approve', 'time_entry', 'aa000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"status": {"from": "pending", "to": "approved"}}', '{}', '192.168.1.3', NOW() - INTERVAL '4 days'),
+  ('3b000000-0000-0000-0000-000000000012', 'a0000000-0000-0000-0000-000000000002', 'user', 'org.settings_update', 'organization', 'b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"settings": {"notifications": true}}', '{}', '192.168.1.2', NOW() - INTERVAL '3 days'),
+  ('3b000000-0000-0000-0000-000000000013', 'a0000000-0000-0000-0000-000000000001', 'user', 'flag.update', 'feature_flag', '1f000000-0000-0000-0000-000000000002', NULL, '{"enabled": {"from": false, "to": true}}', '{}', '10.0.0.1', NOW() - INTERVAL '2 days'),
+  ('3b000000-0000-0000-0000-000000000014', 'a0000000-0000-0000-0000-000000000001', 'user', 'announcement.create', 'announcement', '2a000000-0000-0000-0000-000000000003', NULL, '{"title": "Scheduled Maintenance"}', '{}', '10.0.0.1', NOW() - INTERVAL '1 day'),
+
+  -- System events
+  ('3b000000-0000-0000-0000-000000000015', NULL, 'system', 'system.backup_complete', 'system', NULL, NULL, '{"size_mb": 256, "duration_seconds": 45}', '{}', NULL, NOW() - INTERVAL '12 hours'),
+  ('3b000000-0000-0000-0000-000000000016', NULL, 'system', 'system.cleanup_job', 'system', NULL, NULL, '{"expired_sessions": 150, "old_logs": 1024}', '{}', NULL, NOW() - INTERVAL '6 hours'),
+  ('3b000000-0000-0000-0000-000000000017', 'a0000000-0000-0000-0000-000000000002', 'user', 'auth.login', 'user', 'a0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{}', '{"user_agent": "Mozilla/5.0"}', '192.168.1.2', NOW() - INTERVAL '2 hours'),
+  ('3b000000-0000-0000-0000-000000000018', 'a0000000-0000-0000-0000-000000000003', 'user', 'auth.login', 'user', 'a0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', '{}', '{"user_agent": "Mozilla/5.0"}', '192.168.1.3', NOW() - INTERVAL '1 hour')
+ON CONFLICT (id) DO NOTHING;
+
+-- System health logs for demo
+INSERT INTO public.system_health_logs (id, service, status, latency_ms, metadata, checked_at)
+VALUES
+  ('5a000000-0000-0000-0000-000000000001', 'api', 'healthy', 12, '{"requests_per_minute": 450}', NOW() - INTERVAL '1 hour'),
+  ('5a000000-0000-0000-0000-000000000002', 'database', 'healthy', 5, '{"connections": 25, "max_connections": 100}', NOW() - INTERVAL '1 hour'),
+  ('5a000000-0000-0000-0000-000000000003', 'redis', 'healthy', 2, '{"memory_used_mb": 128}', NOW() - INTERVAL '1 hour'),
+  ('5a000000-0000-0000-0000-000000000004', 'stripe', 'healthy', 150, '{}', NOW() - INTERVAL '1 hour'),
+  ('5a000000-0000-0000-0000-000000000005', 'supabase_auth', 'healthy', 45, '{}', NOW() - INTERVAL '1 hour'),
+  ('5a000000-0000-0000-0000-000000000006', 'supabase_storage', 'healthy', 35, '{}', NOW() - INTERVAL '1 hour'),
+  ('5a000000-0000-0000-0000-000000000007', 'api', 'healthy', 15, '{"requests_per_minute": 420}', NOW() - INTERVAL '30 minutes'),
+  ('5a000000-0000-0000-0000-000000000008', 'database', 'healthy', 4, '{"connections": 22, "max_connections": 100}', NOW() - INTERVAL '30 minutes'),
+  ('5a000000-0000-0000-0000-000000000009', 'api', 'healthy', 10, '{"requests_per_minute": 480}', NOW()),
+  ('5a000000-0000-0000-0000-00000000000a', 'database', 'healthy', 6, '{"connections": 28, "max_connections": 100}', NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
 -- SUMMARY
 -- ============================================================================
 -- Test Accounts (password: password123):
@@ -360,3 +435,9 @@ ON CONFLICT (id) DO NOTHING;
 --   3. Escape the Asylum (draft)
 --
 -- Staff: 5 members with skills, certifications, and time entries
+--
+-- F5 Platform Admin Data:
+--   - Feature Flags: 5 (various states: enabled, percentage rollout, org-specific)
+--   - Audit Logs: 24 entries showing platform activity
+--   - Announcements: 3 (welcome, feature, maintenance)
+--   - Health Logs: 10 entries for system monitoring demo

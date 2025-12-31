@@ -34,8 +34,9 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
   const staff = staffData ?? {
     id: staffId,
     user: { first_name: 'Unknown', last_name: 'User', email: 'unknown@example.com' },
-    role: 'actor',
-    status: 'active',
+    role: 'actor' as const,
+    status: 'active' as const,
+    employment_type: null,
     hire_date: null,
     skills: [],
     certifications: [],

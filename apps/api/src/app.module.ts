@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './core/auth/guards/jwt-auth.guard.js';
 import { TenancyModule } from './core/tenancy/tenancy.module.js';
 import { TenantGuard } from './core/tenancy/guards/tenant.guard.js';
 import { RbacModule } from './core/rbac/rbac.module.js';
+import { AdminModule } from './core/admin/admin.module.js';
 
 // Business modules
 import { OrganizationsModule } from './modules/organizations/organizations.module.js';
@@ -18,7 +19,6 @@ import { HauntsModule } from './modules/haunts/haunts.module.js';
 import { StaffModule } from './modules/staff/staff.module.js';
 
 // Future modules (to be implemented)
-// import { AdminModule } from './core/admin/admin.module.js';
 // import { AuditModule } from './core/audit/audit.module.js';
 // import { SchedulingModule } from './modules/scheduling/scheduling.module.js';
 // import { TicketingModule } from './modules/ticketing/ticketing.module.js';
@@ -46,6 +46,7 @@ import { StaffModule } from './modules/staff/staff.module.js';
     AuthModule,
     TenancyModule,
     RbacModule,
+    AdminModule,
 
     // Business modules (F1-F4 Foundation)
     OrganizationsModule,
