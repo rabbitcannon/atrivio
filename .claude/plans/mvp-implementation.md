@@ -36,8 +36,8 @@
 | 4 | Admin & Payments DB | 🔵 Not Started | F5-F6 | - |
 | 5 | Admin & Payments API | 🔵 Not Started | F5-F6 | - |
 | 6 | Admin & Payments Frontend | 🔵 Not Started | F5-F6 | - |
-| 7 | Integration Testing | 🔵 Not Started | F1-F6 | - |
-| 8 | MVP Polish & Deploy | 🔵 Not Started | All | - |
+
+> **Note**: Integration Testing and Final Polish moved to Part 3 (Phases 15-16) to cover all features F1-F14.
 
 **Status Legend**: 🔵 Not Started | 🟡 In Progress | ✅ Complete | 🔴 Blocked | ⏸️ On Hold
 
@@ -54,10 +54,13 @@
 - [x] Database schema for F1-F4 with RLS policies
 - [x] API endpoints for F1-F4 features
 - [x] Frontend dashboards for F1-F4
+- [x] Seed data for F1-F4 (7 users, 3 attractions, 5 staff)
 - [ ] F5 Platform Admin panel
 - [ ] F6 Stripe Connect integration
+- [ ] Seed data for F5-F6 (admin, audit logs, Stripe mocks)
 - [ ] End-to-end auth flow working
 - [ ] Multi-tenant isolation verified
+- [ ] Demo-ready seed data for MVP presentation
 
 ### MVP Features (F1-F6)
 ```
@@ -80,14 +83,98 @@ F5 Admin ◄───┴──────────┴───────�
 
 ## 📋 Feature Status Matrix
 
-| Feature | ERD | Migration | API | Frontend | Tests | Status |
-|---------|-----|-----------|-----|----------|-------|--------|
-| **F1** Auth & Users | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
-| **F2** Organizations | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
-| **F3** Attractions | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
-| **F4** Staff & Roles | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
-| **F5** Platform Admin | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | Not Started |
-| **F6** Stripe Connect | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | Not Started |
+| Feature | ERD | Migration | Seed Data | API | Frontend | Tests | Status |
+|---------|-----|-----------|-----------|-----|----------|-------|--------|
+| **F1** Auth & Users | ✅ | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
+| **F2** Organizations | ✅ | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
+| **F3** Attractions | ✅ | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
+| **F4** Staff & Roles | ✅ | ✅ | ✅ | ✅ | ✅ | 🔵 | Full Stack Done |
+| **F5** Platform Admin | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | Not Started |
+| **F6** Stripe Connect | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | 🔵 | Not Started |
+
+---
+
+## 🌱 Seed Data Strategy
+
+### Purpose
+Comprehensive seed data enables:
+1. **MVP Demo**: Showcase all features with realistic data
+2. **Development**: Consistent test environment across sessions
+3. **Testing**: Predictable data for integration/E2E tests
+4. **Onboarding**: Show new team members what the platform does
+
+### Seed Data by Feature
+
+#### F1-F4: Foundation (✅ Complete)
+**File**: `infrastructure/supabase/seed.sql`
+
+| Entity | Count | Demo Scenarios |
+|--------|-------|----------------|
+| Users | 7 | Owner, admin, manager, HR, box office, actors |
+| Organizations | 2 | "Nightmare Manor" (primary), "Scream Factory" (secondary) |
+| Org Members | 6 | Various roles across orgs |
+| Attractions | 3 | Main haunt, escape room, maze |
+| Seasons | 4 | Past, current, upcoming seasons |
+| Zones | 12 | Multiple zones per attraction |
+| Staff Records | 5 | With skills, certs, time entries |
+| Skills | 8 | Acting, makeup, tech skills |
+| Certifications | 4 | First aid, fire safety |
+| Invitations | 2 | Pending invites for demo |
+
+**Test Accounts**:
+| Email | Password | Role | Org |
+|-------|----------|------|-----|
+| `owner@haunt.dev` | `password123` | Owner | Nightmare Manor |
+| `admin@haunt.dev` | `password123` | Admin | Nightmare Manor |
+| `manager@haunt.dev` | `password123` | Manager | Nightmare Manor |
+| `hr@haunt.dev` | `password123` | HR | Nightmare Manor |
+| `boxoffice@haunt.dev` | `password123` | Box Office | Nightmare Manor |
+| `actor1@haunt.dev` | `password123` | Actor | Nightmare Manor |
+| `superadmin@haunt.dev` | `password123` | Super Admin | Platform |
+
+#### F5: Platform Admin (🔵 Planned)
+**File**: `infrastructure/supabase/seed.sql` (extend)
+
+| Entity | Count | Demo Scenarios |
+|--------|-------|----------------|
+| Super Admin User | 1 | Platform-level access |
+| Audit Logs | 20+ | Recent activity across orgs |
+| Feature Flags | 5 | Toggleable platform features |
+| System Settings | 10 | Platform configuration |
+| Support Tickets | 3 | Sample support requests |
+
+**Demo Scenarios**:
+- View all organizations and their health
+- Browse audit logs across tenants
+- Toggle feature flags
+- Manage platform settings
+
+#### F6: Stripe Connect (🔵 Planned)
+**File**: `infrastructure/supabase/seed.sql` (extend)
+
+| Entity | Count | Demo Scenarios |
+|--------|-------|----------------|
+| Connected Accounts | 2 | One complete, one pending |
+| Payout Records | 5 | Historical payouts |
+| Platform Fees | 3 | Fee configurations |
+| Payment Methods | 2 | Saved payment methods |
+| Transaction History | 10 | Sample transactions |
+
+**Demo Scenarios**:
+- Org without Stripe connected (onboarding flow)
+- Org with Stripe connected (dashboard view)
+- Payout history and upcoming payouts
+- Platform fee collection
+
+### Seed Data Requirements per Phase
+
+| Phase | Seed Data Task | Priority |
+|-------|---------------|----------|
+| Phase 4 | Add F5-F6 seed data to migration | High |
+| Phase 5 | Verify API returns seeded data correctly | High |
+| Phase 6 | UI displays seeded data properly | High |
+| Phase 7 | E2E tests use seed data scenarios | Medium |
+| Phase 8 | Final demo data polish | High |
 
 ---
 
@@ -197,6 +284,7 @@ F5 Admin ◄───┴──────────┴───────�
 ### Objectives
 - Design platform admin tables
 - Design Stripe Connect integration tables
+- Create comprehensive seed data for demo scenarios
 
 ### Tasks
 - [ ] Task 1: Create F5 Platform Admin ERD
@@ -211,6 +299,15 @@ F5 Admin ◄───┴──────────┴───────�
   - **Agent**: backend-architect
   - Acceptance criteria: Migration runs clean
   - Dependencies: Tasks 1-2
+- [ ] Task 4: Extend seed data for F5-F6
+  - **Agent**: backend-architect
+  - Acceptance criteria:
+    - Super admin user with platform access
+    - Audit log entries (20+) showing recent activity
+    - Feature flags (5) with various states
+    - Mock Stripe connected accounts (2 orgs)
+    - Sample payout records and transaction history
+  - Dependencies: Task 3
 
 ### Phase Summary
 **Status**: 🔵 Not Started
@@ -222,6 +319,7 @@ F5 Admin ◄───┴──────────┴───────�
 ### Objectives
 - Build platform admin API endpoints
 - Integrate Stripe Connect
+- Verify API returns seeded data correctly
 
 ### Tasks
 - [ ] Task 1: Build core/admin module
@@ -232,6 +330,14 @@ F5 Admin ◄───┴──────────┴───────�
   - **Agent**: backend-architect
   - Acceptance criteria: Account onboarding, webhooks
   - Dependencies: Phase 4
+- [ ] Task 3: Verify seed data via API
+  - **Agent**: backend-architect
+  - Acceptance criteria:
+    - `/api/v1/admin/organizations` returns all seeded orgs
+    - `/api/v1/admin/audit-logs` returns seeded audit entries
+    - `/api/v1/admin/feature-flags` returns seeded flags
+    - `/api/v1/payments/account` returns Stripe status for each org
+  - Dependencies: Tasks 1-2
 
 ### Phase Summary
 **Status**: 🔵 Not Started
@@ -243,6 +349,7 @@ F5 Admin ◄───┴──────────┴───────�
 ### Objectives
 - Build platform admin dashboard
 - Build payment settings UI
+- UI displays seeded data with proper formatting
 
 ### Tasks
 - [ ] Task 1: Create admin dashboard pages
@@ -253,6 +360,15 @@ F5 Admin ◄───┴──────────┴───────�
   - **Agent**: frontend-architect
   - Acceptance criteria: Express account setup
   - Dependencies: Phase 5
+- [ ] Task 3: Verify UI displays seed data correctly
+  - **Agent**: frontend-architect
+  - Acceptance criteria:
+    - Admin dashboard shows all seeded organizations
+    - Audit log table displays 20+ entries with proper formatting
+    - Feature flags show current states with toggle capability
+    - Payments page shows Stripe connection status per org
+    - "Nightmare Manor" shows connected, "Scream Factory" shows pending
+  - Dependencies: Tasks 1-2
 
 ### Phase Summary
 **Status**: 🔵 Not Started
@@ -392,6 +508,19 @@ F5 Admin ◄───┴──────────┴───────�
 Start Phase 4: F5-F6 Database Design and Migration
 
 ### References
+- **Part 2 (Operations F7-F10)**: `.claude/plans/mvp-implementation-part-2.md`
+- **Part 3 (Engagement F11-F14)**: `.claude/plans/mvp-implementation-part-3.md`
 - Feature Roadmap: `.claude/plans/feature-roadmap.md`
 - API Docs: `docs/features/F*/API.md`
 - ERD Docs: `docs/features/F*/ERD.md`
+
+---
+
+## Full Feature Roadmap Summary
+
+| Part | Phases | Features | Status | Description |
+|------|--------|----------|--------|-------------|
+| **Part 1 (MVP)** | 1-6 | F1-F6 | 55% Complete | Auth, Orgs, Attractions, Staff, Admin, Payments |
+| **Part 2 (Operations)** | 7-10 | F7-F10 | Not Started | Scheduling, Ticketing, Check-In, Inventory |
+| **Part 3 (Engagement)** | 11-14 | F11-F14 | Not Started | Queue, Notifications, Analytics, Storefronts |
+| **Part 3 (Final)** | 15-16 | All F1-F14 | Not Started | Integration Testing, Dark Theme, Polish, Deploy |
