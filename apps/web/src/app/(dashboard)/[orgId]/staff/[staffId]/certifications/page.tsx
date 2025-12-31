@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Certifications',
@@ -15,7 +17,13 @@ interface CertificationsPageProps {
 }
 
 export default async function CertificationsPage({ params }: CertificationsPageProps) {
-  const { orgId, staffId } = await params;
+  const { orgId: orgIdentifier, staffId } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
 
   // TODO: Fetch actual certifications
   const certifications = [
@@ -27,7 +35,7 @@ export default async function CertificationsPage({ params }: CertificationsPageP
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <a href={`/${orgId}/staff/${staffId}`}>
+          <a href={`/${orgIdentifier}/staff/${staffId}`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to staff profile</span>
           </a>

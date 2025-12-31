@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { MembersTable } from '@/components/features/organizations/members-table';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Members',
@@ -10,7 +12,13 @@ interface MembersPageProps {
 }
 
 export default async function MembersPage({ params }: MembersPageProps) {
-  const { orgId } = await params;
+  const { orgId: orgIdentifier } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
 
   return (
     <div className="space-y-6">

@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Skills',
@@ -26,7 +28,13 @@ const allSkills = [
 ];
 
 export default async function SkillsPage({ params }: SkillsPageProps) {
-  const { orgId, staffId } = await params;
+  const { orgId: orgIdentifier, staffId } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
 
   // TODO: Fetch actual skills
   const currentSkills = ['Improvisation', 'Makeup', 'Stunts'];
@@ -35,7 +43,7 @@ export default async function SkillsPage({ params }: SkillsPageProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <a href={`/${orgId}/staff/${staffId}`}>
+          <a href={`/${orgIdentifier}/staff/${staffId}`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to staff profile</span>
           </a>

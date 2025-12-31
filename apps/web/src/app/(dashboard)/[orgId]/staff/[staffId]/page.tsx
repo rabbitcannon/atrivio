@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Settings, Award, Clock, FileText } from 'lucide-react';
 import { SkillBadges } from '@/components/features/staff/skill-badges';
 import { CertificationList } from '@/components/features/staff/certification-list';
+import { resolveOrgId, getStaffMember } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Staff Profile',
@@ -17,23 +19,35 @@ interface StaffDetailPageProps {
 }
 
 export default async function StaffDetailPage({ params }: StaffDetailPageProps) {
-  const { orgId, staffId } = await params;
+  const { orgId: orgIdentifier, staffId } = await params;
 
-  // TODO: Fetch staff data
-  const staff = {
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
+
+  // Fetch staff data from API
+  const { data: staffData, error } = await getStaffMember(orgId, staffId);
+
+  // Fallback data if API fails
+  const staff = staffData ?? {
     id: staffId,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    phone: '555-0123',
+    user: { first_name: 'Unknown', last_name: 'User', email: 'unknown@example.com' },
     role: 'actor',
     status: 'active',
-    hireDate: '2024-01-15',
-    skills: ['Improvisation', 'Makeup', 'Stunts'],
-    certifications: [
-      { name: 'First Aid', expiresAt: '2025-06-01' },
-      { name: 'CPR', expiresAt: '2025-03-15' },
-    ],
+    hire_date: null,
+    skills: [],
+    certifications: [],
   };
+
+  const staffName = staff.user ? `${staff.user.first_name || ''} ${staff.user.last_name || ''}`.trim() || 'Unknown' : 'Unknown';
+  const staffEmail = staff.user?.email || 'No email';
+  const skills = staff.skills?.map((s: any) => s.name || s.skill) || [];
+  const certifications = staff.certifications?.map((c: any) => ({
+    name: c.type || c.name,
+    expiresAt: c.expires_at || c.expiresAt,
+  })) || [];
 
   return (
     <div className="space-y-6">
@@ -41,7 +55,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarFallback className="text-lg">
-              {staff.name
+              {staffName
                 .split(' ')
                 .map((n) => n[0])
                 .join('')}
@@ -49,16 +63,16 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
           </Avatar>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{staff.name}</h1>
+              <h1 className="text-3xl font-bold">{staffName}</h1>
               <Badge variant={staff.status === 'active' ? 'default' : 'secondary'}>
                 {staff.status}
               </Badge>
             </div>
-            <p className="text-muted-foreground">{staff.email}</p>
+            <p className="text-muted-foreground">{staffEmail}</p>
           </div>
         </div>
         <Button variant="outline" asChild>
-          <a href={`/${orgId}/staff/${staffId}/edit`}>
+          <a href={`/${orgIdentifier}/staff/${staffId}/edit`}>
             <Settings className="mr-2 h-4 w-4" />
             Edit
           </a>
@@ -89,16 +103,16 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {new Date(staff.hireDate).toLocaleDateString()}
+                  {staff.hire_date ? new Date(staff.hire_date).toLocaleDateString() : 'Not set'}
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Contact</CardTitle>
+                <CardTitle className="text-sm font-medium">Employment</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-lg font-bold">{staff.phone}</div>
+                <div className="text-lg font-bold capitalize">{staff.employment_type?.replace('_', ' ') || 'Not set'}</div>
               </CardContent>
             </Card>
           </div>
@@ -110,7 +124,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
                 <CardTitle>Skills</CardTitle>
               </CardHeader>
               <CardContent>
-                <SkillBadges skills={staff.skills} />
+                <SkillBadges skills={skills} />
               </CardContent>
             </Card>
             <Card>
@@ -118,7 +132,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
                 <CardTitle>Certifications</CardTitle>
               </CardHeader>
               <CardContent>
-                <CertificationList certifications={staff.certifications} />
+                <CertificationList certifications={certifications} />
               </CardContent>
             </Card>
           </div>
@@ -133,7 +147,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
                   <CardDescription>Manage skills for this staff member.</CardDescription>
                 </div>
                 <Button asChild>
-                  <a href={`/${orgId}/staff/${staffId}/skills`}>
+                  <a href={`/${orgIdentifier}/staff/${staffId}/skills`}>
                     <Award className="mr-2 h-4 w-4" />
                     Manage Skills
                   </a>
@@ -141,7 +155,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
               </div>
             </CardHeader>
             <CardContent>
-              <SkillBadges skills={staff.skills} />
+              <SkillBadges skills={skills} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -155,7 +169,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
                   <CardDescription>Track certifications and expiry dates.</CardDescription>
                 </div>
                 <Button asChild>
-                  <a href={`/${orgId}/staff/${staffId}/certifications`}>
+                  <a href={`/${orgIdentifier}/staff/${staffId}/certifications`}>
                     <FileText className="mr-2 h-4 w-4" />
                     Manage Certifications
                   </a>
@@ -163,7 +177,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
               </div>
             </CardHeader>
             <CardContent>
-              <CertificationList certifications={staff.certifications} />
+              <CertificationList certifications={certifications} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -177,7 +191,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
                   <CardDescription>View and manage time entries.</CardDescription>
                 </div>
                 <Button asChild>
-                  <a href={`/${orgId}/staff/${staffId}/time`}>
+                  <a href={`/${orgIdentifier}/staff/${staffId}/time`}>
                     <Clock className="mr-2 h-4 w-4" />
                     View All Time
                   </a>

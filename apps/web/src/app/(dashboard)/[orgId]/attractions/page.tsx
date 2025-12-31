@@ -62,10 +62,10 @@ export default async function AttractionsPage({ params }: AttractionsPageProps) 
               attraction={{
                 id: attraction.id,
                 name: attraction.name,
-                type: attraction.type,
+                type: attraction.type_name || attraction.type,
                 status: attraction.status === 'active' ? 'active' : 'inactive',
-                zones: 0, // Zone count would need a separate query or be included in response
-                capacity: 0, // Same for capacity
+                zones: attraction.zones_count ?? 0,
+                capacity: attraction.capacity ?? 0,
               }}
               orgId={orgIdentifier}
             />

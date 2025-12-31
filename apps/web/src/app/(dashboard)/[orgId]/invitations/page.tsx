@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { InviteMemberDialog } from '@/components/features/organizations/invite-member-dialog';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Invitations',
@@ -10,7 +12,13 @@ interface InvitationsPageProps {
 }
 
 export default async function InvitationsPage({ params }: InvitationsPageProps) {
-  const { orgId } = await params;
+  const { orgId: orgIdentifier } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
 
   return (
     <div className="space-y-6">

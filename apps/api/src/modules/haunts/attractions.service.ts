@@ -86,6 +86,7 @@ export class AttractionsService {
         cover_image_url,
         status,
         intensity_level,
+        capacity,
         city,
         state,
         created_at,
@@ -93,6 +94,9 @@ export class AttractionsService {
           key,
           name,
           icon
+        ),
+        zones (
+          id
         )
       `,
       )
@@ -139,6 +143,8 @@ export class AttractionsService {
         cover_image_url: a.cover_image_url,
         status: a.status,
         intensity_level: a.intensity_level,
+        capacity: a.capacity || 0,
+        zones_count: a.zones?.length || 0,
         city: a.city,
         state: a.state,
         created_at: a.created_at,
@@ -156,6 +162,11 @@ export class AttractionsService {
       .select(
         `
         *,
+        attraction_types:type_id (
+          key,
+          name,
+          icon
+        ),
         zones (
           id,
           name,
@@ -197,8 +208,15 @@ export class AttractionsService {
       )
       .eq('attraction_id', attractionId);
 
+    // Cast to handle Supabase FK join typing
+    const attractionType = data.attraction_types as unknown as { key: string; name: string; icon: string } | null;
+
     return {
       ...data,
+      type: attractionType?.key || null,
+      type_name: attractionType?.name || null,
+      type_icon: attractionType?.icon || null,
+      zones_count: data.zones?.length || 0,
       amenities: amenities?.map((a: any) => a.amenity_types.key) || [],
       current_season: currentSeason,
     };

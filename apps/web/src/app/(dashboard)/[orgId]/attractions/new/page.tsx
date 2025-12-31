@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { AttractionForm } from '@/components/features/attractions/attraction-form';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'New Attraction',
@@ -10,7 +12,13 @@ interface NewAttractionPageProps {
 }
 
 export default async function NewAttractionPage({ params }: NewAttractionPageProps) {
-  const { orgId } = await params;
+  const { orgId: orgIdentifier } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
 
   return (
     <div className="space-y-6">

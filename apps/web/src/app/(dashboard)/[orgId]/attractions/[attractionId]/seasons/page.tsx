@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SeasonForm } from '@/components/features/attractions/season-form';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Seasons',
@@ -13,7 +15,7 @@ interface SeasonsPageProps {
   params: Promise<{ orgId: string; attractionId: string }>;
 }
 
-// Mock data
+// Mock data - TODO: Replace with API call
 const mockSeasons = [
   {
     id: '1',
@@ -32,13 +34,19 @@ const mockSeasons = [
 ];
 
 export default async function SeasonsPage({ params }: SeasonsPageProps) {
-  const { orgId, attractionId } = await params;
+  const { orgId: orgIdentifier, attractionId } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <a href={`/${orgId}/attractions/${attractionId}`}>
+          <a href={`/${orgIdentifier}/attractions/${attractionId}`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to attraction</span>
           </a>
