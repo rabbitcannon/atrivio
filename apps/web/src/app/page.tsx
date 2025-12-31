@@ -18,18 +18,21 @@ export const metadata: Metadata = {
 
 const staffingFeatures = [
   {
+    id: 'recruit',
     icon: <span aria-hidden="true">📢</span>,
     title: 'Recruit',
     description:
       'Use branded application forms with custom workflows to review applicants, attach notes, and assign roles.',
   },
   {
+    id: 'schedule',
     icon: <span aria-hidden="true">📅</span>,
     title: 'Schedule',
     description:
       'Drag-and-drop builder supporting shift templates, conflict detection, and multiple roles per night across haunts.',
   },
   {
+    id: 'operate',
     icon: <span aria-hidden="true">📱</span>,
     title: 'Operate',
     description:
@@ -38,10 +41,10 @@ const staffingFeatures = [
 ];
 
 const ticketingFeatures = [
-  { text: 'Timed Ticketing with slot-based entry for auto capacity balancing.' },
-  { text: 'Dynamic Pricing to adjust costs based on demand or inventory.' },
-  { text: 'Multi-Haunt and Multi-Attraction passes supported.' },
-  { text: 'Fast payouts with 1–2 business day deposits.' },
+  { id: 'timed-ticketing', text: 'Timed Ticketing with slot-based entry for auto capacity balancing.' },
+  { id: 'dynamic-pricing', text: 'Dynamic Pricing to adjust costs based on demand or inventory.' },
+  { id: 'multi-pass', text: 'Multi-Haunt and Multi-Attraction passes supported.' },
+  { id: 'fast-payouts', text: 'Fast payouts with 1–2 business day deposits.' },
 ];
 
 export default function HomePage() {

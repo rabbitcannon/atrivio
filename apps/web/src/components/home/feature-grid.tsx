@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {
+  id: string;
   icon: ReactNode;
   title: string;
   description: string;
@@ -36,9 +37,9 @@ export function FeatureGrid({
         </h2>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <article
-              key={index}
+              key={feature.id}
               className="group rounded-xl border border-transparent bg-[hsl(var(--landing-bg-card))] p-6 transition-all duration-[var(--landing-transition-normal)] hover:-translate-y-1 hover:border-[hsl(var(--landing-accent-primary))] sm:p-8"
             >
               <div className="mb-5 text-4xl text-[hsl(var(--landing-accent-primary))]">

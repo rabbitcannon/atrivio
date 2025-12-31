@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {
+  id: string;
   text: string;
 }
 
@@ -54,10 +55,10 @@ export function SplitSection({
             {description}
           </p>
 
-          <ul className="mb-8 space-y-4" role="list">
-            {features.map((feature, index) => (
+          <ul className="mb-8 space-y-4">
+            {features.map((feature) => (
               <li
-                key={index}
+                key={feature.id}
                 className="flex items-start gap-3 text-[hsl(var(--landing-text-muted))]"
               >
                 <span

@@ -1,2 +1,2 @@
 // Utility exports
-export * from './money.js';
+export * from './money';

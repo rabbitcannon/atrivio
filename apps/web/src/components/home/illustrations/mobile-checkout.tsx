@@ -30,12 +30,16 @@ export function MobileCheckout() {
 
             {/* QR code placeholder */}
             <div className="mx-auto mb-4 grid h-20 w-20 grid-cols-5 gap-0.5 rounded-lg bg-white p-2 sm:h-24 sm:w-24">
-              {Array.from({ length: 25 }).map((_, i) => (
+              {[
+                { id: 'qr-0', fill: true }, { id: 'qr-1', fill: true }, { id: 'qr-2', fill: false }, { id: 'qr-3', fill: true }, { id: 'qr-4', fill: false },
+                { id: 'qr-5', fill: false }, { id: 'qr-6', fill: true }, { id: 'qr-7', fill: true }, { id: 'qr-8', fill: true }, { id: 'qr-9', fill: false },
+                { id: 'qr-10', fill: true }, { id: 'qr-11', fill: false }, { id: 'qr-12', fill: true }, { id: 'qr-13', fill: false }, { id: 'qr-14', fill: true },
+                { id: 'qr-15', fill: false }, { id: 'qr-16', fill: true }, { id: 'qr-17', fill: false }, { id: 'qr-18', fill: true }, { id: 'qr-19', fill: true },
+                { id: 'qr-20', fill: true }, { id: 'qr-21', fill: false }, { id: 'qr-22', fill: false }, { id: 'qr-23', fill: true }, { id: 'qr-24', fill: true },
+              ].map((cell) => (
                 <div
-                  key={i}
-                  className={`rounded-sm ${
-                    Math.random() > 0.3 ? 'bg-black' : 'bg-white'
-                  }`}
+                  key={cell.id}
+                  className={`rounded-sm ${cell.fill ? 'bg-black' : 'bg-white'}`}
                 />
               ))}
             </div>
@@ -57,11 +61,11 @@ export function MobileCheckout() {
           <div className="flex h-full">
             {/* Sidebar */}
             <div className="w-16 border-r border-[hsl(var(--landing-border-subtle))] bg-[hsl(var(--landing-bg-card))] p-2">
-              {[1, 2, 3, 4].map((i) => (
+              {['nav-active', 'nav-2', 'nav-3', 'nav-4'].map((id, idx) => (
                 <div
-                  key={i}
+                  key={id}
                   className={`mb-2 h-10 w-full rounded-lg ${
-                    i === 1
+                    idx === 0
                       ? 'bg-[hsl(var(--landing-accent-primary))]'
                       : 'bg-[hsl(var(--landing-bg-darkest))]'
                   }`}
@@ -83,9 +87,9 @@ export function MobileCheckout() {
 
               {/* Ticket items */}
               <div className="space-y-2">
-                {[1, 2].map((i) => (
+                {['ticket-1', 'ticket-2'].map((id) => (
                   <div
-                    key={i}
+                    key={id}
                     className="flex items-center gap-2 rounded-lg bg-[hsl(var(--landing-bg-card))] p-2"
                   >
                     <div className="h-8 w-8 rounded bg-[hsl(var(--landing-accent-secondary)/0.3)]" />

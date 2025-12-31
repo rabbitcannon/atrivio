@@ -4,6 +4,11 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": false,
+    "declaration": true,
+    "declarationMap": true,
     "paths": {
       "@/*": ["src/*"]
     }

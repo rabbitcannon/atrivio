@@ -2,13 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Transpile shared packages
-  transpilePackages: ['@haunt/shared'],
+  // Note: @haunt/shared is pre-built, no need to transpile
 
-  // Enable experimental features
+  // Experimental features
   experimental: {
-    // Enable typed routes
-    typedRoutes: true,
+    // typedRoutes disabled - causes issues with dynamic routes
+    // typedRoutes: true,
   },
 
   // Image optimization domains

@@ -1,0 +1,79 @@
+import { getSession } from '@/lib/supabase/server';
+
+const API_BASE_URL = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001/api/v1';
+
+export interface ApiError {
+  message: string;
+  statusCode: number;
+  error?: string;
+}
+
+export interface ApiResponse<T> {
+  data: T | null;
+  error: ApiError | null;
+}
+
+/**
+ * Server-side API client for Server Components, Server Actions, and Route Handlers.
+ * Uses the server-side Supabase client to get auth tokens.
+ */
+export async function apiServer<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  const session = await getSession();
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (session?.access_token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+      // Ensure fresh data in Server Components
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json().catch(() => ({
+        message: 'An unexpected error occurred',
+        statusCode: response.status,
+      }));
+      return { data: null, error };
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return { data: null as T, error: null };
+    }
+
+    const data: T = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: {
+        message: err instanceof Error ? err.message : 'Network error',
+        statusCode: 0,
+      },
+    };
+  }
+}
+
+// Convenience methods for server-side use
+export const serverApi = {
+  get: <T>(endpoint: string) => apiServer<T>(endpoint, { method: 'GET' }),
+  post: <T>(endpoint: string, body: unknown) =>
+    apiServer<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(endpoint: string, body: unknown) =>
+    apiServer<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(endpoint: string, body: unknown) =>
+    apiServer<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(endpoint: string) => apiServer<T>(endpoint, { method: 'DELETE' }),
+};

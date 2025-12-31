@@ -24,6 +24,7 @@ export function FloorPlan() {
         className="absolute left-1/2 top-1/2 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2"
         viewBox="0 0 400 300"
         fill="none"
+        aria-hidden="true"
       >
         {/* Main pathway */}
         <path

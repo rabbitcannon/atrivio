@@ -74,6 +74,31 @@ pnpm dev
 
 Connection string: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 
+### Test Accounts (Local Development Only)
+
+After running `supabase db reset`, these test accounts are available:
+
+| Email | Password | Role | Organization |
+|-------|----------|------|--------------|
+| `admin@haunt.dev` | `password123` | Super Admin | - |
+| `owner@haunt.dev` | `password123` | Org Owner | Nightmare Manor |
+| `manager@haunt.dev` | `password123` | Manager | Nightmare Manor |
+| `actor1@haunt.dev` | `password123` | Actor | Nightmare Manor |
+| `actor2@haunt.dev` | `password123` | Actor | Nightmare Manor |
+| `actor3@haunt.dev` | `password123` | Actor | Nightmare Manor |
+| `boxoffice@haunt.dev` | `password123` | Box Office | Nightmare Manor |
+
+**Test Data:**
+- **Organization**: "Nightmare Manor" (slug: `nightmare-manor`)
+- **Attractions**:
+  - The Haunted Mansion (active, 7 zones)
+  - Terror Trail (active, 5 zones)
+  - Escape the Asylum (draft)
+- **Staff**: 5 members with skills, certifications, and time entries
+- **Seasons**: 2024 (completed) and 2025 (upcoming) for each attraction
+
+> **Note:** These accounts only exist in local development. Production users sign up through the app.
+
 ## Running Individual Apps
 
 ```bash
