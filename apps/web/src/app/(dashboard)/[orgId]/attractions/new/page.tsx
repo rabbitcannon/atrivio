@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { AttractionForm } from '@/components/features/attractions/attraction-form';
-import { resolveOrgId } from '@/lib/api';
+import { resolveOrgId, getAttractionTypes } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'New Attraction',
@@ -20,6 +20,9 @@ export default async function NewAttractionPage({ params }: NewAttractionPagePro
     notFound();
   }
 
+  // Fetch attraction types for the form
+  const attractionTypes = await getAttractionTypes();
+
   return (
     <div className="space-y-6">
       <div>
@@ -27,7 +30,7 @@ export default async function NewAttractionPage({ params }: NewAttractionPagePro
         <p className="text-muted-foreground">Add a new attraction to your organization.</p>
       </div>
 
-      <AttractionForm orgId={orgId} />
+      <AttractionForm orgId={orgId} attractionTypes={attractionTypes} />
     </div>
   );
 }

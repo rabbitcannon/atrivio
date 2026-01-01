@@ -165,6 +165,20 @@ export class DeleteOrganizationDto {
   reason?: string;
 }
 
+export class SetOrgPlatformFeeDto {
+  @ApiPropertyOptional({
+    description: 'Custom platform fee percentage (0-100). Null to use global default.',
+    example: 2.5,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @Min(0)
+  @Max(100)
+  platform_fee_percent?: number | null;
+}
+
 // ============================================================================
 // FEATURE FLAGS
 // ============================================================================

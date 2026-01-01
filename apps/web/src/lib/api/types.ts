@@ -305,3 +305,34 @@ export interface StaffResponse {
     by_role: Record<string, number>;
   };
 }
+
+// ============================================================================
+// Time Tracking Types
+// ============================================================================
+
+export type TimeEntryStatus = 'pending' | 'approved';
+
+export interface TimeEntry {
+  id: string;
+  date: string | null;
+  clock_in: string;
+  clock_out: string | null;
+  break_minutes: number | null;
+  total_hours: number | null;
+  attraction: {
+    id: string;
+    name: string;
+  } | null;
+  status: TimeEntryStatus;
+  approved_by: string | null;
+  notes: string | null;
+}
+
+export interface TimeEntriesResponse {
+  entries: TimeEntry[];
+  summary: {
+    total_hours: number;
+    total_entries: number;
+    pending_approval: number;
+  };
+}

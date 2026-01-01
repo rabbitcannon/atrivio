@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useOrg } from '@/hooks/use-org';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,18 +25,23 @@ function getOrgInitials(name: string): string {
 }
 
 export function OrgSwitcher() {
+  const router = useRouter();
   const { currentOrg, organizations, isLoading, switchOrg } = useOrg();
+
+  // Only owners and admins can create new organizations
+  const canCreateOrg = organizations.length === 0 ||
+    organizations.some((org) => org.role === 'owner' || org.role === 'admin');
 
   if (isLoading) {
     return <Skeleton className="h-10 w-full" />;
   }
 
   if (!currentOrg) {
+    // No organization - user should be redirected to onboarding
     return (
       <Button variant="outline" className="w-full justify-start" asChild>
         <a href="/onboarding">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Organization
+          Get Started
         </a>
       </Button>
     );
@@ -72,13 +78,18 @@ export function OrgSwitcher() {
             {currentOrg.id === org.id && <Check className="ml-2 h-4 w-4" />}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className="cursor-pointer">
-          <a href="/onboarding">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Organization
-          </a>
-        </DropdownMenuItem>
+        {canCreateOrg && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => router.push('/organizations/new')}
+              className="cursor-pointer"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              <span>Create Organization</span>
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

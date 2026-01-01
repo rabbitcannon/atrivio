@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import { SeasonForm } from '@/components/features/attractions/season-form';
-import { resolveOrgId } from '@/lib/api';
+import { resolveOrgId, getAttraction, getAttractionSeasons } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Seasons',
@@ -15,23 +17,18 @@ interface SeasonsPageProps {
   params: Promise<{ orgId: string; attractionId: string }>;
 }
 
-// Mock data - TODO: Replace with API call
-const mockSeasons = [
-  {
-    id: '1',
-    name: 'Halloween 2024',
-    startDate: '2024-09-15',
-    endDate: '2024-11-01',
-    status: 'upcoming',
-  },
-  {
-    id: '2',
-    name: 'Summer Scares 2024',
-    startDate: '2024-06-01',
-    endDate: '2024-08-31',
-    status: 'completed',
-  },
-];
+function getStatusVariant(status: string): 'default' | 'secondary' | 'outline' | 'destructive' {
+  switch (status) {
+    case 'active':
+      return 'default';
+    case 'upcoming':
+      return 'secondary';
+    case 'cancelled':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+}
 
 export default async function SeasonsPage({ params }: SeasonsPageProps) {
   const { orgId: orgIdentifier, attractionId } = await params;
@@ -40,6 +37,30 @@ export default async function SeasonsPage({ params }: SeasonsPageProps) {
   const orgId = await resolveOrgId(orgIdentifier);
   if (!orgId) {
     notFound();
+  }
+
+  // Fetch attraction and seasons data
+  const [attractionResult, seasonsResult] = await Promise.all([
+    getAttraction(orgId, attractionId),
+    getAttractionSeasons(orgId, attractionId),
+  ]);
+
+  const attraction = attractionResult.data;
+  const seasons = seasonsResult.data?.data ?? [];
+  const error = attractionResult.error || seasonsResult.error;
+
+  if (error || !attraction) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading seasons</AlertTitle>
+          <AlertDescription>
+            {error?.message || 'Failed to load seasons. Please try refreshing the page.'}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return (
@@ -53,44 +74,47 @@ export default async function SeasonsPage({ params }: SeasonsPageProps) {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">Seasons</h1>
-          <p className="text-muted-foreground">Manage operating seasons for this attraction.</p>
+          <p className="text-muted-foreground">
+            Manage operating seasons for {attraction.name}.
+          </p>
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Season List */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">All Seasons</h2>
-          {mockSeasons.map((season) => (
-            <Card key={season.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">{season.name}</CardTitle>
-                  <Badge
-                    variant={
-                      season.status === 'active'
-                        ? 'default'
-                        : season.status === 'upcoming'
-                          ? 'secondary'
-                          : 'outline'
-                    }
-                  >
-                    {season.status}
-                  </Badge>
-                </div>
-                <CardDescription>
-                  {new Date(season.startDate).toLocaleDateString()} -{' '}
-                  {new Date(season.endDate).toLocaleDateString()}
-                </CardDescription>
-              </CardHeader>
+          <h2 className="text-lg font-semibold">All Seasons ({seasons.length})</h2>
+          {seasons.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">No seasons yet. Create your first season.</p>
+              </CardContent>
             </Card>
-          ))}
+          ) : (
+            seasons.map((season) => (
+              <Card key={season.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">{season.name}</CardTitle>
+                    <Badge variant={getStatusVariant(season.status)}>
+                      {season.status}
+                    </Badge>
+                  </div>
+                  <CardDescription>
+                    {new Date(season.start_date).toLocaleDateString()} -{' '}
+                    {new Date(season.end_date).toLocaleDateString()}
+                    <span className="ml-2 text-muted-foreground">({season.year})</span>
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Add Season Form */}
         <div>
           <h2 className="mb-4 text-lg font-semibold">Add Season</h2>
-          <SeasonForm attractionId={attractionId} />
+          <SeasonForm orgId={orgId} attractionId={attractionId} />
         </div>
       </div>
     </div>

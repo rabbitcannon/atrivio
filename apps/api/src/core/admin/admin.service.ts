@@ -13,6 +13,7 @@ import type {
   UpdateOrganizationDto,
   SuspendOrganizationDto,
   DeleteOrganizationDto,
+  SetOrgPlatformFeeDto,
   CreateFeatureFlagDto,
   UpdateFeatureFlagDto,
   UpdateSettingDto,
@@ -816,6 +817,92 @@ export class AdminService {
     return {
       message: 'Organization deleted',
       id: orgId,
+    };
+  }
+
+  async setOrgPlatformFee(orgId: string, dto: SetOrgPlatformFeeDto, adminId: string) {
+    const client = this.supabase.adminClient;
+
+    // Check org exists and get current fee
+    const { data: org } = await client
+      .from('organizations')
+      .select('name, platform_fee_percent')
+      .eq('id', orgId)
+      .single();
+
+    if (!org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    const oldFee = org.platform_fee_percent;
+    const newFee = dto.platform_fee_percent ?? null;
+
+    const { error } = await client
+      .from('organizations')
+      .update({
+        platform_fee_percent: newFee,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orgId);
+
+    if (error) {
+      throw new BadRequestException({
+        code: 'ORG_FEE_UPDATE_FAILED',
+        message: error.message,
+      });
+    }
+
+    await this.logAuditEvent({
+      actorId: adminId,
+      action: 'organization.platform_fee.update',
+      resourceType: 'organization',
+      resourceId: orgId,
+      orgId,
+      changes: { platform_fee_percent: { from: oldFee, to: newFee } },
+      metadata: { org_name: org.name },
+    });
+
+    // Get the effective fee (with global fallback)
+    return this.getOrgPlatformFee(orgId);
+  }
+
+  async getOrgPlatformFee(orgId: string) {
+    const client = this.supabase.adminClient;
+
+    // Get org-specific fee
+    const { data: org, error: orgError } = await client
+      .from('organizations')
+      .select('name, platform_fee_percent')
+      .eq('id', orgId)
+      .single();
+
+    if (orgError || !org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    // Get global default
+    const { data: setting } = await client
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'stripe_platform_fee_percent')
+      .single();
+
+    const globalDefault = setting?.value ? Number(setting.value) : 3.0;
+    const customFee = org.platform_fee_percent !== null ? Number(org.platform_fee_percent) : null;
+
+    return {
+      org_id: orgId,
+      org_name: org.name,
+      platform_fee_percent: customFee ?? globalDefault,
+      is_custom: customFee !== null,
+      custom_fee: customFee,
+      global_default: globalDefault,
     };
   }
 

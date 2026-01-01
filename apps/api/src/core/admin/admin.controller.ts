@@ -24,6 +24,7 @@ import {
   UpdateOrganizationDto,
   SuspendOrganizationDto,
   DeleteOrganizationDto,
+  SetOrgPlatformFeeDto,
   CreateFeatureFlagDto,
   UpdateFeatureFlagDto,
   UpdateSettingDto,
@@ -179,6 +180,26 @@ export class AdminController {
     @CurrentUser() admin: AuthUser,
   ) {
     return this.adminService.deleteOrganization(orgId, dto, admin.id);
+  }
+
+  @Patch('organizations/:orgId/platform-fee')
+  @ApiOperation({ summary: 'Set custom platform fee for organization' })
+  @ApiResponse({ status: 200, description: 'Platform fee updated' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async setOrgPlatformFee(
+    @Param('orgId') orgId: string,
+    @Body() dto: SetOrgPlatformFeeDto,
+    @CurrentUser() admin: AuthUser,
+  ) {
+    return this.adminService.setOrgPlatformFee(orgId, dto, admin.id);
+  }
+
+  @Get('organizations/:orgId/platform-fee')
+  @ApiOperation({ summary: 'Get platform fee for organization' })
+  @ApiResponse({ status: 200, description: 'Platform fee retrieved' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async getOrgPlatformFee(@Param('orgId') orgId: string) {
+    return this.adminService.getOrgPlatformFee(orgId);
   }
 
   // ============================================================================

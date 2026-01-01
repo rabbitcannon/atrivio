@@ -78,27 +78,13 @@ export function AuthForm({ mode }: AuthFormProps) {
     try {
       switch (mode) {
         case 'login': {
-          const { data, error } = await supabase.auth.signInWithPassword({
+          const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
           if (error) throw error;
 
-          // Check if user is super admin and redirect appropriately
-          if (data.user) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('is_super_admin')
-              .eq('id', data.user.id)
-              .single();
-
-            if (profile?.is_super_admin) {
-              router.push('/admin');
-              router.refresh();
-              break;
-            }
-          }
-
+          // Redirect to dashboard - it handles super admin routing server-side
           router.push(redirect as never);
           router.refresh();
           break;

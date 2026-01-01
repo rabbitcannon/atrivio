@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { OrgSettingsForm } from '@/components/features/organizations/org-settings-form';
-import { resolveOrgId } from '@/lib/api';
+import { resolveOrgId, getOrganization } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Organization Settings',
@@ -20,6 +22,23 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
     notFound();
   }
 
+  // Fetch organization data
+  const result = await getOrganization(orgId);
+
+  if (result.error || !result.data) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading organization</AlertTitle>
+          <AlertDescription>
+            {result.error?.message || 'Failed to load organization. Please try refreshing the page.'}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -27,7 +46,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
         <p className="text-muted-foreground">Manage your organization details and preferences.</p>
       </div>
 
-      <OrgSettingsForm orgId={orgId} />
+      <OrgSettingsForm orgId={orgId} organization={result.data} />
     </div>
   );
 }

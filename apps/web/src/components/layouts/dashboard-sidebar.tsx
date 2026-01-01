@@ -9,6 +9,8 @@ import {
   LayoutDashboard,
   UserCog,
   Mail,
+  Clock,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -24,18 +26,27 @@ interface NavItem {
   roles?: string[];
 }
 
-const mainNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '', icon: LayoutDashboard },
-  { label: 'Attractions', href: '/attractions', icon: Ghost },
-  { label: 'Staff', href: '/staff', icon: Users },
-  { label: 'Schedule', href: '/schedule', icon: Calendar },
+// Admin/manager navigation - full dashboard access
+const adminNavItems: NavItem[] = [
+  { label: 'Dashboard', href: '', icon: LayoutDashboard, roles: ['owner', 'admin', 'manager', 'hr'] },
+  { label: 'Attractions', href: '/attractions', icon: Ghost, roles: ['owner', 'admin', 'manager'] },
+  { label: 'Staff', href: '/staff', icon: Users, roles: ['owner', 'admin', 'manager', 'hr'] },
+  { label: 'Schedule', href: '/schedule', icon: Calendar, roles: ['owner', 'admin', 'manager'] },
+];
+
+// Staff-only navigation - for actors, scanners, box_office, finance
+const staffNavItems: NavItem[] = [
+  { label: 'My Schedule', href: '/my-schedule', icon: Calendar },
+  { label: 'Time Tracking', href: '/my-time', icon: Clock },
 ];
 
 const settingsNavItems: NavItem[] = [
   { label: 'Organization', href: '/settings', icon: Building2, roles: ['owner', 'admin'] },
+  { label: 'Payments', href: '/payments', icon: CreditCard, roles: ['owner', 'admin', 'finance'] },
   { label: 'Members', href: '/members', icon: UserCog, roles: ['owner', 'admin', 'hr'] },
   { label: 'Invitations', href: '/invitations', icon: Mail, roles: ['owner', 'admin', 'hr'] },
 ];
+
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -71,11 +82,36 @@ export function DashboardSidebar() {
 
       <Separator />
 
-      {/* Main Navigation */}
+      {/* Main Navigation - filtered by role */}
       <nav className="flex-1 space-y-1 p-4" aria-label="Main navigation">
-        {mainNavItems.map((item) => {
+        {/* Admin/Manager Navigation */}
+        {adminNavItems
+          .filter((item) => !item.roles || item.roles.includes(currentOrg.role))
+          .map((item) => {
+            const href = `/${orgSlug}${item.href}`;
+            const isActive = pathname === href || (item.href !== '' && pathname.startsWith(href));
+
+            return (
+              <a
+                key={item.href}
+                href={href}
+                className={cn(
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </a>
+            );
+          })}
+
+        {/* Staff Navigation - shown to all staff including non-admin roles */}
+        {staffNavItems.map((item) => {
           const href = `/${orgSlug}${item.href}`;
-          const isActive = pathname === href || (item.href !== '' && pathname.startsWith(href));
+          const isActive = pathname === href || pathname.startsWith(href);
 
           return (
             <a

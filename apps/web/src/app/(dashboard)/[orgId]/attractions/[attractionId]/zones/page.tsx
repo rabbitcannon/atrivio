@@ -113,7 +113,7 @@ export default async function ZonesPage({ params }: ZonesPageProps) {
         {/* Add Zone Form */}
         <div>
           <h2 className="mb-4 text-lg font-semibold">Add Zone</h2>
-          <ZoneForm attractionId={attractionId} />
+          <ZoneForm orgId={orgId} attractionId={attractionId} />
         </div>
       </div>
     </div>

@@ -17,13 +17,13 @@ import { AdminModule } from './core/admin/admin.module.js';
 import { OrganizationsModule } from './modules/organizations/organizations.module.js';
 import { HauntsModule } from './modules/haunts/haunts.module.js';
 import { StaffModule } from './modules/staff/staff.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
 
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';
 // import { SchedulingModule } from './modules/scheduling/scheduling.module.js';
 // import { TicketingModule } from './modules/ticketing/ticketing.module.js';
 // import { CheckInModule } from './modules/check-in/check-in.module.js';
-// import { PaymentsModule } from './modules/payments/payments.module.js';
 // import { InventoryModule } from './modules/inventory/inventory.module.js';
 // import { OperationsModule } from './modules/operations/operations.module.js';
 // import { MarketingModule } from './modules/marketing/marketing.module.js';
@@ -52,6 +52,9 @@ import { StaffModule } from './modules/staff/staff.module.js';
     OrganizationsModule,
     HauntsModule,
     StaffModule,
+
+    // Payments (F6 Stripe Connect)
+    PaymentsModule,
   ],
   controllers: [],
   providers: [

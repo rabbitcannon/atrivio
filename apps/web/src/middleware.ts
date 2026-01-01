@@ -45,10 +45,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes - org paths like /b0000000-...
+  // Protected routes - dashboard, org paths like /b0000000-..., and /organizations/*
+  const isDashboard = request.nextUrl.pathname === '/dashboard';
   const isOrgPath = request.nextUrl.pathname.match(/^\/[a-f0-9-]{36}/);
-  const isDashboardPath = request.nextUrl.pathname.startsWith('/dashboard');
-  const isProtectedPath = isOrgPath || isDashboardPath;
+  const isOrgManagement = request.nextUrl.pathname.startsWith('/organizations');
+  const isProtectedPath = isDashboard || isOrgPath || isOrgManagement;
 
   // Auth pages that logged-in users shouldn't see
   const authPaths = ['/login', '/signup', '/forgot-password'];
@@ -63,14 +64,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isAuthPath) {
-    // Check if user is super admin
+    // Redirect authenticated users away from auth pages based on role
     const { data: profile } = await supabase
       .from('profiles')
       .select('is_super_admin')
       .eq('id', user.id)
       .single();
 
-    // Redirect authenticated users away from auth pages
     const url = request.nextUrl.clone();
     url.pathname = profile?.is_super_admin ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);

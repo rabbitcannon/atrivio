@@ -121,7 +121,11 @@ VALUES
   ('a0000000-0000-0000-0000-000000000005', 'actor2@haunt.dev', 'Emily', 'Rodriguez', 'Emily Rodriguez', '555-0103', FALSE),
   ('a0000000-0000-0000-0000-000000000006', 'actor3@haunt.dev', 'Mike', 'Thompson', 'Mike Thompson', '555-0104', FALSE),
   ('a0000000-0000-0000-0000-000000000007', 'boxoffice@haunt.dev', 'Lisa', 'Park', 'Lisa Park', '555-0105', FALSE)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  is_super_admin = EXCLUDED.is_super_admin,
+  first_name = EXCLUDED.first_name,
+  last_name = EXCLUDED.last_name,
+  display_name = EXCLUDED.display_name;
 
 -- ============================================================================
 -- F2: ORGANIZATIONS
@@ -441,3 +445,349 @@ ON CONFLICT (id) DO NOTHING;
 --   - Audit Logs: 24 entries showing platform activity
 --   - Announcements: 3 (welcome, feature, maintenance)
 --   - Health Logs: 10 entries for system monitoring demo
+--
+-- F6 Stripe Connect Data:
+--   - Nightmare Manor: Connected with active Stripe account
+--   - 5 payouts with various statuses
+--   - 12 transactions showing payment history
+--   - 8 webhook events for integration demo
+
+-- ============================================================================
+-- F6: STRIPE CONNECT DATA
+-- ============================================================================
+
+-- Stripe accounts for organizations (using valid hex UUIDs: 6s = stripe accounts)
+INSERT INTO public.stripe_accounts (
+  id, org_id, stripe_account_id, status, type,
+  charges_enabled, payouts_enabled, details_submitted,
+  dashboard_url, country, default_currency, business_type, business_name, metadata
+)
+VALUES
+  -- Nightmare Manor - Fully connected and operational
+  (
+    '60000000-0000-0000-0000-000000000001',
+    'b0000000-0000-0000-0000-000000000001',
+    'acct_1NightmareManor2024',
+    'active',
+    'express',
+    TRUE,
+    TRUE,
+    TRUE,
+    'https://connect.stripe.com/express/acct_1NightmareManor2024',
+    'US',
+    'usd',
+    'company',
+    'Nightmare Manor LLC',
+    '{"verified_at": "2024-10-01", "industry": "entertainment"}'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- Stripe payouts (using valid hex UUIDs: 7p = payouts)
+INSERT INTO public.stripe_payouts (
+  id, stripe_account_id, stripe_payout_id, amount, currency, status,
+  arrival_date, method, destination_type, destination_last4, metadata
+)
+VALUES
+  -- Completed payouts
+  (
+    '70000000-0000-0000-0000-000000000001',
+    '60000000-0000-0000-0000-000000000001',
+    'po_1OctPayout2024',
+    1250000, -- $12,500
+    'usd',
+    'paid',
+    '2024-10-15',
+    'standard',
+    'bank_account',
+    '4567',
+    '{"period": "2024-10-01 to 2024-10-14"}'
+  ),
+  (
+    '70000000-0000-0000-0000-000000000002',
+    '60000000-0000-0000-0000-000000000001',
+    'po_2OctPayout2024',
+    1875000, -- $18,750
+    'usd',
+    'paid',
+    '2024-10-31',
+    'standard',
+    'bank_account',
+    '4567',
+    '{"period": "2024-10-15 to 2024-10-31"}'
+  ),
+  (
+    '70000000-0000-0000-0000-000000000003',
+    '60000000-0000-0000-0000-000000000001',
+    'po_1NovPayout2024',
+    890000, -- $8,900
+    'usd',
+    'paid',
+    '2024-11-15',
+    'standard',
+    'bank_account',
+    '4567',
+    '{"period": "2024-11-01 to 2024-11-14"}'
+  ),
+  -- In transit payout
+  (
+    '70000000-0000-0000-0000-000000000004',
+    '60000000-0000-0000-0000-000000000001',
+    'po_1DecPayout2024',
+    325000, -- $3,250
+    'usd',
+    'in_transit',
+    CURRENT_DATE + INTERVAL '2 days',
+    'standard',
+    'bank_account',
+    '4567',
+    '{"period": "2024-12-01 to 2024-12-15"}'
+  ),
+  -- Pending payout
+  (
+    '70000000-0000-0000-0000-000000000005',
+    '60000000-0000-0000-0000-000000000001',
+    'po_2DecPayout2024',
+    156000, -- $1,560
+    'usd',
+    'pending',
+    CURRENT_DATE + INTERVAL '5 days',
+    'standard',
+    'bank_account',
+    '4567',
+    '{"period": "2024-12-16 to current"}'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- Stripe transactions (using valid hex UUIDs: 8t = transactions)
+INSERT INTO public.stripe_transactions (
+  id, stripe_account_id, stripe_payment_intent_id, stripe_charge_id,
+  type, status, amount, currency, platform_fee, stripe_fee, net_amount,
+  description, customer_email, metadata, created_at
+)
+VALUES
+  -- October transactions (during Halloween season)
+  (
+    '80000000-0000-0000-0000-000000000001',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct01_001', 'ch_Oct01_001',
+    'charge', 'succeeded',
+    4500, 'usd', 130, 160, 4210,
+    'General Admission x3',
+    'john.smith@example.com',
+    '{"tickets": 3, "type": "general"}',
+    NOW() - INTERVAL '60 days'
+  ),
+  (
+    '80000000-0000-0000-0000-000000000002',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct05_001', 'ch_Oct05_001',
+    'charge', 'succeeded',
+    12000, 'usd', 348, 378, 11274,
+    'VIP Fast Pass x4',
+    'mary.jones@example.com',
+    '{"tickets": 4, "type": "vip_fast_pass"}',
+    NOW() - INTERVAL '56 days'
+  ),
+  (
+    '80000000-0000-0000-0000-000000000003',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct10_001', 'ch_Oct10_001',
+    'charge', 'succeeded',
+    6000, 'usd', 174, 204, 5622,
+    'Group Package x6',
+    'group.booking@company.com',
+    '{"tickets": 6, "type": "group"}',
+    NOW() - INTERVAL '51 days'
+  ),
+  (
+    '80000000-0000-0000-0000-000000000004',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct15_001', 'ch_Oct15_001',
+    'charge', 'succeeded',
+    2500, 'usd', 72, 102, 2326,
+    'General Admission x2 (Senior Discount)',
+    'senior.couple@email.com',
+    '{"tickets": 2, "type": "general", "discount": "senior"}',
+    NOW() - INTERVAL '46 days'
+  ),
+  -- Refund example
+  (
+    '80000000-0000-0000-0000-000000000005',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct20_001', NULL,
+    'refund', 'succeeded',
+    1500, 'usd', 0, 0, -1500,
+    'Refund - Event cancelled due to weather',
+    'refund.customer@email.com',
+    '{"original_charge": "ch_Oct18_001", "reason": "weather_cancellation"}',
+    NOW() - INTERVAL '41 days'
+  ),
+  -- More charges
+  (
+    '80000000-0000-0000-0000-000000000006',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct25_001', 'ch_Oct25_001',
+    'charge', 'succeeded',
+    8500, 'usd', 246, 276, 7978,
+    'Ultimate Scare Package x2',
+    'thrill.seeker@example.com',
+    '{"tickets": 2, "type": "ultimate_package"}',
+    NOW() - INTERVAL '36 days'
+  ),
+  (
+    '80000000-0000-0000-0000-000000000007',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct28_001', 'ch_Oct28_001',
+    'charge', 'succeeded',
+    15000, 'usd', 435, 465, 14100,
+    'Halloween Night VIP x5',
+    'party.planner@gmail.com',
+    '{"tickets": 5, "type": "halloween_vip", "date": "2024-10-31"}',
+    NOW() - INTERVAL '33 days'
+  ),
+  (
+    '80000000-0000-0000-0000-000000000008',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Oct31_001', 'ch_Oct31_001',
+    'charge', 'succeeded',
+    22500, 'usd', 652, 682, 21166,
+    'Halloween Night - Walk-ins x15',
+    NULL,
+    '{"tickets": 15, "type": "general", "walk_in": true, "date": "2024-10-31"}',
+    NOW() - INTERVAL '30 days'
+  ),
+  -- November transactions
+  (
+    '80000000-0000-0000-0000-000000000009',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Nov01_001', 'ch_Nov01_001',
+    'charge', 'succeeded',
+    3000, 'usd', 87, 117, 2796,
+    'General Admission x2',
+    'late.season@email.com',
+    '{"tickets": 2, "type": "general"}',
+    NOW() - INTERVAL '29 days'
+  ),
+  -- Recent transactions
+  (
+    '80000000-0000-0000-0000-000000000010',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Dec15_001', 'ch_Dec15_001',
+    'charge', 'succeeded',
+    7500, 'usd', 217, 247, 7036,
+    'Gift Cards Purchase',
+    'gift.buyer@example.com',
+    '{"type": "gift_card", "cards": 5, "value_each": 1500}',
+    NOW() - INTERVAL '7 days'
+  ),
+  (
+    '80000000-0000-0000-0000-000000000011',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Dec20_001', 'ch_Dec20_001',
+    'charge', 'succeeded',
+    4000, 'usd', 116, 146, 3738,
+    'Season Pass 2025',
+    'superfan@hauntlover.com',
+    '{"type": "season_pass", "year": 2025}',
+    NOW() - INTERVAL '3 days'
+  ),
+  -- Pending charge
+  (
+    '80000000-0000-0000-0000-000000000012',
+    '60000000-0000-0000-0000-000000000001',
+    'pi_Dec22_001', NULL,
+    'charge', 'pending',
+    3500, 'usd', 101, 131, 3268,
+    'Corporate Group Booking Deposit',
+    'events@bigcorp.com',
+    '{"type": "corporate_deposit", "full_amount": 15000}',
+    NOW() - INTERVAL '1 day'
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- Stripe webhooks (using valid hex UUIDs: 9w = webhooks)
+INSERT INTO public.stripe_webhooks (
+  id, stripe_event_id, type, api_version, processed, payload, created_at, processed_at
+)
+VALUES
+  (
+    '90000000-0000-0000-0000-000000000001',
+    'evt_account_updated_001',
+    'account.updated',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_account_updated_001", "type": "account.updated", "data": {"object": {"id": "acct_1NightmareManor2024", "charges_enabled": true, "payouts_enabled": true}}}',
+    NOW() - INTERVAL '60 days',
+    NOW() - INTERVAL '60 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000002',
+    'evt_payout_paid_001',
+    'payout.paid',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_payout_paid_001", "type": "payout.paid", "data": {"object": {"id": "po_1OctPayout2024", "amount": 1250000, "status": "paid"}}}',
+    NOW() - INTERVAL '46 days',
+    NOW() - INTERVAL '46 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000003',
+    'evt_payment_succeeded_001',
+    'payment_intent.succeeded',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_payment_succeeded_001", "type": "payment_intent.succeeded", "data": {"object": {"id": "pi_Oct31_001", "amount": 22500, "status": "succeeded"}}}',
+    NOW() - INTERVAL '30 days',
+    NOW() - INTERVAL '30 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000004',
+    'evt_charge_refunded_001',
+    'charge.refunded',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_charge_refunded_001", "type": "charge.refunded", "data": {"object": {"id": "ch_Oct18_001", "amount_refunded": 1500}}}',
+    NOW() - INTERVAL '41 days',
+    NOW() - INTERVAL '41 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000005',
+    'evt_payout_paid_002',
+    'payout.paid',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_payout_paid_002", "type": "payout.paid", "data": {"object": {"id": "po_2OctPayout2024", "amount": 1875000, "status": "paid"}}}',
+    NOW() - INTERVAL '30 days',
+    NOW() - INTERVAL '30 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000006',
+    'evt_payout_paid_003',
+    'payout.paid',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_payout_paid_003", "type": "payout.paid", "data": {"object": {"id": "po_1NovPayout2024", "amount": 890000, "status": "paid"}}}',
+    NOW() - INTERVAL '15 days',
+    NOW() - INTERVAL '15 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000007',
+    'evt_payout_created_001',
+    'payout.created',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_payout_created_001", "type": "payout.created", "data": {"object": {"id": "po_1DecPayout2024", "amount": 325000, "status": "pending"}}}',
+    NOW() - INTERVAL '3 days',
+    NOW() - INTERVAL '3 days'
+  ),
+  (
+    '90000000-0000-0000-0000-000000000008',
+    'evt_payment_pending_001',
+    'payment_intent.processing',
+    '2023-10-16',
+    TRUE,
+    '{"id": "evt_payment_pending_001", "type": "payment_intent.processing", "data": {"object": {"id": "pi_Dec22_001", "amount": 3500, "status": "processing"}}}',
+    NOW() - INTERVAL '1 day',
+    NOW() - INTERVAL '1 day'
+  )
+ON CONFLICT (id) DO NOTHING;

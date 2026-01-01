@@ -15,8 +15,56 @@ export class OrganizationsService {
   /**
    * Create a new organization
    * Creator becomes the owner automatically
+   * Only users with no orgs OR owner/admin role can create new orgs
    */
   async create(userId: UserId, dto: CreateOrgDto) {
+    // Check if user has any existing memberships
+    const { data: memberships } = await this.supabase.adminClient
+      .from('org_memberships')
+      .select('role, is_owner')
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    const hasMemberships = memberships && memberships.length > 0;
+
+    // If user has memberships, they must be owner or admin of at least one org
+    if (hasMemberships) {
+      const hasHighLevelRole = memberships.some(
+        (m) => m.is_owner || m.role === 'owner' || m.role === 'admin'
+      );
+
+      if (!hasHighLevelRole) {
+        throw new BadRequestException({
+          code: 'ORG_CREATE_NOT_ALLOWED',
+          message: 'Only organization owners and admins can create new organizations.',
+        });
+      }
+    }
+
+    // Check organization limit for this user (count orgs they own)
+    const { count: orgCount } = await this.supabase.adminClient
+      .from('org_memberships')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_owner', true)
+      .eq('status', 'active');
+
+    // Get max orgs limit from platform settings
+    const { data: limitSetting } = await this.supabase.adminClient
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'max_orgs_per_user')
+      .single();
+
+    const maxOrgs = limitSetting?.value ? Number(limitSetting.value) : 5;
+
+    if (orgCount !== null && orgCount >= maxOrgs) {
+      throw new BadRequestException({
+        code: 'ORG_LIMIT_REACHED',
+        message: `You have reached the maximum number of organizations (${maxOrgs}). Contact support if you need to create more.`,
+      });
+    }
+
     // Check if slug is taken
     const { data: existing } = await this.supabase.adminClient
       .from('organizations')

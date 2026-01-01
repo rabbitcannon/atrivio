@@ -19,9 +19,9 @@ export class TimeService {
 
     // Check for existing active time entry
     const { data: active } = await this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .select('id')
-      .eq('org_member_id', staffId)
+      .eq('staff_id', staffId)
       .is('clock_out', null)
       .single();
 
@@ -48,9 +48,10 @@ export class TimeService {
     }
 
     const { data, error } = await this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .insert({
-        org_member_id: staffId,
+        staff_id: staffId,
+        org_id: orgId,
         attraction_id: dto.attraction_id,
         clock_in: new Date().toISOString(),
         status: 'pending',
@@ -84,9 +85,9 @@ export class TimeService {
 
     // Find active time entry
     const { data: active } = await this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .select('id, clock_in')
-      .eq('org_member_id', staffId)
+      .eq('staff_id', staffId)
       .is('clock_out', null)
       .single();
 
@@ -97,24 +98,25 @@ export class TimeService {
       });
     }
 
-    const clockOut = new Date();
-    const clockIn = new Date(active.clock_in);
+    const clockOutTime = new Date();
     const breakMinutes = dto.break_minutes || 0;
-    const totalMinutes = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60) - breakMinutes;
-    const totalHours = Math.round(totalMinutes / 60 * 100) / 100;
 
     const { data, error } = await this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .update({
-        clock_out: clockOut.toISOString(),
+        clock_out: clockOutTime.toISOString(),
         break_minutes: breakMinutes,
-        total_hours: totalHours,
         notes: dto.notes,
         updated_at: new Date().toISOString(),
       })
       .eq('id', active.id)
-      .select('id, clock_in, clock_out, break_minutes, total_hours, status')
+      .select('id, clock_in, clock_out, break_minutes, status')
       .single();
+
+    // Calculate total hours
+    const clockInTime = new Date(active.clock_in);
+    const totalMinutes = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60) - breakMinutes;
+    const totalHours = Math.round(totalMinutes / 60 * 100) / 100;
 
     if (error) {
       throw new BadRequestException({
@@ -123,7 +125,10 @@ export class TimeService {
       });
     }
 
-    return data;
+    return {
+      ...data,
+      total_hours: totalHours,
+    };
   }
 
   /**
@@ -133,13 +138,12 @@ export class TimeService {
     await this.verifyStaffAccess(orgId, staffId);
 
     let query = this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .select(`
         id,
         clock_in,
         clock_out,
         break_minutes,
-        total_hours,
         notes,
         status,
         approved_by,
@@ -149,12 +153,12 @@ export class TimeService {
           id,
           name
         ),
-        approver:approved_by (
+        approver:profiles!staff_time_entries_approved_by_fkey (
           first_name,
           last_name
         )
       `)
-      .eq('org_member_id', staffId)
+      .eq('staff_id', staffId)
       .order('clock_in', { ascending: false });
 
     if (filters?.start_date) {
@@ -178,21 +182,33 @@ export class TimeService {
       });
     }
 
-    const entries = data.map((e: any) => ({
-      id: e.id,
-      date: e.clock_in ? new Date(e.clock_in).toISOString().split('T')[0] : null,
-      clock_in: e.clock_in,
-      clock_out: e.clock_out,
-      break_minutes: e.break_minutes,
-      total_hours: e.total_hours,
-      attraction: e.attractions ? {
-        id: e.attractions.id,
-        name: e.attractions.name,
-      } : null,
-      status: e.status,
-      approved_by: e.approver ? `${e.approver.first_name} ${e.approver.last_name}` : null,
-      notes: e.notes,
-    }));
+    const entries = data.map((e: any) => {
+      // Calculate total hours if both clock_in and clock_out exist
+      let totalHours: number | null = null;
+      if (e.clock_in && e.clock_out) {
+        const clockIn = new Date(e.clock_in);
+        const clockOut = new Date(e.clock_out);
+        const breakMins = e.break_minutes || 0;
+        const totalMinutes = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60) - breakMins;
+        totalHours = Math.round(totalMinutes / 60 * 100) / 100;
+      }
+
+      return {
+        id: e.id,
+        date: e.clock_in ? new Date(e.clock_in).toISOString().split('T')[0] : null,
+        clock_in: e.clock_in,
+        clock_out: e.clock_out,
+        break_minutes: e.break_minutes,
+        total_hours: totalHours,
+        attraction: e.attractions ? {
+          id: e.attractions.id,
+          name: e.attractions.name,
+        } : null,
+        status: e.status,
+        approved_by: e.approver ? `${e.approver.first_name} ${e.approver.last_name}` : null,
+        notes: e.notes,
+      };
+    });
 
     // Calculate summary
     const totalHours = entries.reduce((sum: number, e: any) => sum + (e.total_hours || 0), 0);
@@ -214,46 +230,29 @@ export class TimeService {
   async update(orgId: OrgId, entryId: string, dto: UpdateTimeEntryDto) {
     // Get entry and verify org
     const { data: entry } = await this.supabase.adminClient
-      .from('time_entries')
-      .select(`
-        id,
-        org_member_id,
-        org_members!inner (
-          org_id
-        )
-      `)
+      .from('staff_time_entries')
+      .select('id, org_id, clock_in, clock_out, break_minutes')
       .eq('id', entryId)
       .single();
 
-    if (!entry || (entry.org_members as any).org_id !== orgId) {
+    if (!entry || entry.org_id !== orgId) {
       throw new NotFoundException({
         code: 'TIME_ENTRY_NOT_FOUND',
         message: 'Time entry not found',
       });
     }
 
-    // Calculate total hours if both clock times provided
-    let totalHours: number | undefined;
-    if (dto.clock_in && dto.clock_out) {
-      const clockIn = new Date(dto.clock_in);
-      const clockOut = new Date(dto.clock_out);
-      const breakMinutes = dto.break_minutes || 0;
-      const totalMinutes = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60) - breakMinutes;
-      totalHours = Math.round(totalMinutes / 60 * 100) / 100;
-    }
-
     const { data, error } = await this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .update({
         clock_in: dto.clock_in,
         clock_out: dto.clock_out,
         break_minutes: dto.break_minutes,
-        total_hours: totalHours,
         notes: dto.notes,
         updated_at: new Date().toISOString(),
       })
       .eq('id', entryId)
-      .select()
+      .select('id, clock_in, clock_out, break_minutes, notes, status')
       .single();
 
     if (error) {
@@ -263,7 +262,22 @@ export class TimeService {
       });
     }
 
-    return data;
+    // Calculate total hours for response
+    let totalHours: number | null = null;
+    const clockIn = dto.clock_in || entry.clock_in;
+    const clockOut = dto.clock_out || entry.clock_out;
+    if (clockIn && clockOut) {
+      const clockInTime = new Date(clockIn);
+      const clockOutTime = new Date(clockOut);
+      const breakMinutes = dto.break_minutes ?? entry.break_minutes ?? 0;
+      const totalMinutes = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60) - breakMinutes;
+      totalHours = Math.round(totalMinutes / 60 * 100) / 100;
+    }
+
+    return {
+      ...data,
+      total_hours: totalHours,
+    };
   }
 
   /**
@@ -272,18 +286,12 @@ export class TimeService {
   async approve(orgId: OrgId, entryId: string, approverId: UserId) {
     // Verify entry belongs to org
     const { data: entry } = await this.supabase.adminClient
-      .from('time_entries')
-      .select(`
-        id,
-        org_member_id,
-        org_members!inner (
-          org_id
-        )
-      `)
+      .from('staff_time_entries')
+      .select('id, org_id')
       .eq('id', entryId)
       .single();
 
-    if (!entry || (entry.org_members as any).org_id !== orgId) {
+    if (!entry || entry.org_id !== orgId) {
       throw new NotFoundException({
         code: 'TIME_ENTRY_NOT_FOUND',
         message: 'Time entry not found',
@@ -291,7 +299,7 @@ export class TimeService {
     }
 
     const { data, error } = await this.supabase.adminClient
-      .from('time_entries')
+      .from('staff_time_entries')
       .update({
         status: 'approved',
         approved_by: approverId,
@@ -350,7 +358,7 @@ export class TimeService {
 
   private async verifyStaffAccess(orgId: OrgId, staffId: string) {
     const { data, error } = await this.supabase.adminClient
-      .from('org_members')
+      .from('org_memberships')
       .select('id')
       .eq('id', staffId)
       .eq('org_id', orgId)

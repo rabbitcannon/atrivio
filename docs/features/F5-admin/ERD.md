@@ -2,7 +2,7 @@
 
 ## Overview
 
-Platform administration for super admins. Provides god-mode access to all organizations, users, and system configuration. Super admins bypass RLS using service-role keys.
+Platform-level administration for super admins. Provides cross-tenant oversight, audit logging, feature flags, and system configuration. Super admins are identified by `is_super_admin = TRUE` on the profiles table (from F1).
 
 ## Entity Relationship Diagram
 
@@ -10,261 +10,105 @@ Platform administration for super admins. Provides god-mode access to all organi
 ┌─────────────────────────────────────────────────────────────────┐
 │                          profiles                                │
 │                         (from F1)                                │
-│                   is_super_admin = TRUE                          │
+├─────────────────────────────────────────────────────────────────┤
+│ id              UUID PK                                          │
+│ is_super_admin  BOOLEAN DEFAULT FALSE  ◄── Platform admin check  │
+│ ...                                                              │
 └─────────────────────────────────────────────────────────────────┘
                               │
-                              │ Manages
-                              ▼
-    ┌─────────────────────────────────────────────────────────┐
-    │                   PLATFORM SCOPE                         │
-    ├─────────────────────────────────────────────────────────┤
-    │  • All Organizations                                     │
-    │  • All Users                                             │
-    │  • All Attractions                                       │
-    │  • Platform Settings                                     │
-    │  • Audit Logs                                            │
-    │  • Feature Flags                                         │
-    └─────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                      platform_settings                           │
-├─────────────────────────────────────────────────────────────────┤
-│ key             VARCHAR(100) PK                                  │
-│ value           JSONB NOT NULL                                   │
-│ description     TEXT                                             │
-│ updated_by      UUID FK → profiles.id                            │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                       feature_flags                              │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ key             VARCHAR(100) UNIQUE NOT NULL                     │
-│ name            VARCHAR(200) NOT NULL                            │
-│ description     TEXT                                             │
-│ enabled         BOOLEAN DEFAULT FALSE                            │
-│ rollout_percentage INTEGER DEFAULT 0                             │
-│ org_ids         UUID[]                                           │
-│ user_ids        UUID[]                                           │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                        audit_logs                                │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ actor_id        UUID FK → profiles.id                            │
-│ actor_type      actor_type NOT NULL                              │
-│ action          VARCHAR(100) NOT NULL                            │
-│ resource_type   VARCHAR(100) NOT NULL                            │
-│ resource_id     UUID                                             │
-│ org_id          UUID FK → organizations.id                       │
-│ changes         JSONB                                            │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ ip_address      INET                                             │
-│ user_agent      TEXT                                             │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│                                                                  │
-│ -- Partitioned by created_at for performance                     │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                     platform_announcements                       │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ title           VARCHAR(200) NOT NULL                            │
-│ content         TEXT NOT NULL                                    │
-│ type            announcement_type DEFAULT 'info'                 │
-│ target_roles    org_role[]                                       │
-│ target_org_ids  UUID[]                                           │
-│ starts_at       TIMESTAMPTZ DEFAULT NOW()                        │
-│ expires_at      TIMESTAMPTZ                                      │
-│ is_dismissible  BOOLEAN DEFAULT TRUE                             │
-│ created_by      UUID FK → profiles.id NOT NULL                   │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                 announcement_dismissals                          │
-├─────────────────────────────────────────────────────────────────┤
-│ announcement_id UUID FK → platform_announcements.id              │
-│ user_id         UUID FK → profiles.id                            │
-│ dismissed_at    TIMESTAMPTZ DEFAULT NOW()                        │
-│                                                                  │
-│ PRIMARY KEY (announcement_id, user_id)                           │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                      system_health_logs                          │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ service         VARCHAR(100) NOT NULL                            │
-│ status          health_status NOT NULL                           │
-│ latency_ms      INTEGER                                          │
-│ error_message   TEXT                                             │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ checked_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                       rate_limit_rules                           │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ name            VARCHAR(100) NOT NULL                            │
-│ endpoint_pattern VARCHAR(255) NOT NULL                           │
-│ requests_per_minute INTEGER NOT NULL                             │
-│ requests_per_hour INTEGER                                        │
-│ burst_limit     INTEGER                                          │
-│ applies_to      rate_limit_scope DEFAULT 'all'                   │
-│ org_ids         UUID[]                                           │
-│ enabled         BOOLEAN DEFAULT TRUE                             │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Enums
-
-```sql
-CREATE TYPE actor_type AS ENUM (
-  'user',
-  'system',
-  'api_key',
-  'webhook'
-);
-
-CREATE TYPE announcement_type AS ENUM (
-  'info',
-  'warning',
-  'critical',
-  'maintenance',
-  'feature'
-);
-
-CREATE TYPE health_status AS ENUM (
-  'healthy',
-  'degraded',
-  'unhealthy',
-  'unknown'
-);
-
-CREATE TYPE rate_limit_scope AS ENUM (
-  'all',
-  'authenticated',
-  'anonymous',
-  'specific_orgs'
-);
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+          ▼                   ▼                   ▼
+┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│   audit_logs     │ │  feature_flags   │ │ system_settings  │
+├──────────────────┤ ├──────────────────┤ ├──────────────────┤
+│ id         UUID  │ │ id         UUID  │ │ key        TEXT  │
+│ actor_id   UUID  │ │ name       TEXT  │ │ value      JSONB │
+│ action     TEXT  │ │ enabled    BOOL  │ │ updated_by UUID  │
+│ resource   TEXT  │ │ metadata   JSONB │ │ updated_at TSTZ  │
+│ org_id     UUID? │ │ updated_by UUID  │ └──────────────────┘
+│ details    JSONB │ │ updated_at TSTZ  │
+│ ip_address INET  │ └──────────────────┘
+│ user_agent TEXT  │
+│ created_at TSTZ  │
+└──────────────────┘
 ```
 
 ## Tables
 
-### platform_settings
+### audit_logs
 
-Global platform configuration.
+Immutable log of all significant actions across the platform.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| key | VARCHAR(100) | PK | Setting key |
-| value | JSONB | NOT NULL | Setting value |
-| description | TEXT | | Human description |
-| updated_by | UUID | FK | Last updater |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| id | UUID | PK, DEFAULT gen_random_uuid() | Unique log entry ID |
+| actor_id | UUID | FK → profiles.id | User who performed the action |
+| action | VARCHAR(100) | NOT NULL | Action type (e.g., 'create', 'update', 'delete', 'login') |
+| resource_type | VARCHAR(100) | NOT NULL | Type of resource (e.g., 'organization', 'attraction', 'staff') |
+| resource_id | UUID | | ID of the affected resource |
+| org_id | UUID | FK → organizations.id | Organization context (NULL for platform-level) |
+| details | JSONB | DEFAULT '{}' | Additional context (before/after values, etc.) |
+| ip_address | INET | | Client IP address |
+| user_agent | TEXT | | Client user agent string |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | When the action occurred |
 
 ### feature_flags
 
-Feature flag system for gradual rollouts.
+Platform-wide feature toggles for gradual rollouts and A/B testing.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PK | Flag ID |
-| key | VARCHAR(100) | UNIQUE, NOT NULL | Flag key |
-| name | VARCHAR(200) | NOT NULL | Display name |
-| description | TEXT | | Flag description |
-| enabled | BOOLEAN | DEFAULT FALSE | Global enable |
-| rollout_percentage | INTEGER | DEFAULT 0 | Percentage rollout |
-| org_ids | UUID[] | | Specific orgs enabled |
-| user_ids | UUID[] | | Specific users enabled |
-| metadata | JSONB | DEFAULT '{}' | Additional config |
+| id | UUID | PK, DEFAULT gen_random_uuid() | Unique flag ID |
+| name | VARCHAR(100) | UNIQUE, NOT NULL | Flag identifier (e.g., 'virtual_queue_enabled') |
+| display_name | VARCHAR(200) | NOT NULL | Human-readable name |
+| description | TEXT | | What this flag controls |
+| enabled | BOOLEAN | DEFAULT FALSE | Global enabled state |
+| rollout_percentage | INTEGER | DEFAULT 0, CHECK (0-100) | Percentage rollout (0-100) |
+| org_overrides | JSONB | DEFAULT '{}' | Per-org overrides {org_id: boolean} |
+| metadata | JSONB | DEFAULT '{}' | Additional configuration |
+| updated_by | UUID | FK → profiles.id | Last user to update |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation time |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update time |
 
-### audit_logs
+### system_settings
 
-System-wide audit trail.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PK | Log ID |
-| actor_id | UUID | FK | Who performed action |
-| actor_type | actor_type | NOT NULL | Type of actor |
-| action | VARCHAR(100) | NOT NULL | Action performed |
-| resource_type | VARCHAR(100) | NOT NULL | Affected resource type |
-| resource_id | UUID | | Affected resource ID |
-| org_id | UUID | FK | Organization context |
-| changes | JSONB | | Before/after values |
-| metadata | JSONB | DEFAULT '{}' | Additional context |
-| ip_address | INET | | Request IP |
-| user_agent | TEXT | | Request user agent |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Timestamp |
-
-### platform_announcements
-
-System-wide announcements.
+Platform configuration key-value store.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PK | Announcement ID |
-| title | VARCHAR(200) | NOT NULL | Announcement title |
-| content | TEXT | NOT NULL | Full content (markdown) |
-| type | announcement_type | DEFAULT 'info' | Severity type |
-| target_roles | org_role[] | | Roles to show to |
-| target_org_ids | UUID[] | | Orgs to show to |
-| starts_at | TIMESTAMPTZ | DEFAULT NOW() | Start showing |
-| expires_at | TIMESTAMPTZ | | Stop showing |
-| is_dismissible | BOOLEAN | DEFAULT TRUE | Can be dismissed |
-| created_by | UUID | FK, NOT NULL | Creator |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation time |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| key | VARCHAR(100) | PK | Setting key (e.g., 'platform_name', 'support_email') |
+| value | JSONB | NOT NULL | Setting value (any JSON type) |
+| description | TEXT | | What this setting controls |
+| category | VARCHAR(50) | DEFAULT 'general' | Setting category for grouping |
+| is_public | BOOLEAN | DEFAULT FALSE | Whether setting is visible to non-admins |
+| updated_by | UUID | FK → profiles.id | Last user to update |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update time |
 
 ## Indexes
 
 ```sql
--- Audit logs (partitioned)
-CREATE INDEX audit_logs_actor_idx ON audit_logs(actor_id, created_at DESC);
-CREATE INDEX audit_logs_resource_idx ON audit_logs(resource_type, resource_id, created_at DESC);
-CREATE INDEX audit_logs_org_idx ON audit_logs(org_id, created_at DESC);
-CREATE INDEX audit_logs_action_idx ON audit_logs(action, created_at DESC);
+-- Audit logs: query by actor, resource, org, time range
+CREATE INDEX audit_logs_actor_id_idx ON audit_logs(actor_id);
+CREATE INDEX audit_logs_resource_type_idx ON audit_logs(resource_type);
+CREATE INDEX audit_logs_org_id_idx ON audit_logs(org_id);
+CREATE INDEX audit_logs_created_at_idx ON audit_logs(created_at DESC);
+CREATE INDEX audit_logs_action_idx ON audit_logs(action);
 
--- Feature flags
-CREATE UNIQUE INDEX feature_flags_key_idx ON feature_flags(key);
+-- Feature flags: lookup by name
+CREATE UNIQUE INDEX feature_flags_name_idx ON feature_flags(name);
 
--- Announcements
-CREATE INDEX announcements_active_idx ON platform_announcements(starts_at, expires_at)
-  WHERE expires_at IS NULL OR expires_at > NOW();
-
--- Health logs
-CREATE INDEX health_logs_service_idx ON system_health_logs(service, checked_at DESC);
+-- System settings: lookup by category
+CREATE INDEX system_settings_category_idx ON system_settings(category);
 ```
 
 ## RLS Policies
 
 ```sql
--- Platform settings: Super admins only
-CREATE POLICY "Super admins manage platform settings"
-  ON platform_settings FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND is_super_admin = TRUE
-    )
-  );
+-- Audit logs: Super admins can read all, org admins can read their org's logs
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Audit logs: Super admins see all, users see their own org
-CREATE POLICY "Super admins view all audit logs"
+CREATE POLICY "Super admins can read all audit logs"
   ON audit_logs FOR SELECT
   USING (
     EXISTS (
@@ -273,174 +117,187 @@ CREATE POLICY "Super admins view all audit logs"
     )
   );
 
-CREATE POLICY "Users view own org audit logs"
+CREATE POLICY "Org owners/admins can read their org audit logs"
   ON audit_logs FOR SELECT
   USING (
-    org_id IN (
-      SELECT org_id FROM org_memberships
+    org_id IS NOT NULL AND
+    EXISTS (
+      SELECT 1 FROM org_memberships
       WHERE user_id = auth.uid()
+        AND org_id = audit_logs.org_id
         AND role IN ('owner', 'admin')
         AND status = 'active'
     )
   );
 
--- Announcements: Anyone can read active announcements
-CREATE POLICY "Anyone can view active announcements"
-  ON platform_announcements FOR SELECT
+-- Audit logs are append-only via service role
+CREATE POLICY "Service role can insert audit logs"
+  ON audit_logs FOR INSERT
+  WITH CHECK (TRUE);  -- Controlled by service role key
+
+-- Feature flags: Super admins only
+ALTER TABLE feature_flags ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Super admins can manage feature flags"
+  ON feature_flags FOR ALL
   USING (
-    starts_at <= NOW()
-    AND (expires_at IS NULL OR expires_at > NOW())
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_super_admin = TRUE
+    )
   );
+
+CREATE POLICY "Anyone can read enabled flags"
+  ON feature_flags FOR SELECT
+  USING (enabled = TRUE);
+
+-- System settings: Super admins can manage, public settings readable by all
+ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Super admins can manage system settings"
+  ON system_settings FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_super_admin = TRUE
+    )
+  );
+
+CREATE POLICY "Public settings readable by all"
+  ON system_settings FOR SELECT
+  USING (is_public = TRUE);
 ```
 
-## Functions
-
-### Check Feature Flag
+## Helper Functions
 
 ```sql
+-- Log an audit event (called from API via service role)
+CREATE OR REPLACE FUNCTION log_audit_event(
+  p_actor_id UUID,
+  p_action VARCHAR(100),
+  p_resource_type VARCHAR(100),
+  p_resource_id UUID DEFAULT NULL,
+  p_org_id UUID DEFAULT NULL,
+  p_details JSONB DEFAULT '{}',
+  p_ip_address INET DEFAULT NULL,
+  p_user_agent TEXT DEFAULT NULL
+)
+RETURNS UUID AS $$
+DECLARE
+  v_log_id UUID;
+BEGIN
+  INSERT INTO audit_logs (
+    actor_id, action, resource_type, resource_id,
+    org_id, details, ip_address, user_agent
+  )
+  VALUES (
+    p_actor_id, p_action, p_resource_type, p_resource_id,
+    p_org_id, p_details, p_ip_address, p_user_agent
+  )
+  RETURNING id INTO v_log_id;
+
+  RETURN v_log_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Check if a feature flag is enabled for an org
 CREATE OR REPLACE FUNCTION is_feature_enabled(
-  p_flag_key VARCHAR,
-  p_user_id UUID DEFAULT NULL,
+  p_flag_name VARCHAR(100),
   p_org_id UUID DEFAULT NULL
 )
 RETURNS BOOLEAN AS $$
 DECLARE
-  flag RECORD;
+  v_flag RECORD;
+  v_org_override BOOLEAN;
 BEGIN
-  SELECT * INTO flag FROM feature_flags WHERE key = p_flag_key;
+  SELECT * INTO v_flag
+  FROM feature_flags
+  WHERE name = p_flag_name;
 
   IF NOT FOUND THEN
     RETURN FALSE;
   END IF;
 
-  -- Check if globally enabled
-  IF flag.enabled THEN
-    RETURN TRUE;
+  -- Check org-specific override first
+  IF p_org_id IS NOT NULL AND v_flag.org_overrides ? p_org_id::TEXT THEN
+    RETURN (v_flag.org_overrides->>p_org_id::TEXT)::BOOLEAN;
   END IF;
 
-  -- Check specific user
-  IF p_user_id IS NOT NULL AND p_user_id = ANY(flag.user_ids) THEN
-    RETURN TRUE;
-  END IF;
-
-  -- Check specific org
-  IF p_org_id IS NOT NULL AND p_org_id = ANY(flag.org_ids) THEN
-    RETURN TRUE;
-  END IF;
-
-  -- Check percentage rollout
-  IF flag.rollout_percentage > 0 AND p_user_id IS NOT NULL THEN
-    -- Deterministic hash based on user_id and flag_key
-    IF (hashtext(p_user_id::text || p_flag_key) % 100) < flag.rollout_percentage THEN
-      RETURN TRUE;
+  -- Check global enabled state
+  IF v_flag.enabled THEN
+    -- If rollout_percentage < 100, use deterministic hash
+    IF v_flag.rollout_percentage < 100 AND p_org_id IS NOT NULL THEN
+      RETURN (abs(hashtext(p_org_id::TEXT)) % 100) < v_flag.rollout_percentage;
     END IF;
+    RETURN TRUE;
   END IF;
 
   RETURN FALSE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-```
+$$ LANGUAGE plpgsql STABLE;
 
-### Log Audit Event
-
-```sql
-CREATE OR REPLACE FUNCTION log_audit_event(
-  p_actor_id UUID,
-  p_action VARCHAR,
-  p_resource_type VARCHAR,
-  p_resource_id UUID DEFAULT NULL,
-  p_org_id UUID DEFAULT NULL,
-  p_changes JSONB DEFAULT NULL,
-  p_metadata JSONB DEFAULT '{}'
-)
-RETURNS UUID AS $$
-DECLARE
-  v_id UUID;
+-- Get a system setting value
+CREATE OR REPLACE FUNCTION get_system_setting(p_key VARCHAR(100))
+RETURNS JSONB AS $$
 BEGIN
-  INSERT INTO audit_logs (
-    actor_id,
-    actor_type,
-    action,
-    resource_type,
-    resource_id,
-    org_id,
-    changes,
-    metadata
-  ) VALUES (
-    p_actor_id,
-    CASE WHEN p_actor_id IS NULL THEN 'system' ELSE 'user' END,
-    p_action,
-    p_resource_type,
-    p_resource_id,
-    p_org_id,
-    p_changes,
-    p_metadata
-  )
-  RETURNING id INTO v_id;
-
-  RETURN v_id;
+  RETURN (SELECT value FROM system_settings WHERE key = p_key);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql STABLE;
 ```
 
-## Default Platform Settings
+## Triggers
 
 ```sql
-INSERT INTO platform_settings (key, value, description) VALUES
-  ('maintenance_mode', '{"enabled": false, "message": null}', 'Platform maintenance mode'),
-  ('registration_enabled', 'true', 'Allow new user registrations'),
-  ('max_orgs_per_user', '5', 'Maximum organizations a user can create'),
-  ('default_trial_days', '14', 'Default trial period for new orgs'),
-  ('stripe_platform_fee_percent', '2.9', 'Platform fee percentage on transactions'),
-  ('support_email', '"support@attractionplatform.com"', 'Platform support email'),
-  ('terms_version', '"2024-01-01"', 'Current terms of service version'),
-  ('privacy_version', '"2024-01-01"', 'Current privacy policy version');
+-- Update updated_at on feature_flags changes
+CREATE TRIGGER update_feature_flags_updated_at
+  BEFORE UPDATE ON feature_flags
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Update updated_at on system_settings changes
+CREATE TRIGGER update_system_settings_updated_at
+  BEFORE UPDATE ON system_settings
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 ```
 
-## Business Rules
+## Default System Settings
 
-1. **Super Admin Access**: Super admins bypass all RLS policies using service-role key.
+```sql
+INSERT INTO system_settings (key, value, description, category, is_public) VALUES
+  ('platform_name', '"Haunt Platform"', 'Platform display name', 'branding', TRUE),
+  ('support_email', '"support@haunt.dev"', 'Support contact email', 'support', TRUE),
+  ('max_orgs_per_user', '5', 'Maximum organizations a user can own', 'limits', FALSE),
+  ('max_attractions_per_org', '10', 'Maximum attractions per organization', 'limits', FALSE),
+  ('enable_signups', 'true', 'Whether new user signups are allowed', 'auth', FALSE),
+  ('maintenance_mode', 'false', 'Platform-wide maintenance mode', 'system', TRUE),
+  ('stripe_platform_fee_percent', '2.5', 'Platform fee percentage on transactions', 'payments', FALSE),
+  ('default_timezone', '"America/New_York"', 'Default timezone for new users', 'defaults', FALSE);
+```
 
-2. **Audit Everything**: All admin actions must be logged.
+## Default Feature Flags
 
-3. **Feature Flag Precedence**: User-specific > Org-specific > Percentage rollout > Global.
-
-4. **Announcement Targeting**: Empty arrays mean "all" for roles/orgs.
-
-5. **Settings Immutability**: Some settings (like stripe keys) should trigger warnings.
-
-## Admin Actions Matrix
-
-| Action | Audit Level | Requires Confirmation |
-|--------|-------------|----------------------|
-| View user data | info | No |
-| Edit user | warning | No |
-| Delete user | critical | Yes |
-| Suspend org | warning | Yes |
-| Delete org | critical | Yes, with typing |
-| Change super admin | critical | Yes, with 2FA |
-| Toggle maintenance | warning | Yes |
-| Modify rate limits | info | No |
-| Create announcement | info | No |
+```sql
+INSERT INTO feature_flags (name, display_name, description, enabled, rollout_percentage) VALUES
+  ('virtual_queue', 'Virtual Queue', 'Enable virtual queue system for attractions', FALSE, 0),
+  ('mobile_tickets', 'Mobile Tickets', 'Enable mobile ticket scanning', TRUE, 100),
+  ('staff_scheduling', 'Staff Scheduling', 'Enable advanced staff scheduling module', FALSE, 0),
+  ('real_time_analytics', 'Real-Time Analytics', 'Enable real-time analytics dashboard', FALSE, 25),
+  ('dark_mode', 'Dark Mode', 'Enable dark mode theme option', TRUE, 100);
+```
 
 ## Dependencies
 
-- **F1 Auth**: profiles for super_admin flag
-- **F2 Organizations**: org references in audit logs
-- **F3 Attractions**: attraction references in audit logs
-- **F4 Staff**: staff references in audit logs
+- F1: Auth & Users (profiles table, is_super_admin flag)
+- F2: Organizations (org_id references for audit logs)
 
 ## Migration Order
 
-1. Create enums
-2. Create platform_settings table
-3. Insert default settings
-4. Create feature_flags table
-5. Create audit_logs table (partitioned)
-6. Create platform_announcements table
-7. Create announcement_dismissals table
-8. Create system_health_logs table
-9. Create rate_limit_rules table
-10. Create indexes
-11. Create RLS policies
-12. Create helper functions
+1. Create audit_logs table
+2. Create feature_flags table
+3. Create system_settings table
+4. Create indexes
+5. Create RLS policies
+6. Create helper functions
+7. Create triggers
+8. Insert default settings and flags

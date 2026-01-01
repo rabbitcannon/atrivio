@@ -408,7 +408,7 @@ INSERT INTO platform_settings (key, value, description) VALUES
   ('registration_enabled', 'true', 'Allow new user registrations'),
   ('max_orgs_per_user', '5', 'Maximum organizations a user can create'),
   ('default_trial_days', '14', 'Default trial period for new orgs'),
-  ('stripe_platform_fee_percent', '2.9', 'Platform fee percentage on transactions'),
+  ('stripe_platform_fee_percent', '3.0', 'Platform fee percentage on transactions'),
   ('support_email', '"support@haunt.dev"', 'Platform support email'),
   ('terms_version', '"2024-12-31"', 'Current terms of service version'),
   ('privacy_version', '"2024-12-31"', 'Current privacy policy version'),

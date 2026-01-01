@@ -1,21 +1,8 @@
-# F6: Stripe Connect Payments - ERD
+# F6: Stripe Connect - ERD
 
 ## Overview
 
-Payment processing using Stripe Connect with Express accounts. Each organization has their own Stripe account, and the platform takes a percentage fee on each transaction.
-
-## Architecture
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Customer      │────▶│   Platform      │────▶│  Organization   │
-│  (Cardholder)   │     │(Attraction Plat)│     │ (Stripe Express)│
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                              │
-                              ▼
-                        Platform Fee
-                        (2.9% + 30¢)
-```
+Stripe Connect integration using Express accounts for marketplace payments. Allows organizations to accept payments for tickets and merchandise with platform fee collection.
 
 ## Entity Relationship Diagram
 
@@ -24,170 +11,72 @@ Payment processing using Stripe Connect with Express accounts. Each organization
 │                        organizations                             │
 │                          (from F2)                               │
 ├─────────────────────────────────────────────────────────────────┤
-│ stripe_account_id        VARCHAR(255)                            │
-│ stripe_onboarding_complete BOOLEAN                               │
+│ id              UUID PK                                          │
+│ ...                                                              │
 └─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ 1:1
-                              ▼
+         │
+         │ 1:1
+         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                     stripe_accounts                              │
+│                      stripe_accounts                             │
 ├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ org_id          UUID FK → organizations.id UNIQUE NOT NULL       │
-│ stripe_account_id VARCHAR(255) UNIQUE NOT NULL                   │
-│ account_type    stripe_account_type DEFAULT 'express'            │
-│ charges_enabled BOOLEAN DEFAULT FALSE                            │
-│ payouts_enabled BOOLEAN DEFAULT FALSE                            │
-│ details_submitted BOOLEAN DEFAULT FALSE                          │
-│ business_type   VARCHAR(50)                                      │
+│ id              UUID PK                                          │
+│ org_id          UUID FK UNIQUE → organizations.id                │
+│ stripe_account_id VARCHAR(255) UNIQUE                            │
+│ status          account_status ENUM                              │
+│ type            VARCHAR(50) 'express'                            │
+│ charges_enabled BOOLEAN                                          │
+│ payouts_enabled BOOLEAN                                          │
+│ details_submitted BOOLEAN                                        │
+│ onboarding_url  TEXT                                             │
+│ dashboard_url   TEXT                                             │
 │ country         VARCHAR(2)                                       │
-│ default_currency VARCHAR(3) DEFAULT 'usd'                        │
-│ capabilities    JSONB DEFAULT '{}'                               │
-│ requirements    JSONB DEFAULT '{}'                               │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
+│ default_currency VARCHAR(3)                                      │
+│ metadata        JSONB                                            │
+│ created_at      TIMESTAMPTZ                                      │
+│ updated_at      TIMESTAMPTZ                                      │
 └─────────────────────────────────────────────────────────────────┘
+         │
+         ├──────────────────────────┐
+         │ 1:N                      │ 1:N
+         ▼                          ▼
+┌──────────────────────┐  ┌──────────────────────┐
+│   stripe_payouts     │  │ stripe_transactions  │
+├──────────────────────┤  ├──────────────────────┤
+│ id           UUID PK │  │ id           UUID PK │
+│ stripe_account_id FK │  │ stripe_account_id FK │
+│ stripe_payout_id TXT │  │ stripe_payment_id TX │
+│ amount       INTEGER │  │ type         ENUM    │
+│ currency     VARCHAR │  │ amount       INTEGER │
+│ status       ENUM    │  │ fee          INTEGER │
+│ arrival_date DATE    │  │ net          INTEGER │
+│ ...                  │  │ status       ENUM    │
+└──────────────────────┘  │ ...                  │
+                          └──────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                        payments                                  │
+│                      stripe_webhooks                             │
 ├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ org_id          UUID FK → organizations.id NOT NULL              │
-│ stripe_payment_intent_id VARCHAR(255) UNIQUE                     │
-│ stripe_charge_id VARCHAR(255)                                    │
-│ amount          INTEGER NOT NULL                                 │
-│ currency        VARCHAR(3) DEFAULT 'usd'                         │
-│ platform_fee    INTEGER NOT NULL                                 │
-│ net_amount      INTEGER NOT NULL                                 │
-│ status          payment_status DEFAULT 'pending'                 │
-│ payment_method_type VARCHAR(50)                                  │
-│ customer_email  VARCHAR(255)                                     │
-│ customer_name   VARCHAR(200)                                     │
-│ description     TEXT                                             │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ failure_code    VARCHAR(100)                                     │
-│ failure_message TEXT                                             │
-│ refunded_amount INTEGER DEFAULT 0                                │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ 1:N
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                         refunds                                  │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ payment_id      UUID FK → payments.id NOT NULL                   │
-│ org_id          UUID FK → organizations.id NOT NULL              │
-│ stripe_refund_id VARCHAR(255) UNIQUE                             │
-│ amount          INTEGER NOT NULL                                 │
-│ reason          refund_reason                                    │
-│ status          refund_status DEFAULT 'pending'                  │
-│ refunded_by     UUID FK → profiles.id                            │
-│ notes           TEXT                                             │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                        payouts                                   │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ org_id          UUID FK → organizations.id NOT NULL              │
-│ stripe_payout_id VARCHAR(255) UNIQUE                             │
-│ amount          INTEGER NOT NULL                                 │
-│ currency        VARCHAR(3) DEFAULT 'usd'                         │
-│ status          payout_status DEFAULT 'pending'                  │
-│ arrival_date    DATE                                             │
-│ method          VARCHAR(50)                                      │
-│ bank_account_last4 VARCHAR(4)                                    │
-│ failure_code    VARCHAR(100)                                     │
-│ failure_message TEXT                                             │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                     payment_methods                              │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ org_id          UUID FK → organizations.id NOT NULL              │
-│ customer_id     UUID FK → customers.id                           │
-│ stripe_pm_id    VARCHAR(255) UNIQUE NOT NULL                     │
-│ type            VARCHAR(50) NOT NULL                             │
-│ card_brand      VARCHAR(20)                                      │
-│ card_last4      VARCHAR(4)                                       │
-│ card_exp_month  INTEGER                                          │
-│ card_exp_year   INTEGER                                          │
-│ is_default      BOOLEAN DEFAULT FALSE                            │
-│ billing_details JSONB DEFAULT '{}'                               │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                       customers                                  │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ org_id          UUID FK → organizations.id NOT NULL              │
-│ stripe_customer_id VARCHAR(255)                                  │
-│ email           VARCHAR(255) NOT NULL                            │
-│ name            VARCHAR(200)                                     │
-│ phone           VARCHAR(20)                                      │
-│ metadata        JSONB DEFAULT '{}'                               │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│ updated_at      TIMESTAMPTZ DEFAULT NOW()                        │
-│                                                                  │
-│ UNIQUE(org_id, email)                                            │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                    stripe_webhooks                               │
-├─────────────────────────────────────────────────────────────────┤
-│ id              UUID PK DEFAULT gen_random_uuid()                │
-│ stripe_event_id VARCHAR(255) UNIQUE NOT NULL                     │
-│ event_type      VARCHAR(100) NOT NULL                            │
-│ org_id          UUID FK → organizations.id                       │
-│ payload         JSONB NOT NULL                                   │
-│ processed       BOOLEAN DEFAULT FALSE                            │
+│ id              UUID PK                                          │
+│ stripe_event_id VARCHAR(255) UNIQUE                              │
+│ type            VARCHAR(255)                                     │
+│ processed       BOOLEAN                                          │
+│ payload         JSONB                                            │
+│ error           TEXT                                             │
+│ created_at      TIMESTAMPTZ                                      │
 │ processed_at    TIMESTAMPTZ                                      │
-│ error_message   TEXT                                             │
-│ retry_count     INTEGER DEFAULT 0                                │
-│ created_at      TIMESTAMPTZ DEFAULT NOW()                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Enums
 
 ```sql
-CREATE TYPE stripe_account_type AS ENUM ('express', 'standard', 'custom');
-
-CREATE TYPE payment_status AS ENUM (
-  'pending',
-  'processing',
-  'requires_action',
-  'requires_capture',
-  'succeeded',
-  'failed',
-  'canceled'
-);
-
-CREATE TYPE refund_status AS ENUM (
-  'pending',
-  'succeeded',
-  'failed',
-  'canceled'
-);
-
-CREATE TYPE refund_reason AS ENUM (
-  'duplicate',
-  'fraudulent',
-  'requested_by_customer',
-  'event_canceled',
-  'other'
+CREATE TYPE account_status AS ENUM (
+  'pending',      -- Account created, onboarding not started
+  'onboarding',   -- Onboarding in progress
+  'active',       -- Fully verified and operational
+  'restricted',   -- Limited functionality due to issues
+  'disabled'      -- Account disabled
 );
 
 CREATE TYPE payout_status AS ENUM (
@@ -197,244 +86,382 @@ CREATE TYPE payout_status AS ENUM (
   'failed',
   'canceled'
 );
+
+CREATE TYPE transaction_type AS ENUM (
+  'charge',       -- Customer payment
+  'refund',       -- Refund to customer
+  'transfer',     -- Transfer to connected account
+  'payout',       -- Payout to bank account
+  'fee',          -- Platform fee
+  'adjustment'    -- Manual adjustment
+);
+
+CREATE TYPE transaction_status AS ENUM (
+  'pending',
+  'succeeded',
+  'failed',
+  'refunded',
+  'partially_refunded',
+  'disputed'
+);
 ```
 
 ## Tables
 
 ### stripe_accounts
 
-Stripe Connect account details.
+Connected Stripe Express accounts for organizations.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PK | Internal ID |
-| org_id | UUID | FK, UNIQUE, NOT NULL | Organization reference |
+| id | UUID | PK, DEFAULT gen_random_uuid() | Internal account ID |
+| org_id | UUID | FK → organizations.id, UNIQUE | Organization this account belongs to |
 | stripe_account_id | VARCHAR(255) | UNIQUE, NOT NULL | Stripe account ID (acct_xxx) |
-| account_type | stripe_account_type | DEFAULT 'express' | Account type |
+| status | account_status | DEFAULT 'pending' | Current account status |
+| type | VARCHAR(50) | DEFAULT 'express' | Account type (always 'express') |
 | charges_enabled | BOOLEAN | DEFAULT FALSE | Can accept charges |
 | payouts_enabled | BOOLEAN | DEFAULT FALSE | Can receive payouts |
-| details_submitted | BOOLEAN | DEFAULT FALSE | Onboarding complete |
-| business_type | VARCHAR(50) | | individual/company |
-| country | VARCHAR(2) | | Account country |
+| details_submitted | BOOLEAN | DEFAULT FALSE | Onboarding completed |
+| onboarding_url | TEXT | | Current onboarding link (temporary) |
+| dashboard_url | TEXT | | Express dashboard login link |
+| country | VARCHAR(2) | DEFAULT 'US' | Account country code |
 | default_currency | VARCHAR(3) | DEFAULT 'usd' | Default currency |
-| capabilities | JSONB | DEFAULT '{}' | Account capabilities |
-| requirements | JSONB | DEFAULT '{}' | Outstanding requirements |
-| metadata | JSONB | DEFAULT '{}' | Additional data |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation time |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| business_type | VARCHAR(50) | | 'individual' or 'company' |
+| business_name | VARCHAR(255) | | Displayed business name |
+| metadata | JSONB | DEFAULT '{}' | Additional Stripe account data |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | When account was created |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update time |
 
-### payments
+### stripe_payouts
 
-All payment transactions.
+Payout records for connected accounts.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PK | Payment ID |
-| org_id | UUID | FK, NOT NULL | Organization |
-| stripe_payment_intent_id | VARCHAR(255) | UNIQUE | Stripe PaymentIntent ID |
-| stripe_charge_id | VARCHAR(255) | | Stripe Charge ID |
-| amount | INTEGER | NOT NULL | Total amount in cents |
+| id | UUID | PK, DEFAULT gen_random_uuid() | Internal payout ID |
+| stripe_account_id | UUID | FK → stripe_accounts.id | Connected account |
+| stripe_payout_id | VARCHAR(255) | UNIQUE, NOT NULL | Stripe payout ID (po_xxx) |
+| amount | INTEGER | NOT NULL | Amount in cents |
 | currency | VARCHAR(3) | DEFAULT 'usd' | Currency code |
-| platform_fee | INTEGER | NOT NULL | Platform fee in cents |
-| net_amount | INTEGER | NOT NULL | Amount after fees |
-| status | payment_status | DEFAULT 'pending' | Payment status |
-| payment_method_type | VARCHAR(50) | | card, bank_transfer, etc. |
-| customer_email | VARCHAR(255) | | Customer email |
-| customer_name | VARCHAR(200) | | Customer name |
-| description | TEXT | | Payment description |
-| metadata | JSONB | DEFAULT '{}' | Ticket IDs, etc. |
-| failure_code | VARCHAR(100) | | Stripe failure code |
-| failure_message | TEXT | | Failure details |
-| refunded_amount | INTEGER | DEFAULT 0 | Total refunded |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation time |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| status | payout_status | DEFAULT 'pending' | Payout status |
+| arrival_date | DATE | | Expected arrival date |
+| method | VARCHAR(50) | | 'standard' or 'instant' |
+| destination_type | VARCHAR(50) | | 'bank_account' or 'card' |
+| destination_last4 | VARCHAR(4) | | Last 4 of destination |
+| failure_code | VARCHAR(100) | | Failure reason code |
+| failure_message | TEXT | | Failure description |
+| metadata | JSONB | DEFAULT '{}' | Additional payout data |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | When payout was initiated |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update time |
 
-### refunds
+### stripe_transactions
 
-Refund transactions.
+All financial transactions through the platform.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PK | Refund ID |
-| payment_id | UUID | FK, NOT NULL | Original payment |
-| org_id | UUID | FK, NOT NULL | Organization |
-| stripe_refund_id | VARCHAR(255) | UNIQUE | Stripe Refund ID |
-| amount | INTEGER | NOT NULL | Refund amount in cents |
-| reason | refund_reason | | Refund reason |
-| status | refund_status | DEFAULT 'pending' | Refund status |
-| refunded_by | UUID | FK | Who issued refund |
-| notes | TEXT | | Internal notes |
-| metadata | JSONB | DEFAULT '{}' | Additional data |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation time |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| id | UUID | PK, DEFAULT gen_random_uuid() | Internal transaction ID |
+| stripe_account_id | UUID | FK → stripe_accounts.id | Connected account |
+| stripe_payment_intent_id | VARCHAR(255) | | Stripe PaymentIntent ID (pi_xxx) |
+| stripe_charge_id | VARCHAR(255) | | Stripe Charge ID (ch_xxx) |
+| stripe_refund_id | VARCHAR(255) | | Stripe Refund ID (re_xxx) |
+| type | transaction_type | NOT NULL | Transaction type |
+| status | transaction_status | DEFAULT 'pending' | Transaction status |
+| amount | INTEGER | NOT NULL | Gross amount in cents |
+| currency | VARCHAR(3) | DEFAULT 'usd' | Currency code |
+| platform_fee | INTEGER | DEFAULT 0 | Platform fee in cents |
+| stripe_fee | INTEGER | DEFAULT 0 | Stripe processing fee in cents |
+| net_amount | INTEGER | NOT NULL | Net amount to account |
+| description | TEXT | | Transaction description |
+| customer_email | VARCHAR(255) | | Customer email if available |
+| order_id | UUID | | Reference to order (F8 tickets) |
+| metadata | JSONB | DEFAULT '{}' | Additional transaction data |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | Transaction time |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update time |
 
-### customers
+### stripe_webhooks
 
-Customer records for saved payment methods.
+Webhook event log for idempotency and debugging.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PK | Customer ID |
-| org_id | UUID | FK, NOT NULL | Organization |
-| stripe_customer_id | VARCHAR(255) | | Stripe Customer ID |
-| email | VARCHAR(255) | NOT NULL | Customer email |
-| name | VARCHAR(200) | | Customer name |
-| phone | VARCHAR(20) | | Customer phone |
-| metadata | JSONB | DEFAULT '{}' | Additional data |
-| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation time |
-| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update |
+| id | UUID | PK, DEFAULT gen_random_uuid() | Internal event ID |
+| stripe_event_id | VARCHAR(255) | UNIQUE, NOT NULL | Stripe event ID (evt_xxx) |
+| type | VARCHAR(255) | NOT NULL | Event type (e.g., 'account.updated') |
+| api_version | VARCHAR(50) | | Stripe API version |
+| processed | BOOLEAN | DEFAULT FALSE | Whether event was processed |
+| payload | JSONB | NOT NULL | Full event payload |
+| error | TEXT | | Processing error if failed |
+| attempts | INTEGER | DEFAULT 0 | Processing attempts |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | When event was received |
+| processed_at | TIMESTAMPTZ | | When event was processed |
 
 ## Indexes
 
 ```sql
--- Stripe accounts
-CREATE UNIQUE INDEX stripe_accounts_org_idx ON stripe_accounts(org_id);
-CREATE UNIQUE INDEX stripe_accounts_stripe_idx ON stripe_accounts(stripe_account_id);
+-- stripe_accounts
+CREATE UNIQUE INDEX stripe_accounts_org_id_idx ON stripe_accounts(org_id);
+CREATE UNIQUE INDEX stripe_accounts_stripe_id_idx ON stripe_accounts(stripe_account_id);
+CREATE INDEX stripe_accounts_status_idx ON stripe_accounts(status);
 
--- Payments
-CREATE INDEX payments_org_idx ON payments(org_id);
-CREATE INDEX payments_status_idx ON payments(status);
-CREATE INDEX payments_created_idx ON payments(created_at DESC);
-CREATE INDEX payments_customer_email_idx ON payments(org_id, customer_email);
-CREATE UNIQUE INDEX payments_intent_idx ON payments(stripe_payment_intent_id);
+-- stripe_payouts
+CREATE INDEX stripe_payouts_account_idx ON stripe_payouts(stripe_account_id);
+CREATE INDEX stripe_payouts_status_idx ON stripe_payouts(status);
+CREATE INDEX stripe_payouts_created_idx ON stripe_payouts(created_at DESC);
 
--- Refunds
-CREATE INDEX refunds_payment_idx ON refunds(payment_id);
-CREATE INDEX refunds_org_idx ON refunds(org_id);
+-- stripe_transactions
+CREATE INDEX stripe_transactions_account_idx ON stripe_transactions(stripe_account_id);
+CREATE INDEX stripe_transactions_status_idx ON stripe_transactions(status);
+CREATE INDEX stripe_transactions_type_idx ON stripe_transactions(type);
+CREATE INDEX stripe_transactions_created_idx ON stripe_transactions(created_at DESC);
+CREATE INDEX stripe_transactions_payment_intent_idx ON stripe_transactions(stripe_payment_intent_id);
 
--- Payouts
-CREATE INDEX payouts_org_idx ON payouts(org_id);
-CREATE INDEX payouts_status_idx ON payouts(status);
-
--- Customers
-CREATE UNIQUE INDEX customers_org_email_idx ON customers(org_id, email);
-CREATE INDEX customers_stripe_idx ON customers(stripe_customer_id);
-
--- Webhooks
-CREATE UNIQUE INDEX webhooks_event_idx ON stripe_webhooks(stripe_event_id);
-CREATE INDEX webhooks_unprocessed_idx ON stripe_webhooks(processed, created_at)
-  WHERE processed = FALSE;
+-- stripe_webhooks
+CREATE UNIQUE INDEX stripe_webhooks_event_id_idx ON stripe_webhooks(stripe_event_id);
+CREATE INDEX stripe_webhooks_type_idx ON stripe_webhooks(type);
+CREATE INDEX stripe_webhooks_processed_idx ON stripe_webhooks(processed);
+CREATE INDEX stripe_webhooks_created_idx ON stripe_webhooks(created_at DESC);
 ```
 
 ## RLS Policies
 
 ```sql
--- Payments: Org members with finance role can view
-CREATE POLICY "Finance can view payments"
-  ON payments FOR SELECT
+-- stripe_accounts: Org members can read, owners/admins can manage
+ALTER TABLE stripe_accounts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Org members can view stripe account"
+  ON stripe_accounts FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM org_memberships
-      WHERE org_id = payments.org_id
-        AND user_id = auth.uid()
-        AND role IN ('owner', 'admin', 'finance')
+      WHERE user_id = auth.uid()
+        AND org_id = stripe_accounts.org_id
         AND status = 'active'
     )
   );
 
--- Refunds: Finance can create
-CREATE POLICY "Finance can create refunds"
-  ON refunds FOR INSERT
-  WITH CHECK (
+CREATE POLICY "Org owners/admins can manage stripe account"
+  ON stripe_accounts FOR ALL
+  USING (
     EXISTS (
       SELECT 1 FROM org_memberships
-        WHERE org_id = refunds.org_id
-        AND user_id = auth.uid()
-        AND role IN ('owner', 'admin', 'finance')
+      WHERE user_id = auth.uid()
+        AND org_id = stripe_accounts.org_id
+        AND role IN ('owner', 'admin')
         AND status = 'active'
     )
   );
 
--- Customers: Visible to org members
-CREATE POLICY "Org members can view customers"
-  ON customers FOR SELECT
+CREATE POLICY "Super admins can manage all stripe accounts"
+  ON stripe_accounts FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM org_memberships
-      WHERE org_id = customers.org_id
-        AND user_id = auth.uid()
-        AND status = 'active'
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_super_admin = TRUE
+    )
+  );
+
+-- stripe_payouts: Read-only for org members, super admin full access
+ALTER TABLE stripe_payouts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Org members can view payouts"
+  ON stripe_payouts FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM stripe_accounts sa
+      JOIN org_memberships om ON om.org_id = sa.org_id
+      WHERE sa.id = stripe_payouts.stripe_account_id
+        AND om.user_id = auth.uid()
+        AND om.status = 'active'
+    )
+  );
+
+CREATE POLICY "Super admins can manage all payouts"
+  ON stripe_payouts FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_super_admin = TRUE
+    )
+  );
+
+-- stripe_transactions: Similar to payouts
+ALTER TABLE stripe_transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Org members can view transactions"
+  ON stripe_transactions FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM stripe_accounts sa
+      JOIN org_memberships om ON om.org_id = sa.org_id
+      WHERE sa.id = stripe_transactions.stripe_account_id
+        AND om.user_id = auth.uid()
+        AND om.status = 'active'
+    )
+  );
+
+CREATE POLICY "Super admins can manage all transactions"
+  ON stripe_transactions FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_super_admin = TRUE
+    )
+  );
+
+-- stripe_webhooks: Service role only (processed by API)
+ALTER TABLE stripe_webhooks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Super admins can view webhooks"
+  ON stripe_webhooks FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_super_admin = TRUE
     )
   );
 ```
 
-## Platform Fee Calculation
+## Helper Functions
 
 ```sql
+-- Get org's Stripe account status
+CREATE OR REPLACE FUNCTION get_org_stripe_status(p_org_id UUID)
+RETURNS TABLE (
+  is_connected BOOLEAN,
+  status account_status,
+  charges_enabled BOOLEAN,
+  payouts_enabled BOOLEAN,
+  needs_onboarding BOOLEAN
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    sa.id IS NOT NULL AS is_connected,
+    sa.status,
+    sa.charges_enabled,
+    sa.payouts_enabled,
+    (sa.status IS NULL OR sa.status IN ('pending', 'onboarding')) AS needs_onboarding
+  FROM organizations o
+  LEFT JOIN stripe_accounts sa ON sa.org_id = o.id
+  WHERE o.id = p_org_id;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- Calculate platform fees for a transaction
 CREATE OR REPLACE FUNCTION calculate_platform_fee(
   p_amount INTEGER,
-  p_org_id UUID DEFAULT NULL
+  p_fee_percent NUMERIC DEFAULT 2.5
 )
 RETURNS INTEGER AS $$
-DECLARE
-  v_fee_percent DECIMAL;
-  v_fee_fixed INTEGER;
 BEGIN
-  -- Default: 2.9% + 30¢
-  v_fee_percent := 0.029;
-  v_fee_fixed := 30;
+  -- Fee is percentage of amount, rounded to nearest cent
+  RETURN ROUND(p_amount * (p_fee_percent / 100.0))::INTEGER;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
 
-  -- Could check for special org pricing here
-  -- SELECT custom_fee_percent INTO v_fee_percent FROM org_pricing WHERE org_id = p_org_id;
+-- Get transaction summary for an account
+CREATE OR REPLACE FUNCTION get_transaction_summary(
+  p_stripe_account_id UUID,
+  p_start_date DATE DEFAULT NULL,
+  p_end_date DATE DEFAULT NULL
+)
+RETURNS TABLE (
+  total_charges INTEGER,
+  total_refunds INTEGER,
+  total_fees INTEGER,
+  net_revenue INTEGER,
+  transaction_count BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    COALESCE(SUM(CASE WHEN type = 'charge' AND status = 'succeeded' THEN amount ELSE 0 END), 0)::INTEGER AS total_charges,
+    COALESCE(SUM(CASE WHEN type = 'refund' THEN amount ELSE 0 END), 0)::INTEGER AS total_refunds,
+    COALESCE(SUM(platform_fee + stripe_fee), 0)::INTEGER AS total_fees,
+    COALESCE(SUM(CASE WHEN status = 'succeeded' THEN net_amount ELSE 0 END), 0)::INTEGER AS net_revenue,
+    COUNT(*)::BIGINT AS transaction_count
+  FROM stripe_transactions
+  WHERE stripe_account_id = p_stripe_account_id
+    AND (p_start_date IS NULL OR created_at >= p_start_date)
+    AND (p_end_date IS NULL OR created_at <= p_end_date);
+END;
+$$ LANGUAGE plpgsql STABLE;
+```
 
-  RETURN CEIL(p_amount * v_fee_percent) + v_fee_fixed;
+## Triggers
+
+```sql
+-- Update updated_at on stripe_accounts changes
+CREATE TRIGGER update_stripe_accounts_updated_at
+  BEFORE UPDATE ON stripe_accounts
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Update updated_at on stripe_payouts changes
+CREATE TRIGGER update_stripe_payouts_updated_at
+  BEFORE UPDATE ON stripe_payouts
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Update updated_at on stripe_transactions changes
+CREATE TRIGGER update_stripe_transactions_updated_at
+  BEFORE UPDATE ON stripe_transactions
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Calculate net_amount before insert/update
+CREATE OR REPLACE FUNCTION calculate_transaction_net()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.net_amount := NEW.amount - COALESCE(NEW.platform_fee, 0) - COALESCE(NEW.stripe_fee, 0);
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER calculate_transaction_net_trigger
+  BEFORE INSERT OR UPDATE ON stripe_transactions
+  FOR EACH ROW
+  EXECUTE FUNCTION calculate_transaction_net();
 ```
 
-## Webhook Event Handlers
+## Stripe Webhook Events to Handle
 
-| Event | Handler |
-|-------|---------|
-| `account.updated` | Update stripe_accounts |
-| `payment_intent.succeeded` | Update payments, trigger ticket delivery |
-| `payment_intent.payment_failed` | Update payments, notify |
-| `charge.refunded` | Create/update refunds |
-| `payout.paid` | Update payouts |
-| `payout.failed` | Update payouts, notify |
-
-## Business Rules
-
-1. **Platform Fee**: Default 2.9% + 30¢, configurable per org.
-
-2. **Refund Window**: Refunds allowed within 30 days of purchase.
-
-3. **Partial Refunds**: Multiple partial refunds allowed up to original amount.
-
-4. **Payout Schedule**: Automatic daily payouts once account is verified.
-
-5. **Currency**: All amounts stored in smallest unit (cents).
-
-6. **Idempotency**: Use stripe_payment_intent_id for idempotent operations.
-
-## Connect Onboarding Flow
-
-```
-1. Org clicks "Connect Stripe"
-2. Create Express account via API
-3. Store stripe_account_id in organizations
-4. Create stripe_accounts record
-5. Generate onboarding link
-6. Redirect user to Stripe
-7. Stripe redirects back with status
-8. Webhook updates account status
-9. charges_enabled = TRUE when ready
-```
+| Event Type | Description | Action |
+|------------|-------------|--------|
+| `account.updated` | Connected account info changed | Update stripe_accounts |
+| `account.application.deauthorized` | Account disconnected | Set status to 'disabled' |
+| `payout.created` | Payout initiated | Create stripe_payouts record |
+| `payout.updated` | Payout status changed | Update stripe_payouts |
+| `payout.paid` | Payout completed | Update status to 'paid' |
+| `payout.failed` | Payout failed | Update status, log error |
+| `payment_intent.succeeded` | Payment completed | Create transaction record |
+| `payment_intent.payment_failed` | Payment failed | Log failed transaction |
+| `charge.refunded` | Refund processed | Create refund transaction |
+| `charge.dispute.created` | Dispute opened | Flag transaction as disputed |
 
 ## Dependencies
 
-- **F2 Organizations**: stripe_account_id storage
+- F2: Organizations (org_id reference)
+- External: Stripe API (stripe.com)
+
+## Environment Variables
+
+```bash
+STRIPE_SECRET_KEY=sk_test_xxx          # Stripe secret key
+STRIPE_PUBLISHABLE_KEY=pk_test_xxx     # Stripe publishable key
+STRIPE_WEBHOOK_SECRET=whsec_xxx        # Webhook signing secret
+STRIPE_PLATFORM_FEE_PERCENT=2.5        # Platform fee percentage
+```
 
 ## Migration Order
 
 1. Create enums
 2. Create stripe_accounts table
-3. Create customers table
-4. Create payments table
-5. Create refunds table
-6. Create payouts table
-7. Create payment_methods table
-8. Create stripe_webhooks table
-9. Create indexes
-10. Create RLS policies
-11. Create helper functions
+3. Create stripe_payouts table
+4. Create stripe_transactions table
+5. Create stripe_webhooks table
+6. Create indexes
+7. Create RLS policies
+8. Create helper functions
+9. Create triggers

@@ -181,7 +181,7 @@ export class DocumentsService {
 
   private async verifyStaffAccess(orgId: OrgId, staffId: string) {
     const { data, error } = await this.supabase.adminClient
-      .from('org_members')
+      .from('org_memberships')
       .select('id')
       .eq('id', staffId)
       .eq('org_id', orgId)

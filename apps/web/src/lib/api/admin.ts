@@ -406,3 +406,21 @@ export async function updateRateLimit(ruleId: string, data: { enabled?: boolean;
 export async function deleteRateLimit(ruleId: string) {
   return api.delete<{ message: string; id: string }>(`/admin/rate-limits/${ruleId}`);
 }
+
+// Platform Fee
+export interface OrgPlatformFee {
+  org_id: string;
+  org_name: string;
+  platform_fee_percent: number;
+  is_custom: boolean;
+  custom_fee: number | null;
+  global_default: number;
+}
+
+export async function getOrgPlatformFee(orgId: string) {
+  return api.get<OrgPlatformFee>(`/admin/organizations/${orgId}/platform-fee`);
+}
+
+export async function setOrgPlatformFee(orgId: string, data: { platform_fee_percent: number | null }) {
+  return api.patch<OrgPlatformFee>(`/admin/organizations/${orgId}/platform-fee`, data);
+}
