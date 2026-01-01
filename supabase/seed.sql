@@ -349,13 +349,30 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================================
 
 -- Feature flags with various states (using valid hex UUIDs: 1f = feature flags)
+-- Tier mapping: basic (included), pro (upgrade), enterprise (premium)
 INSERT INTO public.feature_flags (id, key, name, description, enabled, rollout_percentage, org_ids, user_ids, metadata)
 VALUES
+  -- Legacy/experimental flags
   ('1f000000-0000-0000-0000-000000000001', 'virtual_queue_v2', 'Virtual Queue V2', 'New virtual queue system with SMS notifications and improved UX', FALSE, 25, '{}', '{}', '{"release_date": "2025-Q1", "ticket": "HAUNT-1234"}'),
   ('1f000000-0000-0000-0000-000000000002', 'new_checkout_flow', 'Streamlined Checkout', 'One-page checkout experience with Apple Pay support', TRUE, 0, '{}', '{}', '{"a_b_test": true}'),
   ('1f000000-0000-0000-0000-000000000003', 'staff_mobile_app', 'Staff Mobile App', 'Mobile app for staff to clock in/out and view schedules', FALSE, 0, ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[], '{}', '{"beta_org": true}'),
   ('1f000000-0000-0000-0000-000000000004', 'advanced_analytics', 'Advanced Analytics Dashboard', 'Enhanced analytics with real-time metrics and forecasting', FALSE, 50, '{}', '{}', '{"premium_feature": true}'),
-  ('1f000000-0000-0000-0000-000000000005', 'ai_scheduling', 'AI-Powered Scheduling', 'Machine learning powered staff scheduling optimization', FALSE, 0, '{}', ARRAY['a0000000-0000-0000-0000-000000000002']::UUID[], '{"experimental": true}')
+  ('1f000000-0000-0000-0000-000000000005', 'ai_scheduling', 'AI-Powered Scheduling', 'Machine learning powered staff scheduling optimization', FALSE, 0, '{}', ARRAY['a0000000-0000-0000-0000-000000000002']::UUID[], '{"experimental": true}'),
+
+  -- Module flags (F7-F14)
+  -- Basic tier: ticketing, checkin, storefront (always on for all orgs)
+  ('1f000000-0000-0000-0000-000000000006', 'ticketing', 'Ticketing Module', 'Core ticketing functionality including ticket types, orders, and promo codes (F8)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F8", "module": true}'),
+  ('1f000000-0000-0000-0000-000000000007', 'checkin', 'Check-In Module', 'Guest check-in with barcode scanning, capacity tracking, and waivers (F9)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F9", "module": true}'),
+
+  -- Pro tier: scheduling, inventory, analytics_pro
+  ('1f000000-0000-0000-0000-000000000008', 'scheduling', 'Scheduling Module', 'Staff scheduling with availability, shift templates, and swap requests (F7)', TRUE, 100, '{}', '{}', '{"tier": "pro", "feature": "F7", "module": true}'),
+  ('1f000000-0000-0000-0000-000000000009', 'inventory', 'Inventory Module', 'Inventory tracking with categories, checkouts, and low stock alerts (F10)', TRUE, 100, '{}', '{}', '{"tier": "pro", "feature": "F10", "module": true}'),
+  ('1f000000-0000-0000-0000-00000000000a', 'analytics_pro', 'Analytics Pro', 'Advanced analytics with custom reports, exports, and forecasting (F13)', FALSE, 0, '{}', '{}', '{"tier": "pro", "feature": "F13", "module": true}'),
+
+  -- Enterprise tier: virtual_queue, sms_notifications, custom_domains
+  ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue', 'Real-time virtual queue with position tracking and notifications (F11)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11", "module": true}'),
+  ('1f000000-0000-0000-0000-00000000000c', 'sms_notifications', 'SMS Notifications', 'SMS delivery for queue alerts, shift reminders, and guest communications (F11/F12)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11,F12", "has_usage_cost": true}'),
+  ('1f000000-0000-0000-0000-00000000000d', 'custom_domains', 'Custom Domains', 'Custom domain support for public storefronts with SSL provisioning (F14)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F14", "has_infra_cost": true}')
 ON CONFLICT (id) DO NOTHING;
 
 -- Platform announcements (using valid hex UUIDs: 2a = announcements)
