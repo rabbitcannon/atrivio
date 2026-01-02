@@ -534,12 +534,14 @@ export class TimeService {
           id,
           name
         ),
-        staff:org_memberships!staff_id (
-          user_id,
-          profiles:user_id (
-            first_name,
-            last_name,
-            avatar_url
+        staff:staff_profiles!staff_id (
+          membership:org_memberships!staff_profiles_id_fkey (
+            user_id,
+            profiles:user_id (
+              first_name,
+              last_name,
+              avatar_url
+            )
           )
         )
       `)
@@ -558,7 +560,7 @@ export class TimeService {
     const activeStaff = (data || []).map((entry: any) => {
       const clockIn = new Date(entry.clock_in);
       const durationMinutes = Math.floor((now.getTime() - clockIn.getTime()) / (1000 * 60));
-      const profile = entry.staff?.profiles;
+      const profile = entry.staff?.membership?.profiles;
 
       return {
         entry_id: entry.id,

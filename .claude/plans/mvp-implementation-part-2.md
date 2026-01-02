@@ -2,17 +2,17 @@
 
 **Created Date**: 2025-12-31
 **Last Updated**: 2026-01-02
-**Current Session**: F7b Scheduling API Complete
-**Overall Progress**: 35% Complete
+**Current Session**: F7b Scheduling Complete
+**Overall Progress**: 50% Complete
 
 > **Note**: Part 2 covers Operations features (F7-F10). Requires Part 1 (MVP F1-F6) to be complete.
 
 ## Quick Start for Next Session
 
 **Prerequisites**: MVP (F1-F6) must be complete before starting Part 2 ✅
-**Last Completed**: F7b Scheduling API Module
-**Currently Working On**: F7b Scheduling Frontend Pages
-**Next Action**: Create frontend scheduling pages in apps/web/src/app/(dashboard)/[orgId]/schedule/
+**Last Completed**: F7b Scheduling (Database, API, Frontend)
+**Currently Working On**: Ready for F8 Ticketing or F10 Inventory
+**Next Action**: Choose next feature - F8 Ticketing (depends on F6 Payments) or F10 Inventory (independent)
 
 ### Agent Assignments by Phase
 - **Phase 7 (Database)**: backend-architect
@@ -26,9 +26,9 @@
 
 | Phase | Name | Status | Features | Notes |
 |-------|------|--------|----------|-------|
-| 7 | Operations Database | In Progress | F7-F10 | F7 Time Tracking tables exist, ~25 new tables total |
-| 8 | Operations API | In Progress | F7-F10 | F7 Time Tracking API complete, 4 modules total |
-| 9 | Operations Frontend | In Progress | F7-F10 | F7 Time Clock UI complete |
+| 7 | Operations Database | In Progress | F7-F10 | F7 complete (Time + Scheduling), F8-F10 pending |
+| 8 | Operations API | In Progress | F7-F10 | F7 complete, F8-F10 pending |
+| 9 | Operations Frontend | In Progress | F7-F10 | F7 complete, F8-F10 pending |
 | 10 | Operations Testing | Not Started | F7-F10 | E2E tests for operations |
 
 **Status Legend**: Not Started | In Progress | Complete | Blocked | On Hold
@@ -40,12 +40,14 @@
 | Feature | ERD | Migration | Seed Data | API | Frontend | Tests | Status |
 |---------|-----|-----------|-----------|-----|----------|-------|--------|
 | **F7a** Time Tracking | ✅ | ✅ | ✅ | ✅ | ✅ | Not Started | **Complete** |
-| **F7b** Scheduling | ✅ | ✅ | ✅ | ✅ | Not Started | Not Started | **In Progress** |
+| **F7b** Scheduling | ✅ | ✅ | ✅ | ✅ | ✅ | Not Started | **Complete** |
 | **F8** Ticketing | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F9** Check-In | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F10** Inventory | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 
-### F7b Scheduling - Database Complete
+### F7b Scheduling - Complete ✅
+
+#### Database
 **Migration**: `supabase/migrations/20260102000001_f7b_scheduling.sql`
 - **Tables**: schedule_roles, schedule_periods, shift_templates, staff_availability, schedules, shift_swaps, schedule_conflicts
 - **Enums**: schedule_status, availability_type, swap_type, swap_status, period_status, conflict_type
@@ -60,7 +62,7 @@
 - 10 schedules (7 assigned, 3 unassigned)
 - 1 shift swap request (pending)
 
-### F7b Scheduling - API Complete
+#### API
 **Module**: `apps/api/src/modules/scheduling/`
 - **Controllers**: SchedulingController, AvailabilityController, TemplatesController, SwapsController
 - **Services**: SchedulingService, AvailabilityService, TemplatesService, SwapsService
@@ -78,6 +80,36 @@
 - `POST /organizations/:orgId/attractions/:attractionId/schedules/generate` - Generate from templates
 - `GET/POST /organizations/:orgId/swap-requests` - Swap request management
 - `POST /organizations/:orgId/schedules/:scheduleId/swap-request` - Request swap
+
+#### Frontend - Manager Views
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/[orgId]/schedule` | Schedule Dashboard | ✅ |
+| `/[orgId]/schedule/calendar` | Week/Day Calendar View | ✅ |
+| `/[orgId]/schedule/shifts` | Shifts List (Table View) | ✅ |
+| `/[orgId]/schedule/templates` | Shift Templates Management | ✅ |
+| `/[orgId]/schedule/availability` | Team Availability Matrix | ✅ |
+| `/[orgId]/schedule/swaps` | Swap Request Approvals | ✅ |
+| `/[orgId]/schedule/roles` | Schedule Role Management | ✅ |
+
+#### Frontend - Staff Self-Service
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/[orgId]/time/schedule` | My Schedule View | ✅ |
+| `/[orgId]/time/availability` | My Availability | ✅ |
+| `/[orgId]/time/swaps` | My Swap Requests | ✅ |
+
+#### Key Components
+- `apps/web/src/components/features/scheduling/schedule-table.tsx`
+- `apps/web/src/components/features/scheduling/schedule-week-view.tsx`
+- `apps/web/src/components/features/scheduling/shift-form-dialog.tsx`
+- `apps/web/src/components/features/scheduling/availability-matrix.tsx`
+- `apps/web/src/components/features/scheduling/generate-schedules-dialog.tsx`
+
+#### Bug Fixes Applied
+- Fixed TenantGuard to support org slugs (not just UUIDs) - `apps/api/src/core/tenancy/guards/tenant.guard.ts`
+- Fixed SwapsService column references (`requesting_staff_id` → `requested_by`)
+- Added FK hints for PostgREST ambiguous relationships
 
 ### F7a Time Tracking - Completed Features
 - **Quick Time Page**: `/:orgSlug/time` - Mobile-first clock in/out
@@ -416,8 +448,10 @@ Comprehensive seed data for operations features enables:
 | Module | Endpoints | Auth | Status |
 |--------|-----------|------|--------|
 | Time Tracking | `/api/v1/organizations/:orgId/time/*` | JWT + Roles | ✅ Complete |
-| Scheduling | `/api/v1/organizations/:orgId/schedules/*` | JWT + Roles | Not Started |
-| Availability | `/api/v1/organizations/:orgId/staff/:id/availability/*` | JWT + Roles | Not Started |
+| Scheduling | `/api/v1/organizations/:orgId/schedules/*` | JWT + Roles | ✅ Complete |
+| Availability | `/api/v1/organizations/:orgId/staff/:id/availability/*` | JWT + Roles | ✅ Complete |
+| Templates | `/api/v1/organizations/:orgId/shift-templates/*` | JWT + Roles | ✅ Complete |
+| Swaps | `/api/v1/organizations/:orgId/swap-requests/*` | JWT + Roles | ✅ Complete |
 | Ticketing | `/api/v1/organizations/:orgId/tickets/*` | JWT + Roles | Not Started |
 | Orders | `/api/v1/organizations/:orgId/orders/*` | JWT + Roles | Not Started |
 | Check-In | `/api/v1/organizations/:orgId/checkin/*` | JWT + Roles | Not Started |
