@@ -4,6 +4,7 @@ import {
   type ExecutionContext,
   type CallHandler,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { TenancyService } from '../tenancy.service.js';
@@ -11,6 +12,7 @@ import type { OrgId, UserId } from '@haunt/shared';
 
 /**
  * Interceptor that resolves tenant context from :orgId route parameter
+ * Accepts both UUID and slug for organization identification
  *
  * Usage: Apply to controllers/routes that need org context
  *
@@ -29,7 +31,7 @@ export class TenantInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const orgId = request.params.orgId as OrgId;
+    const orgIdentifier = request.params.orgId as string;
 
     if (!user) {
       throw new ForbiddenException({
@@ -38,12 +40,23 @@ export class TenantInterceptor implements NestInterceptor {
       });
     }
 
-    if (!orgId) {
+    if (!orgIdentifier) {
       throw new ForbiddenException({
         code: 'ORG_ID_REQUIRED',
         message: 'Organization ID is required',
       });
     }
+
+    // Resolve org from UUID or slug
+    const org = await this.tenancyService.resolveOrg(orgIdentifier);
+    if (!org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    const orgId = org.id;
 
     // Check if user is super admin (bypasses org membership check)
     const isSuperAdmin = await this.tenancyService.isSuperAdmin(
@@ -52,27 +65,17 @@ export class TenantInterceptor implements NestInterceptor {
 
     if (isSuperAdmin) {
       // Super admins get full access with owner permissions
-      const { data: org } = await (
-        this.tenancyService as any
-      ).supabase.adminClient
-        .from('organizations')
-        .select('id, name, slug')
-        .eq('id', orgId)
-        .single();
-
-      if (org) {
-        request.tenant = {
-          orgId: org.id as OrgId,
-          orgName: org.name,
-          orgSlug: org.slug,
-          userId: user.id as UserId,
-          role: 'owner' as const,
-          isOwner: false,
-          isSuperAdmin: true,
-          permissions: ['*'], // Super admin has all permissions
-        };
-        return next.handle();
-      }
+      request.tenant = {
+        orgId: org.id,
+        orgName: org.name,
+        orgSlug: org.slug,
+        userId: user.id as UserId,
+        role: 'owner' as const,
+        isOwner: false,
+        isSuperAdmin: true,
+        permissions: ['*'], // Super admin has all permissions
+      };
+      return next.handle();
     }
 
     // Resolve tenant context for regular users

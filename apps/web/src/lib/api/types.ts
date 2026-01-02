@@ -336,3 +336,131 @@ export interface TimeEntriesResponse {
     pending_approval: number;
   };
 }
+
+// ============================================================================
+// Scheduling Types
+// ============================================================================
+
+export type ScheduleStatus =
+  | 'draft'
+  | 'scheduled'
+  | 'published'
+  | 'confirmed'
+  | 'checked_in'
+  | 'completed'
+  | 'no_show'
+  | 'canceled';
+
+export type AvailabilityType =
+  | 'available'
+  | 'unavailable'
+  | 'preferred'
+  | 'time_off_approved'
+  | 'time_off_pending';
+
+export type SwapType = 'swap' | 'drop' | 'pickup';
+export type SwapStatus = 'pending' | 'approved' | 'rejected' | 'canceled' | 'expired';
+
+export interface ScheduleRole {
+  id: string;
+  name: string;
+  color: string;
+  description: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface Schedule {
+  id: string;
+  org_id: string;
+  attraction_id: string;
+  staff_id: string | null;
+  role_id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  status: ScheduleStatus;
+  notes: string | null;
+  staff: {
+    id: string;
+    org_memberships: {
+      user_id: string;
+      profiles: {
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+    };
+  } | null;
+  role: ScheduleRole;
+  attraction: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface ShiftTemplate {
+  id: string;
+  org_id: string;
+  attraction_id: string;
+  name: string;
+  role_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  staff_count: number;
+  is_active: boolean;
+  notes: string | null;
+  role: ScheduleRole;
+  attraction: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface StaffAvailability {
+  id: string;
+  staff_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  availability_type: AvailabilityType;
+  effective_from: string | null;
+  effective_to: string | null;
+  notes: string | null;
+}
+
+export interface ShiftSwapRequest {
+  id: string;
+  org_id: string;
+  schedule_id: string;
+  swap_type: SwapType;
+  status: SwapStatus;
+  reason: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  schedule: Schedule;
+  target_schedule: Schedule | null;
+  requesting_staff: {
+    id: string;
+    org_memberships: {
+      user_id: string;
+      profiles: {
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+    };
+  };
+  target_staff: {
+    id: string;
+    org_memberships: {
+      user_id: string;
+      profiles: {
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+    };
+  } | null;
+}

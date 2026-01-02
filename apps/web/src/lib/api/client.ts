@@ -106,6 +106,7 @@ export type {
   OrganizationMembersResponse,
   AttractionsResponse,
   Attraction,
+  AttractionListItem,
   StaffResponse,
   StaffMember,
   StaffSkill,
@@ -663,4 +664,384 @@ export async function selfClockOut(
  */
 export async function getActiveClockedIn(orgId: string) {
   return api.get<{ data: ActiveStaffEntry[]; count: number }>(`/organizations/${orgId}/time/active`);
+}
+
+// ============================================================================
+// Scheduling API (Client-side)
+// ============================================================================
+
+import type {
+  Schedule,
+  ScheduleRole,
+  ScheduleStatus,
+  ShiftTemplate,
+  StaffAvailability,
+  ShiftSwapRequest,
+  SwapStatus,
+  AvailabilityType,
+} from './types';
+
+export type {
+  Schedule,
+  ScheduleRole,
+  ScheduleStatus,
+  ShiftTemplate,
+  StaffAvailability,
+  ShiftSwapRequest,
+  SwapStatus,
+  AvailabilityType,
+};
+
+/**
+ * Get schedule roles for an organization (client-side)
+ */
+export async function getScheduleRoles(orgId: string) {
+  return api.get<ScheduleRole[]>(`/organizations/${orgId}/schedule-roles`);
+}
+
+/**
+ * Get schedules for an attraction (client-side)
+ */
+export async function getSchedules(
+  orgId: string,
+  attractionId: string,
+  filters?: {
+    staffId?: string;
+    roleId?: string;
+    status?: ScheduleStatus;
+    startDate?: string;
+    endDate?: string;
+    includeUnassigned?: boolean;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.staffId) params.set('staffId', filters.staffId);
+  if (filters?.roleId) params.set('roleId', filters.roleId);
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.startDate) params.set('startDate', filters.startDate);
+  if (filters?.endDate) params.set('endDate', filters.endDate);
+  if (filters?.includeUnassigned) params.set('includeUnassigned', 'true');
+  const query = params.toString();
+  return api.get<Schedule[]>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create a schedule (client-side)
+ */
+export async function createSchedule(
+  orgId: string,
+  attractionId: string,
+  data: {
+    roleId: string;
+    shiftDate: string;
+    startTime: string;
+    endTime: string;
+    staffId?: string;
+    periodId?: string;
+    notes?: string;
+  }
+) {
+  return api.post<Schedule>(`/organizations/${orgId}/attractions/${attractionId}/schedules`, data);
+}
+
+/**
+ * Update a schedule (client-side)
+ */
+export async function updateSchedule(
+  orgId: string,
+  scheduleId: string,
+  data: {
+    staffId?: string;
+    roleId?: string;
+    shiftDate?: string;
+    startTime?: string;
+    endTime?: string;
+    status?: ScheduleStatus;
+    notes?: string;
+  }
+) {
+  return api.patch<Schedule>(`/organizations/${orgId}/schedules/${scheduleId}`, data);
+}
+
+/**
+ * Delete a schedule (client-side)
+ */
+export async function deleteSchedule(orgId: string, scheduleId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/schedules/${scheduleId}`);
+}
+
+/**
+ * Publish schedules within a date range (client-side)
+ */
+export async function publishSchedules(
+  orgId: string,
+  attractionId: string,
+  data: {
+    startDate: string;
+    endDate: string;
+    notifyStaff?: boolean;
+  }
+) {
+  return api.post<{ publishedCount: number; schedules: Schedule[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules/publish`,
+    data
+  );
+}
+
+/**
+ * Get my schedules (staff self-service)
+ */
+export async function getMySchedules(
+  orgId: string,
+  filters?: { startDate?: string; endDate?: string }
+) {
+  const params = new URLSearchParams();
+  if (filters?.startDate) params.set('startDate', filters.startDate);
+  if (filters?.endDate) params.set('endDate', filters.endDate);
+  const query = params.toString();
+  return api.get<Schedule[]>(`/organizations/${orgId}/my-schedules${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get unassigned shifts for an attraction (client-side)
+ */
+export async function getUnassignedShifts(
+  orgId: string,
+  attractionId: string,
+  filters?: { startDate?: string; endDate?: string }
+) {
+  const params = new URLSearchParams();
+  if (filters?.startDate) params.set('startDate', filters.startDate);
+  if (filters?.endDate) params.set('endDate', filters.endDate);
+  const query = params.toString();
+  return api.get<Schedule[]>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules/unassigned${query ? `?${query}` : ''}`
+  );
+}
+
+// ============================================================================
+// Shift Templates API (Client-side)
+// ============================================================================
+
+/**
+ * Get shift templates for an attraction (client-side)
+ */
+export async function getShiftTemplates(orgId: string, attractionId: string) {
+  return api.get<ShiftTemplate[]>(
+    `/organizations/${orgId}/attractions/${attractionId}/shift-templates`
+  );
+}
+
+/**
+ * Create a shift template (client-side)
+ */
+export async function createShiftTemplate(
+  orgId: string,
+  attractionId: string,
+  data: {
+    name: string;
+    roleId: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    staffCount?: number;
+    isActive?: boolean;
+    notes?: string;
+  }
+) {
+  return api.post<ShiftTemplate>(
+    `/organizations/${orgId}/attractions/${attractionId}/shift-templates`,
+    data
+  );
+}
+
+/**
+ * Update a shift template (client-side)
+ */
+export async function updateShiftTemplate(
+  orgId: string,
+  templateId: string,
+  data: {
+    name?: string;
+    roleId?: string;
+    dayOfWeek?: number;
+    startTime?: string;
+    endTime?: string;
+    staffCount?: number;
+    isActive?: boolean;
+    notes?: string;
+  }
+) {
+  return api.patch<ShiftTemplate>(`/organizations/${orgId}/shift-templates/${templateId}`, data);
+}
+
+/**
+ * Delete a shift template (client-side)
+ */
+export async function deleteShiftTemplate(orgId: string, templateId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/shift-templates/${templateId}`);
+}
+
+/**
+ * Generate schedules from templates (client-side)
+ */
+export async function generateSchedulesFromTemplates(
+  orgId: string,
+  attractionId: string,
+  data: {
+    startDate: string;
+    endDate: string;
+    templateIds?: string[];
+    asDraft?: boolean;
+  }
+) {
+  return api.post<{ message: string; createdCount: number; schedules: Schedule[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules/generate`,
+    data
+  );
+}
+
+// ============================================================================
+// Staff Availability API (Client-side)
+// ============================================================================
+
+/**
+ * Get staff availability (client-side)
+ */
+export async function getStaffAvailability(orgId: string, staffId: string) {
+  return api.get<StaffAvailability[]>(`/organizations/${orgId}/staff/${staffId}/availability`);
+}
+
+/**
+ * Set recurring availability (client-side)
+ */
+export async function setStaffAvailability(
+  orgId: string,
+  staffId: string,
+  data: {
+    availability: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      availabilityType: 'available' | 'unavailable' | 'preferred';
+    }>;
+  }
+) {
+  return api.put<StaffAvailability[]>(`/organizations/${orgId}/staff/${staffId}/availability`, data);
+}
+
+/**
+ * Request time off (client-side)
+ */
+export async function requestTimeOff(
+  orgId: string,
+  staffId: string,
+  data: { startDate: string; endDate: string; reason?: string }
+) {
+  return api.post<{ message: string; status: string }>(
+    `/organizations/${orgId}/staff/${staffId}/time-off`,
+    data
+  );
+}
+
+/**
+ * Get my availability (staff self-service)
+ */
+export async function getMyAvailability(orgId: string) {
+  return api.get<StaffAvailability[]>(`/organizations/${orgId}/my-availability`);
+}
+
+/**
+ * Set my availability (staff self-service)
+ */
+export async function setMyAvailability(
+  orgId: string,
+  data: {
+    availability: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      availabilityType: 'available' | 'unavailable' | 'preferred';
+    }>;
+  }
+) {
+  return api.put<StaffAvailability[]>(`/organizations/${orgId}/my-availability`, data);
+}
+
+// ============================================================================
+// Shift Swap Requests API (Client-side)
+// ============================================================================
+
+/**
+ * Get swap requests (client-side)
+ */
+export async function getSwapRequests(
+  orgId: string,
+  filters?: { status?: SwapStatus; swapType?: 'swap' | 'drop' | 'pickup' }
+) {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.swapType) params.set('swapType', filters.swapType);
+  const query = params.toString();
+  return api.get<ShiftSwapRequest[]>(
+    `/organizations/${orgId}/swap-requests${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create a swap request (staff self-service)
+ */
+export async function createSwapRequest(
+  orgId: string,
+  scheduleId: string,
+  data: {
+    swapType: 'swap' | 'drop' | 'pickup';
+    targetStaffId?: string;
+    targetScheduleId?: string;
+    reason?: string;
+  }
+) {
+  return api.post<ShiftSwapRequest>(
+    `/organizations/${orgId}/schedules/${scheduleId}/swap-request`,
+    data
+  );
+}
+
+/**
+ * Approve a swap request (client-side)
+ */
+export async function approveSwapRequest(orgId: string, swapId: string, notes?: string) {
+  return api.post<ShiftSwapRequest>(`/organizations/${orgId}/swap-requests/${swapId}/approve`, {
+    notes,
+  });
+}
+
+/**
+ * Reject a swap request (client-side)
+ */
+export async function rejectSwapRequest(orgId: string, swapId: string, reason: string) {
+  return api.post<ShiftSwapRequest>(`/organizations/${orgId}/swap-requests/${swapId}/reject`, {
+    reason,
+  });
+}
+
+/**
+ * Cancel my swap request (staff self-service)
+ */
+export async function cancelSwapRequest(orgId: string, swapId: string) {
+  return api.post<ShiftSwapRequest>(`/organizations/${orgId}/swap-requests/${swapId}/cancel`, {});
+}
+
+/**
+ * Get my swap requests (staff self-service)
+ */
+export async function getMySwapRequests(orgId: string, status?: SwapStatus) {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  const query = params.toString();
+  return api.get<ShiftSwapRequest[]>(
+    `/organizations/${orgId}/my-swap-requests${query ? `?${query}` : ''}`
+  );
 }

@@ -152,6 +152,28 @@ export class TenancyService {
   }
 
   /**
+   * Resolve organization by UUID or slug
+   */
+  async resolveOrg(identifier: string): Promise<{ id: OrgId; name: string; slug: string } | null> {
+    // Check if it's a UUID
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+    const { data } = await this.supabase.adminClient
+      .from('organizations')
+      .select('id, name, slug')
+      .eq(isUUID ? 'id' : 'slug', identifier)
+      .single();
+
+    if (!data) return null;
+
+    return {
+      id: data.id as OrgId,
+      name: data.name,
+      slug: data.slug,
+    };
+  }
+
+  /**
    * Get permissions for a role
    */
   private getPermissionsForRole(role: OrgRole): string[] {

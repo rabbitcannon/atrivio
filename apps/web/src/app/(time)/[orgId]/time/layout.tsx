@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { LogOut, Clock } from 'lucide-react';
+import { useRouter, useParams, usePathname } from 'next/navigation';
+import { LogOut, Clock, Calendar, User, ArrowLeftRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
 import { useAuthStore } from '@/stores/auth-store';
@@ -40,8 +40,20 @@ interface TimeLayoutProps {
 
 export default function TimeLayout({ children }: TimeLayoutProps) {
   const router = useRouter();
+  const params = useParams<{ orgId: string }>();
+  const pathname = usePathname();
+  const orgSlug = params.orgId;
   const { user, isLoading } = useUser();
   const { clear: clearAuth } = useAuthStore();
+
+  const NAV_ITEMS = [
+    { href: `/${orgSlug}/time`, label: 'Clock', icon: Clock },
+    { href: `/${orgSlug}/time/schedule`, label: 'Schedule', icon: Calendar },
+    { href: `/${orgSlug}/time/swaps`, label: 'Swaps', icon: ArrowLeftRight },
+    { href: `/${orgSlug}/time/availability`, label: 'Availability', icon: User },
+  ];
+
+  const isActive = (href: string) => pathname === href;
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -110,7 +122,31 @@ export default function TimeLayout({ children }: TimeLayoutProps) {
       </header>
 
       {/* Main Content - Full height, centered for mobile */}
-      <main className="flex flex-1 flex-col">{children}</main>
+      <main className="flex flex-1 flex-col pb-16">{children}</main>
+
+      {/* Bottom Navigation - Mobile-friendly */}
+      {user && (
+        <nav className="fixed bottom-0 left-0 right-0 border-t bg-card">
+          <div className="flex items-center justify-around h-14">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex flex-col items-center gap-1 px-4 py-2 ${
+                    active ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="text-xs">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

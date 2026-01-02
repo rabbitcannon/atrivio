@@ -19,9 +19,11 @@ import { HauntsModule } from './modules/haunts/haunts.module.js';
 import { StaffModule } from './modules/staff/staff.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 
+// Scheduling (F7 Scheduling)
+import { SchedulingModule } from './modules/scheduling/scheduling.module.js';
+
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';
-// import { SchedulingModule } from './modules/scheduling/scheduling.module.js';
 // import { TicketingModule } from './modules/ticketing/ticketing.module.js';
 // import { CheckInModule } from './modules/check-in/check-in.module.js';
 // import { InventoryModule } from './modules/inventory/inventory.module.js';
@@ -55,6 +57,9 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 
     // Payments (F6 Stripe Connect)
     PaymentsModule,
+
+    // Scheduling (F7 Scheduling)
+    SchedulingModule,
   ],
   controllers: [],
   providers: [

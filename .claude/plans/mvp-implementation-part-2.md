@@ -2,17 +2,17 @@
 
 **Created Date**: 2025-12-31
 **Last Updated**: 2026-01-02
-**Current Session**: F7 Time Tracking Complete
-**Overall Progress**: 15% Complete
+**Current Session**: F7b Scheduling API Complete
+**Overall Progress**: 35% Complete
 
 > **Note**: Part 2 covers Operations features (F7-F10). Requires Part 1 (MVP F1-F6) to be complete.
 
 ## Quick Start for Next Session
 
 **Prerequisites**: MVP (F1-F6) must be complete before starting Part 2 ✅
-**Last Completed**: F7 Time Tracking (Quick Clock-In UX)
-**Currently Working On**: F7 Scheduling (shifts, availability, templates)
-**Next Action**: Design F7 Scheduling ERD refinement and migration
+**Last Completed**: F7b Scheduling API Module
+**Currently Working On**: F7b Scheduling Frontend Pages
+**Next Action**: Create frontend scheduling pages in apps/web/src/app/(dashboard)/[orgId]/schedule/
 
 ### Agent Assignments by Phase
 - **Phase 7 (Database)**: backend-architect
@@ -40,10 +40,44 @@
 | Feature | ERD | Migration | Seed Data | API | Frontend | Tests | Status |
 |---------|-----|-----------|-----------|-----|----------|-------|--------|
 | **F7a** Time Tracking | ✅ | ✅ | ✅ | ✅ | ✅ | Not Started | **Complete** |
-| **F7b** Scheduling | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
+| **F7b** Scheduling | ✅ | ✅ | ✅ | ✅ | Not Started | Not Started | **In Progress** |
 | **F8** Ticketing | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F9** Check-In | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F10** Inventory | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
+
+### F7b Scheduling - Database Complete
+**Migration**: `supabase/migrations/20260102000001_f7b_scheduling.sql`
+- **Tables**: schedule_roles, schedule_periods, shift_templates, staff_availability, schedules, shift_swaps, schedule_conflicts
+- **Enums**: schedule_status, availability_type, swap_type, swap_status, period_status, conflict_type
+- **Functions**: check_staff_availability(), get_staff_schedules()
+- **RLS**: Full row-level security for all tables
+
+**Seed Data**:
+- 14 schedule roles (system defaults)
+- 2 schedule periods (Halloween 2025)
+- 10 shift templates (Fri/Sat/Sun)
+- 12 staff availability records
+- 10 schedules (7 assigned, 3 unassigned)
+- 1 shift swap request (pending)
+
+### F7b Scheduling - API Complete
+**Module**: `apps/api/src/modules/scheduling/`
+- **Controllers**: SchedulingController, AvailabilityController, TemplatesController, SwapsController
+- **Services**: SchedulingService, AvailabilityService, TemplatesService, SwapsService
+- **DTOs**: schedule.dto, availability.dto, template.dto, swap.dto
+
+**API Endpoints**:
+- `GET/POST /organizations/:orgId/attractions/:attractionId/schedules` - Schedule CRUD
+- `PATCH/DELETE /organizations/:orgId/schedules/:scheduleId` - Update/delete
+- `POST /organizations/:orgId/attractions/:attractionId/schedules/publish` - Publish schedules
+- `GET /organizations/:orgId/my-schedules` - Staff self-service
+- `GET /organizations/:orgId/schedule-roles` - List roles
+- `GET/PUT /organizations/:orgId/staff/:staffId/availability` - Availability management
+- `POST /organizations/:orgId/staff/:staffId/time-off` - Time off requests
+- `GET/POST/PATCH/DELETE /organizations/:orgId/attractions/:attractionId/shift-templates` - Templates CRUD
+- `POST /organizations/:orgId/attractions/:attractionId/schedules/generate` - Generate from templates
+- `GET/POST /organizations/:orgId/swap-requests` - Swap request management
+- `POST /organizations/:orgId/schedules/:scheduleId/swap-request` - Request swap
 
 ### F7a Time Tracking - Completed Features
 - **Quick Time Page**: `/:orgSlug/time` - Mobile-first clock in/out

@@ -481,3 +481,119 @@ ON CONFLICT (id) DO NOTHING;
 
 -- NOTE: No seeded transactions - transactions come from real Stripe webhooks
 -- NOTE: No seeded webhooks - webhook records come from real Stripe events
+
+-- ============================================================================
+-- F7B: SCHEDULING SEED DATA
+-- ============================================================================
+
+-- Get role IDs and create scheduling seed data
+DO $$
+DECLARE
+  v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
+  v_attraction_id UUID := 'c0000000-0000-0000-0000-000000000001';
+  v_actor_role_id UUID;
+  v_scare_actor_role_id UUID;
+  v_security_role_id UUID;
+  v_makeup_role_id UUID;
+  v_manager_role_id UUID;
+BEGIN
+  -- Get system role IDs
+  SELECT id INTO v_actor_role_id FROM schedule_roles WHERE key = 'actor' AND org_id IS NULL;
+  SELECT id INTO v_scare_actor_role_id FROM schedule_roles WHERE key = 'scare_actor' AND org_id IS NULL;
+  SELECT id INTO v_security_role_id FROM schedule_roles WHERE key = 'security' AND org_id IS NULL;
+  SELECT id INTO v_makeup_role_id FROM schedule_roles WHERE key = 'makeup_artist' AND org_id IS NULL;
+  SELECT id INTO v_manager_role_id FROM schedule_roles WHERE key = 'manager' AND org_id IS NULL;
+
+  -- Skip if scheduling tables don't exist (F7b migration not run yet)
+  IF v_actor_role_id IS NULL THEN
+    RAISE NOTICE 'Skipping F7b seed data - schedule_roles table not populated';
+    RETURN;
+  END IF;
+
+  -- Create schedule periods for Halloween 2025
+  INSERT INTO schedule_periods (id, org_id, attraction_id, name, start_date, end_date, status)
+  VALUES
+    ('70000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, 'Halloween 2025 - Week 1', '2025-09-26', '2025-10-02', 'draft'),
+    ('70000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, 'Halloween 2025 - Week 2', '2025-10-03', '2025-10-09', 'draft')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Create shift templates for Haunted Mansion
+  INSERT INTO shift_templates (id, org_id, attraction_id, name, day_of_week, start_time, end_time, role_id, min_staff, max_staff, color)
+  VALUES
+    -- Friday shifts
+    ('71000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, 'Friday Night Scare', 5, '18:00', '23:00', v_scare_actor_role_id, 4, 6, '#DC2626'),
+    ('71000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, 'Friday Night Actor', 5, '18:00', '23:00', v_actor_role_id, 2, 4, '#9333EA'),
+    ('71000000-0000-0000-0000-000000000003', v_org_id, v_attraction_id, 'Friday Makeup', 5, '16:00', '22:00', v_makeup_role_id, 1, 2, '#EC4899'),
+    ('71000000-0000-0000-0000-000000000004', v_org_id, v_attraction_id, 'Friday Security', 5, '17:00', '24:00', v_security_role_id, 2, 3, '#1F2937'),
+    -- Saturday shifts
+    ('71000000-0000-0000-0000-000000000005', v_org_id, v_attraction_id, 'Saturday Night Scare', 6, '17:00', '24:00', v_scare_actor_role_id, 6, 8, '#DC2626'),
+    ('71000000-0000-0000-0000-000000000006', v_org_id, v_attraction_id, 'Saturday Night Actor', 6, '17:00', '24:00', v_actor_role_id, 3, 5, '#9333EA'),
+    ('71000000-0000-0000-0000-000000000007', v_org_id, v_attraction_id, 'Saturday Makeup', 6, '15:00', '23:00', v_makeup_role_id, 2, 3, '#EC4899'),
+    ('71000000-0000-0000-0000-000000000008', v_org_id, v_attraction_id, 'Saturday Security', 6, '16:00', '01:00', v_security_role_id, 3, 4, '#1F2937'),
+    -- Sunday shifts (shorter hours)
+    ('71000000-0000-0000-0000-000000000009', v_org_id, v_attraction_id, 'Sunday Evening Scare', 0, '18:00', '22:00', v_scare_actor_role_id, 3, 5, '#DC2626'),
+    ('71000000-0000-0000-0000-000000000010', v_org_id, v_attraction_id, 'Sunday Security', 0, '17:00', '23:00', v_security_role_id, 2, 2, '#1F2937')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Create staff availability records
+  INSERT INTO staff_availability (id, staff_id, org_id, day_of_week, start_time, end_time, availability_type, recurring, effective_from, effective_until)
+  VALUES
+    -- Jake Morrison (actor1) - Available Fri/Sat nights
+    ('72000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000003', v_org_id, 5, '17:00', '24:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000003', v_org_id, 6, '16:00', '01:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000003', v_org_id, 0, '17:00', '23:00', 'preferred', TRUE, '2025-09-01', '2025-11-15'),
+    -- Emily Rodriguez (actor2) - Available all weekend
+    ('72000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000004', v_org_id, 5, '15:00', '24:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000004', v_org_id, 6, '15:00', '02:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000006', 'd0000000-0000-0000-0000-000000000004', v_org_id, 0, '15:00', '23:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    -- Mike Thompson (actor3) - Available weekends but prefers Saturday
+    ('72000000-0000-0000-0000-000000000007', 'd0000000-0000-0000-0000-000000000005', v_org_id, 5, '18:00', '23:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000008', 'd0000000-0000-0000-0000-000000000005', v_org_id, 6, '17:00', '01:00', 'preferred', TRUE, '2025-09-01', '2025-11-15'),
+    -- Sarah Chen (manager) - Available for management shifts
+    ('72000000-0000-0000-0000-000000000010', 'd0000000-0000-0000-0000-000000000002', v_org_id, 5, '16:00', '24:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000011', 'd0000000-0000-0000-0000-000000000002', v_org_id, 6, '15:00', '01:00', 'available', TRUE, '2025-09-01', '2025-11-15'),
+    ('72000000-0000-0000-0000-000000000012', 'd0000000-0000-0000-0000-000000000002', v_org_id, 0, '16:00', '23:00', 'available', TRUE, '2025-09-01', '2025-11-15')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Mike's time-off request for Oct 18
+  INSERT INTO staff_availability (id, staff_id, org_id, date, availability_type, reason, recurring)
+  VALUES
+    ('72000000-0000-0000-0000-000000000009', 'd0000000-0000-0000-0000-000000000005', v_org_id, '2025-10-18', 'time_off_pending', 'Family event', FALSE)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Create sample schedules for demo week
+  INSERT INTO schedules (id, org_id, attraction_id, staff_id, date, start_time, end_time, role_id, status, created_by, notes)
+  VALUES
+    -- Friday Sep 26, 2025
+    ('73000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000003', '2025-09-26', '18:00', '23:00', v_scare_actor_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Main hall scare'),
+    ('73000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000004', '2025-09-26', '18:00', '23:00', v_actor_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Library scene'),
+    ('73000000-0000-0000-0000-000000000003', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000004', '2025-09-26', '16:00', '18:00', v_makeup_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Pre-show makeup'),
+    -- Saturday Sep 27, 2025
+    ('73000000-0000-0000-0000-000000000004', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000003', '2025-09-27', '17:00', '24:00', v_scare_actor_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Basement scare - lead'),
+    ('73000000-0000-0000-0000-000000000005', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000004', '2025-09-27', '17:00', '24:00', v_scare_actor_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Attic scare'),
+    ('73000000-0000-0000-0000-000000000006', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000005', '2025-09-27', '17:00', '24:00', v_actor_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Dining room scene'),
+    ('73000000-0000-0000-0000-000000000007', v_org_id, v_attraction_id, 'd0000000-0000-0000-0000-000000000002', '2025-09-27', '16:00', '01:00', v_manager_role_id, 'scheduled', 'a0000000-0000-0000-0000-000000000003', 'Floor manager'),
+    -- Unassigned shifts (need coverage)
+    ('73000000-0000-0000-0000-000000000008', v_org_id, v_attraction_id, NULL, '2025-09-26', '18:00', '23:00', v_security_role_id, 'draft', 'a0000000-0000-0000-0000-000000000003', 'Front gate security - NEED COVERAGE'),
+    ('73000000-0000-0000-0000-000000000009', v_org_id, v_attraction_id, NULL, '2025-09-27', '17:00', '24:00', v_security_role_id, 'draft', 'a0000000-0000-0000-0000-000000000003', 'Parking lot security - NEED COVERAGE'),
+    ('73000000-0000-0000-0000-000000000010', v_org_id, v_attraction_id, NULL, '2025-09-27', '17:00', '24:00', v_scare_actor_role_id, 'draft', 'a0000000-0000-0000-0000-000000000003', 'Entry hall scare - NEED COVERAGE')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Create sample shift swap request
+  INSERT INTO shift_swaps (id, org_id, schedule_id, requested_by, swap_type, reason, status, expires_at)
+  VALUES
+    -- Jake wants to drop his Friday shift
+    ('74000000-0000-0000-0000-000000000001', v_org_id, '73000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000003', 'drop', 'Family event - need coverage', 'pending', '2025-09-24 23:59:59')
+  ON CONFLICT (id) DO NOTHING;
+
+  RAISE NOTICE 'F7b scheduling seed data created successfully';
+END $$;
+
+-- ============================================================================
+-- F7B SEED SUMMARY
+-- ============================================================================
+-- Schedule Periods: 2 (Halloween 2025 Week 1 & 2)
+-- Shift Templates: 10 (Fri/Sat/Sun shifts for various roles)
+-- Staff Availability: 12 records (Jake, Emily, Mike, Sarah)
+-- Schedules: 10 (7 assigned, 3 unassigned needing coverage)
+-- Shift Swaps: 1 (pending drop request)
