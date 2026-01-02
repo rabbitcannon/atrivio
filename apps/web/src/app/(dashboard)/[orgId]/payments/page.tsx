@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { resolveOrgId, getPaymentStatus, getTransactionSummary } from '@/lib/api';
 import { StripeConnectButton } from '@/components/features/payments/stripe-connect-button';
 import { RefreshStatusButton } from '@/components/features/payments/refresh-status-button';
+import { AutoSyncStatus } from '@/components/features/payments/auto-sync-status';
 
 export const metadata: Metadata = {
   title: 'Payments',
@@ -103,6 +104,11 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
 
   return (
     <div className="space-y-6">
+      {/* Auto-sync status when returning from Stripe onboarding */}
+      {isConnected && (
+        <AutoSyncStatus orgId={orgId} currentStatus={accountStatus?.status ?? null} />
+      )}
+
       <div>
         <h1 className="text-3xl font-bold">Payments</h1>
         <p className="text-muted-foreground">
