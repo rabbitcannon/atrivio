@@ -143,12 +143,12 @@ export class TenancyService {
    */
   async isSuperAdmin(userId: UserId): Promise<boolean> {
     const { data } = await this.supabase.adminClient
-      .from('platform_admins')
-      .select('id')
-      .eq('user_id', userId)
+      .from('profiles')
+      .select('is_super_admin')
+      .eq('id', userId)
       .single();
 
-    return !!data;
+    return !!data?.is_super_admin;
   }
 
   /**
