@@ -73,6 +73,14 @@ export class PaymentsController {
     return this.paymentsService.createDashboardLink(ctx.orgId, dto);
   }
 
+  @Post('sync')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin')
+  @ApiOperation({ summary: 'Sync Stripe account status from Stripe API (bypasses webhooks)' })
+  async syncAccountStatus(@Tenant() ctx: TenantContext) {
+    return this.paymentsService.syncAccountStatus(ctx.orgId);
+  }
+
   // ============================================================================
   // TRANSACTIONS
   // ============================================================================

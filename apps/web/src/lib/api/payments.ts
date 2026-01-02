@@ -156,6 +156,14 @@ export async function createDashboardLink(
 }
 
 /**
+ * Sync Stripe account status from Stripe API
+ * Useful for local development where webhooks may not work reliably
+ */
+export async function syncStripeAccount(orgId: string) {
+  return api.post<StripeAccountStatusResponse>(`/organizations/${orgId}/payments/sync`, {});
+}
+
+/**
  * Get transactions for an organization
  */
 export async function getTransactions(orgId: string, filters?: TransactionFilters) {

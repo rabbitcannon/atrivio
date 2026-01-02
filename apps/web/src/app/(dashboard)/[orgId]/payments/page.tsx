@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { resolveOrgId, getPaymentStatus, getTransactionSummary } from '@/lib/api';
 import { StripeConnectButton } from '@/components/features/payments/stripe-connect-button';
+import { RefreshStatusButton } from '@/components/features/payments/refresh-status-button';
 
 export const metadata: Metadata = {
   title: 'Payments',
@@ -124,11 +125,16 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
                 </CardDescription>
               </div>
             </div>
-            {accountStatus?.status && (
-              <Badge variant={getStatusBadgeVariant(accountStatus.status)}>
-                {accountStatus.status.charAt(0).toUpperCase() + accountStatus.status.slice(1)}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {accountStatus?.status && (
+                <Badge variant={getStatusBadgeVariant(accountStatus.status)}>
+                  {accountStatus.status.charAt(0).toUpperCase() + accountStatus.status.slice(1)}
+                </Badge>
+              )}
+              {isConnected && (
+                <RefreshStatusButton orgId={orgId} />
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>

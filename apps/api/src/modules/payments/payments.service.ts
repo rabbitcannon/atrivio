@@ -270,6 +270,76 @@ export class PaymentsService {
   }
 
   /**
+   * Sync account status directly from Stripe
+   * Useful for local development where webhooks may not work reliably
+   */
+  async syncAccountStatus(orgId: OrgId) {
+    this.ensureStripeConfigured();
+
+    const { data: account, error } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .select('stripe_account_id, status')
+      .eq('org_id', orgId)
+      .single();
+
+    if (error || !account) {
+      throw new NotFoundException({
+        code: 'STRIPE_ACCOUNT_NOT_FOUND',
+        message: 'No Stripe account found for this organization',
+      });
+    }
+
+    // Fetch current status from Stripe
+    let stripeAccount: Stripe.Account;
+    try {
+      stripeAccount = await this.stripe.accounts.retrieve(account.stripe_account_id);
+      this.logger.log(`Synced account ${account.stripe_account_id}: charges_enabled=${stripeAccount.charges_enabled}, details_submitted=${stripeAccount.details_submitted}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown Stripe error';
+      this.logger.error(`Failed to retrieve Stripe account: ${message}`);
+      throw new BadRequestException({
+        code: 'STRIPE_SYNC_FAILED',
+        message: `Failed to sync with Stripe: ${message}`,
+      });
+    }
+
+    // Determine status based on Stripe account state
+    let status: 'pending' | 'onboarding' | 'active' | 'restricted' | 'disabled';
+    if (stripeAccount.charges_enabled && stripeAccount.payouts_enabled) {
+      status = 'active';
+    } else if (stripeAccount.details_submitted) {
+      status = 'restricted'; // Submitted but not fully enabled
+    } else {
+      status = 'onboarding'; // Still needs to complete onboarding
+    }
+
+    // Update database with current Stripe state
+    const { error: updateError } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .update({
+        status,
+        charges_enabled: stripeAccount.charges_enabled || false,
+        payouts_enabled: stripeAccount.payouts_enabled || false,
+        details_submitted: stripeAccount.details_submitted || false,
+        country: stripeAccount.country || null,
+        default_currency: stripeAccount.default_currency || null,
+        business_name: stripeAccount.business_profile?.name || account.stripe_account_id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('org_id', orgId);
+
+    if (updateError) {
+      throw new BadRequestException({
+        code: 'STRIPE_SYNC_UPDATE_FAILED',
+        message: updateError.message,
+      });
+    }
+
+    // Return the updated status
+    return this.getAccountStatus(orgId);
+  }
+
+  /**
    * Create a dashboard login link for the Express account
    */
   async createDashboardLink(orgId: OrgId, dto: CreateDashboardLinkDto) {
