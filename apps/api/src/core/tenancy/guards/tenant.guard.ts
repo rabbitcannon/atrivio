@@ -1,6 +1,7 @@
 import {
   Injectable,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -30,10 +31,10 @@ export class TenantGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const orgId = request.params?.orgId as OrgId | undefined;
+    const orgIdentifier = request.params?.orgId as string | undefined;
 
     // Skip if no orgId in route (e.g., /auth/login, /organizations list)
-    if (!orgId) {
+    if (!orgIdentifier) {
       return true;
     }
 
@@ -53,30 +54,33 @@ export class TenantGuard implements CanActivate {
       });
     }
 
+    // Resolve org from UUID or slug
+    const org = await this.tenancyService.resolveOrg(orgIdentifier);
+    if (!org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    const orgId = org.id;
+
     // Check if user is super admin (bypasses org membership check)
     const isSuperAdmin = await this.tenancyService.isSuperAdmin(user.id as UserId);
 
     if (isSuperAdmin) {
       // Super admins get full access with owner permissions
-      const { data: org } = await (this.tenancyService as any).supabase.adminClient
-        .from('organizations')
-        .select('id, name, slug')
-        .eq('id', orgId)
-        .single();
-
-      if (org) {
-        request.tenant = {
-          orgId: org.id as OrgId,
-          orgName: org.name,
-          orgSlug: org.slug,
-          userId: user.id as UserId,
-          role: 'owner' as const,
-          isOwner: false,
-          isSuperAdmin: true,
-          permissions: ['*'], // Super admin has all permissions
-        };
-        return true;
-      }
+      request.tenant = {
+        orgId: org.id,
+        orgName: org.name,
+        orgSlug: org.slug,
+        userId: user.id as UserId,
+        role: 'owner' as const,
+        isOwner: false,
+        isSuperAdmin: true,
+        permissions: ['*'], // Super admin has all permissions
+      };
+      return true;
     }
 
     // Resolve tenant context for regular users
