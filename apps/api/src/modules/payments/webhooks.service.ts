@@ -5,50 +5,60 @@ import {
   Logger,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-// In production: import Stripe from 'stripe';
-
-interface StripeEvent {
-  id: string;
-  type: string;
-  api_version: string;
-  data: {
-    object: Record<string, unknown>;
-    previous_attributes?: Record<string, unknown>;
-  };
-  created: number;
-}
+import Stripe from 'stripe';
 
 @Injectable()
 export class WebhooksService {
   private readonly logger = new Logger(WebhooksService.name);
+  private stripe: Stripe;
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(private supabase: SupabaseService) {
+    const stripeKey = process.env['STRIPE_SECRET_KEY'];
+    if (!stripeKey) {
+      this.logger.warn('STRIPE_SECRET_KEY not configured - webhook verification will be skipped');
+      // Use a dummy key to prevent initialization error
+      this.stripe = new Stripe('sk_test_dummy_key_for_initialization');
+    } else {
+      this.stripe = new Stripe(stripeKey);
+    }
+  }
 
   /**
    * Verify and process a Stripe webhook event
    */
   async handleWebhook(payload: string, signature: string): Promise<{ received: boolean }> {
-    let event: StripeEvent;
+    let event: Stripe.Event;
 
-    // In production, verify signature:
-    // try {
-    //   event = this.stripe.webhooks.constructEvent(
-    //     payload,
-    //     signature,
-    //     process.env.STRIPE_WEBHOOK_SECRET!
-    //   );
-    // } catch (err) {
-    //   throw new BadRequestException('Invalid webhook signature');
-    // }
+    const webhookSecret = process.env['STRIPE_WEBHOOK_SECRET'];
 
-    // For development, parse directly
-    try {
-      event = JSON.parse(payload) as StripeEvent;
-    } catch {
-      throw new BadRequestException({
-        code: 'INVALID_WEBHOOK_PAYLOAD',
-        message: 'Invalid JSON payload',
-      });
+    if (webhookSecret) {
+      // Production: verify signature
+      try {
+        event = this.stripe.webhooks.constructEvent(
+          payload,
+          signature,
+          webhookSecret
+        );
+        this.logger.log(`Verified webhook signature for event ${event.id}`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        this.logger.error(`Webhook signature verification failed: ${message}`);
+        throw new BadRequestException({
+          code: 'INVALID_WEBHOOK_SIGNATURE',
+          message: 'Invalid webhook signature',
+        });
+      }
+    } else {
+      // Development without webhook secret: parse directly (for testing)
+      this.logger.warn('STRIPE_WEBHOOK_SECRET not configured - skipping signature verification');
+      try {
+        event = JSON.parse(payload) as Stripe.Event;
+      } catch {
+        throw new BadRequestException({
+          code: 'INVALID_WEBHOOK_PAYLOAD',
+          message: 'Invalid JSON payload',
+        });
+      }
     }
 
     // Check for idempotency - have we already processed this event?
@@ -114,7 +124,7 @@ export class WebhooksService {
   /**
    * Process different event types
    */
-  private async processEvent(event: StripeEvent): Promise<void> {
+  private async processEvent(event: Stripe.Event): Promise<void> {
     this.logger.log(`Processing event: ${event.type}`);
 
     switch (event.type) {
@@ -165,18 +175,17 @@ export class WebhooksService {
   /**
    * Handle account.updated - sync account status
    */
-  private async handleAccountUpdated(account: Record<string, unknown>): Promise<void> {
-    const stripeAccountId = account['id'] as string;
-    const detailsSubmitted = account['details_submitted'] as boolean | undefined;
-    const chargesEnabled = account['charges_enabled'] as boolean | undefined;
-    const payoutsEnabled = account['payouts_enabled'] as boolean | undefined;
-    const country = account['country'] as string | undefined;
-    const defaultCurrency = account['default_currency'] as string | undefined;
-    const businessType = account['business_type'] as string | undefined;
-    const businessProfile = account['business_profile'] as Record<string, unknown> | undefined;
-    const businessName = account['business_name'] as string | undefined;
-    const capabilities = account['capabilities'];
-    const requirements = account['requirements'];
+  private async handleAccountUpdated(account: Stripe.Account): Promise<void> {
+    const stripeAccountId = account.id;
+    const detailsSubmitted = account.details_submitted;
+    const chargesEnabled = account.charges_enabled;
+    const payoutsEnabled = account.payouts_enabled;
+    const country = account.country;
+    const defaultCurrency = account.default_currency;
+    const businessType = account.business_type;
+    const businessProfile = account.business_profile;
+    const capabilities = account.capabilities;
+    const requirements = account.requirements;
 
     // Determine status based on account state
     let status = 'pending';
@@ -198,7 +207,7 @@ export class WebhooksService {
         country,
         default_currency: defaultCurrency,
         business_type: businessType,
-        business_name: (businessProfile?.['name'] as string) || businessName,
+        business_name: businessProfile?.name || undefined,
         metadata: {
           capabilities,
           requirements,
@@ -216,8 +225,8 @@ export class WebhooksService {
   /**
    * Handle account deauthorization
    */
-  private async handleAccountDeauthorized(account: Record<string, unknown>): Promise<void> {
-    const accountId = account['id'] as string;
+  private async handleAccountDeauthorized(application: Stripe.Application): Promise<void> {
+    const accountId = application.id;
 
     const { error } = await this.supabase.adminClient
       .from('stripe_accounts')
@@ -234,16 +243,15 @@ export class WebhooksService {
   /**
    * Handle payout created
    */
-  private async handlePayoutCreated(payout: Record<string, unknown>): Promise<void> {
-    const destination = payout['destination'] as string;
-    const payoutId = payout['id'] as string;
-    const amount = payout['amount'] as number;
-    const currency = payout['currency'] as string;
-    const payoutStatus = payout['status'] as string;
-    const arrivalDate = payout['arrival_date'] as number | undefined;
-    const method = payout['method'] as string | undefined;
-    const destinationType = payout['destination_type'] as string | undefined;
-    const destinationObj = payout['destination'] as Record<string, unknown> | undefined;
+  private async handlePayoutCreated(payout: Stripe.Payout): Promise<void> {
+    const destination = typeof payout.destination === 'string' ? payout.destination : payout.destination?.id;
+    const payoutId = payout.id;
+    const amount = payout.amount;
+    const currency = payout.currency;
+    const payoutStatus = payout.status;
+    const arrivalDate = payout.arrival_date;
+    const method = payout.method;
+    const destinationType = payout.type;
 
     // Get internal account ID
     const { data: account } = await this.supabase.adminClient
@@ -270,7 +278,7 @@ export class WebhooksService {
           : null,
         method,
         destination_type: destinationType,
-        destination_last4: typeof destinationObj === 'object' ? (destinationObj?.['last4'] as string | undefined) : undefined,
+        destination_last4: undefined, // Bank account last4 not directly available from payout object
       });
 
     if (error) {
@@ -281,11 +289,11 @@ export class WebhooksService {
   /**
    * Handle payout status updates
    */
-  private async handlePayoutUpdated(payout: Record<string, unknown>): Promise<void> {
-    const payoutId = payout['id'] as string;
-    const payoutStatus = payout['status'] as string;
-    const failureCode = payout['failure_code'] as string | undefined;
-    const failureMessage = payout['failure_message'] as string | undefined;
+  private async handlePayoutUpdated(payout: Stripe.Payout): Promise<void> {
+    const payoutId = payout.id;
+    const payoutStatus = payout.status;
+    const failureCode = payout.failure_code;
+    const failureMessage = payout.failure_message;
 
     const { error } = await this.supabase.adminClient
       .from('stripe_payouts')
@@ -304,11 +312,15 @@ export class WebhooksService {
   /**
    * Handle successful payment
    */
-  private async handlePaymentSucceeded(paymentIntent: Record<string, unknown>): Promise<void> {
+  private async handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
     // Get internal account ID from the connected account
-    const onBehalfOf = paymentIntent['on_behalf_of'] as string | undefined;
-    const transferData = paymentIntent['transfer_data'] as Record<string, unknown> | undefined;
-    const stripeAccountId = onBehalfOf || (transferData?.['destination'] as string | undefined);
+    const onBehalfOf = typeof paymentIntent.on_behalf_of === 'string'
+      ? paymentIntent.on_behalf_of
+      : paymentIntent.on_behalf_of?.id;
+    const transferDestination = typeof paymentIntent.transfer_data?.destination === 'string'
+      ? paymentIntent.transfer_data.destination
+      : paymentIntent.transfer_data?.destination?.id;
+    const stripeAccountId = onBehalfOf || transferDestination;
 
     if (!stripeAccountId) {
       this.logger.warn('Payment without connected account, skipping');
@@ -327,26 +339,29 @@ export class WebhooksService {
     }
 
     // Calculate fees
-    const amount = paymentIntent['amount'] as number;
-    const platformFee = (paymentIntent['application_fee_amount'] as number) || 0;
+    const amount = paymentIntent.amount;
+    const platformFee = paymentIntent.application_fee_amount || 0;
     const stripeFee = Math.round(amount * 0.029 + 30); // Estimate Stripe fee
+    const latestCharge = typeof paymentIntent.latest_charge === 'string'
+      ? paymentIntent.latest_charge
+      : paymentIntent.latest_charge?.id;
 
     const { error } = await this.supabase.adminClient
       .from('stripe_transactions')
       .insert({
         stripe_account_id: account.id,
-        stripe_payment_intent_id: paymentIntent['id'] as string,
-        stripe_charge_id: paymentIntent['latest_charge'] as string | undefined,
+        stripe_payment_intent_id: paymentIntent.id,
+        stripe_charge_id: latestCharge,
         type: 'charge',
         status: 'succeeded',
         amount,
-        currency: paymentIntent['currency'] as string,
+        currency: paymentIntent.currency,
         platform_fee: platformFee,
         stripe_fee: stripeFee,
         net_amount: amount - platformFee - stripeFee,
-        description: paymentIntent['description'] as string | undefined,
-        customer_email: paymentIntent['receipt_email'] as string | undefined,
-        metadata: paymentIntent['metadata'],
+        description: paymentIntent.description,
+        customer_email: paymentIntent.receipt_email,
+        metadata: paymentIntent.metadata,
       });
 
     if (error) {
@@ -357,10 +372,14 @@ export class WebhooksService {
   /**
    * Handle failed payment
    */
-  private async handlePaymentFailed(paymentIntent: Record<string, unknown>): Promise<void> {
-    const onBehalfOf = paymentIntent['on_behalf_of'] as string | undefined;
-    const transferData = paymentIntent['transfer_data'] as Record<string, unknown> | undefined;
-    const stripeAccountId = onBehalfOf || (transferData?.['destination'] as string | undefined);
+  private async handlePaymentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+    const onBehalfOf = typeof paymentIntent.on_behalf_of === 'string'
+      ? paymentIntent.on_behalf_of
+      : paymentIntent.on_behalf_of?.id;
+    const transferDestination = typeof paymentIntent.transfer_data?.destination === 'string'
+      ? paymentIntent.transfer_data.destination
+      : paymentIntent.transfer_data?.destination?.id;
+    const stripeAccountId = onBehalfOf || transferDestination;
 
     if (!stripeAccountId) return;
 
@@ -372,25 +391,25 @@ export class WebhooksService {
 
     if (!account) return;
 
-    const lastPaymentError = paymentIntent['last_payment_error'] as Record<string, unknown> | undefined;
+    const lastPaymentError = paymentIntent.last_payment_error;
 
     const { error } = await this.supabase.adminClient
       .from('stripe_transactions')
       .insert({
         stripe_account_id: account.id,
-        stripe_payment_intent_id: paymentIntent['id'] as string,
+        stripe_payment_intent_id: paymentIntent.id,
         type: 'charge',
         status: 'failed',
-        amount: paymentIntent['amount'] as number,
-        currency: paymentIntent['currency'] as string,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
         platform_fee: 0,
         stripe_fee: 0,
         net_amount: 0,
-        description: (lastPaymentError?.['message'] as string) || 'Payment failed',
-        customer_email: paymentIntent['receipt_email'] as string | undefined,
+        description: lastPaymentError?.message || 'Payment failed',
+        customer_email: paymentIntent.receipt_email,
         metadata: {
-          error_code: lastPaymentError?.['code'],
-          error_message: lastPaymentError?.['message'],
+          error_code: lastPaymentError?.code,
+          error_message: lastPaymentError?.message,
         },
       });
 
@@ -402,10 +421,10 @@ export class WebhooksService {
   /**
    * Handle refund
    */
-  private async handleChargeRefunded(charge: Record<string, unknown>): Promise<void> {
-    const amountRefunded = charge['amount_refunded'] as number;
-    const amount = charge['amount'] as number;
-    const chargeId = charge['id'] as string;
+  private async handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+    const amountRefunded = charge.amount_refunded;
+    const amount = charge.amount;
+    const chargeId = charge.id;
 
     // Update existing transaction status
     const { error } = await this.supabase.adminClient
@@ -423,8 +442,8 @@ export class WebhooksService {
   /**
    * Handle dispute
    */
-  private async handleDisputeCreated(dispute: Record<string, unknown>): Promise<void> {
-    const chargeId = dispute['charge'] as string;
+  private async handleDisputeCreated(dispute: Stripe.Dispute): Promise<void> {
+    const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge?.id;
 
     // Update transaction status
     const { error } = await this.supabase.adminClient

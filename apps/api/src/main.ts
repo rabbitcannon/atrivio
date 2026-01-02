@@ -6,7 +6,8 @@ import { AppModule } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: true })
+    new FastifyAdapter({ logger: true }),
+    { rawBody: true } // Enable raw body for webhook signature verification
   );
 
   // Global prefix for all routes

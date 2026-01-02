@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
@@ -14,22 +15,37 @@ import type {
   ListPayoutsDto,
   CreateRefundDto,
 } from './dto/payments.dto.js';
-// Note: In production, import Stripe from 'stripe'
-// import Stripe from 'stripe';
+import Stripe from 'stripe';
 
 // Default platform fee if not configured
 const DEFAULT_PLATFORM_FEE_PERCENT = 3.0;
 
 @Injectable()
 export class PaymentsService {
-  // In production, initialize Stripe client
-  // private stripe: Stripe;
+  private readonly logger = new Logger(PaymentsService.name);
+  private stripe: Stripe;
 
   constructor(private supabase: SupabaseService) {
-    // In production:
-    // this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    //   apiVersion: '2023-10-16',
-    // });
+    const stripeKey = process.env['STRIPE_SECRET_KEY'];
+    if (!stripeKey) {
+      this.logger.warn('STRIPE_SECRET_KEY not configured - Stripe operations will fail');
+      // Use a dummy key to prevent initialization error - actual calls will fail
+      this.stripe = new Stripe('sk_test_dummy_key_for_initialization');
+    } else {
+      this.stripe = new Stripe(stripeKey);
+    }
+  }
+
+  /**
+   * Check if Stripe is properly configured
+   */
+  private ensureStripeConfigured(): void {
+    if (!process.env['STRIPE_SECRET_KEY']) {
+      throw new BadRequestException({
+        code: 'STRIPE_NOT_CONFIGURED',
+        message: 'Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.',
+      });
+    }
   }
 
   /**
@@ -120,6 +136,8 @@ export class PaymentsService {
    * Returns onboarding link
    */
   async createAccount(orgId: OrgId, dto: CreateOnboardingLinkDto) {
+    this.ensureStripeConfigured();
+
     // Check if account already exists
     const { data: existing } = await this.supabase.adminClient
       .from('stripe_accounts')
@@ -148,24 +166,38 @@ export class PaymentsService {
       });
     }
 
-    // In production, create Stripe account:
-    // const account = await this.stripe.accounts.create({
-    //   type: 'express',
-    //   country: 'US',
-    //   email: org.email,
-    //   business_type: 'company',
-    //   metadata: { org_id: orgId },
-    // });
+    // Create Stripe Express account
+    let stripeAccount: Stripe.Account;
+    try {
+      stripeAccount = await this.stripe.accounts.create({
+        type: 'express',
+        country: 'US',
+        email: org.email || undefined,
+        business_type: 'company',
+        metadata: { org_id: orgId },
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+      });
+      this.logger.log(`Created Stripe account ${stripeAccount.id} for org ${orgId}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown Stripe error';
+      this.logger.error(`Failed to create Stripe account: ${message}`);
+      throw new BadRequestException({
+        code: 'STRIPE_ACCOUNT_CREATE_FAILED',
+        message: `Failed to create Stripe account: ${message}`,
+      });
+    }
 
-    // For development, simulate account creation
-    const mockStripeAccountId = `acct_${Date.now()}`;
+    const stripeAccountId = stripeAccount.id;
 
     // Store account in database
-    const { data: stripeAccount, error: insertError } = await this.supabase.adminClient
+    const { error: insertError } = await this.supabase.adminClient
       .from('stripe_accounts')
       .insert({
         org_id: orgId,
-        stripe_account_id: mockStripeAccountId,
+        stripe_account_id: stripeAccountId,
         status: 'pending',
         business_name: org.name,
       })
@@ -187,6 +219,8 @@ export class PaymentsService {
    * Create an onboarding link for incomplete account setup
    */
   async createOnboardingLink(orgId: OrgId, dto: CreateOnboardingLinkDto) {
+    this.ensureStripeConfigured();
+
     const { data: account, error } = await this.supabase.adminClient
       .from('stripe_accounts')
       .select('stripe_account_id, status')
@@ -200,29 +234,38 @@ export class PaymentsService {
       });
     }
 
-    // In production:
-    // const link = await this.stripe.accountLinks.create({
-    //   account: account.stripe_account_id,
-    //   refresh_url: dto.refresh_url || `${process.env.APP_URL}/stripe/refresh`,
-    //   return_url: dto.return_url || `${process.env.APP_URL}/stripe/return`,
-    //   type: 'account_onboarding',
-    // });
-
-    // For development, return mock link
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    // Create Stripe account link for onboarding
+    let accountLink: Stripe.AccountLink;
+    try {
+      const appUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']?.replace(':54321', ':3000') || 'http://localhost:3000';
+      accountLink = await this.stripe.accountLinks.create({
+        account: account.stripe_account_id,
+        refresh_url: dto.refresh_url || `${appUrl}/stripe/refresh`,
+        return_url: dto.return_url || `${appUrl}/stripe/return`,
+        type: 'account_onboarding',
+      });
+      this.logger.log(`Created onboarding link for account ${account.stripe_account_id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown Stripe error';
+      this.logger.error(`Failed to create onboarding link: ${message}`);
+      throw new BadRequestException({
+        code: 'STRIPE_ONBOARDING_LINK_FAILED',
+        message: `Failed to create onboarding link: ${message}`,
+      });
+    }
 
     // Update status to onboarding
     await this.supabase.adminClient
       .from('stripe_accounts')
       .update({
         status: 'onboarding',
-        onboarding_url: `https://connect.stripe.com/setup/e/${account.stripe_account_id}`,
+        onboarding_url: accountLink.url,
       })
       .eq('org_id', orgId);
 
     return {
-      url: `https://connect.stripe.com/setup/e/${account.stripe_account_id}`,
-      expires_at: expiresAt.toISOString(),
+      url: accountLink.url,
+      expires_at: new Date(accountLink.expires_at * 1000).toISOString(),
     };
   }
 
@@ -230,6 +273,8 @@ export class PaymentsService {
    * Create a dashboard login link for the Express account
    */
   async createDashboardLink(orgId: OrgId, dto: CreateDashboardLinkDto) {
+    this.ensureStripeConfigured();
+
     const { data: account, error } = await this.supabase.adminClient
       .from('stripe_accounts')
       .select('stripe_account_id, status')
@@ -250,16 +295,23 @@ export class PaymentsService {
       });
     }
 
-    // In production:
-    // const link = await this.stripe.accounts.createLoginLink(
-    //   account.stripe_account_id,
-    //   { redirect_url: dto.return_url }
-    // );
-
-    // For development, return mock link
-    return {
-      url: `https://connect.stripe.com/express/${account.stripe_account_id}`,
-    };
+    // Create Stripe login link for Express dashboard
+    try {
+      const loginLink = await this.stripe.accounts.createLoginLink(
+        account.stripe_account_id
+      );
+      this.logger.log(`Created dashboard link for account ${account.stripe_account_id}`);
+      return {
+        url: loginLink.url,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown Stripe error';
+      this.logger.error(`Failed to create dashboard link: ${message}`);
+      throw new BadRequestException({
+        code: 'STRIPE_DASHBOARD_LINK_FAILED',
+        message: `Failed to create dashboard link: ${message}`,
+      });
+    }
   }
 
   /**
@@ -443,6 +495,8 @@ export class PaymentsService {
    * Create a refund for a transaction
    */
   async createRefund(orgId: OrgId, dto: CreateRefundDto) {
+    this.ensureStripeConfigured();
+
     // Get the original transaction
     const transaction = await this.getTransaction(orgId, dto.transaction_id);
 
@@ -469,13 +523,35 @@ export class PaymentsService {
       });
     }
 
-    // In production, process refund through Stripe:
-    // const refund = await this.stripe.refunds.create({
-    //   payment_intent: transaction.stripe_payment_intent_id,
-    //   amount: refundAmount,
-    // }, {
-    //   stripeAccount: account.stripe_account_id,
-    // });
+    // Get the Stripe account for connected account refund
+    const { data: stripeAccountData } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .select('stripe_account_id')
+      .eq('id', transaction.stripe_account_id)
+      .single();
+
+    // Process refund through Stripe
+    let stripeRefund: Stripe.Refund;
+    try {
+      stripeRefund = await this.stripe.refunds.create(
+        {
+          payment_intent: transaction.stripe_payment_intent_id,
+          amount: refundAmount,
+          reason: dto.reason as Stripe.RefundCreateParams.Reason || 'requested_by_customer',
+        },
+        {
+          stripeAccount: stripeAccountData?.stripe_account_id,
+        }
+      );
+      this.logger.log(`Created refund ${stripeRefund.id} for ${refundAmount} cents`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown Stripe error';
+      this.logger.error(`Failed to create refund: ${message}`);
+      throw new BadRequestException({
+        code: 'STRIPE_REFUND_FAILED',
+        message: `Failed to process refund: ${message}`,
+      });
+    }
 
     // Create refund transaction record
     const { data: refundRecord, error } = await this.supabase.adminClient
@@ -483,9 +559,9 @@ export class PaymentsService {
       .insert({
         stripe_account_id: transaction.stripe_account_id,
         stripe_payment_intent_id: transaction.stripe_payment_intent_id,
-        stripe_refund_id: `re_${Date.now()}`,
+        stripe_refund_id: stripeRefund.id,
         type: 'refund',
-        status: 'succeeded',
+        status: stripeRefund.status || 'succeeded',
         amount: refundAmount,
         currency: transaction.currency,
         platform_fee: 0,

@@ -33,10 +33,10 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 
 @Module({
   imports: [
-    // Configuration
+    // Configuration - load from root directory
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: ['../../.env.local', '../../.env', '.env.local', '.env'],
     }),
 
     // Shared modules
