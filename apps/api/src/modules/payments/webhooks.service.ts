@@ -123,9 +123,13 @@ export class WebhooksService {
 
   /**
    * Process different event types
+   * For Connect webhooks, event.account contains the connected account ID
    */
   private async processEvent(event: Stripe.Event): Promise<void> {
-    this.logger.log(`Processing event: ${event.type}`);
+    this.logger.log(`Processing event: ${event.type}${event.account ? ` for account ${event.account}` : ''}`);
+
+    // For Connect webhooks, the connected account ID is in event.account
+    const connectedAccountId = event.account;
 
     switch (event.type) {
       // Account events
@@ -139,7 +143,7 @@ export class WebhooksService {
 
       // Payout events
       case 'payout.created':
-        await this.handlePayoutCreated(event.data.object);
+        await this.handlePayoutCreated(event.data.object, connectedAccountId);
         break;
 
       case 'payout.updated':
@@ -151,14 +155,18 @@ export class WebhooksService {
 
       // Payment events
       case 'payment_intent.succeeded':
-        await this.handlePaymentSucceeded(event.data.object);
+        await this.handlePaymentSucceeded(event.data.object, connectedAccountId);
         break;
 
       case 'payment_intent.payment_failed':
-        await this.handlePaymentFailed(event.data.object);
+        await this.handlePaymentFailed(event.data.object, connectedAccountId);
         break;
 
-      // Charge events
+      // Charge events - handle charge.succeeded for direct charges
+      case 'charge.succeeded':
+        await this.handleChargeSucceeded(event.data.object, connectedAccountId);
+        break;
+
       case 'charge.refunded':
         await this.handleChargeRefunded(event.data.object);
         break;
@@ -242,8 +250,12 @@ export class WebhooksService {
 
   /**
    * Handle payout created
+   * For Connect webhooks, connectedAccountId comes from event.account
    */
-  private async handlePayoutCreated(payout: Stripe.Payout): Promise<void> {
+  private async handlePayoutCreated(
+    payout: Stripe.Payout,
+    connectedAccountId?: string
+  ): Promise<void> {
     const destination = typeof payout.destination === 'string' ? payout.destination : payout.destination?.id;
     const payoutId = payout.id;
     const amount = payout.amount;
@@ -253,15 +265,23 @@ export class WebhooksService {
     const method = payout.method;
     const destinationType = payout.type;
 
+    // Use connectedAccountId from event, fallback to payout destination
+    const stripeAccountId = connectedAccountId || destination;
+
+    if (!stripeAccountId) {
+      this.logger.warn('Payout without account identifier');
+      return;
+    }
+
     // Get internal account ID
     const { data: account } = await this.supabase.adminClient
       .from('stripe_accounts')
       .select('id')
-      .eq('stripe_account_id', destination)
+      .eq('stripe_account_id', stripeAccountId)
       .single();
 
     if (!account) {
-      this.logger.warn(`No account found for payout destination: ${destination}`);
+      this.logger.warn(`No account found for payout: ${stripeAccountId}`);
       return;
     }
 
@@ -284,6 +304,8 @@ export class WebhooksService {
     if (error) {
       throw new InternalServerErrorException(`Failed to create payout: ${error.message}`);
     }
+
+    this.logger.log(`Created payout record for ${payoutId} on account ${stripeAccountId}`);
   }
 
   /**
@@ -311,16 +333,20 @@ export class WebhooksService {
 
   /**
    * Handle successful payment
+   * For Connect webhooks, connectedAccountId comes from event.account
    */
-  private async handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
-    // Get internal account ID from the connected account
+  private async handlePaymentSucceeded(
+    paymentIntent: Stripe.PaymentIntent,
+    connectedAccountId?: string
+  ): Promise<void> {
+    // Get connected account ID: prefer event.account, fallback to PaymentIntent fields
     const onBehalfOf = typeof paymentIntent.on_behalf_of === 'string'
       ? paymentIntent.on_behalf_of
       : paymentIntent.on_behalf_of?.id;
     const transferDestination = typeof paymentIntent.transfer_data?.destination === 'string'
       ? paymentIntent.transfer_data.destination
       : paymentIntent.transfer_data?.destination?.id;
-    const stripeAccountId = onBehalfOf || transferDestination;
+    const stripeAccountId = connectedAccountId || onBehalfOf || transferDestination;
 
     if (!stripeAccountId) {
       this.logger.warn('Payment without connected account, skipping');
@@ -338,17 +364,19 @@ export class WebhooksService {
       return;
     }
 
-    // Calculate fees
-    const amount = paymentIntent.amount;
-    const platformFee = paymentIntent.application_fee_amount || 0;
-    const stripeFee = Math.round(amount * 0.029 + 30); // Estimate Stripe fee
     const latestCharge = typeof paymentIntent.latest_charge === 'string'
       ? paymentIntent.latest_charge
       : paymentIntent.latest_charge?.id;
 
+    // Calculate fees
+    const amount = paymentIntent.amount;
+    const platformFee = paymentIntent.application_fee_amount || 0;
+    const stripeFee = Math.round(amount * 0.029 + 30); // Estimate Stripe fee
+
+    // Use upsert to handle race conditions with charge.succeeded event
     const { error } = await this.supabase.adminClient
       .from('stripe_transactions')
-      .insert({
+      .upsert({
         stripe_account_id: account.id,
         stripe_payment_intent_id: paymentIntent.id,
         stripe_charge_id: latestCharge,
@@ -362,24 +390,29 @@ export class WebhooksService {
         description: paymentIntent.description,
         customer_email: paymentIntent.receipt_email,
         metadata: paymentIntent.metadata,
-      });
+      }, { onConflict: 'stripe_charge_id', ignoreDuplicates: true });
 
     if (error) {
       throw new InternalServerErrorException(`Failed to create transaction: ${error.message}`);
     }
+
+    this.logger.log(`Processed transaction for payment ${paymentIntent.id} on account ${stripeAccountId}`);
   }
 
   /**
    * Handle failed payment
    */
-  private async handlePaymentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  private async handlePaymentFailed(
+    paymentIntent: Stripe.PaymentIntent,
+    connectedAccountId?: string
+  ): Promise<void> {
     const onBehalfOf = typeof paymentIntent.on_behalf_of === 'string'
       ? paymentIntent.on_behalf_of
       : paymentIntent.on_behalf_of?.id;
     const transferDestination = typeof paymentIntent.transfer_data?.destination === 'string'
       ? paymentIntent.transfer_data.destination
       : paymentIntent.transfer_data?.destination?.id;
-    const stripeAccountId = onBehalfOf || transferDestination;
+    const stripeAccountId = connectedAccountId || onBehalfOf || transferDestination;
 
     if (!stripeAccountId) return;
 
@@ -416,6 +449,67 @@ export class WebhooksService {
     if (error) {
       throw new InternalServerErrorException(`Failed to log failed payment: ${error.message}`);
     }
+  }
+
+  /**
+   * Handle successful charge (for direct charges on Connect accounts)
+   * This handles the charge.succeeded event which fires for direct charges
+   */
+  private async handleChargeSucceeded(
+    charge: Stripe.Charge,
+    connectedAccountId?: string
+  ): Promise<void> {
+    if (!connectedAccountId) {
+      this.logger.warn('Charge without connected account, skipping');
+      return;
+    }
+
+    const { data: account } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .select('id')
+      .eq('stripe_account_id', connectedAccountId)
+      .single();
+
+    if (!account) {
+      this.logger.warn(`No account found: ${connectedAccountId}`);
+      return;
+    }
+
+    // Get payment intent ID if available
+    const paymentIntentId = typeof charge.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+    // Calculate fees
+    const amount = charge.amount;
+    const applicationFee = charge.application_fee_amount || 0;
+    // For direct charges, the balance transaction contains actual fees
+    const stripeFee = Math.round(amount * 0.029 + 30); // Estimate if not available
+
+    // Use upsert to handle race conditions with payment_intent.succeeded event
+    const { error } = await this.supabase.adminClient
+      .from('stripe_transactions')
+      .upsert({
+        stripe_account_id: account.id,
+        stripe_payment_intent_id: paymentIntentId,
+        stripe_charge_id: charge.id,
+        type: 'charge',
+        status: 'succeeded',
+        amount,
+        currency: charge.currency,
+        platform_fee: applicationFee,
+        stripe_fee: stripeFee,
+        net_amount: amount - applicationFee - stripeFee,
+        description: charge.description,
+        customer_email: charge.receipt_email || charge.billing_details?.email,
+        metadata: charge.metadata,
+      }, { onConflict: 'stripe_charge_id', ignoreDuplicates: true });
+
+    if (error) {
+      throw new InternalServerErrorException(`Failed to create transaction: ${error.message}`);
+    }
+
+    this.logger.log(`Processed transaction for charge ${charge.id} on account ${connectedAccountId}`);
   }
 
   /**

@@ -137,7 +137,10 @@ CREATE TABLE stripe_transactions (
   order_id UUID,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Prevent duplicate transactions from webhook race conditions
+  CONSTRAINT stripe_transactions_stripe_charge_id_unique UNIQUE (stripe_charge_id)
 );
 
 -- Indexes
