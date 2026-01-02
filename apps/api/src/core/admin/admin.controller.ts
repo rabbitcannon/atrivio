@@ -36,6 +36,8 @@ import {
   HealthHistoryDto,
   CreateRateLimitDto,
   UpdateRateLimitDto,
+  RevenueByOrgDto,
+  RevenueTrendDto,
 } from './dto/admin.dto.js';
 
 @ApiTags('Admin')
@@ -409,5 +411,37 @@ export class AdminController {
     @CurrentUser() admin: AuthUser,
   ) {
     return this.adminService.deleteRateLimit(ruleId, admin.id);
+  }
+
+  // ============================================================================
+  // PLATFORM REVENUE
+  // ============================================================================
+
+  @Get('revenue')
+  @ApiOperation({ summary: 'Get platform revenue summary' })
+  @ApiResponse({ status: 200, description: 'Revenue summary retrieved' })
+  async getRevenueSummary() {
+    return this.adminService.getRevenueSummary();
+  }
+
+  @Get('revenue/by-org')
+  @ApiOperation({ summary: 'Get revenue breakdown by organization' })
+  @ApiResponse({ status: 200, description: 'Revenue by organization retrieved' })
+  async getRevenueByOrg(@Query() dto: RevenueByOrgDto) {
+    return this.adminService.getRevenueByOrg(dto);
+  }
+
+  @Get('revenue/trend')
+  @ApiOperation({ summary: 'Get revenue trend over time' })
+  @ApiResponse({ status: 200, description: 'Revenue trend retrieved' })
+  async getRevenueTrend(@Query() dto: RevenueTrendDto) {
+    return this.adminService.getRevenueTrend(dto.days || 30);
+  }
+
+  @Post('revenue/sync')
+  @ApiOperation({ summary: 'Sync transactions from Stripe for all connected accounts' })
+  @ApiResponse({ status: 200, description: 'Transactions synced' })
+  async syncAllTransactions() {
+    return this.adminService.syncAllTransactions();
   }
 }

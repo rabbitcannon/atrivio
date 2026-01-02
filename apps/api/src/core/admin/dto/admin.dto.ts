@@ -503,3 +503,29 @@ export class UpdateRateLimitDto {
   @IsOptional()
   enabled?: boolean;
 }
+
+// ============================================================================
+// PLATFORM REVENUE
+// ============================================================================
+
+export class RevenueByOrgDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Start date for revenue period (YYYY-MM-DD)' })
+  @IsDateString()
+  @IsOptional()
+  start_date?: string;
+
+  @ApiPropertyOptional({ description: 'End date for revenue period (YYYY-MM-DD)' })
+  @IsDateString()
+  @IsOptional()
+  end_date?: string;
+}
+
+export class RevenueTrendDto {
+  @ApiPropertyOptional({ description: 'Number of days to include in trend', default: 30 })
+  @IsInt()
+  @Min(7)
+  @Max(365)
+  @IsOptional()
+  @Type(() => Number)
+  days?: number = 30;
+}

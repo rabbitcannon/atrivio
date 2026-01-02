@@ -424,3 +424,76 @@ export async function getOrgPlatformFee(orgId: string) {
 export async function setOrgPlatformFee(orgId: string, data: { platform_fee_percent: number | null }) {
   return api.patch<OrgPlatformFee>(`/admin/organizations/${orgId}/platform-fee`, data);
 }
+
+// ============================================================================
+// PLATFORM REVENUE
+// ============================================================================
+
+export interface RevenueSummary {
+  summary: {
+    total_platform_fees: number;
+    total_transactions: number;
+    total_gross_volume: number;
+  };
+  periods: {
+    today: { fees: number; transactions: number };
+    last_7_days: { fees: number; transactions: number };
+    last_30_days: { fees: number; transactions: number };
+    this_month: { fees: number };
+  };
+}
+
+export interface RevenueByOrg {
+  organizations: Array<{
+    org_id: string;
+    org_name: string;
+    org_slug: string;
+    stripe_account_id: string | null;
+    total_platform_fees: number;
+    total_transactions: number;
+    total_gross_volume: number;
+    avg_transaction_amount: number;
+    platform_fee_percent: number;
+  }>;
+  meta: { page: number; limit: number };
+}
+
+export interface RevenueTrend {
+  trend: Array<{
+    date: string;
+    platform_fees: number;
+    transaction_count: number;
+    gross_volume: number;
+  }>;
+  period_days: number;
+}
+
+export async function getRevenueSummary() {
+  return api.get<RevenueSummary>('/admin/revenue');
+}
+
+export async function getRevenueByOrg(params?: { page?: number; limit?: number; start_date?: string; end_date?: string }) {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', params.page.toString());
+  if (params?.limit) searchParams.set('limit', params.limit.toString());
+  if (params?.start_date) searchParams.set('start_date', params.start_date);
+  if (params?.end_date) searchParams.set('end_date', params.end_date);
+  const query = searchParams.toString();
+  return api.get<RevenueByOrg>(`/admin/revenue/by-org${query ? `?${query}` : ''}`);
+}
+
+export async function getRevenueTrend(days: number = 30) {
+  return api.get<RevenueTrend>(`/admin/revenue/trend?days=${days}`);
+}
+
+export interface SyncTransactionsResult {
+  message: string;
+  application_fees_found: number;
+  total_synced: number;
+  connected_accounts: number;
+  errors?: string[];
+}
+
+export async function syncAllTransactions() {
+  return api.post<SyncTransactionsResult>('/admin/revenue/sync', {});
+}

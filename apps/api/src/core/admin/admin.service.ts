@@ -1692,4 +1692,236 @@ export class AdminService {
       console.error('Failed to log audit event:', error);
     }
   }
+
+  // ============================================================================
+  // PLATFORM REVENUE
+  // ============================================================================
+
+  async getRevenueSummary() {
+    const client = this.supabase.adminClient;
+
+    const { data, error } = await client.rpc('get_platform_revenue_summary');
+
+    if (error) {
+      throw new BadRequestException({
+        code: 'REVENUE_SUMMARY_FAILED',
+        message: error.message,
+      });
+    }
+
+    const row = data?.[0] || {
+      total_platform_fees: 0,
+      total_transactions: 0,
+      total_gross_volume: 0,
+      fees_today: 0,
+      fees_7d: 0,
+      fees_30d: 0,
+      fees_this_month: 0,
+      transactions_today: 0,
+      transactions_7d: 0,
+      transactions_30d: 0,
+    };
+
+    return {
+      summary: {
+        total_platform_fees: Number(row.total_platform_fees || 0),
+        total_transactions: Number(row.total_transactions || 0),
+        total_gross_volume: Number(row.total_gross_volume || 0),
+      },
+      periods: {
+        today: {
+          fees: Number(row.fees_today || 0),
+          transactions: Number(row.transactions_today || 0),
+        },
+        last_7_days: {
+          fees: Number(row.fees_7d || 0),
+          transactions: Number(row.transactions_7d || 0),
+        },
+        last_30_days: {
+          fees: Number(row.fees_30d || 0),
+          transactions: Number(row.transactions_30d || 0),
+        },
+        this_month: {
+          fees: Number(row.fees_this_month || 0),
+        },
+      },
+    };
+  }
+
+  async getRevenueByOrg(dto: { page?: number; limit?: number; start_date?: string; end_date?: string }) {
+    const client = this.supabase.adminClient;
+    const page = dto.page || 1;
+    const limit = dto.limit || 20;
+    const offset = (page - 1) * limit;
+
+    const { data, error } = await client.rpc('get_platform_revenue_by_org', {
+      p_limit: limit,
+      p_offset: offset,
+      p_start_date: dto.start_date || null,
+      p_end_date: dto.end_date || null,
+    });
+
+    if (error) {
+      throw new BadRequestException({
+        code: 'REVENUE_BY_ORG_FAILED',
+        message: error.message,
+      });
+    }
+
+    return {
+      organizations: ((data || []) as AnyRecord[]).map((r) => ({
+        org_id: r['org_id'],
+        org_name: r['org_name'],
+        org_slug: r['org_slug'],
+        stripe_account_id: r['stripe_account_id'],
+        total_platform_fees: Number(r['total_platform_fees'] || 0),
+        total_transactions: Number(r['total_transactions'] || 0),
+        total_gross_volume: Number(r['total_gross_volume'] || 0),
+        avg_transaction_amount: Number(r['avg_transaction_amount'] || 0),
+        platform_fee_percent: Number(r['platform_fee_percent'] || 3.0),
+      })),
+      meta: {
+        page,
+        limit,
+      },
+    };
+  }
+
+  async getRevenueTrend(days: number = 30) {
+    const client = this.supabase.adminClient;
+
+    const { data, error } = await client.rpc('get_platform_revenue_trend', {
+      p_days: days,
+    });
+
+    if (error) {
+      throw new BadRequestException({
+        code: 'REVENUE_TREND_FAILED',
+        message: error.message,
+      });
+    }
+
+    return {
+      trend: ((data || []) as AnyRecord[]).map((r) => ({
+        date: r['date'],
+        platform_fees: Number(r['platform_fees'] || 0),
+        transaction_count: Number(r['transaction_count'] || 0),
+        gross_volume: Number(r['gross_volume'] || 0),
+      })),
+      period_days: days,
+    };
+  }
+
+  async syncAllTransactions() {
+    const client = this.supabase.adminClient;
+
+    // Check if Stripe is configured
+    const stripeKey = process.env['STRIPE_SECRET_KEY'];
+    if (!stripeKey) {
+      throw new BadRequestException({
+        code: 'STRIPE_NOT_CONFIGURED',
+        message: 'Stripe is not configured. Please set STRIPE_SECRET_KEY.',
+      });
+    }
+
+    const Stripe = (await import('stripe')).default;
+    const stripe = new Stripe(stripeKey);
+
+    // Get all Stripe accounts from database for mapping
+    const { data: accounts } = await client
+      .from('stripe_accounts')
+      .select('id, org_id, stripe_account_id');
+
+    const accountMap = new Map(
+      (accounts || []).map((a) => [a.stripe_account_id, { id: a.id, org_id: a.org_id }])
+    );
+
+    let totalSynced = 0;
+    const orgStats: Record<string, number> = {};
+
+    try {
+      // Fetch application fees from YOUR platform account
+      // These are the platform fees collected from connected accounts
+      const appFees = await stripe.applicationFees.list({ limit: 100 });
+
+      for (const fee of appFees.data) {
+        // Get the connected account this fee came from
+        const connectedAccountId = fee.account as string;
+        const accountInfo = accountMap.get(connectedAccountId);
+
+        if (!accountInfo) {
+          // Unknown connected account, skip
+          continue;
+        }
+
+        // Get the original charge to get more details
+        let chargeDetails: { description?: string; customer_email?: string; payment_intent?: string } = {};
+        if (fee.charge) {
+          try {
+            const charge = await stripe.charges.retrieve(
+              fee.charge as string,
+              { stripeAccount: connectedAccountId }
+            );
+            if (charge.description) chargeDetails.description = charge.description;
+            const email = charge.billing_details?.email || charge.receipt_email;
+            if (email) chargeDetails.customer_email = email;
+            if (charge.payment_intent) chargeDetails.payment_intent = charge.payment_intent as string;
+          } catch {
+            // Charge lookup failed, continue without details
+          }
+        }
+
+        // Upsert the transaction with the actual platform fee from Stripe
+        const { error: upsertError } = await client
+          .from('stripe_transactions')
+          .upsert(
+            {
+              stripe_account_id: accountInfo.id,
+              stripe_payment_intent_id: chargeDetails.payment_intent || null,
+              stripe_charge_id: fee.charge as string || fee.id,
+              type: 'charge',
+              status: 'succeeded',
+              amount: fee.amount, // Original charge amount
+              currency: fee.currency,
+              platform_fee: fee.amount, // The application fee IS the platform fee
+              stripe_fee: 0,
+              net_amount: 0, // Org's net is handled separately
+              description: chargeDetails.description || `Application fee ${fee.id}`,
+              customer_email: chargeDetails.customer_email || null,
+              metadata: {},
+              created_at: new Date(fee.created * 1000).toISOString(),
+            },
+            {
+              onConflict: 'stripe_charge_id',
+              ignoreDuplicates: true,
+            }
+          );
+
+        if (!upsertError) {
+          totalSynced++;
+          orgStats[accountInfo.org_id] = (orgStats[accountInfo.org_id] || 0) + 1;
+        }
+      }
+
+      // Also sync balance transactions to see direct platform revenue
+      const balanceTransactions = await stripe.balanceTransactions.list({
+        limit: 100,
+        type: 'application_fee',
+      });
+
+      return {
+        message: `Synced ${totalSynced} platform fee transactions`,
+        total_transactions: totalSynced,
+        application_fees_found: appFees.data.length,
+        balance_transactions_found: balanceTransactions.data.length,
+        by_org: orgStats,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      throw new BadRequestException({
+        code: 'STRIPE_SYNC_FAILED',
+        message: `Failed to sync from Stripe: ${message}`,
+      });
+    }
+  }
 }

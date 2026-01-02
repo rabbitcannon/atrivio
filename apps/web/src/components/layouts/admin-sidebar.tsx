@@ -12,6 +12,7 @@ import {
   FileText,
   Activity,
   Shield,
+  DollarSign,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -25,6 +26,7 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { label: 'Revenue', href: '/admin/revenue', icon: DollarSign },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Organizations', href: '/admin/organizations', icon: Building2 },
 ];
