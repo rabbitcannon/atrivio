@@ -27,8 +27,53 @@ import type { UserId } from '@haunt/shared';
 export class TimeController {
   constructor(private timeService: TimeService) {}
 
+  // ============================================================================
+  // SELF-SERVICE ENDPOINTS (Quick Time Clock)
+  // ============================================================================
+
+  @Get('organizations/:orgId/time/my-status')
+  @ApiOperation({ summary: 'Get current user time clock status' })
+  async getMyStatus(
+    @Tenant() ctx: TenantContext,
+    @CurrentUser('id') userId: UserId,
+  ) {
+    return this.timeService.getMyStatus(ctx.orgId, userId);
+  }
+
+  @Post('organizations/:orgId/time/clock-in')
+  @ApiOperation({ summary: 'Clock in (self-service)' })
+  async selfClockIn(
+    @Tenant() ctx: TenantContext,
+    @CurrentUser('id') userId: UserId,
+    @Body() dto: ClockInDto,
+  ) {
+    return this.timeService.selfClockIn(ctx.orgId, userId, dto);
+  }
+
+  @Post('organizations/:orgId/time/clock-out')
+  @ApiOperation({ summary: 'Clock out (self-service)' })
+  async selfClockOut(
+    @Tenant() ctx: TenantContext,
+    @CurrentUser('id') userId: UserId,
+    @Body() dto: ClockOutDto,
+  ) {
+    return this.timeService.selfClockOut(ctx.orgId, userId, dto);
+  }
+
+  @Get('organizations/:orgId/time/active')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin', 'manager', 'hr')
+  @ApiOperation({ summary: 'Get currently clocked-in staff (manager view)' })
+  async getActiveClockedIn(@Tenant() ctx: TenantContext) {
+    return this.timeService.getActiveClockedIn(ctx.orgId);
+  }
+
+  // ============================================================================
+  // STAFF-SPECIFIC ENDPOINTS (Admin/Manager operations)
+  // ============================================================================
+
   @Post('organizations/:orgId/staff/:staffId/time/clock-in')
-  @ApiOperation({ summary: 'Clock in' })
+  @ApiOperation({ summary: 'Clock in (admin)' })
   async clockIn(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,

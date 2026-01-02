@@ -308,4 +308,37 @@ export class OrganizationsService {
     const { data } = await query.single();
     return !data;
   }
+
+  /**
+   * Get organization by slug (for quick time page)
+   * Returns minimal info needed for time clock UI
+   */
+  async findBySlug(slug: string) {
+    const { data: org, error } = await this.supabase.adminClient
+      .from('organizations')
+      .select('id, name, slug, logo_url, status')
+      .eq('slug', slug)
+      .single();
+
+    if (error || !org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    if (org.status !== 'active') {
+      throw new NotFoundException({
+        code: 'ORG_NOT_ACTIVE',
+        message: 'Organization is not active',
+      });
+    }
+
+    return {
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      logo_url: org.logo_url,
+    };
+  }
 }

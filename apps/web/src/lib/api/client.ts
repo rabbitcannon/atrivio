@@ -592,3 +592,75 @@ export async function updateSeason(
 export async function deleteSeason(orgId: string, attractionId: string, seasonId: string) {
   return api.delete<{ message: string }>(`/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`);
 }
+
+// ============================================================================
+// Quick Time Clock API (Self-service, Client-side)
+// ============================================================================
+
+export interface TimeClockStatus {
+  is_clocked_in: boolean;
+  current_entry: {
+    id: string;
+    clock_in: string;
+    attraction: { id: string; name: string } | null;
+    duration_minutes: number;
+  } | null;
+  staff_id: string;
+  attractions: { id: string; name: string; is_primary: boolean }[];
+}
+
+export interface ActiveStaffEntry {
+  entry_id: string;
+  staff_id: string;
+  user: { first_name: string; last_name: string; avatar_url?: string } | null;
+  clock_in: string;
+  attraction: { id: string; name: string } | null;
+  duration_minutes: number;
+}
+
+export interface OrgBySlug {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+}
+
+/**
+ * Get organization by slug (for time clock page)
+ */
+export async function getOrgBySlug(slug: string) {
+  return api.get<OrgBySlug>(`/organizations/by-slug/${slug}`);
+}
+
+/**
+ * Get current user's time clock status (self-service)
+ */
+export async function getMyTimeStatus(orgId: string) {
+  return api.get<TimeClockStatus>(`/organizations/${orgId}/time/my-status`);
+}
+
+/**
+ * Self-service clock in
+ */
+export async function selfClockIn(orgId: string, attractionId: string) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/time/clock-in`, {
+    attraction_id: attractionId,
+  });
+}
+
+/**
+ * Self-service clock out
+ */
+export async function selfClockOut(
+  orgId: string,
+  data?: { break_minutes?: number; notes?: string }
+) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/time/clock-out`, data || {});
+}
+
+/**
+ * Get currently clocked-in staff (manager view)
+ */
+export async function getActiveClockedIn(orgId: string) {
+  return api.get<{ data: ActiveStaffEntry[]; count: number }>(`/organizations/${orgId}/time/active`);
+}

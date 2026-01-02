@@ -24,6 +24,13 @@ Features are implemented in phases after scaffolding is complete. Each feature r
 | **F12** | Notifications | `docs/features/F12-notifications/ERD.md` | F1-F4 | Low |
 | **F13** | Analytics | `docs/features/F13-analytics/ERD.md` | All | Low |
 | **F14** | Permissions & RBAC | `docs/features/F14-permissions/ERD.md` | F2, F4, F5 | Medium |
+| **F15** | Documentation Site | `docs/features/F15-docs/SPEC.md` | F1-F14 | High |
+
+### Future/Optional Features
+
+| Feature | Name | ERD Location | Dependencies | Notes |
+|---------|------|--------------|--------------|-------|
+| **F100** | Platform Billing | `docs/features/F100-billing/ERD.md` | F2, F6 | Optional - requires pricing approval |
 
 ---
 

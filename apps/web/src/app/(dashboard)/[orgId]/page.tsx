@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Ghost, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { getOrganization, getStaff, resolveOrgId } from '@/lib/api';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { TimeClockWidget } from '@/components/features/time-clock';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -100,8 +101,8 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
         ))}
       </div>
 
-      {/* Recent Activity */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Recent Activity and Time Clock */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
@@ -141,6 +142,11 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
             </a>
           </CardContent>
         </Card>
+
+        {/* Time Clock Widget */}
+        {orgResult.data?.slug && (
+          <TimeClockWidget orgId={orgId} orgSlug={orgResult.data.slug} />
+        )}
       </div>
     </div>
   );

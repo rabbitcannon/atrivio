@@ -19,6 +19,7 @@ import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
 import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
 import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
 import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { Public } from '../../core/auth/decorators/public.decorator.js';
 import type { OrgId, UserId } from '@haunt/shared';
 
 @ApiTags('Organizations')
@@ -37,6 +38,13 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'List organizations for current user' })
   async list(@CurrentUser() user: AuthUser) {
     return this.orgsService.findByUser(user.id as UserId);
+  }
+
+  @Get('by-slug/:slug')
+  @Public()
+  @ApiOperation({ summary: 'Get organization by slug (for time clock)' })
+  async findBySlug(@Param('slug') slug: string) {
+    return this.orgsService.findBySlug(slug);
   }
 
   @Get(':orgId')

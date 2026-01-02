@@ -1,11 +1,11 @@
-# Haunt Platform - Implementation Plan Part 3: Engagement & Growth (F11-F14)
+# Haunt Platform - Implementation Plan Part 3: Engagement & Growth (F11-F16)
 
 **Created Date**: 2025-12-31
-**Last Updated**: 2025-12-31
+**Last Updated**: 2026-01-02
 **Current Session**: Not Started
 **Overall Progress**: 0% Complete
 
-> **Note**: Part 3 covers Engagement & Growth features (F11-F14). Requires Part 1 (MVP F1-F6) and Part 2 (F7-F10) to be complete.
+> **Note**: Part 3 covers Engagement & Growth features (F11-F16). Requires Part 1 (MVP F1-F6) and Part 2 (F7-F10) to be complete.
 
 ## Quick Start for Next Session
 
@@ -19,8 +19,9 @@
 - **Phase 12 (API)**: backend-architect
 - **Phase 13 (Frontend)**: frontend-architect
 - **Phase 14 (Testing)**: qa, code-reviewer
-- **Phase 15 (Integration Testing)**: qa, code-reviewer
-- **Phase 16 (Final Polish & Deploy)**: frontend-architect, backend-architect, devops
+- **Phase 15 (Documentation)**: scribe, frontend-architect, qa (Playwright)
+- **Phase 16 (Integration Testing)**: qa, code-reviewer
+- **Phase 17 (Final Polish & Deploy)**: frontend-architect, backend-architect, devops
 
 ---
 
@@ -32,8 +33,9 @@
 | 12 | Engagement API | Not Started | F11-F14 | 4 new modules |
 | 13 | Engagement Frontend | Not Started | F11-F14 | Queue, notifications, analytics, storefronts |
 | 14 | Engagement Testing | Not Started | F11-F14 | E2E tests for engagement |
-| 15 | Integration Testing | Not Started | F1-F14 | Full system E2E tests |
-| 16 | Final Polish & Deploy | Not Started | All | Dark theme, UX polish, production deploy |
+| 15 | Documentation Site | Not Started | F15 | Docusaurus + Playwright screenshots |
+| 16 | Integration Testing | Not Started | F1-F15 | Full system E2E tests |
+| 17 | Final Polish & Deploy | Not Started | All | Dark theme, UX polish, production deploy |
 
 **Status Legend**: Not Started | In Progress | Complete | Blocked | On Hold
 
@@ -41,12 +43,13 @@
 
 ## Feature Status Matrix
 
-| Feature | ERD | Migration | Seed Data | API | Frontend | Tests | Status |
-|---------|-----|-----------|-----------|-----|----------|-------|--------|
+| Feature | ERD/Spec | Migration | Seed Data | API | Frontend | Tests | Status |
+|---------|----------|-----------|-----------|-----|----------|-------|--------|
 | **F11** Virtual Queue | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F12** Notifications | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F13** Analytics | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
 | **F14** Storefronts | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
+| **F15** Documentation Site | Not Started | N/A | N/A | N/A | Not Started | Not Started | Not Started |
 
 ---
 
@@ -357,7 +360,103 @@ Comprehensive seed data for engagement features enables:
 
 ---
 
-## Phase 15: Integration Testing (F1-F14)
+## F15: Documentation Site
+
+### Overview
+Professional, investor-ready documentation site built with Docusaurus. Covers user guides, API reference, and getting started tutorials for all platform features.
+
+### Tech Stack
+- **Framework**: Docusaurus 3.x
+- **Hosting**: Vercel or Netlify (static)
+- **Screenshots**: Playwright for automated screenshot capture
+- **API Docs**: OpenAPI/Swagger integration
+- **Search**: Algolia DocSearch (free for open-source/docs)
+
+### Content Structure
+```
+docs/
+├── getting-started/
+│   ├── quick-start.md
+│   ├── account-setup.md
+│   └── first-organization.md
+├── user-guides/
+│   ├── dashboard/
+│   ├── attractions/
+│   ├── staff-management/
+│   ├── time-clock/
+│   ├── scheduling/
+│   ├── ticketing/
+│   └── check-in/
+├── admin-guides/
+│   ├── organization-settings/
+│   ├── payments-stripe/
+│   ├── roles-permissions/
+│   └── platform-admin/
+├── api-reference/
+│   ├── authentication.md
+│   ├── organizations.md
+│   ├── attractions.md
+│   ├── staff.md
+│   ├── time-tracking.md
+│   └── ... (auto-generated from OpenAPI)
+└── tutorials/
+    ├── setting-up-your-first-haunt.md
+    ├── managing-seasonal-staff.md
+    └── integrating-with-stripe.md
+```
+
+### Implementation Tasks
+- [ ] Task 1: Set up Docusaurus project in `apps/docs/`
+  - Docusaurus 3.x with TypeScript
+  - Custom theme matching platform branding
+  - Dark/light theme support
+- [ ] Task 2: Write Getting Started guides
+  - Quick start (5-minute setup)
+  - Account creation and org setup
+  - Key concepts overview
+- [ ] Task 3: Write User Guides for each feature
+  - Screenshots captured via Playwright
+  - Step-by-step workflows
+  - Tips and best practices
+- [ ] Task 4: Generate API Reference
+  - OpenAPI spec integration
+  - Interactive API explorer
+  - Code examples (curl, JavaScript, Python)
+- [ ] Task 5: Create tutorials and walkthroughs
+  - End-to-end scenarios
+  - Video embed support (optional)
+- [ ] Task 6: Set up search and navigation
+  - Algolia DocSearch or local search
+  - Sidebar navigation
+  - Versioning (for future API versions)
+- [ ] Task 7: Deploy documentation site
+  - Custom domain (e.g., docs.hauntplatform.com)
+  - CI/CD for automatic updates
+
+### Quality Standards (Investor-Ready)
+- **Professional Design**: Matches platform branding, polished UI
+- **Complete Coverage**: Every feature documented with screenshots
+- **Up-to-Date**: Automated screenshot capture ensures accuracy
+- **Searchable**: Full-text search across all docs
+- **Mobile-Friendly**: Responsive design for all devices
+- **Fast**: Static site with CDN caching
+
+### Playwright Screenshot Automation
+```typescript
+// Example: Capture time clock screenshots
+test('capture time clock screenshots', async ({ page }) => {
+  await page.goto('/nightmare-manor/time');
+  await page.screenshot({ path: 'docs/static/img/time-clock-login.png' });
+
+  // Login and capture clocked-in state
+  await login(page, 'actor1@haunt.dev');
+  await page.screenshot({ path: 'docs/static/img/time-clock-clocked-in.png' });
+});
+```
+
+---
+
+## Phase 15: Integration Testing (F1-F15)
 
 ### Objectives
 - Full system E2E testing across all features
@@ -505,6 +604,16 @@ Comprehensive seed data for engagement features enables:
 | `docs/features/F13-analytics/ERD.md` | Analytics ERD | Exists |
 | `docs/features/F14-storefronts/ERD.md` | Storefronts ERD | Exists |
 
+### F15 Documentation Site Files
+| File Path | Purpose | Status |
+|-----------|---------|--------|
+| `apps/docs/` | Docusaurus documentation site | Not Started |
+| `apps/docs/docusaurus.config.ts` | Docusaurus configuration | Not Started |
+| `apps/docs/docs/` | Markdown documentation files | Not Started |
+| `apps/docs/static/img/` | Screenshots (Playwright-generated) | Not Started |
+| `docs/features/F15-docs/SPEC.md` | Documentation site specification | Not Started |
+| `e2e/screenshots/` | Playwright screenshot tests | Not Started |
+
 ### API Modules (Planned)
 | Module | Endpoints | Auth | Status |
 |--------|-----------|------|--------|
@@ -577,6 +686,8 @@ Comprehensive seed data for engagement features enables:
 - **Integration Tests**: ~50 cross-feature tests
 - **E2E User Journeys**: 4 complete workflows
 - **Polish Tasks**: Dark theme, accessibility, performance optimization
+- **Documentation Pages**: ~50+ (user guides, API reference, tutorials)
+- **Automated Screenshots**: ~100+ (via Playwright)
 
 ---
 
@@ -600,7 +711,8 @@ All other routes require authentication with appropriate role permissions.
 - Part 1 (MVP F1-F6): `.claude/plans/mvp-implementation.md`
 - Part 2 (Operations F7-F10): `.claude/plans/mvp-implementation-part-2.md`
 - Feature Roadmap: `.claude/plans/feature-roadmap.md`
+- F15 Docs Spec: `docs/features/F15-docs/SPEC.md`
 - API Docs: `docs/features/F11-F14/API.md`
 - ERD Docs: `docs/features/F11-F14/ERD.md`
 
-> **Note**: Part 3 includes the final phases (15-16) which cover integration testing, dark theme, UX polish, and production deployment for ALL features (F1-F14).
+> **Note**: Part 3 includes the final phases (15-17) which cover documentation site, integration testing, dark theme, UX polish, and production deployment for ALL features (F1-F15).

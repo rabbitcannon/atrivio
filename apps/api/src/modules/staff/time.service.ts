@@ -371,4 +371,215 @@ export class TimeService {
       });
     }
   }
+
+  // ============================================================================
+  // SELF-SERVICE ENDPOINTS (Quick Time Clock)
+  // ============================================================================
+
+  /**
+   * Get current user's time clock status
+   */
+  async getMyStatus(orgId: OrgId, userId: UserId) {
+    // Get user's membership/staff ID in this org
+    const { data: membership, error: memberError } = await this.supabase.adminClient
+      .from('org_memberships')
+      .select('id, role')
+      .eq('org_id', orgId)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (memberError || !membership) {
+      throw new NotFoundException({
+        code: 'STAFF_NOT_FOUND',
+        message: 'You are not a member of this organization',
+      });
+    }
+
+    const staffId = membership.id;
+
+    // Check for active time entry
+    const { data: activeEntry } = await this.supabase.adminClient
+      .from('staff_time_entries')
+      .select(`
+        id,
+        clock_in,
+        attraction_id,
+        attractions (
+          id,
+          name
+        )
+      `)
+      .eq('staff_id', staffId)
+      .is('clock_out', null)
+      .single();
+
+    // Get user's attraction assignments
+    const { data: assignments } = await this.supabase.adminClient
+      .from('staff_attraction_assignments')
+      .select(`
+        attraction_id,
+        is_primary,
+        attractions (
+          id,
+          name
+        )
+      `)
+      .eq('staff_id', staffId);
+
+    // If no assignments, get all attractions in org
+    let attractions: { id: string; name: string; is_primary: boolean }[] = [];
+    if (assignments && assignments.length > 0) {
+      attractions = assignments.map((a: any) => ({
+        id: a.attractions.id,
+        name: a.attractions.name,
+        is_primary: a.is_primary,
+      }));
+    } else {
+      const { data: orgAttractions } = await this.supabase.adminClient
+        .from('attractions')
+        .select('id, name')
+        .eq('org_id', orgId)
+        .eq('status', 'active');
+
+      attractions = (orgAttractions || []).map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        is_primary: false,
+      }));
+    }
+
+    // Calculate duration if clocked in
+    let durationMinutes = 0;
+    if (activeEntry) {
+      const clockIn = new Date(activeEntry.clock_in);
+      const now = new Date();
+      durationMinutes = Math.floor((now.getTime() - clockIn.getTime()) / (1000 * 60));
+    }
+
+    return {
+      is_clocked_in: !!activeEntry,
+      current_entry: activeEntry ? {
+        id: activeEntry.id,
+        clock_in: activeEntry.clock_in,
+        attraction: activeEntry.attractions ? {
+          id: (activeEntry.attractions as any).id,
+          name: (activeEntry.attractions as any).name,
+        } : null,
+        duration_minutes: durationMinutes,
+      } : null,
+      staff_id: staffId,
+      attractions,
+    };
+  }
+
+  /**
+   * Self-service clock in (derives staffId from userId)
+   */
+  async selfClockIn(orgId: OrgId, userId: UserId, dto: ClockInDto) {
+    // Get user's staff ID in this org
+    const { data: membership } = await this.supabase.adminClient
+      .from('org_memberships')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (!membership) {
+      throw new NotFoundException({
+        code: 'STAFF_NOT_FOUND',
+        message: 'You are not a member of this organization',
+      });
+    }
+
+    return this.clockIn(orgId, membership.id, dto);
+  }
+
+  /**
+   * Self-service clock out (derives staffId from userId)
+   */
+  async selfClockOut(orgId: OrgId, userId: UserId, dto: ClockOutDto) {
+    // Get user's staff ID in this org
+    const { data: membership } = await this.supabase.adminClient
+      .from('org_memberships')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (!membership) {
+      throw new NotFoundException({
+        code: 'STAFF_NOT_FOUND',
+        message: 'You are not a member of this organization',
+      });
+    }
+
+    return this.clockOut(orgId, membership.id, dto);
+  }
+
+  /**
+   * Get list of currently clocked-in staff (manager view)
+   */
+  async getActiveClockedIn(orgId: OrgId) {
+    const { data, error } = await this.supabase.adminClient
+      .from('staff_time_entries')
+      .select(`
+        id,
+        staff_id,
+        clock_in,
+        attraction_id,
+        attractions (
+          id,
+          name
+        ),
+        staff:org_memberships!staff_id (
+          user_id,
+          profiles:user_id (
+            first_name,
+            last_name,
+            avatar_url
+          )
+        )
+      `)
+      .eq('org_id', orgId)
+      .is('clock_out', null)
+      .order('clock_in', { ascending: true });
+
+    if (error) {
+      throw new BadRequestException({
+        code: 'ACTIVE_STAFF_FETCH_FAILED',
+        message: error.message,
+      });
+    }
+
+    const now = new Date();
+    const activeStaff = (data || []).map((entry: any) => {
+      const clockIn = new Date(entry.clock_in);
+      const durationMinutes = Math.floor((now.getTime() - clockIn.getTime()) / (1000 * 60));
+      const profile = entry.staff?.profiles;
+
+      return {
+        entry_id: entry.id,
+        staff_id: entry.staff_id,
+        user: profile ? {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          avatar_url: profile.avatar_url,
+        } : null,
+        clock_in: entry.clock_in,
+        attraction: entry.attractions ? {
+          id: entry.attractions.id,
+          name: entry.attractions.name,
+        } : null,
+        duration_minutes: durationMinutes,
+      };
+    });
+
+    return {
+      data: activeStaff,
+      count: activeStaff.length,
+    };
+  }
 }
