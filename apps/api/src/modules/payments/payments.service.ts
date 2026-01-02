@@ -562,6 +562,115 @@ export class PaymentsService {
   }
 
   /**
+   * Sync transactions from Stripe API
+   * Pulls historical charges and stores them in the database
+   */
+  async syncTransactions(orgId: OrgId) {
+    this.ensureStripeConfigured();
+
+    // Get the stripe account for this org
+    const { data: account, error: accountError } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .select('id, stripe_account_id, status')
+      .eq('org_id', orgId)
+      .single();
+
+    if (accountError || !account) {
+      throw new NotFoundException({
+        code: 'STRIPE_ACCOUNT_NOT_FOUND',
+        message: 'No Stripe account found for this organization',
+      });
+    }
+
+    if (account.status !== 'active') {
+      throw new BadRequestException({
+        code: 'STRIPE_ACCOUNT_NOT_ACTIVE',
+        message: 'Stripe account must be active to sync transactions',
+      });
+    }
+
+    // Fetch charges from Stripe for this connected account
+    let charges: Stripe.Charge[];
+    try {
+      const response = await this.stripe.charges.list(
+        { limit: 100 },
+        { stripeAccount: account.stripe_account_id }
+      );
+      charges = response.data;
+      this.logger.log(`Fetched ${charges.length} charges from Stripe for account ${account.stripe_account_id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown Stripe error';
+      this.logger.error(`Failed to fetch charges from Stripe: ${message}`);
+      throw new BadRequestException({
+        code: 'STRIPE_SYNC_FAILED',
+        message: `Failed to fetch charges from Stripe: ${message}`,
+      });
+    }
+
+    let syncedCount = 0;
+    let skippedCount = 0;
+
+    // Process each charge
+    for (const charge of charges) {
+      // Only process succeeded charges
+      if (charge.status !== 'succeeded') {
+        continue;
+      }
+
+      // Calculate platform fee (we don't have the original fee info, so estimate)
+      const { percent } = await this.getPlatformFee(orgId);
+      const platformFee = Math.round(charge.amount * (percent / 100));
+
+      // Get Stripe's fee from the balance transaction if available
+      let stripeFee = 0;
+      if (charge.balance_transaction && typeof charge.balance_transaction === 'object') {
+        stripeFee = charge.balance_transaction.fee || 0;
+      }
+
+      // Upsert the transaction (ignore duplicates)
+      const { error: upsertError } = await this.supabase.adminClient
+        .from('stripe_transactions')
+        .upsert(
+          {
+            stripe_account_id: account.id,
+            stripe_payment_intent_id: charge.payment_intent as string || null,
+            stripe_charge_id: charge.id,
+            type: 'charge',
+            status: 'succeeded',
+            amount: charge.amount,
+            currency: charge.currency,
+            platform_fee: platformFee,
+            stripe_fee: stripeFee,
+            net_amount: charge.amount - platformFee - stripeFee,
+            description: charge.description || null,
+            customer_email: charge.billing_details?.email || charge.receipt_email || null,
+            metadata: charge.metadata || {},
+            created_at: new Date(charge.created * 1000).toISOString(),
+          },
+          {
+            onConflict: 'stripe_charge_id',
+            ignoreDuplicates: true,
+          }
+        );
+
+      if (upsertError) {
+        this.logger.warn(`Failed to upsert charge ${charge.id}: ${upsertError.message}`);
+        skippedCount++;
+      } else {
+        syncedCount++;
+      }
+    }
+
+    this.logger.log(`Sync complete: ${syncedCount} synced, ${skippedCount} skipped`);
+
+    return {
+      synced_count: syncedCount,
+      skipped_count: skippedCount,
+      message: `Successfully synced ${syncedCount} transactions from Stripe`,
+    };
+  }
+
+  /**
    * Create a refund for a transaction
    */
   async createRefund(orgId: OrgId, dto: CreateRefundDto) {

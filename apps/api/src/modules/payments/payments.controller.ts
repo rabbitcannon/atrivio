@@ -116,6 +116,14 @@ export class PaymentsController {
     return this.paymentsService.getTransactionSummary(ctx.orgId, startDate, endDate);
   }
 
+  @Post('transactions/sync')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin', 'finance')
+  @ApiOperation({ summary: 'Sync transactions from Stripe API (pulls historical charges)' })
+  async syncTransactions(@Tenant() ctx: TenantContext) {
+    return this.paymentsService.syncTransactions(ctx.orgId);
+  }
+
   @Get('transactions/:transactionId')
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'finance')

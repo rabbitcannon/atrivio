@@ -22,6 +22,7 @@ import { resolveOrgId, getPaymentStatus, getTransactionSummary } from '@/lib/api
 import { StripeConnectButton } from '@/components/features/payments/stripe-connect-button';
 import { RefreshStatusButton } from '@/components/features/payments/refresh-status-button';
 import { AutoSyncStatus } from '@/components/features/payments/auto-sync-status';
+import { SyncTransactionsButton } from '@/components/features/payments/sync-transactions-button';
 
 export const metadata: Metadata = {
   title: 'Payments',
@@ -57,7 +58,7 @@ function getStatusIcon(status: string | null) {
 function getStatusBadgeVariant(status: string | null): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
-      return 'default';
+      return 'default'; // Will be styled green via className
     case 'onboarding':
     case 'pending':
       return 'secondary';
@@ -68,6 +69,13 @@ function getStatusBadgeVariant(status: string | null): 'default' | 'secondary' |
     default:
       return 'secondary';
   }
+}
+
+function getStatusBadgeClassName(status: string | null): string {
+  if (status === 'active') {
+    return 'bg-green-500 hover:bg-green-500/80 text-white';
+  }
+  return '';
 }
 
 export default async function PaymentsPage({ params }: PaymentsPageProps) {
@@ -133,11 +141,14 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
             </div>
             <div className="flex items-center gap-2">
               {accountStatus?.status && (
-                <Badge variant={getStatusBadgeVariant(accountStatus.status)}>
+                <Badge
+                  variant={getStatusBadgeVariant(accountStatus.status)}
+                  className={getStatusBadgeClassName(accountStatus.status)}
+                >
                   {accountStatus.status.charAt(0).toUpperCase() + accountStatus.status.slice(1)}
                 </Badge>
               )}
-              {isConnected && (
+              {isConnected && !isActive && (
                 <RefreshStatusButton orgId={orgId} />
               )}
             </div>
@@ -183,6 +194,7 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
               <Separator />
               <div className="flex gap-2">
                 <StripeConnectButton orgId={orgId} mode="dashboard" variant="outline" />
+                <SyncTransactionsButton orgId={orgId} />
               </div>
             </div>
           )}

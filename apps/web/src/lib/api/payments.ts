@@ -163,6 +163,20 @@ export async function syncStripeAccount(orgId: string) {
   return api.post<StripeAccountStatusResponse>(`/organizations/${orgId}/payments/sync`, {});
 }
 
+export interface SyncTransactionsResponse {
+  synced_count: number;
+  skipped_count: number;
+  message: string;
+}
+
+/**
+ * Sync transactions from Stripe API
+ * Pulls historical charges and stores them in the database
+ */
+export async function syncTransactions(orgId: string) {
+  return api.post<SyncTransactionsResponse>(`/organizations/${orgId}/payments/transactions/sync`, {});
+}
+
 /**
  * Get transactions for an organization
  */
