@@ -45,7 +45,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient, resolveOrgId } from '@/lib/api';
+import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
 interface PromoCode {
   id: string;
@@ -65,7 +65,7 @@ interface PromoCode {
 
 export default function PromoCodesPage() {
   const params = useParams();
-  const orgIdentifier = params.orgId as string;
+  const orgIdentifier = params['orgId'] as string;
   const { toast } = useToast();
 
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
@@ -102,10 +102,10 @@ export default function PromoCodesPage() {
 
   async function loadPromoCodes(orgId: string) {
     try {
-      const response = await apiClient.get<PromoCode[]>(
+      const response = await apiClient.get<{ data: PromoCode[] }>(
         `/organizations/${orgId}/promo-codes?includeInactive=true`
       );
-      setPromoCodes(response || []);
+      setPromoCodes(response?.data || []);
     } catch (error) {
       console.error('Failed to load promo codes:', error);
     }
@@ -172,8 +172,8 @@ export default function PromoCodesPage() {
       maxUsesPerCustomer: code.max_uses_per_customer
         ? String(code.max_uses_per_customer)
         : '',
-      validFrom: code.valid_from ? code.valid_from.split('T')[0] : '',
-      validUntil: code.valid_until ? code.valid_until.split('T')[0] : '',
+      validFrom: code.valid_from ? code.valid_from.split('T')[0] ?? '' : '',
+      validUntil: code.valid_until ? code.valid_until.split('T')[0] ?? '' : '',
     });
     setIsDialogOpen(true);
   }

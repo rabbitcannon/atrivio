@@ -43,7 +43,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient, resolveOrgId } from '@/lib/api';
+import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
 interface OrderItem {
   id: string;
@@ -93,7 +93,7 @@ const STATUS_COLORS: Record<string, 'default' | 'secondary' | 'destructive' | 'o
 
 export default function OrdersPage() {
   const params = useParams();
-  const orgIdentifier = params.orgId as string;
+  const orgIdentifier = params['orgId'] as string;
   const { toast } = useToast();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -176,7 +176,8 @@ export default function OrdersPage() {
 
     try {
       await apiClient.post(
-        `/organizations/${resolvedOrgId}/orders/${order.id}/complete`
+        `/organizations/${resolvedOrgId}/orders/${order.id}/complete`,
+        {}
       );
       toast({ title: 'Order completed and tickets generated' });
       await loadOrders(resolvedOrgId, pagination.page);
@@ -194,7 +195,7 @@ export default function OrdersPage() {
     if (!confirm(`Cancel order ${order.order_number}?`)) return;
 
     try {
-      await apiClient.post(`/organizations/${resolvedOrgId}/orders/${order.id}/cancel`);
+      await apiClient.post(`/organizations/${resolvedOrgId}/orders/${order.id}/cancel`, {});
       toast({ title: 'Order canceled' });
       await loadOrders(resolvedOrgId, pagination.page);
     } catch (error) {

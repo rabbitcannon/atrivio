@@ -464,3 +464,111 @@ export interface ShiftSwapRequest {
     };
   } | null;
 }
+
+// ============================================================================
+// Inventory Types (F10)
+// ============================================================================
+
+export interface InventoryType {
+  id: string;
+  org_id: string | null;
+  key: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  requires_checkout: boolean;
+  is_consumable: boolean;
+  track_condition: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface InventoryCategory {
+  id: string;
+  org_id: string;
+  parent_id: string | null;
+  name: string;
+  description: string | null;
+  color: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  children?: InventoryCategory[];
+  item_count?: number;
+}
+
+export type CheckoutCondition = 'excellent' | 'good' | 'fair' | 'poor' | 'damaged';
+export type InventoryTransactionType = 'purchase' | 'adjustment' | 'checkout' | 'return' | 'transfer' | 'damaged' | 'lost' | 'disposed';
+
+export interface InventoryItem {
+  id: string;
+  org_id: string;
+  attraction_id: string | null;
+  category_id: string | null;
+  type_id: string;
+  sku: string;
+  name: string;
+  description: string | null;
+  quantity: number;
+  min_quantity: number;
+  max_quantity: number | null;
+  unit: string;
+  cost_cents: number | null;
+  location: string | null;
+  condition: CheckoutCondition | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  type?: InventoryType;
+  category?: InventoryCategory;
+  attraction?: { id: string; name: string };
+}
+
+export interface InventoryCheckout {
+  id: string;
+  org_id: string;
+  item_id: string;
+  staff_id: string;
+  quantity: number;
+  checked_out_at: string;
+  due_date: string | null;
+  returned_at: string | null;
+  checked_out_by: string;
+  returned_by: string | null;
+  condition_out: CheckoutCondition | null;
+  condition_in: CheckoutCondition | null;
+  notes: string | null;
+  item?: { id: string; name: string; sku: string };
+  staff?: { id: string };
+  checked_out_by_user?: { id: string; first_name: string; last_name: string };
+  returned_by_user?: { id: string; first_name: string; last_name: string } | null;
+}
+
+export interface InventoryTransaction {
+  id: string;
+  org_id: string;
+  item_id: string;
+  type: InventoryTransactionType;
+  quantity_change: number;
+  quantity_before: number;
+  quantity_after: number;
+  reference_type: string | null;
+  reference_id: string | null;
+  performed_by: string;
+  notes: string | null;
+  created_at: string;
+  performer?: { first_name: string; last_name: string };
+}
+
+export interface InventorySummary {
+  totalItems: number;
+  totalCategories: number;
+  totalTypes: number;
+  lowStockItems: number;
+  activeCheckouts: number;
+  overdueCheckouts: number;
+  recentTransactions: InventoryTransaction[];
+  lowStockAlerts: InventoryItem[];
+}

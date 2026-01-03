@@ -45,7 +45,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient, resolveOrgId } from '@/lib/api';
+import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
 interface TicketCategory {
   id: string;
@@ -77,7 +77,7 @@ interface Attraction {
 
 export default function TicketTypesPage() {
   const params = useParams();
-  const orgIdentifier = params.orgId as string;
+  const orgIdentifier = params['orgId'] as string;
   const { toast } = useToast();
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
@@ -120,10 +120,10 @@ export default function TicketTypesPage() {
 
   async function loadTicketTypes(orgId: string) {
     try {
-      const response = await apiClient.get<TicketType[]>(
+      const response = await apiClient.get<{ data: TicketType[] }>(
         `/organizations/${orgId}/ticket-types?includeInactive=true`
       );
-      setTicketTypes(response || []);
+      setTicketTypes(response?.data || []);
     } catch (error) {
       console.error('Failed to load ticket types:', error);
     }
@@ -131,10 +131,10 @@ export default function TicketTypesPage() {
 
   async function loadCategories(orgId: string) {
     try {
-      const response = await apiClient.get<TicketCategory[]>(
+      const response = await apiClient.get<{ data: TicketCategory[] }>(
         `/organizations/${orgId}/ticket-categories`
       );
-      setCategories(response || []);
+      setCategories(response?.data || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
     }
@@ -142,10 +142,10 @@ export default function TicketTypesPage() {
 
   async function loadAttractions(orgId: string) {
     try {
-      const response = await apiClient.get<Attraction[]>(
+      const response = await apiClient.get<{ data: Attraction[] }>(
         `/organizations/${orgId}/attractions`
       );
-      setAttractions(response || []);
+      setAttractions(response?.data || []);
     } catch (error) {
       console.error('Failed to load attractions:', error);
     }

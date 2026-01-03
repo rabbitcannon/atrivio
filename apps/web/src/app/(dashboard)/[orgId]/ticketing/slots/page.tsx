@@ -44,7 +44,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient, resolveOrgId } from '@/lib/api';
+import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
 interface TimeSlot {
   id: string;
@@ -66,7 +66,7 @@ interface Attraction {
 
 export default function TimeSlotsPage() {
   const params = useParams();
-  const orgIdentifier = params.orgId as string;
+  const orgIdentifier = params['orgId'] as string;
   const { toast } = useToast();
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -76,7 +76,7 @@ export default function TimeSlotsPage() {
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [resolvedOrgId, setResolvedOrgId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split('T')[0] ?? ''
   );
 
   // Single slot form
@@ -117,10 +117,10 @@ export default function TimeSlotsPage() {
   async function loadTimeSlots(orgId: string, date?: string) {
     try {
       const dateFilter = date || selectedDate;
-      const response = await apiClient.get<TimeSlot[]>(
+      const response = await apiClient.get<{ data: TimeSlot[] }>(
         `/organizations/${orgId}/time-slots?date=${dateFilter}&includeInactive=true`
       );
-      setTimeSlots(response || []);
+      setTimeSlots(response?.data || []);
     } catch (error) {
       console.error('Failed to load time slots:', error);
     }
@@ -128,10 +128,10 @@ export default function TimeSlotsPage() {
 
   async function loadAttractions(orgId: string) {
     try {
-      const response = await apiClient.get<Attraction[]>(
+      const response = await apiClient.get<{ data: Attraction[] }>(
         `/organizations/${orgId}/attractions`
       );
-      setAttractions(response || []);
+      setAttractions(response?.data || []);
     } catch (error) {
       console.error('Failed to load attractions:', error);
     }

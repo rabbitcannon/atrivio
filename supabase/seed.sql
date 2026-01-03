@@ -360,9 +360,10 @@ VALUES
   ('1f000000-0000-0000-0000-000000000005', 'ai_scheduling', 'AI-Powered Scheduling', 'Machine learning powered staff scheduling optimization', FALSE, 0, '{}', ARRAY['a0000000-0000-0000-0000-000000000002']::UUID[], '{"experimental": true}'),
 
   -- Module flags (F7-F14)
-  -- Basic tier: ticketing, checkin, storefront (always on for all orgs)
+  -- Basic tier: ticketing, checkin, time_tracking (always on for all orgs)
   ('1f000000-0000-0000-0000-000000000006', 'ticketing', 'Ticketing Module', 'Core ticketing functionality including ticket types, orders, and promo codes (F8)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F8", "module": true}'),
   ('1f000000-0000-0000-0000-000000000007', 'checkin', 'Check-In Module', 'Guest check-in with barcode scanning, capacity tracking, and waivers (F9)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F9", "module": true}'),
+  ('1f000000-0000-0000-0000-00000000000e', 'time_tracking', 'Time Tracking Module', 'Staff time clock with clock in/out, time entries, and approval workflows (F7a)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F7a", "module": true}'),
 
   -- Pro tier: scheduling, inventory, analytics_pro
   ('1f000000-0000-0000-0000-000000000008', 'scheduling', 'Scheduling Module', 'Staff scheduling with availability, shift templates, and swap requests (F7)', TRUE, 100, '{}', '{}', '{"tier": "pro", "feature": "F7", "module": true}'),
@@ -860,3 +861,358 @@ END $$;
 -- Orders: 5 (3 completed, 1 pending, 1 refunded)
 -- Order Items: 5
 -- Tickets: 9 (2 used, 5 valid, 2 voided)
+
+-- ============================================================================
+-- F9: CHECK-IN SEED DATA
+-- ============================================================================
+
+DO $$
+DECLARE
+  v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
+  v_attraction_id UUID := 'c0000000-0000-0000-0000-000000000001';
+  v_owner_id UUID := 'a0000000-0000-0000-0000-000000000002';
+  v_scanner_id UUID := 'a0000000-0000-0000-0000-000000000007';
+BEGIN
+  -- ============================================================================
+  -- CHECK-IN STATIONS
+  -- ============================================================================
+
+  INSERT INTO check_in_stations (id, org_id, attraction_id, name, location, device_id, is_active)
+  VALUES
+    ('e1000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, 'Main Entrance', 'Front Gate', 'IPAD-001', TRUE),
+    ('e1000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, 'VIP Gate', 'Side Entrance', 'IPAD-002', TRUE),
+    ('e1000000-0000-0000-0000-000000000003', v_org_id, v_attraction_id, 'Box Office', 'Ticket Booth', 'POS-001', TRUE),
+    ('e1000000-0000-0000-0000-000000000004', v_org_id, v_attraction_id, 'Mobile Scanner', 'Roaming', NULL, TRUE)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- CHECK-INS (using existing tickets from F8)
+  -- ============================================================================
+
+  -- Only insert check-ins for tickets that exist (85000000-... series from F8)
+  INSERT INTO check_ins (id, org_id, attraction_id, ticket_id, station_id, checked_in_by, check_in_time, check_in_method, guest_count, waiver_signed)
+  VALUES
+    -- Check-in for Order 1 tickets (already marked as used in F8 seed)
+    ('e2000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', v_scanner_id, NOW() - INTERVAL '4 days', 'qr_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000001', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- CAPACITY SNAPSHOTS
+  -- ============================================================================
+
+  INSERT INTO capacity_snapshots (org_id, attraction_id, timestamp, current_count, capacity, wait_time_minutes)
+  VALUES
+    (v_org_id, v_attraction_id, NOW() - INTERVAL '3 hours', 45, 200, 0),
+    (v_org_id, v_attraction_id, NOW() - INTERVAL '2 hours', 85, 200, 0),
+    (v_org_id, v_attraction_id, NOW() - INTERVAL '1 hour', 125, 200, 5),
+    (v_org_id, v_attraction_id, NOW(), 150, 200, 10);
+
+  -- ============================================================================
+  -- GUEST WAIVERS
+  -- ============================================================================
+
+  INSERT INTO guest_waivers (id, org_id, attraction_id, ticket_id, guest_name, guest_email, guest_dob, is_minor, guardian_name, guardian_email, waiver_type, signed_at)
+  VALUES
+    ('e3000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000001', 'John Smith', 'john@example.com', '1990-05-15', FALSE, NULL, NULL, 'standard', NOW() - INTERVAL '4 days'),
+    ('e3000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000002', 'Jane Smith', 'jane@example.com', '1988-08-22', FALSE, NULL, NULL, 'standard', NOW() - INTERVAL '4 days'),
+    ('e3000000-0000-0000-0000-000000000003', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000003', 'Sarah Johnson', 'sarah@example.com', '1995-03-10', FALSE, NULL, NULL, 'standard', NOW() - INTERVAL '1 day'),
+    ('e3000000-0000-0000-0000-000000000004', v_org_id, v_attraction_id, NULL, 'Mike Johnson Jr.', 'mikejr@example.com', '2012-07-20', TRUE, 'Mike Johnson Sr.', 'mike@example.com', 'minor', NOW() - INTERVAL '1 day')
+  ON CONFLICT (id) DO NOTHING;
+
+  RAISE NOTICE 'F9 check-in seed data created successfully';
+END $$;
+
+-- ============================================================================
+-- F9 SEED SUMMARY
+-- ============================================================================
+-- Check-In Stations: 4 (Main Entrance, VIP Gate, Box Office, Mobile Scanner)
+-- Check-Ins: 2 (for used tickets from F8)
+-- Capacity Snapshots: 4 (hourly snapshots)
+-- Guest Waivers: 4 (3 adult, 1 minor with guardian)
+
+-- ============================================================================
+-- F10: INVENTORY SEED DATA
+-- ============================================================================
+
+DO $$
+DECLARE
+  v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
+  v_mansion_id UUID := 'c0000000-0000-0000-0000-000000000001';
+  v_trail_id UUID := 'c0000000-0000-0000-0000-000000000002';
+  v_owner_id UUID := 'a0000000-0000-0000-0000-000000000002';
+  v_manager_id UUID := 'a0000000-0000-0000-0000-000000000003';
+  v_actor1_id UUID := 'a0000000-0000-0000-0000-000000000004';
+  v_actor2_id UUID := 'a0000000-0000-0000-0000-000000000005';
+  v_actor3_id UUID := 'a0000000-0000-0000-0000-000000000006';
+  v_costume_type_id UUID;
+  v_prop_type_id UUID;
+  v_makeup_type_id UUID;
+  v_equipment_type_id UUID;
+  v_lighting_type_id UUID;
+  v_audio_type_id UUID;
+  v_safety_type_id UUID;
+  v_consumable_type_id UUID;
+  v_staff1_profile_id UUID;
+  v_staff2_profile_id UUID;
+  v_staff3_profile_id UUID;
+BEGIN
+  -- Get inventory type IDs (system defaults from migration)
+  SELECT id INTO v_costume_type_id FROM inventory_types WHERE key = 'costume' AND org_id IS NULL;
+  SELECT id INTO v_prop_type_id FROM inventory_types WHERE key = 'prop' AND org_id IS NULL;
+  SELECT id INTO v_makeup_type_id FROM inventory_types WHERE key = 'makeup' AND org_id IS NULL;
+  SELECT id INTO v_equipment_type_id FROM inventory_types WHERE key = 'equipment' AND org_id IS NULL;
+  SELECT id INTO v_lighting_type_id FROM inventory_types WHERE key = 'lighting' AND org_id IS NULL;
+  SELECT id INTO v_audio_type_id FROM inventory_types WHERE key = 'audio' AND org_id IS NULL;
+  SELECT id INTO v_safety_type_id FROM inventory_types WHERE key = 'safety' AND org_id IS NULL;
+  SELECT id INTO v_consumable_type_id FROM inventory_types WHERE key = 'consumable' AND org_id IS NULL;
+
+  -- Get staff profile IDs (join with org_memberships to find by user_id)
+  SELECT sp.id INTO v_staff1_profile_id FROM staff_profiles sp
+    JOIN org_memberships om ON sp.id = om.id
+    WHERE om.user_id = v_actor1_id AND sp.org_id = v_org_id;
+  SELECT sp.id INTO v_staff2_profile_id FROM staff_profiles sp
+    JOIN org_memberships om ON sp.id = om.id
+    WHERE om.user_id = v_actor2_id AND sp.org_id = v_org_id;
+  SELECT sp.id INTO v_staff3_profile_id FROM staff_profiles sp
+    JOIN org_memberships om ON sp.id = om.id
+    WHERE om.user_id = v_actor3_id AND sp.org_id = v_org_id;
+
+  -- Skip if inventory tables don't exist (F10 migration not run yet)
+  IF v_costume_type_id IS NULL THEN
+    RAISE NOTICE 'Skipping F10 seed data - inventory_types table not populated';
+    RETURN;
+  END IF;
+
+  -- ============================================================================
+  -- INVENTORY CATEGORIES
+  -- ============================================================================
+
+  INSERT INTO inventory_categories (id, org_id, name, description, parent_id, icon, color, sort_order)
+  VALUES
+    -- Top-level categories
+    ('90000000-0000-0000-0000-000000000001', v_org_id, 'Costumes', 'All costumes and wardrobe items', NULL, 'shirt', '#9333EA', 1),
+    ('90000000-0000-0000-0000-000000000002', v_org_id, 'Props', 'Set pieces and hand props', NULL, 'box', '#F59E0B', 2),
+    ('90000000-0000-0000-0000-000000000003', v_org_id, 'Makeup & SFX', 'Makeup, prosthetics, and special effects', NULL, 'palette', '#EC4899', 3),
+    ('90000000-0000-0000-0000-000000000004', v_org_id, 'Technical', 'Lighting, audio, and equipment', NULL, 'wrench', '#6B7280', 4),
+    ('90000000-0000-0000-0000-000000000005', v_org_id, 'Safety', 'Safety and first aid equipment', NULL, 'shield', '#EF4444', 5),
+
+    -- Sub-categories
+    ('90000000-0000-0000-0000-000000000010', v_org_id, 'Character Costumes', 'Full character costume sets', '90000000-0000-0000-0000-000000000001', NULL, NULL, 1),
+    ('90000000-0000-0000-0000-000000000011', v_org_id, 'Accessories', 'Costume accessories and additions', '90000000-0000-0000-0000-000000000001', NULL, NULL, 2),
+    ('90000000-0000-0000-0000-000000000012', v_org_id, 'Masks', 'Masks and headpieces', '90000000-0000-0000-0000-000000000001', NULL, NULL, 3),
+
+    ('90000000-0000-0000-0000-000000000020', v_org_id, 'Hand Props', 'Handheld props for actors', '90000000-0000-0000-0000-000000000002', NULL, NULL, 1),
+    ('90000000-0000-0000-0000-000000000021', v_org_id, 'Set Pieces', 'Larger set decoration items', '90000000-0000-0000-0000-000000000002', NULL, NULL, 2),
+    ('90000000-0000-0000-0000-000000000022', v_org_id, 'Animatronics', 'Moving props and animatronics', '90000000-0000-0000-0000-000000000002', NULL, NULL, 3)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- INVENTORY ITEMS
+  -- ============================================================================
+
+  INSERT INTO inventory_items (id, org_id, attraction_id, category_id, type_id, sku, name, description, quantity, min_quantity, max_quantity, unit, unit_cost, location, condition, notes, is_active)
+  VALUES
+    -- Costumes
+    ('91000000-0000-0000-0000-000000000001', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000010', v_costume_type_id,
+     'CST-VAMP-001', 'Victorian Vampire Lord', 'Full Victorian vampire costume with cape, vest, and accessories', 3, 2, 5, 'set', 15000, 'Costume Storage A1', 'good',
+     'Popular character costume - order more before October', TRUE),
+
+    ('91000000-0000-0000-0000-000000000002', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000010', v_costume_type_id,
+     'CST-GHOST-001', 'Phantom Bride', 'White wedding dress with ghostly tattered effects', 2, 1, 3, 'set', 12000, 'Costume Storage A2', 'excellent',
+     'Requires special lighting for full effect', TRUE),
+
+    ('91000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000010', v_costume_type_id,
+     'CST-BUTL-001', 'Creepy Butler', 'Formal butler attire with horror makeup kit', 4, 2, 6, 'set', 8000, 'Costume Storage A3', 'good',
+     'Standard character - multiple sizes available', TRUE),
+
+    ('91000000-0000-0000-0000-000000000004', v_org_id, v_trail_id, '90000000-0000-0000-0000-000000000010', v_costume_type_id,
+     'CST-WERE-001', 'Werewolf Suit', 'Full-body werewolf costume with mechanical jaw', 2, 1, 3, 'set', 35000, 'Costume Storage B1', 'excellent',
+     'Animatronic jaw requires battery pack', TRUE),
+
+    ('91000000-0000-0000-0000-000000000005', v_org_id, v_trail_id, '90000000-0000-0000-0000-000000000010', v_costume_type_id,
+     'CST-SCAR-001', 'Scarecrow Horror', 'Scarecrow costume with LED eyes', 3, 2, 4, 'set', 9500, 'Costume Storage B2', 'good',
+     'LED eyes need replacement every 20 hours', TRUE),
+
+    -- Masks
+    ('91000000-0000-0000-0000-000000000006', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000012', v_costume_type_id,
+     'MSK-DEMON-001', 'Demon Mask - Full Face', 'Silicone demon mask with horns', 5, 3, 8, 'each', 7500, 'Mask Cabinet 1', 'good',
+     'Clean with special silicone cleaner only', TRUE),
+
+    ('91000000-0000-0000-0000-000000000007', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000012', v_costume_type_id,
+     'MSK-ZOMB-001', 'Zombie Mask Collection', 'Various zombie face masks', 8, 5, 12, 'each', 2500, 'Mask Cabinet 2', 'good',
+     'Assorted designs', TRUE),
+
+    -- Props
+    ('91000000-0000-0000-0000-000000000008', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000020', v_prop_type_id,
+     'PRP-CAND-001', 'Candlestick - Antique Style', 'Brass antique-style candlestick with LED candle', 12, 8, 20, 'each', 1500, 'Props Shelf A1', 'good',
+     'LED batteries last 50 hours', TRUE),
+
+    ('91000000-0000-0000-0000-000000000009', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000020', v_prop_type_id,
+     'PRP-BOOK-001', 'Spellbook Prop', 'Faux leather spellbook with glowing pages', 4, 2, 6, 'each', 3500, 'Props Shelf A2', 'excellent',
+     'Uses UV-reactive ink', TRUE),
+
+    ('91000000-0000-0000-0000-000000000010', v_org_id, v_trail_id, '90000000-0000-0000-0000-000000000020', v_prop_type_id,
+     'PRP-CSAW-001', 'Chainsaw Prop', 'Non-functional chainsaw with sound effects', 2, 1, 3, 'each', 8000, 'Props Locker B1', 'good',
+     'Sound module requires 4 AA batteries', TRUE),
+
+    ('91000000-0000-0000-0000-000000000011', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000021', v_prop_type_id,
+     'SET-COFF-001', 'Coffin - Full Size', 'Wooden coffin prop with opening lid', 3, 2, 4, 'each', 45000, 'Set Storage Room', 'good',
+     'Weighted hinges for dramatic opening', TRUE),
+
+    ('91000000-0000-0000-0000-000000000012', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000022', v_prop_type_id,
+     'ANM-HAND-001', 'Animated Grabbing Hand', 'Wall-mounted animated reaching hand', 6, 4, 10, 'each', 15000, 'Animatronics Storage', 'good',
+     'Pneumatic - requires air compressor', TRUE),
+
+    -- Makeup & SFX
+    ('91000000-0000-0000-0000-000000000013', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_makeup_type_id,
+     'MKP-BLOO-001', 'Stage Blood - Gallon', 'Washable stage blood for all productions', 5, 3, 10, 'gallon', 2500, 'Makeup Room', 'new',
+     'Wash-safe formula', TRUE),
+
+    ('91000000-0000-0000-0000-000000000014', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_makeup_type_id,
+     'MKP-PROS-001', 'Prosthetic Appliance Kit', 'Zombie bite wounds and scars', 20, 15, 30, 'kit', 1800, 'Makeup Room', 'new',
+     'Single-use prosthetics', TRUE),
+
+    ('91000000-0000-0000-0000-000000000015', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_makeup_type_id,
+     'MKP-WHTE-001', 'White Face Paint', 'Professional-grade white face makeup', 8, 5, 15, 'jar', 1200, 'Makeup Room', 'new',
+     'Latex-free formula', TRUE),
+
+    ('91000000-0000-0000-0000-000000000016', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_makeup_type_id,
+     'MKP-CONT-001', 'Contact Lenses - Sclera', 'Full sclera demon eye contacts', 6, 4, 10, 'pair', 8500, 'Makeup Room Locked', 'new',
+     'Requires optometrist fitting', TRUE),
+
+    -- Technical Equipment
+    ('91000000-0000-0000-0000-000000000017', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_lighting_type_id,
+     'LGT-FOG-001', 'Fog Machine - 1500W', 'High-output fog machine', 4, 2, 6, 'each', 25000, 'Tech Storage', 'good',
+     'Use only approved fog fluid', TRUE),
+
+    ('91000000-0000-0000-0000-000000000018', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_lighting_type_id,
+     'LGT-STRB-001', 'Strobe Light', 'Adjustable strobe light with DMX', 10, 6, 15, 'each', 8000, 'Tech Storage', 'good',
+     'Warning: seizure risk signage required', TRUE),
+
+    ('91000000-0000-0000-0000-000000000019', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_audio_type_id,
+     'AUD-SPKR-001', 'Outdoor Speaker', 'Weatherproof speaker for trail', 8, 4, 12, 'each', 15000, 'Tech Storage', 'excellent',
+     'IP65 rated', TRUE),
+
+    ('91000000-0000-0000-0000-000000000020', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_equipment_type_id,
+     'EQP-RADI-001', 'Two-Way Radio', 'Staff communication radios', 15, 10, 20, 'each', 5000, 'Operations Office', 'good',
+     'Charge nightly', TRUE),
+
+    -- Safety Equipment
+    ('91000000-0000-0000-0000-000000000021', v_org_id, NULL, '90000000-0000-0000-0000-000000000005', v_safety_type_id,
+     'SAF-FAID-001', 'First Aid Kit - Large', 'Comprehensive first aid kit', 6, 4, 8, 'kit', 7500, 'First Aid Stations', 'new',
+     'Check expiration monthly', TRUE),
+
+    ('91000000-0000-0000-0000-000000000022', v_org_id, NULL, '90000000-0000-0000-0000-000000000005', v_safety_type_id,
+     'SAF-FIRE-001', 'Fire Extinguisher', 'ABC fire extinguisher', 12, 10, 15, 'each', 4500, 'Various Locations', 'excellent',
+     'Annual inspection required', TRUE),
+
+    ('91000000-0000-0000-0000-000000000023', v_org_id, NULL, '90000000-0000-0000-0000-000000000005', v_safety_type_id,
+     'SAF-LITE-001', 'Emergency Flashlight', 'Rechargeable emergency flashlight', 20, 15, 25, 'each', 2000, 'Emergency Stations', 'good',
+     'Test weekly', TRUE),
+
+    -- Consumables
+    ('91000000-0000-0000-0000-000000000024', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_consumable_type_id,
+     'CON-GLOV-001', 'Latex Gloves - Box', 'Disposable latex gloves for makeup', 15, 10, 25, 'box', 800, 'Makeup Room', 'new',
+     '100 per box', TRUE),
+
+    ('91000000-0000-0000-0000-000000000025', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_consumable_type_id,
+     'CON-WIPE-001', 'Makeup Remover Wipes', 'Gentle makeup removal wipes', 30, 20, 50, 'pack', 500, 'Makeup Room', 'new',
+     '50 wipes per pack', TRUE),
+
+    ('91000000-0000-0000-0000-000000000026', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_consumable_type_id,
+     'CON-BATT-001', 'AA Batteries - Pack', 'Alkaline AA batteries', 25, 20, 40, 'pack', 1000, 'Tech Storage', 'new',
+     '8-pack', TRUE),
+
+    ('91000000-0000-0000-0000-000000000027', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_consumable_type_id,
+     'CON-FOGL-001', 'Fog Fluid - 4L', 'Standard density fog fluid', 10, 8, 15, 'bottle', 2000, 'Tech Storage', 'new',
+     'Do not mix with other brands', TRUE),
+
+    -- Low stock items (for testing alerts)
+    ('91000000-0000-0000-0000-000000000028', v_org_id, v_mansion_id, '90000000-0000-0000-0000-000000000010', v_costume_type_id,
+     'CST-MAID-001', 'Gothic Maid Costume', 'Black and white gothic maid costume', 1, 2, 4, 'set', 6500, 'Costume Storage A4', 'fair',
+     'LOW STOCK - Need to order more', TRUE),
+
+    ('91000000-0000-0000-0000-000000000029', v_org_id, NULL, '90000000-0000-0000-0000-000000000003', v_makeup_type_id,
+     'MKP-LATX-001', 'Liquid Latex', 'Professional liquid latex for prosthetics', 2, 4, 8, 'bottle', 3000, 'Makeup Room', 'new',
+     'LOW STOCK - Critical for daily operations', TRUE),
+
+    ('91000000-0000-0000-0000-000000000030', v_org_id, NULL, '90000000-0000-0000-0000-000000000004', v_lighting_type_id,
+     'LGT-BLCK-001', 'Blacklight Tube', 'UV blacklight tube replacement', 3, 5, 10, 'each', 1500, 'Tech Storage', 'new',
+     'LOW STOCK - Order replacements', TRUE)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- INVENTORY CHECKOUTS
+  -- ============================================================================
+
+  -- Only create checkouts if staff profiles exist
+  IF v_staff1_profile_id IS NOT NULL THEN
+    INSERT INTO inventory_checkouts (id, org_id, item_id, staff_id, quantity, checked_out_at, checked_out_by, due_date, condition_out, notes)
+    VALUES
+      -- Active checkouts
+      ('92000000-0000-0000-0000-000000000001', v_org_id, '91000000-0000-0000-0000-000000000001', v_staff1_profile_id, 1,
+       NOW() - INTERVAL '2 days', v_manager_id, (CURRENT_DATE + INTERVAL '5 days')::DATE, 'good',
+       'Vampire Lord costume for Jake Morrison - Mansion main character'),
+
+      ('92000000-0000-0000-0000-000000000002', v_org_id, '91000000-0000-0000-0000-000000000006', v_staff1_profile_id, 1,
+       NOW() - INTERVAL '2 days', v_manager_id, (CURRENT_DATE + INTERVAL '5 days')::DATE, 'good',
+       'Demon mask to go with vampire costume'),
+
+      ('92000000-0000-0000-0000-000000000003', v_org_id, '91000000-0000-0000-0000-000000000002', v_staff2_profile_id, 1,
+       NOW() - INTERVAL '3 days', v_manager_id, (CURRENT_DATE + INTERVAL '4 days')::DATE, 'excellent',
+       'Phantom Bride costume for Emily Rodriguez'),
+
+      ('92000000-0000-0000-0000-000000000004', v_org_id, '91000000-0000-0000-0000-000000000020', v_staff3_profile_id, 1,
+       NOW() - INTERVAL '1 day', v_manager_id, (CURRENT_DATE + INTERVAL '6 days')::DATE, 'good',
+       'Radio for trail operations'),
+
+      -- Returned checkout (to show history)
+      ('92000000-0000-0000-0000-000000000005', v_org_id, '91000000-0000-0000-0000-000000000003', v_staff1_profile_id, 1,
+       NOW() - INTERVAL '10 days', v_manager_id, (CURRENT_DATE - INTERVAL '3 days')::DATE, 'good',
+       'Butler costume - returned after last weekend')
+    ON CONFLICT (id) DO NOTHING;
+
+    -- Update the returned checkout
+    UPDATE inventory_checkouts
+    SET returned_at = NOW() - INTERVAL '3 days',
+        returned_by = v_manager_id,
+        condition_in = 'good'
+    WHERE id = '92000000-0000-0000-0000-000000000005';
+  END IF;
+
+  -- ============================================================================
+  -- INVENTORY TRANSACTIONS (manual adjustments and purchases)
+  -- ============================================================================
+
+  INSERT INTO inventory_transactions (id, org_id, item_id, type, quantity, previous_qty, new_qty, reason, reference_type, performed_by)
+  VALUES
+    -- Initial stock purchases
+    ('93000000-0000-0000-0000-000000000001', v_org_id, '91000000-0000-0000-0000-000000000013', 'purchase', 5, 0, 5,
+     'Initial season stock purchase', 'manual', v_owner_id),
+
+    ('93000000-0000-0000-0000-000000000002', v_org_id, '91000000-0000-0000-0000-000000000014', 'purchase', 20, 0, 20,
+     'Prosthetic kit order for October', 'manual', v_owner_id),
+
+    ('93000000-0000-0000-0000-000000000003', v_org_id, '91000000-0000-0000-0000-000000000026', 'purchase', 25, 0, 25,
+     'Battery stock for season', 'manual', v_manager_id),
+
+    -- Adjustments
+    ('93000000-0000-0000-0000-000000000004', v_org_id, '91000000-0000-0000-0000-000000000007', 'damaged', -1, 9, 8,
+     'Mask damaged during performance - discarded', 'manual', v_manager_id),
+
+    ('93000000-0000-0000-0000-000000000005', v_org_id, '91000000-0000-0000-0000-000000000008', 'adjustment', 2, 10, 12,
+     'Found 2 additional candlesticks in back storage', 'manual', v_manager_id)
+  ON CONFLICT (id) DO NOTHING;
+
+  RAISE NOTICE 'F10 inventory seed data created successfully';
+END $$;
+
+-- ============================================================================
+-- F10 SEED SUMMARY
+-- ============================================================================
+-- Inventory Categories: 11 (5 top-level, 6 sub-categories)
+-- Inventory Items: 30 (costumes, props, makeup, equipment, safety, consumables)
+-- Inventory Checkouts: 5 (4 active, 1 returned)
+-- Inventory Transactions: 5 (3 purchases, 2 adjustments)
+-- Low Stock Items: 3 (for testing alerts)

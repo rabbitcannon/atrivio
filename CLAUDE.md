@@ -34,6 +34,72 @@ Multi-tenant SaaS for the attractions industry (haunted attractions, escape room
 - **Permission strings**: Template literals like `ticket:refund`, `schedule:publish`
 - **Money**: Always integers (cents) - use `@haunt/shared/utils/money`
 
+## Implemented Features
+
+### MVP (Part 1) - Foundation
+| Feature | Status | Description |
+|---------|--------|-------------|
+| F1 Organizations | ✅ Complete | Multi-tenant org management |
+| F2 Auth | ✅ Complete | Supabase Auth with PKCE |
+| F3 Attractions | ✅ Complete | Haunt/attraction management |
+| F4 Staff | ✅ Complete | Staff profiles, roles, time clock |
+| F5 Admin | ✅ Complete | Platform admin dashboard |
+| F6 Payments | ✅ Complete | Stripe Connect integration |
+
+### MVP (Part 2) - Operations
+| Feature | Status | Description |
+|---------|--------|-------------|
+| F7a Time Tracking | ✅ Complete | Clock in/out, status tracking |
+| F7b Scheduling | ✅ Complete | Shifts, availability, swaps |
+| F8 Ticketing | ✅ Complete | Ticket types, orders, promo codes |
+| F9 Check-In | ✅ Complete | Barcode scan, capacity, waivers |
+| F10 Inventory | 🔲 Pending | Props, costumes, checkouts |
+
+## Feature Flags
+
+The platform uses a tier-based feature flag system for plan-based access control.
+
+### Flag Tiers
+| Tier | Features | Description |
+|------|----------|-------------|
+| **basic** | ticketing, checkin, time_tracking | Core features, always enabled |
+| **pro** | scheduling, inventory, analytics_pro | Advanced operations |
+| **enterprise** | virtual_queue, sms_notifications, custom_domains | Premium features |
+
+### Using Feature Flags
+
+**API (Controller level)**:
+```typescript
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+
+@Controller('organizations/:orgId/schedules')
+@UseGuards(FeatureGuard)
+@Feature('scheduling')  // Requires 'scheduling' flag to be enabled
+export class SchedulingController {}
+```
+
+**API (Service level)**:
+```typescript
+import { FeaturesService } from '../../core/features/features.service.js';
+
+if (await this.featuresService.isEnabled('virtual_queue', orgId)) {
+  // Enable virtual queue features
+}
+```
+
+### Database Function
+```sql
+-- Check if feature is enabled for org/user
+SELECT is_feature_enabled('scheduling', user_id, org_id);
+```
+
+### Adding New Feature Flags
+1. Add to `supabase/seed.sql` in the `feature_flags` INSERT
+2. Set `metadata.tier` to 'basic', 'pro', or 'enterprise'
+3. Set `metadata.module: true` for module-level flags
+4. Apply `@Feature('flag-key')` decorator to controllers
+
 ## Feature Implementation
 
 Before implementing any feature:

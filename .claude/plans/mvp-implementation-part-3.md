@@ -526,50 +526,72 @@ test('capture time clock screenshots', async ({ page }) => {
 - Production deployment preparation
 
 ### Tasks
-- [ ] Task 1: Implement dark theme
+- [ ] Task 1: Animations and styling improvements
   - **Agent**: frontend-architect
   - Dependencies: Phase 15
+  - **Animation Library**: Motion (https://motion.dev/)
+  - Acceptance criteria:
+    - Install `motion` package and configure for Next.js App Router
+    - Micro-interactions (button hover/press, card hover, form input focus)
+    - Page transitions (route changes with AnimatePresence, modal open/close)
+    - Loading states (skeleton loaders, spinners, progress indicators)
+    - Dashboard card entrance animations (staggered fade-in with variants)
+    - Data visualization animations (chart draws, counter increments)
+    - Toast/notification slide-in animations
+    - Consistent motion timing (shared transition presets, spring configs)
+    - Reduced motion support (useReducedMotion hook)
+    - Layout animations for list reordering (layoutId)
+    - Polish: shadows, gradients, border treatments
+    - Create reusable motion components (MotionCard, MotionButton, etc.)
+
+- [ ] Task 2: Implement dark theme
+  - **Agent**: frontend-architect
+  - Dependencies: Task 1
   - Acceptance criteria:
     - CSS custom properties for theme switching
     - Dark theme color palette matching homepage
     - Dashboard components updated for dark theme
+    - Animation effects adapted for dark theme (glows, shadows)
     - Theme toggle in user settings
     - System preference detection (prefers-color-scheme)
     - Theme persistence in localStorage
 
-- [ ] Task 2: Visual consistency audit
+- [ ] Task 3: Visual consistency audit
   - **Agent**: frontend-architect
-  - Dependencies: Task 1
+  - Dependencies: Task 2
   - Acceptance criteria:
     - Homepage and dashboard style alignment
     - Consistent spacing, typography, shadows
     - Component library audit and fixes
     - Responsive design validation (mobile, tablet, desktop)
     - Loading states and empty states consistent
+    - Animation timing consistency across components
 
-- [ ] Task 3: Accessibility audit
+- [ ] Task 4: Accessibility audit
   - **Agent**: frontend-architect, qa
-  - Dependencies: Task 2
+  - Dependencies: Task 3
   - Acceptance criteria:
     - WCAG 2.1 AA compliance
     - Keyboard navigation for all features
     - Screen reader compatibility
     - Color contrast validation (both themes)
     - Focus indicators visible
+    - Reduced motion preferences respected
 
-- [ ] Task 4: Performance optimization
+- [ ] Task 5: Performance optimization
   - **Agent**: frontend-architect, backend-architect
-  - Dependencies: Task 2
+  - Dependencies: Task 3
   - Acceptance criteria:
     - Lighthouse score > 90 (Performance)
     - Bundle size optimization
     - Image optimization and lazy loading
     - API caching strategy
     - Database query optimization
+    - Animation performance (GPU-accelerated transforms)
 
-- [ ] Task 5: Production deployment
+- [ ] Task 6: Production deployment
   - **Agent**: devops, backend-architect
-  - Dependencies: Tasks 1-4
+  - Dependencies: Tasks 1-5
   - Acceptance criteria:
     - Environment configuration (staging, production)
     - CI/CD pipeline setup
@@ -578,9 +600,9 @@ test('capture time clock screenshots', async ({ page }) => {
     - Backup and recovery procedures
     - SSL certificates and domain configuration
 
-- [ ] Task 6: Documentation and handoff
+- [ ] Task 7: Documentation and handoff
   - **Agent**: scribe, backend-architect
-  - Dependencies: Task 5
+  - Dependencies: Task 6
   - Acceptance criteria:
     - API documentation complete
     - User guide for each role

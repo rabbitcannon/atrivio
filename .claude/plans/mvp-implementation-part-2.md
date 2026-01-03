@@ -1,18 +1,18 @@
 # Haunt Platform - Implementation Plan Part 2: Operations (F7-F10)
 
 **Created Date**: 2025-12-31
-**Last Updated**: 2026-01-02
-**Current Session**: F8 Ticketing Complete
-**Overall Progress**: 75% Complete
+**Last Updated**: 2026-01-03
+**Current Session**: F10 Inventory Complete - Part 2 Done!
+**Overall Progress**: 100% Complete ✅
 
 > **Note**: Part 2 covers Operations features (F7-F10). Requires Part 1 (MVP F1-F6) to be complete.
 
 ## Quick Start for Next Session
 
 **Prerequisites**: MVP (F1-F6) must be complete before starting Part 2 ✅
-**Last Completed**: F8 Ticketing (Migration, API, Frontend, 45 E2E tests)
-**Currently Working On**: Ready for F9 Check-In or F10 Inventory
-**Next Action**: Choose next feature - F9 Check-In (depends on F8 Ticketing) or F10 Inventory (independent)
+**Last Completed**: F10 Inventory (Migration, Seed, API, Frontend, 49 E2E tests)
+**Currently Working On**: Part 2 Complete - Ready for Part 3 (Engagement)
+**Next Action**: Start Part 3 with F11 Virtual Queue
 
 ### Agent Assignments by Phase
 - **Phase 7 (Database)**: backend-architect
@@ -26,10 +26,10 @@
 
 | Phase | Name | Status | Features | Notes |
 |-------|------|--------|----------|-------|
-| 7 | Operations Database | In Progress | F7-F10 | F7 + F8 complete, F9-F10 pending |
-| 8 | Operations API | In Progress | F7-F10 | F7 + F8 complete, F9-F10 pending |
-| 9 | Operations Frontend | In Progress | F7-F10 | F7 + F8 complete, F9-F10 pending |
-| 10 | Operations Testing | In Progress | F7-F10 | F7 + F8 complete (77 tests), F9-F10 pending |
+| 7 | Operations Database | Complete ✅ | F7-F10 | All migrations applied |
+| 8 | Operations API | Complete ✅ | F7-F10 | All modules implemented |
+| 9 | Operations Frontend | Complete ✅ | F7-F10 | All pages and components built |
+| 10 | Operations Testing | Complete ✅ | F7-F10 | 208 tests passing (15+17+45+82+49) |
 
 **Status Legend**: Not Started | In Progress | Complete | Blocked | On Hold
 
@@ -42,8 +42,8 @@
 | **F7a** Time Tracking | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (15) | **Complete** |
 | **F7b** Scheduling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (17) | **Complete** |
 | **F8** Ticketing | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (45) | **Complete** |
-| **F9** Check-In | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
-| **F10** Inventory | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
+| **F9** Check-In | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (82) | **Complete** |
+| **F10** Inventory | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (49) | **Complete** |
 
 ### F7b Scheduling - Complete ✅
 
@@ -274,6 +274,231 @@
 - Scan ticket (success, already scanned)
 - Cart session CRUD
 - Cart checkout flow
+
+### F9 Check-In - Complete ✅
+
+#### Database
+**Migration**: `supabase/migrations/20260102000003_f9_check_in.sql`
+- **Tables**: check_in_stations, check_ins, capacity_snapshots, guest_waivers
+- **Enums**: check_in_method, check_in_status, waiver_status
+- **Functions**: get_current_capacity(), increment_capacity_snapshot()
+- **RLS**: Full row-level security for all tables
+
+**Seed Data**:
+- 3 check-in stations (Main Entrance, VIP Entrance, Side Entrance)
+- 8 check-ins for existing tickets
+- 3 capacity snapshots
+
+#### API
+**Module**: `apps/api/src/modules/check-in/` (7 files)
+- **Controllers**: CheckInController, StationsController
+- **Services**: CheckInService, StationsService
+- **DTOs**: scan-check-in.dto, manual-check-in.dto, station.dto
+
+**API Endpoints**:
+
+*Scanning*:
+- `POST /organizations/:orgId/check-ins/scan` - Scan barcode/QR check-in
+- `POST /organizations/:orgId/check-ins/manual` - Manual lookup check-in
+- `POST /organizations/:orgId/check-ins/walk-up` - Walk-up (no ticket) check-in
+
+*Check-In Management*:
+- `GET /organizations/:orgId/check-ins` - List check-ins (with filters)
+- `GET /organizations/:orgId/check-ins/:id` - Get check-in details
+- `POST /organizations/:orgId/check-ins/:id/void` - Void a check-in
+
+*Stations*:
+- `GET /organizations/:orgId/check-in-stations` - List stations
+- `GET /organizations/:orgId/check-in-stations/:id` - Get station
+- `POST /organizations/:orgId/check-in-stations` - Create station
+- `PATCH /organizations/:orgId/check-in-stations/:id` - Update station
+- `DELETE /organizations/:orgId/check-in-stations/:id` - Delete station
+- `POST /organizations/:orgId/check-in-stations/:id/toggle` - Toggle active
+
+*Capacity*:
+- `GET /organizations/:orgId/attractions/:attractionId/capacity` - Get current capacity
+- `GET /organizations/:orgId/attractions/:attractionId/capacity/history` - Capacity history
+
+*Waivers*:
+- `POST /organizations/:orgId/check-ins/:id/waiver` - Submit waiver
+- `GET /organizations/:orgId/check-ins/:id/waiver` - Get waiver status
+
+#### Frontend - Manager Views
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/[orgId]/check-in` | Check-In Dashboard | ✅ |
+| `/[orgId]/check-in/scan` | Barcode Scanner Interface | ✅ |
+| `/[orgId]/check-in/stations` | Station Management | ✅ |
+| `/[orgId]/check-in/queue` | Guest Queue / Pending Arrivals | ✅ |
+| `/[orgId]/check-in/reports` | Check-In Statistics | ✅ |
+
+#### Key Components
+- `apps/web/src/app/(dashboard)/[orgId]/check-in/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/check-in/scan/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/check-in/stations/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/check-in/queue/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/check-in/reports/page.tsx`
+
+#### Bug Fixes Applied
+- Fixed ticket query to not select non-existent `requires_waiver` column from ticket_types
+- Defaulted waiver requirement to false until column is added
+
+#### E2E Tests Created
+**File**: `apps/api/test/e2e/check-in.spec.ts` (82 tests)
+
+*Check-In Stations (15 tests)*:
+- List stations (authenticated, role restriction)
+- Get single station
+- Create station (success, validation)
+- Update station
+- Delete station
+- Toggle station active status
+
+*Scanning Check-Ins (25 tests)*:
+- Scan valid barcode (first check-in)
+- Reject invalid barcode (ticket not found)
+- Reject already used ticket
+- Reject cancelled ticket
+- QR code scan
+- Station tracking
+
+*Manual Check-Ins (12 tests)*:
+- Manual lookup by order number
+- Manual lookup by customer email
+- Walk-up check-in creation
+- Validation errors
+
+*Capacity Management (15 tests)*:
+- Get current capacity
+- Capacity increments on check-in
+- Capacity history tracking
+- Multi-attraction capacity
+
+*Waivers (10 tests)*:
+- Submit waiver for check-in
+- Guardian info for minors
+- Waiver status tracking
+
+*Void Check-Ins (5 tests)*:
+- Void check-in decrements capacity
+- Role restrictions on void
+
+### F10 Inventory - Complete ✅
+
+#### Database
+**Migration**: `supabase/migrations/20260102000004_f10_inventory.sql`
+- **Tables**: inventory_categories, inventory_types, inventory_items, inventory_transactions, inventory_checkouts
+- **Enums**: inventory_transaction_type, checkout_condition
+- **Triggers**: tr_update_inventory_on_checkout (auto-adjusts quantity on checkout/return)
+- **Functions**: adjust_inventory_quantity()
+- **RLS**: Full row-level security for all tables
+
+**Seed Data**:
+- 8 system-level inventory types (costume, prop, makeup, equipment, lighting, audio, safety, consumable)
+- 5 inventory categories (Costumes, Props, Electronics, Consumables, Safety)
+- 5 sub-categories (Character Costumes, Handheld Props, Lighting, Audio, Safety Equipment)
+- 25 inventory items across all categories
+- 6 inventory checkouts (5 active, 1 returned)
+
+#### API
+**Module**: `apps/api/src/modules/inventory/` (7 files)
+- **Controllers**: InventoryController, CheckoutsController, CategoriesController
+- **Services**: InventoryService, CheckoutsService, CategoriesService
+- **DTOs**: item.dto, checkout.dto, category.dto, transaction.dto
+
+**API Endpoints**:
+
+*Summary*:
+- `GET /organizations:orgId/inventory/summary` - Dashboard overview with counts, low stock alerts, active checkouts
+
+*Items*:
+- `GET /organizations:orgId/inventory/items` - List items (with filters: category, type, search, low stock)
+- `GET /organizations:orgId/inventory/items/:id` - Get item details
+- `POST /organizations:orgId/inventory/items` - Create item
+- `PATCH /organizations:orgId/inventory/items/:id` - Update item
+- `DELETE /organizations:orgId/inventory/items/:id` - Deactivate item
+- `POST /organizations:orgId/inventory/items/:id/adjust` - Adjust quantity with reason
+
+*Categories*:
+- `GET /organizations:orgId/inventory/categories` - List categories (hierarchical)
+- `GET /organizations:orgId/inventory/categories/:id` - Get category
+- `POST /organizations:orgId/inventory/categories` - Create category
+- `PATCH /organizations:orgId/inventory/categories/:id` - Update category
+- `DELETE /organizations:orgId/inventory/categories/:id` - Delete category
+
+*Types*:
+- `GET /organizations:orgId/inventory/types` - List types (system + org)
+- `POST /organizations:orgId/inventory/types` - Create custom type
+- `PATCH /organizations:orgId/inventory/types/:id` - Update type
+- `DELETE /organizations:orgId/inventory/types/:id` - Delete type (if unused)
+
+*Checkouts*:
+- `GET /organizations:orgId/inventory/checkouts` - List checkouts (with filters)
+- `GET /organizations:orgId/inventory/checkouts/overdue` - Overdue checkouts
+- `GET /organizations:orgId/inventory/checkouts/:id` - Get checkout
+- `POST /organizations:orgId/inventory/checkouts` - Create checkout (assigns item to staff)
+- `POST /organizations:orgId/inventory/checkouts/:id/return` - Return checkout
+
+*Staff Checkouts*:
+- `GET /organizations:orgId/staff/:staffId/checkouts` - Active checkouts for staff member
+
+*Transactions*:
+- `GET /organizations:orgId/inventory/items/:id/transactions` - Transaction history for item
+
+#### Frontend - Manager Views
+| Route | Component | Status |
+|-------|-----------|--------|
+| `/[orgId]/inventory` | Inventory Dashboard | ✅ |
+| `/[orgId]/inventory/items` | Item Management | ✅ |
+| `/[orgId]/inventory/items/[itemId]` | Item Details | ✅ |
+| `/[orgId]/inventory/checkouts` | Checkout Management | ✅ |
+| `/[orgId]/inventory/categories` | Category Management | ✅ |
+| `/[orgId]/inventory/types` | Type Configuration | ✅ |
+| `/[orgId]/inventory/reports` | Inventory Reports | ✅ |
+
+#### Key Components
+- `apps/web/src/app/(dashboard)/[orgId]/inventory/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/inventory/items/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/inventory/checkouts/page.tsx`
+- `apps/web/src/app/(dashboard)/[orgId]/inventory/categories/page.tsx`
+
+#### E2E Tests Created
+**File**: `apps/api/test/e2e/inventory.spec.ts` (49 tests)
+
+*Inventory Summary (6 tests)*:
+- Get summary as owner
+- Get summary by slug
+- Role restrictions (actor denied)
+
+*Inventory Items (14 tests)*:
+- List items (authenticated, with filters)
+- Get single item
+- Create item (success, validation)
+- Update item
+- Delete (deactivate) item
+- Adjust quantity with reasons
+
+*Inventory Categories (8 tests)*:
+- List categories (hierarchical)
+- Get single category
+- Create category (root and sub-category)
+- Update category
+- Delete category
+
+*Inventory Types (6 tests)*:
+- List types (system + custom)
+- Create custom type
+- Update custom type
+- Delete custom type (only if unused)
+
+*Inventory Checkouts (15 tests)*:
+- List checkouts (with filters)
+- Get single checkout
+- Create checkout (assigns to staff)
+- Return checkout (updates quantity)
+- Reject double return
+- Get overdue checkouts
+- Get staff active checkouts
 
 ---
 
@@ -559,13 +784,16 @@ Comprehensive seed data for operations features enables:
     - Time slots management with bulk creation (11 tests)
     - Promo codes with validation (10 tests)
     - Orders, tickets, cart sessions, checkout (15 tests)
-- [ ] Task 4: Create check-in E2E tests
+- [x] Task 4: Create check-in E2E tests ✅
   - **Agent**: qa
-  - Dependencies: F9 Check-In complete
-  - Acceptance criteria:
-    - Scan valid ticket
-    - Reject invalid/used ticket
-    - Track capacity in real-time
+  - **File**: `apps/api/test/e2e/check-in.spec.ts`
+  - 82 tests covering:
+    - Check-in stations CRUD (15 tests)
+    - Scanning check-ins (25 tests)
+    - Manual check-ins (12 tests)
+    - Capacity management (15 tests)
+    - Waivers (10 tests)
+    - Void check-ins (5 tests)
 - [ ] Task 5: Create inventory E2E tests
   - **Agent**: qa
   - Dependencies: F10 Inventory complete
@@ -582,7 +810,7 @@ Comprehensive seed data for operations features enables:
     - All seeded inventory checkable
 
 ### Phase Summary
-**Status**: In Progress (F7 + F8 Complete - 77 tests passing)
+**Status**: In Progress (F7 + F8 + F9 Complete - 159 tests passing)
 
 ---
 
@@ -623,11 +851,50 @@ Comprehensive seed data for operations features enables:
 | `apps/web/src/app/(dashboard)/[orgId]/ticketing/orders/page.tsx` | Orders UI | ✅ Complete |
 | `apps/api/test/e2e/ticketing.spec.ts` | E2E tests (45 tests) | ✅ Complete |
 
+### F9 Check-In Files (Complete)
+| File Path | Purpose | Status |
+|-----------|---------|--------|
+| `infrastructure/supabase/migrations/20260102000003_f9_check_in.sql` | Check-in schema | ✅ Complete |
+| `apps/api/src/modules/check-in/check-in.module.ts` | NestJS module | ✅ Complete |
+| `apps/api/src/modules/check-in/check-in.controller.ts` | Check-in API | ✅ Complete |
+| `apps/api/src/modules/check-in/check-in.service.ts` | Check-in logic | ✅ Complete |
+| `apps/api/src/modules/check-in/stations.controller.ts` | Stations API | ✅ Complete |
+| `apps/api/src/modules/check-in/stations.service.ts` | Stations logic | ✅ Complete |
+| `apps/api/src/modules/check-in/dto/` | DTOs | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/check-in/page.tsx` | Dashboard | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/check-in/scan/page.tsx` | Scanner | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/check-in/stations/page.tsx` | Stations UI | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/check-in/queue/page.tsx` | Queue UI | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/check-in/reports/page.tsx` | Reports UI | ✅ Complete |
+| `apps/api/test/e2e/check-in.spec.ts` | E2E tests (82 tests) | ✅ Complete |
+
+### F10 Inventory Files (Complete)
+| File Path | Purpose | Status |
+|-----------|---------|--------|
+| `supabase/migrations/20260102000004_f10_inventory.sql` | Inventory schema | ✅ Complete |
+| `apps/api/src/modules/inventory/inventory.module.ts` | NestJS module | ✅ Complete |
+| `apps/api/src/modules/inventory/inventory.controller.ts` | Items/Types API | ✅ Complete |
+| `apps/api/src/modules/inventory/inventory.service.ts` | Items/Types logic | ✅ Complete |
+| `apps/api/src/modules/inventory/categories.controller.ts` | Categories API | ✅ Complete |
+| `apps/api/src/modules/inventory/categories.service.ts` | Categories logic | ✅ Complete |
+| `apps/api/src/modules/inventory/checkouts.controller.ts` | Checkouts API | ✅ Complete |
+| `apps/api/src/modules/inventory/checkouts.service.ts` | Checkouts logic | ✅ Complete |
+| `apps/api/src/modules/inventory/dto/` | DTOs | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/inventory/page.tsx` | Dashboard | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/inventory/items/page.tsx` | Items list | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/inventory/checkouts/page.tsx` | Checkouts | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/inventory/categories/page.tsx` | Categories | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/inventory/types/page.tsx` | Types config | ✅ Complete |
+| `apps/web/src/app/(dashboard)/[orgId]/inventory/reports/page.tsx` | Reports | ✅ Complete |
+| `apps/api/test/e2e/inventory.spec.ts` | E2E tests (49 tests) | ✅ Complete |
+
 ### Database Files
 | File Path | Purpose | Status |
 |-----------|---------|--------|
 | `infrastructure/supabase/migrations/20260102000001_f7b_scheduling.sql` | F7b Scheduling schema | ✅ Complete |
 | `infrastructure/supabase/migrations/20260102000002_f8_ticketing.sql` | F8 Ticketing schema | ✅ Complete |
+| `infrastructure/supabase/migrations/20260102000003_f9_check_in.sql` | F9 Check-In schema | ✅ Complete |
+| `supabase/migrations/20260102000004_f10_inventory.sql` | F10 Inventory schema | ✅ Complete |
 | `docs/features/F7-scheduling/ERD.md` | Scheduling ERD | Exists |
 | `docs/features/F8-ticketing/ERD.md` | Ticketing ERD | Exists |
 | `docs/features/F9-checkin/ERD.md` | Check-In ERD | Exists |
@@ -647,8 +914,10 @@ Comprehensive seed data for operations features enables:
 | Orders | `/api/v1/organizations/:orgId/orders/*` | JWT + Roles | ✅ Complete |
 | Tickets | `/api/v1/organizations/:orgId/tickets/*` | JWT + Roles | ✅ Complete |
 | Cart | `/api/v1/organizations/:orgId/cart/*` | JWT + Roles | ✅ Complete |
-| Check-In | `/api/v1/organizations/:orgId/checkin/*` | JWT + Roles | Not Started |
-| Inventory | `/api/v1/organizations/:orgId/inventory/*` | JWT + Roles | Not Started |
+| Check-In | `/api/v1/organizations/:orgId/check-ins/*` | JWT + Roles | ✅ Complete |
+| Stations | `/api/v1/organizations/:orgId/check-in-stations/*` | JWT + Roles | ✅ Complete |
+| Capacity | `/api/v1/organizations/:orgId/attractions/:id/capacity/*` | JWT + Roles | ✅ Complete |
+| Inventory | `/api/v1/organizations/:orgId/inventory/*` | JWT + Roles | ✅ Complete |
 
 ---
 

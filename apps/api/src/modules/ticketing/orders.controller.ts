@@ -29,12 +29,16 @@ import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
 import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
 import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
 import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
 import type { UserId } from '@haunt/shared';
 
 @ApiTags('Orders')
 @Controller('organizations/:orgId')
 @ApiBearerAuth()
 @UseInterceptors(TenantInterceptor)
+@UseGuards(FeatureGuard)
+@Feature('ticketing')
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 

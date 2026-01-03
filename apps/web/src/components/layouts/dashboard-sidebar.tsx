@@ -11,6 +11,9 @@ import {
   Mail,
   Clock,
   CreditCard,
+  Ticket,
+  ScanLine,
+  Package,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -32,6 +35,9 @@ const adminNavItems: NavItem[] = [
   { label: 'Attractions', href: '/attractions', icon: Ghost, roles: ['owner', 'admin', 'manager'] },
   { label: 'Staff', href: '/staff', icon: Users, roles: ['owner', 'admin', 'manager', 'hr'] },
   { label: 'Schedule', href: '/schedule', icon: Calendar, roles: ['owner', 'admin', 'manager'] },
+  { label: 'Ticketing', href: '/ticketing', icon: Ticket, roles: ['owner', 'admin', 'manager', 'box_office'] },
+  { label: 'Check-In', href: '/check-in', icon: ScanLine, roles: ['owner', 'admin', 'manager', 'scanner'] },
+  { label: 'Inventory', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager'] },
 ];
 
 // Staff-only navigation - for actors, scanners, box_office, finance

@@ -48,6 +48,77 @@ src/
 - `(auth)`: Login, register, forgot-password
 - `(dashboard)`: Main app, requires org membership
 - `(admin)`: Super admin area, requires `platform_admins` check
+- `(time)`: Public time clock for staff
+
+## Implemented Dashboard Routes
+
+```
+[orgId]/
+├── page.tsx              # Dashboard overview
+├── attractions/          # F3 Attractions
+├── staff/                # F4 Staff management
+│   └── [staffId]/        # Staff detail
+├── payments/             # F6 Stripe Connect
+├── schedule/             # F7b Scheduling
+│   ├── page.tsx          # Calendar view
+│   ├── availability/     # Staff availability
+│   └── templates/        # Shift templates
+├── ticketing/            # F8 Ticketing
+│   ├── page.tsx          # Ticket types list
+│   ├── orders/           # Order management
+│   └── promo-codes/      # Promo codes
+└── check-in/             # F9 Check-In
+    ├── page.tsx          # Stations list
+    ├── scan/             # Scanner interface
+    ├── queue/            # Queue management
+    └── reports/          # Check-in analytics
+```
+
+## Feature Flags (Frontend)
+
+The API enforces feature flags, but the frontend should also check them for UI/UX:
+
+### Hide Navigation for Disabled Features
+```tsx
+// In sidebar/navigation - hide links to disabled features
+{features.scheduling && (
+  <NavLink href={`/${orgId}/schedule`}>Schedule</NavLink>
+)}
+```
+
+### Show Upgrade Prompts
+```tsx
+// When a feature is disabled, show upgrade prompt instead of content
+if (!features.scheduling) {
+  return (
+    <UpgradePrompt
+      feature="Scheduling"
+      tier="pro"
+      description="Manage staff shifts, availability, and swaps"
+    />
+  );
+}
+```
+
+### Feature Flag Context (TODO)
+```tsx
+// Future: Create a FeatureFlagsProvider
+const { isEnabled, tier } = useFeatureFlags();
+
+if (!isEnabled('virtual_queue')) {
+  return <UpgradeCard feature="Virtual Queue" requiredTier="enterprise" />;
+}
+```
+
+### Current Feature Tiers
+| Feature | Flag Key | Tier |
+|---------|----------|------|
+| Time Tracking | `time_tracking` | basic |
+| Ticketing | `ticketing` | basic |
+| Check-In | `checkin` | basic |
+| Scheduling | `scheduling` | pro |
+| Inventory | `inventory` | pro |
+| Virtual Queue | `virtual_queue` | enterprise |
 
 ## Styling
 

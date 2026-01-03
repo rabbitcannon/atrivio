@@ -83,7 +83,7 @@ export async function apiClient<T>(
   }
 }
 
-// Convenience methods
+// Convenience methods (returns { data, error } wrapper)
 export const api = {
   get: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'GET' }),
   post: <T>(endpoint: string, body: unknown) =>
@@ -94,6 +94,98 @@ export const api = {
     apiClient<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'DELETE' }),
 };
+
+// ============================================================================
+// Direct API Client (returns data directly, throws on error)
+// Used by ticketing pages and other legacy patterns
+// ============================================================================
+
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const supabase = createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (session?.access_token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      message: 'An unexpected error occurred',
+      statusCode: response.status,
+    }));
+    throw new Error(error.message || 'API request failed');
+  }
+
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return null as T;
+  }
+
+  return response.json();
+}
+
+/**
+ * API client that returns data directly and throws on errors.
+ * Used by ticketing pages and other legacy patterns.
+ */
+export const apiClientDirect = {
+  get: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'GET' }),
+  post: <T>(endpoint: string, body: unknown) =>
+    apiRequest<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(endpoint: string, body: unknown) =>
+    apiRequest<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(endpoint: string, body: unknown) =>
+    apiRequest<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'DELETE' }),
+};
+
+// ============================================================================
+// Org ID Resolution (client-side)
+// ============================================================================
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Check if a string is a valid UUID
+ */
+export function isUUID(str: string): boolean {
+  return UUID_REGEX.test(str);
+}
+
+/**
+ * Client-side org ID resolution.
+ * If the identifier is already a UUID, returns it directly.
+ * If it's a slug, looks up the org via the API.
+ */
+export async function resolveOrgId(orgIdentifier: string): Promise<string | null> {
+  // If it's already a UUID, return it
+  if (isUUID(orgIdentifier)) {
+    return orgIdentifier;
+  }
+
+  // Otherwise, it's a slug - look it up via the API
+  const supabase = createClient();
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('slug', orgIdentifier)
+    .single();
+
+  return org?.id ?? null;
+}
 
 // ============================================================================
 // Client-side API Functions (for use in Client Components)
@@ -1044,4 +1136,348 @@ export async function getMySwapRequests(orgId: string, status?: SwapStatus) {
   return api.get<ShiftSwapRequest[]>(
     `/organizations/${orgId}/my-swap-requests${query ? `?${query}` : ''}`
   );
+}
+
+// ============================================================================
+// Inventory API (F10) - Client-side
+// ============================================================================
+
+import type {
+  InventoryType,
+  InventoryCategory,
+  InventoryItem,
+  InventoryCheckout,
+  InventoryTransaction,
+  InventorySummary,
+  CheckoutCondition,
+} from './types';
+
+export type {
+  InventoryType,
+  InventoryCategory,
+  InventoryItem,
+  InventoryCheckout,
+  InventoryTransaction,
+  InventorySummary,
+  CheckoutCondition,
+};
+
+/**
+ * Get inventory summary (client-side)
+ */
+export async function getInventorySummary(orgId: string) {
+  return api.get<InventorySummary>(`/organizations/${orgId}/inventory/summary`);
+}
+
+// ----- Inventory Types -----
+
+/**
+ * Get inventory types (system + org custom)
+ */
+export async function getInventoryTypes(orgId: string) {
+  return api.get<{ types: InventoryType[] }>(`/organizations/${orgId}/inventory/types`);
+}
+
+/**
+ * Create a custom inventory type
+ */
+export async function createInventoryType(
+  orgId: string,
+  data: {
+    key: string;
+    name: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    requiresCheckout?: boolean;
+    isConsumable?: boolean;
+    trackCondition?: boolean;
+  }
+) {
+  return api.post<InventoryType>(`/organizations/${orgId}/inventory/types`, data);
+}
+
+/**
+ * Update an inventory type
+ */
+export async function updateInventoryType(
+  orgId: string,
+  typeId: string,
+  data: {
+    name?: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    requiresCheckout?: boolean;
+    isConsumable?: boolean;
+    trackCondition?: boolean;
+    isActive?: boolean;
+  }
+) {
+  return api.patch<InventoryType>(`/organizations/${orgId}/inventory/types/${typeId}`, data);
+}
+
+/**
+ * Delete an inventory type
+ */
+export async function deleteInventoryType(orgId: string, typeId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/inventory/types/${typeId}`);
+}
+
+// ----- Inventory Categories -----
+
+/**
+ * Get inventory categories (hierarchical)
+ */
+export async function getInventoryCategories(orgId: string) {
+  return api.get<{ categories: InventoryCategory[] }>(`/organizations/${orgId}/inventory/categories`);
+}
+
+/**
+ * Create an inventory category
+ */
+export async function createInventoryCategory(
+  orgId: string,
+  data: {
+    name: string;
+    description?: string;
+    parentId?: string;
+    color?: string;
+  }
+) {
+  return api.post<InventoryCategory>(`/organizations/${orgId}/inventory/categories`, data);
+}
+
+/**
+ * Update an inventory category
+ */
+export async function updateInventoryCategory(
+  orgId: string,
+  categoryId: string,
+  data: {
+    name?: string;
+    description?: string;
+    parentId?: string;
+    color?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  return api.patch<InventoryCategory>(`/organizations/${orgId}/inventory/categories/${categoryId}`, data);
+}
+
+/**
+ * Delete an inventory category
+ */
+export async function deleteInventoryCategory(orgId: string, categoryId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/inventory/categories/${categoryId}`);
+}
+
+// ----- Inventory Items -----
+
+/**
+ * Get inventory items (with filters)
+ */
+export async function getInventoryItems(
+  orgId: string,
+  filters?: {
+    categoryId?: string;
+    typeId?: string;
+    attractionId?: string;
+    search?: string;
+    lowStock?: boolean;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.categoryId) params.set('categoryId', filters.categoryId);
+  if (filters?.typeId) params.set('typeId', filters.typeId);
+  if (filters?.attractionId) params.set('attractionId', filters.attractionId);
+  if (filters?.search) params.set('search', filters.search);
+  if (filters?.lowStock) params.set('lowStock', 'true');
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{ items: InventoryItem[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/organizations/${orgId}/inventory/items${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Get a single inventory item
+ */
+export async function getInventoryItem(orgId: string, itemId: string) {
+  return api.get<InventoryItem>(`/organizations/${orgId}/inventory/items/${itemId}`);
+}
+
+/**
+ * Create an inventory item
+ */
+export async function createInventoryItem(
+  orgId: string,
+  data: {
+    name: string;
+    typeId: string;
+    sku?: string;
+    description?: string;
+    categoryId?: string;
+    attractionId?: string;
+    quantity?: number;
+    minQuantity?: number;
+    maxQuantity?: number;
+    unit?: string;
+    costCents?: number;
+    location?: string;
+    condition?: CheckoutCondition;
+    notes?: string;
+  }
+) {
+  return api.post<InventoryItem>(`/organizations/${orgId}/inventory/items`, data);
+}
+
+/**
+ * Update an inventory item
+ */
+export async function updateInventoryItem(
+  orgId: string,
+  itemId: string,
+  data: {
+    name?: string;
+    typeId?: string;
+    sku?: string;
+    description?: string;
+    categoryId?: string;
+    attractionId?: string;
+    minQuantity?: number;
+    maxQuantity?: number;
+    unit?: string;
+    costCents?: number;
+    location?: string;
+    condition?: CheckoutCondition;
+    notes?: string;
+    isActive?: boolean;
+  }
+) {
+  return api.patch<InventoryItem>(`/organizations/${orgId}/inventory/items/${itemId}`, data);
+}
+
+/**
+ * Delete (deactivate) an inventory item
+ */
+export async function deleteInventoryItem(orgId: string, itemId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/inventory/items/${itemId}`);
+}
+
+/**
+ * Adjust item quantity
+ */
+export async function adjustInventoryQuantity(
+  orgId: string,
+  itemId: string,
+  data: {
+    quantityChange: number;
+    reason: 'purchase' | 'adjustment' | 'damaged' | 'lost' | 'disposed';
+    notes?: string;
+  }
+) {
+  return api.post<InventoryItem>(`/organizations/${orgId}/inventory/items/${itemId}/adjust`, data);
+}
+
+/**
+ * Get item transaction history
+ */
+export async function getItemTransactions(
+  orgId: string,
+  itemId: string,
+  filters?: { page?: number; limit?: number }
+) {
+  const params = new URLSearchParams();
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{ transactions: InventoryTransaction[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/organizations/${orgId}/inventory/items/${itemId}/transactions${query ? `?${query}` : ''}`
+  );
+}
+
+// ----- Inventory Checkouts -----
+
+/**
+ * Get inventory checkouts (with filters)
+ */
+export async function getInventoryCheckouts(
+  orgId: string,
+  filters?: {
+    itemId?: string;
+    staffId?: string;
+    activeOnly?: boolean;
+    overdueOnly?: boolean;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.itemId) params.set('itemId', filters.itemId);
+  if (filters?.staffId) params.set('staffId', filters.staffId);
+  if (filters?.activeOnly) params.set('activeOnly', 'true');
+  if (filters?.overdueOnly) params.set('overdueOnly', 'true');
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{ checkouts: InventoryCheckout[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/organizations/${orgId}/inventory/checkouts${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Get a single checkout
+ */
+export async function getInventoryCheckout(orgId: string, checkoutId: string) {
+  return api.get<InventoryCheckout>(`/organizations/${orgId}/inventory/checkouts/${checkoutId}`);
+}
+
+/**
+ * Create a checkout (assign item to staff)
+ */
+export async function createInventoryCheckout(
+  orgId: string,
+  data: {
+    itemId: string;
+    staffId: string;
+    quantity?: number;
+    dueDate?: string;
+    conditionOut?: CheckoutCondition;
+    notes?: string;
+  }
+) {
+  return api.post<InventoryCheckout>(`/organizations/${orgId}/inventory/checkouts`, data);
+}
+
+/**
+ * Return a checkout
+ */
+export async function returnInventoryCheckout(
+  orgId: string,
+  checkoutId: string,
+  data?: {
+    conditionIn?: CheckoutCondition;
+    notes?: string;
+  }
+) {
+  return api.post<InventoryCheckout>(`/organizations/${orgId}/inventory/checkouts/${checkoutId}/return`, data || {});
+}
+
+/**
+ * Get overdue checkouts
+ */
+export async function getOverdueCheckouts(orgId: string) {
+  return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/inventory/checkouts/overdue`);
+}
+
+/**
+ * Get active checkouts for a staff member
+ */
+export async function getStaffCheckouts(orgId: string, staffId: string) {
+  return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/staff/${staffId}/checkouts`);
 }

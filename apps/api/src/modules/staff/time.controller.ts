@@ -18,12 +18,16 @@ import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
 import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
 import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
 import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
 import type { UserId } from '@haunt/shared';
 
 @ApiTags('Staff Time Entries')
 @ApiBearerAuth()
 @Controller()
 @UseInterceptors(TenantInterceptor)
+@UseGuards(FeatureGuard)
+@Feature('time_tracking')
 export class TimeController {
   constructor(private timeService: TimeService) {}
 
