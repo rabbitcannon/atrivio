@@ -103,9 +103,40 @@ describe('Organizations & Membership (E2E)', () => {
   describe('POST /organizations', () => {
     let createdOrgId: string | null = null;
 
+    beforeAll(async () => {
+      // Cleanup any orphaned test organizations from previous runs
+      // Get test orgs (slugs starting with 'test-org-')
+      const { data: testOrgs } = await adminClient
+        .from('organizations')
+        .select('id')
+        .like('slug', 'test-org-%');
+
+      if (testOrgs && testOrgs.length > 0) {
+        const testOrgIds = testOrgs.map(o => o.id);
+
+        // First, clear is_owner flag to bypass the trigger that prevents owner deletion
+        await adminClient
+          .from('org_memberships')
+          .update({ is_owner: false })
+          .in('org_id', testOrgIds);
+
+        // Now delete the test organizations (CASCADE will handle memberships)
+        await adminClient
+          .from('organizations')
+          .delete()
+          .in('id', testOrgIds);
+      }
+    });
+
     afterAll(async () => {
       // Cleanup: delete test org if created
       if (createdOrgId) {
+        // Clear is_owner flag first to bypass the trigger
+        await adminClient
+          .from('org_memberships')
+          .update({ is_owner: false })
+          .eq('org_id', createdOrgId);
+
         await adminClient.from('organizations').delete().eq('id', createdOrgId);
       }
     });

@@ -597,3 +597,266 @@ END $$;
 -- Staff Availability: 12 records (Jake, Emily, Mike, Sarah)
 -- Schedules: 10 (7 assigned, 3 unassigned needing coverage)
 -- Shift Swaps: 1 (pending drop request)
+
+-- ============================================================================
+-- F8: TICKETING SEED DATA
+-- ============================================================================
+
+-- Get category IDs and create ticketing seed data
+DO $$
+DECLARE
+  v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
+  v_mansion_id UUID := 'c0000000-0000-0000-0000-000000000001';
+  v_trail_id UUID := 'c0000000-0000-0000-0000-000000000002';
+  v_season_id UUID := 'f0000000-0000-0000-0000-000000000002'; -- Halloween 2025
+  v_general_cat_id UUID;
+  v_vip_cat_id UUID;
+  v_fast_pass_cat_id UUID;
+  v_combo_cat_id UUID;
+  v_group_cat_id UUID;
+  v_online_source_id UUID;
+  v_box_office_source_id UUID;
+BEGIN
+  -- Get system category IDs
+  SELECT id INTO v_general_cat_id FROM ticket_categories WHERE key = 'general' AND org_id IS NULL;
+  SELECT id INTO v_vip_cat_id FROM ticket_categories WHERE key = 'vip' AND org_id IS NULL;
+  SELECT id INTO v_fast_pass_cat_id FROM ticket_categories WHERE key = 'fast_pass' AND org_id IS NULL;
+  SELECT id INTO v_combo_cat_id FROM ticket_categories WHERE key = 'combo' AND org_id IS NULL;
+  SELECT id INTO v_group_cat_id FROM ticket_categories WHERE key = 'group' AND org_id IS NULL;
+
+  -- Get order source IDs
+  SELECT id INTO v_online_source_id FROM order_sources WHERE key = 'online' AND org_id IS NULL;
+  SELECT id INTO v_box_office_source_id FROM order_sources WHERE key = 'box_office' AND org_id IS NULL;
+
+  -- Skip if ticketing tables don't exist (F8 migration not run yet)
+  IF v_general_cat_id IS NULL THEN
+    RAISE NOTICE 'Skipping F8 seed data - ticket_categories table not populated';
+    RETURN;
+  END IF;
+
+  -- ============================================================================
+  -- TICKET TYPES
+  -- ============================================================================
+
+  -- Haunted Mansion Tickets
+  INSERT INTO ticket_types (id, org_id, attraction_id, season_id, name, description, price, compare_price, category_id, max_per_order, includes, restrictions, sort_order, is_active, available_from, available_until)
+  VALUES
+    ('80000000-0000-0000-0000-000000000001', v_org_id, v_mansion_id, v_season_id,
+     'General Admission', 'Standard entry to The Haunted Mansion. Includes full walkthrough experience.',
+     2500, NULL, v_general_cat_id, 10,
+     ARRAY['Full mansion walkthrough', '25-minute experience', 'Photo opportunity at exit'],
+     '{"min_age": 12}'::JSONB, 1, TRUE,
+     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+
+    ('80000000-0000-0000-0000-000000000002', v_org_id, v_mansion_id, v_season_id,
+     'VIP Experience', 'Premium Haunted Mansion experience with exclusive access and perks.',
+     4500, 5500, v_vip_cat_id, 6,
+     ARRAY['Skip-the-line entry', 'Exclusive VIP lounge access', 'Souvenir photo included', 'Behind-the-scenes tour', 'Meet the actors'],
+     '{"min_age": 14}'::JSONB, 2, TRUE,
+     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+
+    ('80000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id, v_season_id,
+     'Fast Pass', 'Express entry with minimal wait time.',
+     3500, NULL, v_fast_pass_cat_id, 8,
+     ARRAY['Priority queue access', 'Reduced wait time', 'Dedicated fast lane entry'],
+     '{"min_age": 12}'::JSONB, 3, TRUE,
+     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+
+    ('80000000-0000-0000-0000-000000000004', v_org_id, v_mansion_id, v_season_id,
+     'Group Ticket (10+)', 'Discounted rate for groups of 10 or more.',
+     2000, 2500, v_group_cat_id, 50,
+     ARRAY['Discounted group rate', 'Group photo', 'Dedicated entrance time'],
+     '{"min_age": 12, "min_quantity": 10}'::JSONB, 4, TRUE,
+     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+
+  -- Terror Trail Tickets
+    ('80000000-0000-0000-0000-000000000005', v_org_id, v_trail_id, v_season_id,
+     'Trail General Admission', 'Experience the half-mile Terror Trail through dark woods.',
+     3000, NULL, v_general_cat_id, 10,
+     ARRAY['Half-mile outdoor trail', '35-minute experience', 'Flashlight prohibited'],
+     '{"min_age": 14}'::JSONB, 1, TRUE,
+     '2025-10-01 00:00:00', '2025-10-31 23:59:59'),
+
+    ('80000000-0000-0000-0000-000000000006', v_org_id, v_trail_id, v_season_id,
+     'Trail VIP', 'Premium Terror Trail with guide and exclusive scares.',
+     5500, NULL, v_vip_cat_id, 4,
+     ARRAY['Personal guide', 'Extra scare interactions', 'Night vision goggles provided', 'Hot cocoa at finish'],
+     '{"min_age": 16}'::JSONB, 2, TRUE,
+     '2025-10-01 00:00:00', '2025-10-31 23:59:59'),
+
+  -- Combo Tickets
+    ('80000000-0000-0000-0000-000000000007', v_org_id, v_mansion_id, v_season_id,
+     'Nightmare Combo', 'Both Haunted Mansion AND Terror Trail in one night.',
+     5000, 5500, v_combo_cat_id, 8,
+     ARRAY['Haunted Mansion entry', 'Terror Trail entry', 'Valid same night only', 'Commemorative lanyard'],
+     '{"min_age": 14}'::JSONB, 5, TRUE,
+     '2025-10-01 00:00:00', '2025-10-31 23:59:59'),
+
+    ('80000000-0000-0000-0000-000000000008', v_org_id, v_mansion_id, v_season_id,
+     'Ultimate Nightmare VIP', 'The complete Nightmare Manor VIP experience.',
+     8500, 10000, v_vip_cat_id, 4,
+     ARRAY['VIP access to both attractions', 'Reserved parking', 'Dinner at Cryptkeeper Cafe', 'Exclusive merchandise', 'Professional photo package'],
+     '{"min_age": 16}'::JSONB, 6, TRUE,
+     '2025-10-01 00:00:00', '2025-10-31 23:59:59')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- TIME SLOTS (2 weeks of slots starting Oct 1, 2025)
+  -- ============================================================================
+
+  -- Haunted Mansion time slots (every 15 mins from 6pm-10pm on Fri/Sat/Sun)
+  INSERT INTO time_slots (id, org_id, attraction_id, date, start_time, end_time, capacity, sold_count, status, price_modifier)
+  VALUES
+    -- Friday Oct 3, 2025
+    ('81000000-0000-0000-0000-000000000001', v_org_id, v_mansion_id, '2025-10-03', '18:00', '18:15', 20, 18, 'limited', 0),
+    ('81000000-0000-0000-0000-000000000002', v_org_id, v_mansion_id, '2025-10-03', '18:15', '18:30', 20, 20, 'sold_out', 0),
+    ('81000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id, '2025-10-03', '18:30', '18:45', 20, 12, 'available', 0),
+    ('81000000-0000-0000-0000-000000000004', v_org_id, v_mansion_id, '2025-10-03', '18:45', '19:00', 20, 8, 'available', 0),
+    ('81000000-0000-0000-0000-000000000005', v_org_id, v_mansion_id, '2025-10-03', '19:00', '19:15', 20, 15, 'available', 0),
+    ('81000000-0000-0000-0000-000000000006', v_org_id, v_mansion_id, '2025-10-03', '19:15', '19:30', 20, 5, 'available', 0),
+    ('81000000-0000-0000-0000-000000000007', v_org_id, v_mansion_id, '2025-10-03', '19:30', '19:45', 20, 2, 'available', 500),
+    ('81000000-0000-0000-0000-000000000008', v_org_id, v_mansion_id, '2025-10-03', '19:45', '20:00', 20, 0, 'available', 500),
+    -- Saturday Oct 4, 2025 (busier - price modifier on peak times)
+    ('81000000-0000-0000-0000-000000000009', v_org_id, v_mansion_id, '2025-10-04', '17:00', '17:15', 25, 25, 'sold_out', 0),
+    ('81000000-0000-0000-0000-000000000010', v_org_id, v_mansion_id, '2025-10-04', '17:15', '17:30', 25, 25, 'sold_out', 0),
+    ('81000000-0000-0000-0000-000000000011', v_org_id, v_mansion_id, '2025-10-04', '17:30', '17:45', 25, 22, 'limited', 0),
+    ('81000000-0000-0000-0000-000000000012', v_org_id, v_mansion_id, '2025-10-04', '17:45', '18:00', 25, 20, 'limited', 0),
+    ('81000000-0000-0000-0000-000000000013', v_org_id, v_mansion_id, '2025-10-04', '18:00', '18:15', 25, 18, 'available', 500),
+    ('81000000-0000-0000-0000-000000000014', v_org_id, v_mansion_id, '2025-10-04', '18:15', '18:30', 25, 15, 'available', 500),
+    ('81000000-0000-0000-0000-000000000015', v_org_id, v_mansion_id, '2025-10-04', '19:00', '19:15', 25, 10, 'available', 1000),
+    ('81000000-0000-0000-0000-000000000016', v_org_id, v_mansion_id, '2025-10-04', '19:15', '19:30', 25, 8, 'available', 1000),
+    -- Sunday Oct 5, 2025
+    ('81000000-0000-0000-0000-000000000017', v_org_id, v_mansion_id, '2025-10-05', '18:00', '18:15', 20, 5, 'available', 0),
+    ('81000000-0000-0000-0000-000000000018', v_org_id, v_mansion_id, '2025-10-05', '18:15', '18:30', 20, 3, 'available', 0),
+    ('81000000-0000-0000-0000-000000000019', v_org_id, v_mansion_id, '2025-10-05', '18:30', '18:45', 20, 0, 'available', 0),
+    ('81000000-0000-0000-0000-000000000020', v_org_id, v_mansion_id, '2025-10-05', '18:45', '19:00', 20, 0, 'available', 0)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- PROMO CODES
+  -- ============================================================================
+
+  INSERT INTO promo_codes (id, org_id, attraction_id, code, name, description, discount_type, discount_value, min_order_amount, max_discount, usage_limit, usage_count, per_customer_limit, valid_from, valid_until, is_active, created_by)
+  VALUES
+    -- Active codes
+    ('82000000-0000-0000-0000-000000000001', v_org_id, NULL, 'HALLOWEEN25', 'Halloween 2025 Early Bird', '25% off for early bird purchases', 'percentage', 25, 2500, 2500, 500, 127, 1, '2025-09-01 00:00:00', '2025-09-30 23:59:59', TRUE, 'a0000000-0000-0000-0000-000000000002'),
+
+    ('82000000-0000-0000-0000-000000000002', v_org_id, NULL, 'SCREAM10', 'Scream Season', '$10 off any order over $50', 'fixed_amount', 1000, 5000, NULL, NULL, 45, 2, '2025-10-01 00:00:00', '2025-10-31 23:59:59', TRUE, 'a0000000-0000-0000-0000-000000000002'),
+
+    ('82000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id, 'MANSIONVIP', 'Mansion VIP Discount', '15% off VIP mansion tickets', 'percentage', 15, NULL, 1500, 100, 12, 1, '2025-10-01 00:00:00', '2025-10-31 23:59:59', TRUE, 'a0000000-0000-0000-0000-000000000003'),
+
+    ('82000000-0000-0000-0000-000000000004', v_org_id, NULL, 'GROUPSCARE', 'Group Discount', '$5 off per ticket for groups of 5+', 'fixed_amount', 500, 12500, NULL, NULL, 8, 1, '2025-09-15 00:00:00', '2025-11-01 23:59:59', TRUE, 'a0000000-0000-0000-0000-000000000002'),
+
+    -- Expired code
+    ('82000000-0000-0000-0000-000000000005', v_org_id, NULL, 'SUMMER20', 'Summer Flash Sale', '20% off - expired', 'percentage', 20, NULL, NULL, 200, 200, 1, '2025-06-01 00:00:00', '2025-08-31 23:59:59', FALSE, 'a0000000-0000-0000-0000-000000000002')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- SAMPLE ORDERS
+  -- ============================================================================
+
+  INSERT INTO orders (id, org_id, attraction_id, order_number, customer_email, customer_name, customer_phone, subtotal, discount_amount, tax_amount, total, status, promo_code_id, source_id, completed_at, created_at)
+  VALUES
+    -- Completed online order with promo
+    ('83000000-0000-0000-0000-000000000001', v_org_id, v_mansion_id,
+     'NIG-00000001', 'guest1@example.com', 'John Smith', '555-1001',
+     5000, 1250, 234, 3984, 'completed',
+     '82000000-0000-0000-0000-000000000001', v_online_source_id,
+     NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'),
+
+    -- Completed box office order
+    ('83000000-0000-0000-0000-000000000002', v_org_id, v_mansion_id,
+     'NIG-00000002', 'guest2@example.com', 'Sarah Johnson', '555-1002',
+     7500, 0, 469, 7969, 'completed',
+     NULL, v_box_office_source_id,
+     NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days'),
+
+    -- Pending order (in cart)
+    ('83000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id,
+     'NIG-00000003', 'guest3@example.com', 'Mike Wilson', NULL,
+     5000, 0, 313, 5313, 'pending',
+     NULL, v_online_source_id,
+     NULL, NOW() - INTERVAL '30 minutes'),
+
+    -- Completed VIP order
+    ('83000000-0000-0000-0000-000000000004', v_org_id, v_mansion_id,
+     'NIG-00000004', 'vipguest@example.com', 'Emily Davis', '555-1004',
+     9000, 1350, 478, 8128, 'completed',
+     '82000000-0000-0000-0000-000000000003', v_online_source_id,
+     NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+
+    -- Refunded order
+    ('83000000-0000-0000-0000-000000000005', v_org_id, v_mansion_id,
+     'NIG-00000005', 'refund@example.com', 'Tom Brown', '555-1005',
+     5000, 0, 313, 5313, 'refunded',
+     NULL, v_online_source_id,
+     NOW() - INTERVAL '10 days', NOW() - INTERVAL '10 days')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- ORDER ITEMS
+  -- ============================================================================
+
+  INSERT INTO order_items (id, order_id, ticket_type_id, time_slot_id, quantity, unit_price, total_price)
+  VALUES
+    -- Order 1: 2 GA tickets
+    ('84000000-0000-0000-0000-000000000001', '83000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001', 2, 2500, 5000),
+
+    -- Order 2: 3 GA tickets
+    ('84000000-0000-0000-0000-000000000002', '83000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000009', 3, 2500, 7500),
+
+    -- Order 3: 2 GA tickets (pending)
+    ('84000000-0000-0000-0000-000000000003', '83000000-0000-0000-0000-000000000003', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000017', 2, 2500, 5000),
+
+    -- Order 4: 2 VIP tickets
+    ('84000000-0000-0000-0000-000000000004', '83000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000002', '81000000-0000-0000-0000-000000000015', 2, 4500, 9000),
+
+    -- Order 5: 2 GA tickets (refunded)
+    ('84000000-0000-0000-0000-000000000005', '83000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002', 2, 2500, 5000)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- TICKETS
+  -- ============================================================================
+
+  INSERT INTO tickets (id, org_id, order_id, order_item_id, ticket_type_id, time_slot_id, ticket_number, barcode, guest_name, status, checked_in_at, checked_in_by)
+  VALUES
+    -- Order 1 tickets (2 GA - both used)
+    ('85000000-0000-0000-0000-000000000001', v_org_id, '83000000-0000-0000-0000-000000000001', '84000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001',
+     'TNIG-0000001', 'A1B2C3D4E5F6A1B2C3D4E5F6', 'John Smith', 'used', NOW() - INTERVAL '4 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000002', v_org_id, '83000000-0000-0000-0000-000000000001', '84000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001',
+     'TNIG-0000002', 'B2C3D4E5F6A1B2C3D4E5F6A1', 'Jane Smith', 'used', NOW() - INTERVAL '4 days', 'a0000000-0000-0000-0000-000000000007'),
+
+    -- Order 2 tickets (3 GA - valid, not yet used)
+    ('85000000-0000-0000-0000-000000000003', v_org_id, '83000000-0000-0000-0000-000000000002', '84000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000009',
+     'TNIG-0000003', 'C3D4E5F6A1B2C3D4E5F6A1B2', 'Sarah Johnson', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000004', v_org_id, '83000000-0000-0000-0000-000000000002', '84000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000009',
+     'TNIG-0000004', 'D4E5F6A1B2C3D4E5F6A1B2C3', 'Guest 2', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000005', v_org_id, '83000000-0000-0000-0000-000000000002', '84000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000009',
+     'TNIG-0000005', 'E5F6A1B2C3D4E5F6A1B2C3D4', 'Guest 3', 'valid', NULL, NULL),
+
+    -- Order 4 tickets (2 VIP - valid)
+    ('85000000-0000-0000-0000-000000000006', v_org_id, '83000000-0000-0000-0000-000000000004', '84000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000002', '81000000-0000-0000-0000-000000000015',
+     'TNIG-0000006', 'F6A1B2C3D4E5F6A1B2C3D4E5', 'Emily Davis', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000007', v_org_id, '83000000-0000-0000-0000-000000000004', '84000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000002', '81000000-0000-0000-0000-000000000015',
+     'TNIG-0000007', 'A1B2C3D4E5F6G7H8I9J0K1L2', 'Guest VIP', 'valid', NULL, NULL),
+
+    -- Order 5 tickets (2 GA - voided due to refund)
+    ('85000000-0000-0000-0000-000000000008', v_org_id, '83000000-0000-0000-0000-000000000005', '84000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002',
+     'TNIG-0000008', 'VOID1234567890VOID123456', 'Tom Brown', 'voided', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000009', v_org_id, '83000000-0000-0000-0000-000000000005', '84000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002',
+     'TNIG-0000009', 'VOID0987654321VOID098765', 'Guest Refund', 'voided', NULL, NULL)
+  ON CONFLICT (id) DO NOTHING;
+
+  RAISE NOTICE 'F8 ticketing seed data created successfully';
+END $$;
+
+-- ============================================================================
+-- F8 SEED SUMMARY
+-- ============================================================================
+-- Ticket Types: 8 (GA, VIP, Fast Pass, Group, Trail GA/VIP, Combos)
+-- Time Slots: 20 (Oct 3-5, 2025 - mix of available/limited/sold_out)
+-- Promo Codes: 5 (4 active, 1 expired)
+-- Orders: 5 (3 completed, 1 pending, 1 refunded)
+-- Order Items: 5
+-- Tickets: 9 (2 used, 5 valid, 2 voided)

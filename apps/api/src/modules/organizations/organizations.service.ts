@@ -166,15 +166,17 @@ export class OrganizationsService {
     }
 
     return {
-      data: data.map((m: any) => ({
-        id: m.organizations.id,
-        name: m.organizations.name,
-        slug: m.organizations.slug,
-        logo_url: m.organizations.logo_url,
-        status: m.organizations.status,
-        stripe_onboarding_complete: m.organizations.stripe_onboarding_complete,
-        role: m.role,
-      })),
+      data: data
+        .filter((m: any) => m.organizations != null)
+        .map((m: any) => ({
+          id: m.organizations.id,
+          name: m.organizations.name,
+          slug: m.organizations.slug,
+          logo_url: m.organizations.logo_url,
+          status: m.organizations.status,
+          stripe_onboarding_complete: m.organizations.stripe_onboarding_complete,
+          role: m.role,
+        })),
     };
   }
 
