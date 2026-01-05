@@ -62,9 +62,15 @@ The platform uses a tier-based feature flag system for plan-based access control
 ### Flag Tiers
 | Tier | Features | Description |
 |------|----------|-------------|
-| **basic** | ticketing, checkin, time_tracking | Core features, always enabled |
+| **basic** | ticketing, checkin, time_tracking, notifications | Core features, always enabled |
 | **pro** | scheduling, inventory, analytics_pro | Advanced operations |
 | **enterprise** | virtual_queue, sms_notifications, custom_domains | Premium features |
+
+### Per-Org Activation
+Feature flags are enabled per-organization via:
+- `enabled: true` + `rollout_percentage: 100` = All orgs get it
+- `org_ids: ['uuid']` = Only specific orgs get the feature
+- Orgs upgrade their tier to unlock gated features
 
 ### Using Feature Flags
 
@@ -105,7 +111,7 @@ SELECT is_feature_enabled('scheduling', user_id, org_id);
 Before implementing any feature:
 1. Create ERD in `docs/features/FX-name/ERD.md`
 2. Design API in `docs/features/FX-name/API.md`
-3. Write migrations in `packages/database/migrations/`
+3. Write migrations in `supabase/migrations/` (NOT `infrastructure/supabase/migrations/`)
 
 See `.claude/plans/feature-roadmap.md` for implementation order.
 

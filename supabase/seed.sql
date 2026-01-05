@@ -361,6 +361,7 @@ VALUES
 
   -- Module flags (F7-F14)
   -- Basic tier: ticketing, checkin, time_tracking (always on for all orgs)
+  -- NOTE: 'notifications' flag is created by F12 migration, not here
   ('1f000000-0000-0000-0000-000000000006', 'ticketing', 'Ticketing Module', 'Core ticketing functionality including ticket types, orders, and promo codes (F8)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F8", "module": true}'),
   ('1f000000-0000-0000-0000-000000000007', 'checkin', 'Check-In Module', 'Guest check-in with barcode scanning, capacity tracking, and waivers (F9)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F9", "module": true}'),
   ('1f000000-0000-0000-0000-00000000000e', 'time_tracking', 'Time Tracking Module', 'Staff time clock with clock in/out, time entries, and approval workflows (F7a)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F7a", "module": true}'),
@@ -372,8 +373,9 @@ VALUES
 
   -- Enterprise tier: virtual_queue, sms_notifications, custom_domains
   -- Enable virtual_queue for Nightmare Manor (test org) to support E2E tests and demos
+  -- NOTE: ID 00c is used by 'notifications' in F12 migration
   ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue', 'Real-time virtual queue with position tracking and notifications (F11)', FALSE, 0, ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[], '{}', '{"tier": "enterprise", "feature": "F11", "module": true}'),
-  ('1f000000-0000-0000-0000-00000000000c', 'sms_notifications', 'SMS Notifications', 'SMS delivery for queue alerts, shift reminders, and guest communications (F11/F12)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11,F12", "has_usage_cost": true}'),
+  ('1f000000-0000-0000-0000-000000000010', 'sms_notifications', 'SMS Notifications', 'SMS delivery for queue alerts, shift reminders, and guest communications (F11/F12)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11,F12", "has_usage_cost": true}'),
   ('1f000000-0000-0000-0000-00000000000d', 'custom_domains', 'Custom Domains', 'Custom domain support for public storefronts with SSL provisioning (F14)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F14", "has_infra_cost": true}')
 ON CONFLICT (id) DO NOTHING;
 

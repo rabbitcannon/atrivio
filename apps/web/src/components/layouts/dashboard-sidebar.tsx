@@ -15,6 +15,7 @@ import {
   ScanLine,
   Package,
   ListOrdered,
+  Bell,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -51,6 +52,7 @@ const staffNavItems: NavItem[] = [
 const settingsNavItems: NavItem[] = [
   { label: 'Organization', href: '/settings', icon: Building2, roles: ['owner', 'admin'] },
   { label: 'Payments', href: '/payments', icon: CreditCard, roles: ['owner', 'admin', 'finance'] },
+  { label: 'Notifications', href: '/notifications', icon: Bell, roles: ['owner', 'admin', 'manager'] },
   { label: 'Members', href: '/members', icon: UserCog, roles: ['owner', 'admin', 'hr'] },
   { label: 'Invitations', href: '/invitations', icon: Mail, roles: ['owner', 'admin', 'hr'] },
 ];

@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException, Logger } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { FeaturesService } from '../../core/features/features.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import {
   CreateQueueConfigDto,
   UpdateQueueConfigDto,
@@ -12,9 +13,12 @@ import {
 
 @Injectable()
 export class QueueService {
+  private readonly logger = new Logger(QueueService.name);
+
   constructor(
     private supabase: SupabaseService,
     private featuresService: FeaturesService,
+    private notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -268,7 +272,7 @@ export class QueueService {
       .eq('id', entryId)
       .eq('org_id', orgId)
       .eq('status', 'waiting')
-      .select()
+      .select('*, queue_configs!inner(expiry_minutes, attractions!inner(name))')
       .single();
 
     if (error) {
@@ -278,11 +282,36 @@ export class QueueService {
       throw error;
     }
 
-    // TODO: Send notification via F12 Notifications module
+    // Send SMS notification if guest has phone number
+    let notificationSent = false;
+    const guestPhone = data['guest_phone'] as string | null;
+
+    if (guestPhone) {
+      try {
+        const attractionName = (data['queue_configs'] as Record<string, unknown>)?.['attractions'] as Record<string, unknown>;
+        const expiryMinutes = (data['queue_configs'] as Record<string, unknown>)?.['expiry_minutes'] as number;
+
+        await this.notificationsService.sendFromTemplate(orgId, {
+          templateKey: 'queue_ready',
+          channel: 'sms',
+          recipientPhones: [guestPhone],
+          variables: {
+            attraction_name: (attractionName?.['name'] as string) || 'the attraction',
+            confirmation_code: data['confirmation_code'] as string,
+            expiry_minutes: String(expiryMinutes || 15),
+          },
+        });
+        notificationSent = true;
+        this.logger.log(`Queue ready SMS sent to ${guestPhone} for entry ${entryId}`);
+      } catch (err) {
+        this.logger.error(`Failed to send queue ready SMS for entry ${entryId}:`, err);
+        // Don't throw - notification failure shouldn't block the call
+      }
+    }
 
     return {
       ...this.mapQueueEntry(data),
-      notificationSent: true,
+      notificationSent,
     };
   }
 

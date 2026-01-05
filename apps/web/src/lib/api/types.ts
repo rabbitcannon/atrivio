@@ -551,15 +551,17 @@ export interface InventoryTransaction {
   org_id: string;
   item_id: string;
   type: InventoryTransactionType;
-  quantity_change: number;
-  quantity_before: number;
-  quantity_after: number;
+  quantity: number;
+  previous_qty: number;
+  new_qty: number;
+  reason: string | null;
   reference_type: string | null;
   reference_id: string | null;
   performed_by: string;
-  notes: string | null;
   created_at: string;
-  performer?: { first_name: string; last_name: string };
+  // Relations
+  item?: { id: string; name: string; sku: string };
+  performed_by_user?: { id: string; first_name: string; last_name: string };
 }
 
 export interface InventorySummary {
@@ -676,4 +678,79 @@ export interface QueuePosition {
   joinedAt: string;
   queueName: string;
   attractionName: string;
+}
+
+// ============================================================================
+// Notifications Types (F12)
+// ============================================================================
+
+export type NotificationChannel = 'email' | 'sms' | 'push' | 'in_app';
+export type NotificationStatus = 'pending' | 'queued' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'failed' | 'bounced' | 'unsubscribed';
+export type NotificationCategory = 'tickets' | 'queue' | 'schedule' | 'announcements' | 'marketing' | 'system';
+export type RecipientType = 'user' | 'customer' | 'staff' | 'guest';
+export type DevicePlatform = 'ios' | 'android' | 'web';
+
+export interface NotificationTemplate {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  channel: NotificationChannel;
+  subject: string | null;
+  body: string;
+  variables: string[];
+  isSystem: boolean;
+  isActive: boolean;
+}
+
+export interface Notification {
+  id: string;
+  channel: NotificationChannel;
+  category: NotificationCategory;
+  recipientEmail: string | null;
+  recipientPhone: string | null;
+  subject: string | null;
+  body: string;
+  status: NotificationStatus;
+  sentAt: string | null;
+  deliveredAt: string | null;
+  openedAt: string | null;
+  error: string | null;
+  createdAt: string;
+}
+
+export interface InAppNotification {
+  id: string;
+  category: NotificationCategory;
+  title: string;
+  body: string;
+  data: Record<string, unknown>;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface NotificationPreference {
+  category: NotificationCategory;
+  categoryName: string;
+  emailEnabled: boolean;
+  smsEnabled: boolean;
+  pushEnabled: boolean;
+}
+
+export interface NotificationsResponse {
+  data: Notification[];
+  total: number;
+}
+
+export interface TemplatesResponse {
+  data: NotificationTemplate[];
+}
+
+export interface InAppNotificationsResponse {
+  data: InAppNotification[];
+  unreadCount: number;
+}
+
+export interface PreferencesResponse {
+  data: NotificationPreference[];
 }

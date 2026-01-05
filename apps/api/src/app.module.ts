@@ -35,12 +35,14 @@ import { InventoryModule } from './modules/inventory/inventory.module.js';
 // Virtual Queue (F11 Virtual Queue)
 import { QueueModule } from './modules/queue/queue.module.js';
 
+// Notifications (F12 Notifications)
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';
 // import { OperationsModule } from './modules/operations/operations.module.js';
 // import { MarketingModule } from './modules/marketing/marketing.module.js';
 // import { AnalyticsModule } from './modules/analytics/analytics.module.js';
-// import { NotificationsModule } from './modules/notifications/notifications.module.js';
 // import { EventBusModule } from './shared/events/event-bus.module.js';
 
 @Module({
@@ -83,6 +85,9 @@ import { QueueModule } from './modules/queue/queue.module.js';
 
     // Virtual Queue (F11 Virtual Queue)
     QueueModule,
+
+    // Notifications (F12 Notifications)
+    NotificationsModule,
   ],
   controllers: [],
   providers: [

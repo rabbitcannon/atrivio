@@ -19,6 +19,17 @@ import type {
   QueueEntriesResponse,
   QueueStats,
   QueueEntryStatus,
+  NotificationTemplate,
+  Notification,
+  NotificationChannel,
+  NotificationStatus,
+  NotificationCategory,
+  InAppNotification,
+  NotificationPreference,
+  TemplatesResponse,
+  NotificationsResponse,
+  InAppNotificationsResponse,
+  PreferencesResponse,
 } from './types';
 
 import type { OrgRole } from '@haunt/shared';
@@ -466,4 +477,149 @@ export async function getQueueStats(orgId: string, attractionId: string, date?: 
   return serverApi.get<QueueStats>(
     `/organizations/${orgId}/attractions/${attractionId}/queue/stats${query ? `?${query}` : ''}`
   );
+}
+
+// ============================================================================
+// Notifications API (Server-side)
+// ============================================================================
+
+/**
+ * Get notification templates for an organization
+ */
+export async function getNotificationTemplates(orgId: string, channel?: NotificationChannel) {
+  const params = new URLSearchParams();
+  if (channel) params.set('channel', channel);
+  const query = params.toString();
+  return serverApi.get<TemplatesResponse>(`/organizations/${orgId}/notifications/templates${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get a specific notification template
+ */
+export async function getNotificationTemplate(orgId: string, templateKey: string, channel: NotificationChannel) {
+  return serverApi.get<NotificationTemplate>(`/organizations/${orgId}/notifications/templates/${templateKey}/${channel}`);
+}
+
+/**
+ * Update a notification template
+ */
+export async function updateNotificationTemplate(
+  orgId: string,
+  templateId: string,
+  data: {
+    subject?: string;
+    body?: string;
+    isActive?: boolean;
+  }
+) {
+  return serverApi.patch(`/organizations/${orgId}/notifications/templates/${templateId}`, data);
+}
+
+/**
+ * Get notification history for an organization
+ */
+export async function getNotificationHistory(
+  orgId: string,
+  filters?: {
+    channel?: NotificationChannel;
+    status?: NotificationStatus;
+    limit?: number;
+    offset?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.channel) params.set('channel', filters.channel);
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  if (filters?.offset) params.set('offset', filters.offset.toString());
+  const query = params.toString();
+  return serverApi.get<NotificationsResponse>(`/organizations/${orgId}/notifications/history${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Send a notification using a template
+ */
+export async function sendNotification(
+  orgId: string,
+  data: {
+    templateKey: string;
+    channel: NotificationChannel;
+    recipientIds?: string[];
+    recipientEmails?: string[];
+    recipientPhones?: string[];
+    variables?: Record<string, string>;
+    scheduleAt?: string;
+  }
+) {
+  return serverApi.post(`/organizations/${orgId}/notifications/send`, data);
+}
+
+/**
+ * Send a direct notification (without template)
+ */
+export async function sendDirectNotification(
+  orgId: string,
+  data: {
+    channel: 'email' | 'sms';
+    email?: string;
+    phone?: string;
+    subject?: string;
+    body: string;
+    category?: NotificationCategory;
+  }
+) {
+  return serverApi.post(`/organizations/${orgId}/notifications/send-direct`, data);
+}
+
+/**
+ * Get user's in-app notifications
+ */
+export async function getInAppNotifications(filters?: { read?: boolean; limit?: number }) {
+  const params = new URLSearchParams();
+  if (filters?.read !== undefined) params.set('read', filters.read.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return serverApi.get<InAppNotificationsResponse>(`/notifications/inbox${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Mark a notification as read
+ */
+export async function markNotificationAsRead(notificationId: string) {
+  return serverApi.post(`/notifications/${notificationId}/read`, {});
+}
+
+/**
+ * Mark all notifications as read
+ */
+export async function markAllNotificationsAsRead() {
+  return serverApi.post('/notifications/read-all', {});
+}
+
+/**
+ * Get user's notification preferences
+ */
+export async function getNotificationPreferences(orgId?: string) {
+  const params = new URLSearchParams();
+  if (orgId) params.set('orgId', orgId);
+  const query = params.toString();
+  return serverApi.get<PreferencesResponse>(`/notifications/preferences${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Update user's notification preferences
+ */
+export async function updateNotificationPreferences(
+  preferences: Array<{
+    category: NotificationCategory;
+    emailEnabled?: boolean;
+    smsEnabled?: boolean;
+    pushEnabled?: boolean;
+  }>,
+  orgId?: string
+) {
+  const params = new URLSearchParams();
+  if (orgId) params.set('orgId', orgId);
+  const query = params.toString();
+  return serverApi.patch(`/notifications/preferences${query ? `?${query}` : ''}`, { preferences });
 }

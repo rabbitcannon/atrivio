@@ -1401,6 +1401,33 @@ export async function getItemTransactions(
   );
 }
 
+/**
+ * Get all inventory transactions (org-wide)
+ */
+export async function getInventoryTransactions(
+  orgId: string,
+  filters?: {
+    itemId?: string;
+    type?: 'purchase' | 'adjustment' | 'checkout' | 'return' | 'transfer' | 'damaged' | 'lost' | 'disposed';
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.itemId) params.set('itemId', filters.itemId);
+  if (filters?.type) params.set('type', filters.type);
+  if (filters?.from) params.set('from', filters.from);
+  if (filters?.to) params.set('to', filters.to);
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{ transactions: InventoryTransaction[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/organizations/${orgId}/inventory/transactions${query ? `?${query}` : ''}`
+  );
+}
+
 // ----- Inventory Checkouts -----
 
 /**

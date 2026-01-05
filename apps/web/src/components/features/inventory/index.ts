@@ -7,3 +7,4 @@ export { CategoryFormDialog } from './category-form-dialog';
 export { CheckoutsList } from './checkouts-list';
 export { CheckoutFormDialog } from './checkout-form-dialog';
 export { ReturnDialog } from './return-dialog';
+export { TransactionsList } from './transactions-list';
