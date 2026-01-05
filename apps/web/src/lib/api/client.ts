@@ -1479,5 +1479,5 @@ export async function getOverdueCheckouts(orgId: string) {
  * Get active checkouts for a staff member
  */
 export async function getStaffCheckouts(orgId: string, staffId: string) {
-  return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/staff/${staffId}/checkouts`);
+  return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/inventory/staff/${staffId}/checkouts`);
 }

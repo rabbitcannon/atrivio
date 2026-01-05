@@ -32,6 +32,9 @@ import { CheckInModule } from './modules/check-in/check-in.module.js';
 // Inventory (F10 Inventory)
 import { InventoryModule } from './modules/inventory/inventory.module.js';
 
+// Virtual Queue (F11 Virtual Queue)
+import { QueueModule } from './modules/queue/queue.module.js';
+
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';
 // import { OperationsModule } from './modules/operations/operations.module.js';
@@ -77,6 +80,9 @@ import { InventoryModule } from './modules/inventory/inventory.module.js';
 
     // Inventory (F10 Inventory)
     InventoryModule,
+
+    // Virtual Queue (F11 Virtual Queue)
+    QueueModule,
   ],
   controllers: [],
   providers: [

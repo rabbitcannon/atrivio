@@ -132,8 +132,11 @@ export const TEST_ORGS = {
 };
 
 /**
- * Get seeded attraction IDs
+ * Get seeded attraction IDs and slugs
  */
 export const TEST_ATTRACTIONS = {
   mainHaunt: 'c0000000-0000-0000-0000-000000000001',
+  mainHauntSlug: 'haunted-mansion',
+  terrorTrail: 'c0000000-0000-0000-0000-000000000002',
+  terrorTrailSlug: 'terror-trail',
 };

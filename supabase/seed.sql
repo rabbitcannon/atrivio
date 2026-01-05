@@ -371,7 +371,8 @@ VALUES
   ('1f000000-0000-0000-0000-00000000000a', 'analytics_pro', 'Analytics Pro', 'Advanced analytics with custom reports, exports, and forecasting (F13)', FALSE, 0, '{}', '{}', '{"tier": "pro", "feature": "F13", "module": true}'),
 
   -- Enterprise tier: virtual_queue, sms_notifications, custom_domains
-  ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue', 'Real-time virtual queue with position tracking and notifications (F11)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11", "module": true}'),
+  -- Enable virtual_queue for Nightmare Manor (test org) to support E2E tests and demos
+  ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue', 'Real-time virtual queue with position tracking and notifications (F11)', FALSE, 0, ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[], '{}', '{"tier": "enterprise", "feature": "F11", "module": true}'),
   ('1f000000-0000-0000-0000-00000000000c', 'sms_notifications', 'SMS Notifications', 'SMS delivery for queue alerts, shift reminders, and guest communications (F11/F12)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11,F12", "has_usage_cost": true}'),
   ('1f000000-0000-0000-0000-00000000000d', 'custom_domains', 'Custom Domains', 'Custom domain support for public storefronts with SSL provisioning (F14)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F14", "has_infra_cost": true}')
 ON CONFLICT (id) DO NOTHING;
@@ -1216,3 +1217,290 @@ END $$;
 -- Inventory Checkouts: 5 (4 active, 1 returned)
 -- Inventory Transactions: 5 (3 purchases, 2 adjustments)
 -- Low Stock Items: 3 (for testing alerts)
+
+
+-- ============================================================================
+-- F11: VIRTUAL QUEUE
+-- ============================================================================
+-- Queue configs, entries, and notifications for testing virtual queue system
+
+DO $$
+DECLARE
+  v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
+  v_mansion_id UUID := 'c0000000-0000-0000-0000-000000000001';
+  v_trail_id UUID := 'c0000000-0000-0000-0000-000000000002';
+  v_mansion_queue_id UUID := 'e0000000-0000-0000-0000-000000000001';
+  v_trail_queue_id UUID := 'e0000000-0000-0000-0000-000000000002';
+  v_current_position INTEGER := 1;
+BEGIN
+
+  -- ============================================================================
+  -- QUEUE CONFIGS
+  -- ============================================================================
+
+  INSERT INTO queue_configs (
+    id, org_id, attraction_id, name, is_active, is_paused,
+    capacity_per_batch, batch_interval_minutes, max_wait_minutes, max_queue_size,
+    allow_rejoin, require_check_in, notification_lead_minutes, expiry_minutes,
+    settings
+  ) VALUES
+    -- The Haunted Mansion queue
+    (v_mansion_queue_id, v_org_id, v_mansion_id, 'Haunted Mansion Virtual Queue', TRUE, FALSE,
+     10, 5, 120, 300, FALSE, TRUE, 10, 15,
+     '{"welcome_message": "Welcome to the Haunted Mansion virtual queue!", "sms_enabled": true}'::JSONB),
+
+    -- Terror Trail queue
+    (v_trail_queue_id, v_org_id, v_trail_id, 'Terror Trail Virtual Queue', TRUE, FALSE,
+     6, 8, 90, 200, FALSE, TRUE, 15, 20,
+     '{"welcome_message": "You have joined the Terror Trail virtual queue.", "sms_enabled": true}'::JSONB)
+  ON CONFLICT (attraction_id) DO NOTHING;
+
+  -- ============================================================================
+  -- QUEUE ENTRIES - Various statuses for demo
+  -- ============================================================================
+
+  -- Waiting entries (positions 1-15 for Haunted Mansion)
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, estimated_time, notes
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000001', v_org_id, v_mansion_queue_id,
+     'HM001A', 'Johnson Family', '+15551234001', 'johnson@email.com',
+     4, 1, 'waiting', NOW() - INTERVAL '45 minutes', NOW() + INTERVAL '5 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000002', v_org_id, v_mansion_queue_id,
+     'HM002B', 'Sarah Chen', '+15551234002', 'sarah.chen@email.com',
+     2, 2, 'waiting', NOW() - INTERVAL '40 minutes', NOW() + INTERVAL '10 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000003', v_org_id, v_mansion_queue_id,
+     'HM003C', 'Smith Party', '+15551234003', 'smith@email.com',
+     6, 3, 'waiting', NOW() - INTERVAL '35 minutes', NOW() + INTERVAL '15 minutes', 'Large group - may need extra time'),
+
+    ('e1000000-0000-0000-0000-000000000004', v_org_id, v_mansion_queue_id,
+     'HM004D', 'Mike Williams', '+15551234004', 'mike.w@email.com',
+     1, 4, 'waiting', NOW() - INTERVAL '30 minutes', NOW() + INTERVAL '20 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000005', v_org_id, v_mansion_queue_id,
+     'HM005E', 'Garcia Family', '+15551234005', 'garcia@email.com',
+     5, 5, 'waiting', NOW() - INTERVAL '25 minutes', NOW() + INTERVAL '25 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000006', v_org_id, v_mansion_queue_id,
+     'HM006F', 'Emily Davis', '+15551234006', 'emily.d@email.com',
+     2, 6, 'waiting', NOW() - INTERVAL '20 minutes', NOW() + INTERVAL '30 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000007', v_org_id, v_mansion_queue_id,
+     'HM007G', 'Thompson Group', '+15551234007', 'thompson@email.com',
+     8, 7, 'waiting', NOW() - INTERVAL '15 minutes', NOW() + INTERVAL '35 minutes', 'Birthday party group'),
+
+    ('e1000000-0000-0000-0000-000000000008', v_org_id, v_mansion_queue_id,
+     'HM008H', 'Brown Couple', '+15551234008', 'brown@email.com',
+     2, 8, 'waiting', NOW() - INTERVAL '12 minutes', NOW() + INTERVAL '40 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000009', v_org_id, v_mansion_queue_id,
+     'HM009J', 'Wilson Family', '+15551234009', 'wilson@email.com',
+     4, 9, 'waiting', NOW() - INTERVAL '10 minutes', NOW() + INTERVAL '45 minutes', NULL),
+
+    ('e1000000-0000-0000-0000-000000000010', v_org_id, v_mansion_queue_id,
+     'HM010K', 'Taylor Party', '+15551234010', 'taylor@email.com',
+     3, 10, 'waiting', NOW() - INTERVAL '8 minutes', NOW() + INTERVAL '50 minutes', NULL)
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- Notified entries (about to be called)
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, notified_at, estimated_time
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000011', v_org_id, v_mansion_queue_id,
+     'HM011L', 'Anderson Family', '+15551234011', 'anderson@email.com',
+     3, 0, 'notified', NOW() - INTERVAL '60 minutes', NOW() - INTERVAL '5 minutes', NOW()),
+
+    ('e1000000-0000-0000-0000-000000000012', v_org_id, v_mansion_queue_id,
+     'HM012M', 'Martinez Duo', '+15551234012', 'martinez@email.com',
+     2, 0, 'notified', NOW() - INTERVAL '55 minutes', NOW() - INTERVAL '3 minutes', NOW())
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- Called entries (at entrance)
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, notified_at, called_at
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000013', v_org_id, v_mansion_queue_id,
+     'HM013N', 'Lee Family', '+15551234013', 'lee@email.com',
+     4, 0, 'called', NOW() - INTERVAL '70 minutes', NOW() - INTERVAL '15 minutes', NOW() - INTERVAL '2 minutes')
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- Checked in entries (completed)
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, notified_at, called_at, checked_in_at
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000014', v_org_id, v_mansion_queue_id,
+     'HM014P', 'Clark Group', '+15551234014', 'clark@email.com',
+     5, 0, 'checked_in', NOW() - INTERVAL '90 minutes', NOW() - INTERVAL '35 minutes', NOW() - INTERVAL '25 minutes', NOW() - INTERVAL '20 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000015', v_org_id, v_mansion_queue_id,
+     'HM015Q', 'Robinson Family', '+15551234015', 'robinson@email.com',
+     4, 0, 'checked_in', NOW() - INTERVAL '100 minutes', NOW() - INTERVAL '45 minutes', NOW() - INTERVAL '35 minutes', NOW() - INTERVAL '30 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000016', v_org_id, v_mansion_queue_id,
+     'HM016R', 'Harris Party', '+15551234016', 'harris@email.com',
+     6, 0, 'checked_in', NOW() - INTERVAL '110 minutes', NOW() - INTERVAL '55 minutes', NOW() - INTERVAL '45 minutes', NOW() - INTERVAL '40 minutes')
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- Expired entries (no-show)
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, notified_at, called_at, expired_at
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000017', v_org_id, v_mansion_queue_id,
+     'HM017S', 'Young Couple', '+15551234017', 'young@email.com',
+     2, 0, 'expired', NOW() - INTERVAL '120 minutes', NOW() - INTERVAL '65 minutes', NOW() - INTERVAL '55 minutes', NOW() - INTERVAL '40 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000018', v_org_id, v_mansion_queue_id,
+     'HM018T', 'King Party', '+15551234018', 'king@email.com',
+     3, 0, 'no_show', NOW() - INTERVAL '130 minutes', NOW() - INTERVAL '75 minutes', NOW() - INTERVAL '65 minutes', NOW() - INTERVAL '50 minutes')
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- Left queue voluntarily
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, left_at, notes
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000019', v_org_id, v_mansion_queue_id,
+     'HM019U', 'Wright Family', '+15551234019', 'wright@email.com',
+     4, 0, 'left', NOW() - INTERVAL '80 minutes', NOW() - INTERVAL '50 minutes', 'Kids got tired')
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- Terror Trail waiting entries
+  INSERT INTO queue_entries (
+    id, org_id, queue_id, confirmation_code, guest_name, guest_phone, guest_email,
+    party_size, position, status, joined_at, estimated_time
+  ) VALUES
+    ('e1000000-0000-0000-0000-000000000020', v_org_id, v_trail_queue_id,
+     'TT001A', 'Adams Group', '+15551234020', 'adams@email.com',
+     4, 1, 'waiting', NOW() - INTERVAL '30 minutes', NOW() + INTERVAL '10 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000021', v_org_id, v_trail_queue_id,
+     'TT002B', 'Baker Duo', '+15551234021', 'baker@email.com',
+     2, 2, 'waiting', NOW() - INTERVAL '25 minutes', NOW() + INTERVAL '18 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000022', v_org_id, v_trail_queue_id,
+     'TT003C', 'Cooper Family', '+15551234022', 'cooper@email.com',
+     5, 3, 'waiting', NOW() - INTERVAL '20 minutes', NOW() + INTERVAL '26 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000023', v_org_id, v_trail_queue_id,
+     'TT004D', 'Davies Party', '+15551234023', 'davies@email.com',
+     3, 4, 'waiting', NOW() - INTERVAL '15 minutes', NOW() + INTERVAL '34 minutes'),
+
+    ('e1000000-0000-0000-0000-000000000024', v_org_id, v_trail_queue_id,
+     'TT005E', 'Evans Group', '+15551234024', 'evans@email.com',
+     6, 5, 'waiting', NOW() - INTERVAL '10 minutes', NOW() + INTERVAL '42 minutes')
+  ON CONFLICT (confirmation_code) DO NOTHING;
+
+  -- ============================================================================
+  -- QUEUE NOTIFICATIONS
+  -- ============================================================================
+
+  INSERT INTO queue_notifications (
+    id, org_id, entry_id, type, channel, recipient, message, sent_at, delivered_at
+  ) VALUES
+    -- Joined confirmations
+    ('e2000000-0000-0000-0000-000000000001', v_org_id, 'e1000000-0000-0000-0000-000000000001',
+     'joined', 'sms', '+15551234001',
+     'Welcome! You are #1 in line for Haunted Mansion. Estimated wait: 5 mins. Check status: haunt.app/q/HM001A',
+     NOW() - INTERVAL '45 minutes', NOW() - INTERVAL '45 minutes'),
+
+    ('e2000000-0000-0000-0000-000000000002', v_org_id, 'e1000000-0000-0000-0000-000000000002',
+     'joined', 'sms', '+15551234002',
+     'Welcome! You are #2 in line for Haunted Mansion. Estimated wait: 10 mins. Check status: haunt.app/q/HM002B',
+     NOW() - INTERVAL '40 minutes', NOW() - INTERVAL '40 minutes'),
+
+    -- Almost ready notifications
+    ('e2000000-0000-0000-0000-000000000003', v_org_id, 'e1000000-0000-0000-0000-000000000011',
+     'almost_ready', 'sms', '+15551234011',
+     'Almost time! Please head to the Haunted Mansion entrance. You will be called in ~5 minutes.',
+     NOW() - INTERVAL '10 minutes', NOW() - INTERVAL '10 minutes'),
+
+    -- Ready/called notifications
+    ('e2000000-0000-0000-0000-000000000004', v_org_id, 'e1000000-0000-0000-0000-000000000011',
+     'ready', 'sms', '+15551234011',
+     'It''s your turn! Please proceed to the Haunted Mansion entrance now. Code: HM011L',
+     NOW() - INTERVAL '5 minutes', NOW() - INTERVAL '5 minutes'),
+
+    ('e2000000-0000-0000-0000-000000000005', v_org_id, 'e1000000-0000-0000-0000-000000000013',
+     'ready', 'sms', '+15551234013',
+     'It''s your turn! Please proceed to the Haunted Mansion entrance now. Code: HM013N',
+     NOW() - INTERVAL '2 minutes', NOW() - INTERVAL '2 minutes'),
+
+    -- Expired notification
+    ('e2000000-0000-0000-0000-000000000006', v_org_id, 'e1000000-0000-0000-0000-000000000017',
+     'expired', 'sms', '+15551234017',
+     'Your queue position has expired. Please rejoin if you''d like to visit.',
+     NOW() - INTERVAL '40 minutes', NOW() - INTERVAL '40 minutes'),
+
+    -- Reminder notifications
+    ('e2000000-0000-0000-0000-000000000007', v_org_id, 'e1000000-0000-0000-0000-000000000005',
+     'reminder', 'sms', '+15551234005',
+     'Queue update: You are #5 in line for Haunted Mansion. Estimated wait: ~25 mins.',
+     NOW() - INTERVAL '15 minutes', NOW() - INTERVAL '15 minutes')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- QUEUE STATS (hourly aggregates for today)
+  -- ============================================================================
+
+  INSERT INTO queue_stats (
+    id, org_id, queue_id, date, hour,
+    entries_joined, entries_served, entries_expired, entries_left, entries_no_show,
+    avg_wait_minutes, max_wait_minutes, max_queue_size, total_party_size
+  ) VALUES
+    -- Haunted Mansion stats for today
+    ('e3000000-0000-0000-0000-000000000001', v_org_id, v_mansion_queue_id, CURRENT_DATE, 18,
+     25, 20, 2, 3, 0, 22.5, 35, 45, 85),
+
+    ('e3000000-0000-0000-0000-000000000002', v_org_id, v_mansion_queue_id, CURRENT_DATE, 19,
+     35, 28, 3, 2, 2, 28.3, 45, 62, 120),
+
+    ('e3000000-0000-0000-0000-000000000003', v_org_id, v_mansion_queue_id, CURRENT_DATE, 20,
+     42, 35, 4, 2, 1, 32.1, 52, 78, 145),
+
+    ('e3000000-0000-0000-0000-000000000004', v_org_id, v_mansion_queue_id, CURRENT_DATE, 21,
+     38, 40, 2, 1, 1, 25.8, 40, 55, 130),
+
+    -- Terror Trail stats for today
+    ('e3000000-0000-0000-0000-000000000005', v_org_id, v_trail_queue_id, CURRENT_DATE, 18,
+     15, 12, 1, 2, 0, 18.2, 28, 25, 52),
+
+    ('e3000000-0000-0000-0000-000000000006', v_org_id, v_trail_queue_id, CURRENT_DATE, 19,
+     22, 18, 2, 1, 1, 24.5, 38, 35, 78),
+
+    ('e3000000-0000-0000-0000-000000000007', v_org_id, v_trail_queue_id, CURRENT_DATE, 20,
+     28, 25, 1, 2, 0, 22.8, 35, 42, 95),
+
+    ('e3000000-0000-0000-0000-000000000008', v_org_id, v_trail_queue_id, CURRENT_DATE, 21,
+     20, 22, 1, 1, 1, 19.5, 30, 30, 72),
+
+    -- Yesterday stats (for comparison)
+    ('e3000000-0000-0000-0000-000000000009', v_org_id, v_mansion_queue_id, CURRENT_DATE - INTERVAL '1 day', 18,
+     22, 18, 2, 2, 0, 20.1, 32, 40, 75),
+
+    ('e3000000-0000-0000-0000-000000000010', v_org_id, v_mansion_queue_id, CURRENT_DATE - INTERVAL '1 day', 19,
+     30, 25, 3, 1, 1, 25.5, 42, 55, 105),
+
+    ('e3000000-0000-0000-0000-000000000011', v_org_id, v_mansion_queue_id, CURRENT_DATE - INTERVAL '1 day', 20,
+     38, 32, 3, 2, 1, 28.9, 48, 68, 135),
+
+    ('e3000000-0000-0000-0000-000000000012', v_org_id, v_mansion_queue_id, CURRENT_DATE - INTERVAL '1 day', 21,
+     32, 35, 2, 1, 0, 22.3, 38, 50, 115)
+  ON CONFLICT (queue_id, date, hour) DO NOTHING;
+
+  RAISE NOTICE 'F11 virtual queue seed data created successfully';
+END $$;
+
+-- ============================================================================
+-- F11 SEED SUMMARY
+-- ============================================================================
+-- Queue Configs: 2 (Haunted Mansion, Terror Trail)
+-- Queue Entries: 24 (waiting, notified, called, checked_in, expired, left, no_show)
+-- Queue Notifications: 7 (joined, almost_ready, ready, expired, reminder)
+-- Queue Stats: 12 hourly records (today + yesterday)

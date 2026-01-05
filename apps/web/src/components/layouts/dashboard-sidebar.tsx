@@ -14,6 +14,7 @@ import {
   Ticket,
   ScanLine,
   Package,
+  ListOrdered,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -37,6 +38,7 @@ const adminNavItems: NavItem[] = [
   { label: 'Schedule', href: '/schedule', icon: Calendar, roles: ['owner', 'admin', 'manager'] },
   { label: 'Ticketing', href: '/ticketing', icon: Ticket, roles: ['owner', 'admin', 'manager', 'box_office'] },
   { label: 'Check-In', href: '/check-in', icon: ScanLine, roles: ['owner', 'admin', 'manager', 'scanner'] },
+  { label: 'Queue', href: '/queue', icon: ListOrdered, roles: ['owner', 'admin', 'manager'] },
   { label: 'Inventory', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager'] },
 ];
 

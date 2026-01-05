@@ -572,3 +572,108 @@ export interface InventorySummary {
   recentTransactions: InventoryTransaction[];
   lowStockAlerts: InventoryItem[];
 }
+
+// ============================================================================
+// Virtual Queue Types (F11)
+// ============================================================================
+
+export type QueueEntryStatus =
+  | 'waiting'
+  | 'notified'
+  | 'called'
+  | 'checked_in'
+  | 'expired'
+  | 'left'
+  | 'no_show';
+
+export interface QueueConfig {
+  id: string;
+  attraction_id: string;
+  name: string;
+  is_active: boolean;
+  is_paused: boolean;
+  capacity_per_batch: number;
+  batch_interval_minutes: number;
+  max_wait_minutes: number;
+  max_queue_size: number;
+  allow_rejoin: boolean;
+  require_check_in: boolean;
+  notification_lead_minutes: number;
+  expiry_minutes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QueueEntry {
+  id: string;
+  confirmation_code: string;
+  guest_name: string | null;
+  guest_phone: string | null;
+  guest_email: string | null;
+  party_size: number;
+  position: number;
+  status: QueueEntryStatus;
+  joined_at: string;
+  estimated_time: string | null;
+  notified_at: string | null;
+  called_at: string | null;
+  checked_in_at: string | null;
+  expired_at: string | null;
+  left_at: string | null;
+  notes: string | null;
+}
+
+export interface QueueEntriesResponse {
+  data: QueueEntry[];
+  total: number;
+  summary: {
+    totalWaiting: number;
+    totalServedToday: number;
+    avgWaitMinutes: number;
+    nextBatchTime: string;
+  };
+}
+
+export interface QueueStats {
+  today: {
+    totalJoined: number;
+    totalServed: number;
+    totalExpired: number;
+    totalLeft: number;
+    totalNoShow: number;
+    avgWaitMinutes: number | null;
+    maxWaitMinutes: number | null;
+    currentInQueue: number;
+  };
+  byHour: Array<{
+    hour: string;
+    joined: number;
+    served: number;
+    expired: number;
+    avgWait: number | null;
+    maxSize: number;
+  }>;
+}
+
+export interface PublicQueueStatus {
+  isOpen: boolean;
+  isPaused: boolean;
+  currentWaitMinutes: number;
+  peopleInQueue: number;
+  queueSize: number;
+  status: 'accepting' | 'paused' | 'full' | 'closed';
+  message: string;
+}
+
+export interface QueuePosition {
+  confirmationCode: string;
+  position: number;
+  status: string;
+  partySize: number;
+  peopleAhead: number;
+  estimatedWaitMinutes: number;
+  estimatedTime: string;
+  joinedAt: string;
+  queueName: string;
+  attractionName: string;
+}

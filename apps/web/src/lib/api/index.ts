@@ -15,7 +15,13 @@ import type {
   StaffResponse,
   StaffMember,
   Zone,
+  QueueConfig,
+  QueueEntriesResponse,
+  QueueStats,
+  QueueEntryStatus,
 } from './types';
+
+import type { OrgRole } from '@haunt/shared';
 
 // ============================================================================
 // Org ID Resolution
@@ -50,6 +56,29 @@ export async function resolveOrgId(orgIdentifier: string): Promise<string | null
     .single();
 
   return org?.id ?? null;
+}
+
+/**
+ * Get the current user's role in an organization.
+ * Returns null if the user is not a member.
+ */
+export async function getCurrentUserRole(orgId: string): Promise<OrgRole | null> {
+  const supabase = await createClient();
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Get their membership in this org
+  const { data: membership } = await supabase
+    .from('org_memberships')
+    .select('role')
+    .eq('org_id', orgId)
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .single();
+
+  return (membership?.role as OrgRole) ?? null;
 }
 
 // ============================================================================
@@ -322,4 +351,119 @@ export async function getPayouts(
   if (filters?.offset) params.set('offset', filters.offset.toString());
   const query = params.toString();
   return serverApi.get<PayoutsResponse>(`/organizations/${orgId}/payments/payouts${query ? `?${query}` : ''}`);
+}
+
+// ============================================================================
+// Virtual Queue API (Server-side)
+// ============================================================================
+
+/**
+ * Get queue config for an attraction
+ */
+export async function getQueueConfig(orgId: string, attractionId: string) {
+  return serverApi.get<QueueConfig>(`/organizations/${orgId}/attractions/${attractionId}/queue/config`);
+}
+
+/**
+ * Create queue config for an attraction
+ */
+export async function createQueueConfig(
+  orgId: string,
+  attractionId: string,
+  data: {
+    name: string;
+    isActive?: boolean;
+    capacityPerBatch?: number;
+    batchIntervalMinutes?: number;
+    maxWaitMinutes?: number;
+    maxQueueSize?: number;
+    allowRejoin?: boolean;
+    requireCheckIn?: boolean;
+    notificationLeadMinutes?: number;
+    expiryMinutes?: number;
+  }
+) {
+  return serverApi.post<QueueConfig>(`/organizations/${orgId}/attractions/${attractionId}/queue/config`, data);
+}
+
+/**
+ * Update queue config for an attraction
+ */
+export async function updateQueueConfig(
+  orgId: string,
+  attractionId: string,
+  data: Partial<{
+    name: string;
+    isActive: boolean;
+    isPaused: boolean;
+    capacityPerBatch: number;
+    batchIntervalMinutes: number;
+    maxWaitMinutes: number;
+    maxQueueSize: number;
+    allowRejoin: boolean;
+    requireCheckIn: boolean;
+    notificationLeadMinutes: number;
+    expiryMinutes: number;
+  }>
+) {
+  return serverApi.patch<QueueConfig>(`/organizations/${orgId}/attractions/${attractionId}/queue/config`, data);
+}
+
+/**
+ * Get queue entries for an attraction
+ */
+export async function getQueueEntries(
+  orgId: string,
+  attractionId: string,
+  filters?: {
+    status?: QueueEntryStatus;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.search) params.set('search', filters.search);
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  if (filters?.offset) params.set('offset', filters.offset.toString());
+  const query = params.toString();
+  return serverApi.get<QueueEntriesResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/queue/entries${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Update a queue entry's status
+ */
+export async function updateQueueEntryStatus(
+  orgId: string,
+  attractionId: string,
+  entryId: string,
+  status: QueueEntryStatus,
+  notes?: string
+) {
+  return serverApi.patch(`/organizations/${orgId}/attractions/${attractionId}/queue/entries/${entryId}/status`, {
+    status,
+    notes,
+  });
+}
+
+/**
+ * Call the next batch from the queue
+ */
+export async function callNextBatch(orgId: string, attractionId: string, count?: number) {
+  return serverApi.post(`/organizations/${orgId}/attractions/${attractionId}/queue/call-next`, { count });
+}
+
+/**
+ * Get queue statistics for an attraction
+ */
+export async function getQueueStats(orgId: string, attractionId: string, date?: string) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  const query = params.toString();
+  return serverApi.get<QueueStats>(
+    `/organizations/${orgId}/attractions/${attractionId}/queue/stats${query ? `?${query}` : ''}`
+  );
 }
