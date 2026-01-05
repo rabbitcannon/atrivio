@@ -106,6 +106,20 @@ export interface FeatureFlag {
   updated_at: string;
 }
 
+export interface FeatureFlagDetail {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  rollout_percentage: number | null;
+  org_ids: string[];
+  user_ids: string[];
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface FeatureFlagListResponse {
   flags: FeatureFlag[];
 }
@@ -295,12 +309,27 @@ export async function getFeatureFlags() {
   return api.get<FeatureFlagListResponse>('/admin/feature-flags');
 }
 
+export async function getFeatureFlag(flagId: string) {
+  return api.get<FeatureFlagDetail>(`/admin/feature-flags/${flagId}`);
+}
+
 export async function createFeatureFlag(data: { key: string; name: string; description?: string; enabled?: boolean }) {
   return api.post<FeatureFlag>('/admin/feature-flags', data);
 }
 
-export async function updateFeatureFlag(flagId: string, data: { name?: string; enabled?: boolean; rollout_percentage?: number }) {
-  return api.patch<FeatureFlag>(`/admin/feature-flags/${flagId}`, data);
+export async function updateFeatureFlag(
+  flagId: string,
+  data: {
+    name?: string;
+    description?: string;
+    enabled?: boolean;
+    rollout_percentage?: number | null;
+    org_ids?: string[];
+    user_ids?: string[];
+    metadata?: Record<string, unknown>;
+  }
+) {
+  return api.patch<FeatureFlagDetail>(`/admin/feature-flags/${flagId}`, data);
 }
 
 export async function deleteFeatureFlag(flagId: string) {
@@ -423,6 +452,42 @@ export async function getOrgPlatformFee(orgId: string) {
 
 export async function setOrgPlatformFee(orgId: string, data: { platform_fee_percent: number | null }) {
   return api.patch<OrgPlatformFee>(`/admin/organizations/${orgId}/platform-fee`, data);
+}
+
+// Organization Features
+export interface OrgFeature {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  tier: string;
+  enabled_for_org: boolean;
+  globally_enabled: boolean;
+  accessible: boolean;
+}
+
+export interface OrgFeaturesResponse {
+  org_id: string;
+  org_name: string;
+  features: OrgFeature[];
+}
+
+export interface ToggleOrgFeatureResponse {
+  message: string;
+  org_id: string;
+  flag_key: string;
+  enabled: boolean;
+}
+
+export async function getOrgFeatures(orgId: string) {
+  return api.get<OrgFeaturesResponse>(`/admin/organizations/${orgId}/features`);
+}
+
+export async function toggleOrgFeature(orgId: string, flagKey: string, enabled: boolean) {
+  return api.post<ToggleOrgFeatureResponse>(`/admin/organizations/${orgId}/features`, {
+    flag_key: flagKey,
+    enabled,
+  });
 }
 
 // ============================================================================

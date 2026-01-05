@@ -13,6 +13,9 @@ import {
   Percent,
   CheckCircle2,
   Loader2,
+  Sparkles,
+  Globe,
+  Lock,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -21,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -33,8 +37,11 @@ import {
   getAdminOrganization,
   getOrgPlatformFee,
   setOrgPlatformFee,
+  getOrgFeatures,
+  toggleOrgFeature,
   type AdminOrgDetail,
   type OrgPlatformFee,
+  type OrgFeature,
 } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
@@ -64,6 +71,7 @@ export default function AdminOrganizationDetailPage() {
 
   const [org, setOrg] = useState<AdminOrgDetail | null>(null);
   const [platformFee, setPlatformFee] = useState<OrgPlatformFee | null>(null);
+  const [features, setFeatures] = useState<OrgFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,14 +82,19 @@ export default function AdminOrganizationDetailPage() {
   const [isSavingFee, setIsSavingFee] = useState(false);
   const [feeSuccess, setFeeSuccess] = useState(false);
 
+  // Feature toggle state
+  const [togglingFeature, setTogglingFeature] = useState<string | null>(null);
+  const [featureSuccess, setFeatureSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       setError(null);
 
-      const [orgResult, feeResult] = await Promise.all([
+      const [orgResult, feeResult, featuresResult] = await Promise.all([
         getAdminOrganization(orgId),
         getOrgPlatformFee(orgId),
+        getOrgFeatures(orgId),
       ]);
 
       if (orgResult.error) {
@@ -94,6 +107,10 @@ export default function AdminOrganizationDetailPage() {
         setPlatformFee(feeResult.data);
         setUseDefault(!feeResult.data.is_custom);
         setFeeValue(feeResult.data.custom_fee?.toString() || feeResult.data.global_default.toString());
+      }
+
+      if (featuresResult.data) {
+        setFeatures(featuresResult.data.features);
       }
 
       setIsLoading(false);
@@ -126,6 +143,45 @@ export default function AdminOrganizationDetailPage() {
     if (platformFee) {
       setUseDefault(!platformFee.is_custom);
       setFeeValue(platformFee.custom_fee?.toString() || platformFee.global_default.toString());
+    }
+  };
+
+  const handleToggleFeature = async (feature: OrgFeature) => {
+    // Don't toggle if globally enabled
+    if (feature.globally_enabled) return;
+
+    setTogglingFeature(feature.key);
+    setFeatureSuccess(null);
+
+    const newEnabled = !feature.enabled_for_org;
+    const result = await toggleOrgFeature(orgId, feature.key, newEnabled);
+
+    if (result.error) {
+      setError(result.error.message);
+    } else {
+      // Update local state
+      setFeatures((prev) =>
+        prev.map((f) =>
+          f.key === feature.key
+            ? { ...f, enabled_for_org: newEnabled, accessible: newEnabled || f.globally_enabled }
+            : f
+        )
+      );
+      setFeatureSuccess(feature.key);
+      setTimeout(() => setFeatureSuccess(null), 2000);
+    }
+
+    setTogglingFeature(null);
+  };
+
+  const getTierBadgeVariant = (tier: string): 'default' | 'secondary' | 'outline' => {
+    switch (tier) {
+      case 'enterprise':
+        return 'default';
+      case 'pro':
+        return 'secondary';
+      default:
+        return 'outline';
     }
   };
 
@@ -419,6 +475,78 @@ export default function AdminOrganizationDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Features */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            Features
+          </CardTitle>
+          <CardDescription>
+            Manage which features are enabled for this organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {features.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No features available
+              </p>
+            ) : (
+              <div className="divide-y">
+                {features.map((feature) => (
+                  <div
+                    key={feature.key}
+                    className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{feature.name}</span>
+                        <Badge variant={getTierBadgeVariant(feature.tier)} className="text-xs">
+                          {feature.tier}
+                        </Badge>
+                        {feature.globally_enabled && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Globe className="h-3 w-3" />
+                            Global
+                          </Badge>
+                        )}
+                        {featureSuccess === feature.key && (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        )}
+                      </div>
+                      {feature.description && (
+                        <p className="text-sm text-muted-foreground">{feature.description}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground font-mono">{feature.key}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {feature.globally_enabled ? (
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Lock className="h-3 w-3" />
+                          Enabled globally
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          {togglingFeature === feature.key && (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          )}
+                          <Switch
+                            checked={feature.enabled_for_org}
+                            onCheckedChange={() => handleToggleFeature(feature)}
+                            disabled={togglingFeature === feature.key}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

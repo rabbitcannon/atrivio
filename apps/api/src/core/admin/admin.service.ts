@@ -906,6 +906,138 @@ export class AdminService {
     };
   }
 
+  async getOrgFeatures(orgId: string) {
+    const client = this.supabase.adminClient;
+
+    // Verify org exists
+    const { data: org, error: orgError } = await client
+      .from('organizations')
+      .select('id, name')
+      .eq('id', orgId)
+      .single();
+
+    if (orgError || !org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    // Get all feature flags
+    const { data: flags, error: flagsError } = await client
+      .from('feature_flags')
+      .select('id, key, name, description, enabled, org_ids, metadata')
+      .order('name', { ascending: true });
+
+    if (flagsError) {
+      throw new BadRequestException({
+        code: 'FLAGS_FETCH_FAILED',
+        message: flagsError.message,
+      });
+    }
+
+    // Map flags with their enabled state for this org
+    const features = ((flags || []) as AnyRecord[]).map((flag) => {
+      const orgIds = (flag['org_ids'] as string[] | null) || [];
+      const metadata = (flag['metadata'] as Record<string, unknown>) || {};
+      const isEnabledForOrg = orgIds.includes(orgId);
+      const isGloballyEnabled = flag['enabled'] as boolean;
+
+      return {
+        id: flag['id'] as string,
+        key: flag['key'] as string,
+        name: flag['name'] as string,
+        description: flag['description'] as string | null,
+        tier: (metadata['tier'] as string) || 'basic',
+        enabled_for_org: isEnabledForOrg,
+        globally_enabled: isGloballyEnabled,
+        // Feature is accessible if globally enabled OR specifically enabled for this org
+        accessible: isGloballyEnabled || isEnabledForOrg,
+      };
+    });
+
+    return {
+      org_id: orgId,
+      org_name: org.name,
+      features,
+    };
+  }
+
+  async toggleOrgFeature(orgId: string, flagKey: string, enabled: boolean, adminId: string) {
+    const client = this.supabase.adminClient;
+
+    // Verify org exists
+    const { data: org, error: orgError } = await client
+      .from('organizations')
+      .select('id, name')
+      .eq('id', orgId)
+      .single();
+
+    if (orgError || !org) {
+      throw new NotFoundException({
+        code: 'ORG_NOT_FOUND',
+        message: 'Organization not found',
+      });
+    }
+
+    // Get the feature flag
+    const { data: flag, error: flagError } = await client
+      .from('feature_flags')
+      .select('id, key, name, org_ids')
+      .eq('key', flagKey)
+      .single();
+
+    if (flagError || !flag) {
+      throw new NotFoundException({
+        code: 'FLAG_NOT_FOUND',
+        message: 'Feature flag not found',
+      });
+    }
+
+    const currentOrgIds = (flag.org_ids as string[] | null) || [];
+    let newOrgIds: string[];
+
+    if (enabled) {
+      // Add org to the list if not already there
+      newOrgIds = currentOrgIds.includes(orgId) ? currentOrgIds : [...currentOrgIds, orgId];
+    } else {
+      // Remove org from the list
+      newOrgIds = currentOrgIds.filter((id) => id !== orgId);
+    }
+
+    const { error: updateError } = await client
+      .from('feature_flags')
+      .update({
+        org_ids: newOrgIds,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', flag.id);
+
+    if (updateError) {
+      throw new BadRequestException({
+        code: 'FLAG_UPDATE_FAILED',
+        message: updateError.message,
+      });
+    }
+
+    await this.logAuditEvent({
+      actorId: adminId,
+      action: enabled ? 'feature.enable' : 'feature.disable',
+      resourceType: 'feature_flag',
+      resourceId: flag.id,
+      orgId,
+      changes: { org_ids: { from: currentOrgIds, to: newOrgIds } },
+      metadata: { flag_key: flagKey, flag_name: flag.name, org_name: org.name },
+    });
+
+    return {
+      message: `Feature ${enabled ? 'enabled' : 'disabled'} for organization`,
+      org_id: orgId,
+      flag_key: flagKey,
+      enabled,
+    };
+  }
+
   // ============================================================================
   // FEATURE FLAGS
   // ============================================================================
@@ -937,6 +1069,37 @@ export class AdminService {
         user_count: (f['user_ids'] as string[] | null)?.length || 0,
         updated_at: f['updated_at'],
       })),
+    };
+  }
+
+  async getFeatureFlag(flagId: string) {
+    const client = this.supabase.adminClient;
+
+    const { data, error } = await client
+      .from('feature_flags')
+      .select('*')
+      .eq('id', flagId)
+      .single();
+
+    if (error || !data) {
+      throw new NotFoundException({
+        code: 'FLAG_NOT_FOUND',
+        message: 'Feature flag not found',
+      });
+    }
+
+    return {
+      id: data.id,
+      key: data.key,
+      name: data.name,
+      description: data.description,
+      enabled: data.enabled,
+      rollout_percentage: data.rollout_percentage,
+      org_ids: data.org_ids || [],
+      user_ids: data.user_ids || [],
+      metadata: data.metadata || {},
+      created_at: data.created_at,
+      updated_at: data.updated_at,
     };
   }
 

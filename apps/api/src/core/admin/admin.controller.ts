@@ -25,6 +25,7 @@ import {
   SuspendOrganizationDto,
   DeleteOrganizationDto,
   SetOrgPlatformFeeDto,
+  ToggleOrgFeatureDto,
   CreateFeatureFlagDto,
   UpdateFeatureFlagDto,
   UpdateSettingDto,
@@ -204,6 +205,26 @@ export class AdminController {
     return this.adminService.getOrgPlatformFee(orgId);
   }
 
+  @Get('organizations/:orgId/features')
+  @ApiOperation({ summary: 'Get all features for organization with their enabled status' })
+  @ApiResponse({ status: 200, description: 'Features retrieved' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async getOrgFeatures(@Param('orgId') orgId: string) {
+    return this.adminService.getOrgFeatures(orgId);
+  }
+
+  @Post('organizations/:orgId/features')
+  @ApiOperation({ summary: 'Enable or disable a feature for organization' })
+  @ApiResponse({ status: 200, description: 'Feature toggled' })
+  @ApiResponse({ status: 404, description: 'Organization or feature not found' })
+  async toggleOrgFeature(
+    @Param('orgId') orgId: string,
+    @Body() dto: ToggleOrgFeatureDto,
+    @CurrentUser() admin: AuthUser,
+  ) {
+    return this.adminService.toggleOrgFeature(orgId, dto.flag_key, dto.enabled, admin.id);
+  }
+
   // ============================================================================
   // FEATURE FLAGS
   // ============================================================================
@@ -213,6 +234,14 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Feature flags list retrieved' })
   async listFeatureFlags() {
     return this.adminService.listFeatureFlags();
+  }
+
+  @Get('feature-flags/:flagId')
+  @ApiOperation({ summary: 'Get feature flag details' })
+  @ApiResponse({ status: 200, description: 'Feature flag details retrieved' })
+  @ApiResponse({ status: 404, description: 'Feature flag not found' })
+  async getFeatureFlag(@Param('flagId') flagId: string) {
+    return this.adminService.getFeatureFlag(flagId);
   }
 
   @Post('feature-flags')

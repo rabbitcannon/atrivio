@@ -179,6 +179,17 @@ export class SetOrgPlatformFeeDto {
   platform_fee_percent?: number | null;
 }
 
+export class ToggleOrgFeatureDto {
+  @ApiProperty({ description: 'Feature flag key', example: 'scheduling' })
+  @IsString()
+  @MinLength(1)
+  flag_key!: string;
+
+  @ApiProperty({ description: 'Enable or disable the feature for this org' })
+  @IsBoolean()
+  enabled!: boolean;
+}
+
 // ============================================================================
 // FEATURE FLAGS
 // ============================================================================
