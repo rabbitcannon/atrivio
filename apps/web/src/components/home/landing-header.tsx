@@ -6,10 +6,11 @@ import { cn } from '@/lib/utils/cn';
 import atrivioLogo from '@/assets/images/atrivio-logo.png';
 
 const navLinks = [
-  { href: '#platform', label: 'Platform Core' },
-  { href: '#staffing', label: 'Staff & Actors' },
-  { href: '#ticketing', label: 'Ticketing & Finance' },
-  { href: '#operations', label: 'Operations & Design' },
+  { href: '#platform', label: 'Platform' },
+  { href: '#staffing', label: 'Staffing' },
+  { href: '#ticketing', label: 'Ticketing' },
+  { href: '#checkin', label: 'Check-In' },
+  { href: '#pricing', label: 'Pricing' },
 ];
 
 export function LandingHeader() {
@@ -31,7 +32,7 @@ export function LandingHeader() {
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden gap-8 md:flex" aria-label="Main navigation">
+        <nav className="hidden gap-6 lg:flex" aria-label="Main navigation">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -44,25 +45,25 @@ export function LandingHeader() {
         </nav>
 
         {/* CTAs */}
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-4 lg:flex">
           <a
             href="/login"
             className="rounded-md border-2 border-[hsl(var(--landing-bg-card))] bg-transparent px-5 py-2.5 text-sm font-semibold text-[hsl(var(--landing-text-primary))] transition-all duration-[var(--landing-transition-normal)] hover:border-[hsl(var(--landing-accent-primary))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))]"
           >
-            Client Login
+            Sign In
           </a>
           <a
-            href="#demo"
+            href="/register"
             className="rounded-md bg-[hsl(var(--landing-accent-primary))] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-[var(--landing-transition-normal)] hover:-translate-y-0.5 hover:bg-[hsl(var(--landing-accent-primary-hover))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--landing-bg-darkest))]"
           >
-            Book a Demo
+            Start Free Trial
           </a>
         </div>
 
         {/* Mobile Menu Button */}
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-md text-[hsl(var(--landing-text-muted))] transition-colors hover:text-[hsl(var(--landing-text-primary))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-md text-[hsl(var(--landing-text-muted))] transition-colors hover:text-[hsl(var(--landing-text-primary))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] lg:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-menu"
@@ -97,8 +98,8 @@ export function LandingHeader() {
       <div
         id="mobile-menu"
         className={cn(
-          'overflow-hidden border-t border-[hsl(var(--landing-border-subtle))] bg-[hsl(var(--landing-bg-darkest))] transition-all duration-300 md:hidden',
-          mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          'overflow-hidden border-t border-[hsl(var(--landing-border-subtle))] bg-[hsl(var(--landing-bg-darkest))] transition-all duration-300 lg:hidden',
+          mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
         <nav className="flex flex-col gap-1 px-5 py-4" aria-label="Mobile navigation">
@@ -117,13 +118,13 @@ export function LandingHeader() {
               href="/login"
               className="rounded-md border-2 border-[hsl(var(--landing-bg-card))] px-4 py-3 text-center font-semibold text-[hsl(var(--landing-text-primary))]"
             >
-              Client Login
+              Sign In
             </a>
             <a
-              href="#demo"
+              href="/register"
               className="rounded-md bg-[hsl(var(--landing-accent-primary))] px-4 py-3 text-center font-semibold text-white"
             >
-              Book a Demo
+              Start Free Trial
             </a>
           </div>
         </nav>

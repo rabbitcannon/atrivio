@@ -4,47 +4,97 @@ import {
   HeroSection,
   FeatureGrid,
   SplitSection,
-  OperationsSection,
-  ScaleSection,
   LandingFooter,
 } from '@/components/home';
+import { StatsSection } from '@/components/home/stats-section';
+import { PricingSection } from '@/components/home/pricing-section';
+import { TestimonialsSection } from '@/components/home/testimonials-section';
+import { CtaSection } from '@/components/home/cta-section';
+import { FeaturesShowcase } from '@/components/home/features-showcase';
 import { MobileCheckout } from '@/components/home/illustrations/mobile-checkout';
+import { CheckInIllustration } from '@/components/home/illustrations/check-in-illustration';
 
 export const metadata: Metadata = {
-  title: 'Ultimate Haunt Platform | The Unified Operator System',
+  title: 'Atrivio | The Complete Attractions Management Platform',
   description:
-    'The operator-centric solution for managing multiple locations, staffing, ticketing, and financials under a single master account.',
+    'All-in-one platform for haunted attractions, escape rooms, theme parks, and entertainment venues. Manage ticketing, staff scheduling, check-in, and payments from a single dashboard.',
+  keywords: [
+    'haunted attraction software',
+    'escape room management',
+    'theme park ticketing',
+    'attraction management platform',
+    'staff scheduling software',
+    'event ticketing system',
+    'venue management',
+  ],
+  openGraph: {
+    title: 'Atrivio | The Complete Attractions Management Platform',
+    description:
+      'All-in-one platform for haunted attractions, escape rooms, theme parks, and entertainment venues.',
+    type: 'website',
+  },
 };
+
+const platformFeatures = [
+  {
+    id: 'multi-tenant',
+    icon: <span aria-hidden="true">🏢</span>,
+    title: 'Multi-Location Management',
+    description:
+      'Manage all your attractions from a single dashboard. Perfect for operators with multiple haunts, escape rooms, or venues.',
+  },
+  {
+    id: 'role-based',
+    icon: <span aria-hidden="true">🔐</span>,
+    title: 'Role-Based Access',
+    description:
+      'Fine-grained permissions with owner, admin, manager, and specialized roles. Everyone sees exactly what they need.',
+  },
+  {
+    id: 'real-time',
+    icon: <span aria-hidden="true">⚡</span>,
+    title: 'Real-Time Operations',
+    description:
+      'Live dashboards showing guest flow, staff status, capacity, and revenue. Make decisions with up-to-the-minute data.',
+  },
+];
 
 const staffingFeatures = [
   {
     id: 'recruit',
     icon: <span aria-hidden="true">📢</span>,
-    title: 'Recruit',
+    title: 'Recruit & Onboard',
     description:
-      'Use branded application forms with custom workflows to review applicants, attach notes, and assign roles.',
+      'Branded application forms with custom workflows. Review applicants, attach notes, assign roles, and manage certifications.',
   },
   {
     id: 'schedule',
     icon: <span aria-hidden="true">📅</span>,
-    title: 'Schedule',
+    title: 'Smart Scheduling',
     description:
-      'Drag-and-drop builder supporting shift templates, conflict detection, and multiple roles per night across haunts.',
+      'Drag-and-drop builder with shift templates, availability management, conflict detection, and shift swap requests.',
   },
   {
-    id: 'operate',
-    icon: <span aria-hidden="true">📱</span>,
-    title: 'Operate',
+    id: 'time-tracking',
+    icon: <span aria-hidden="true">⏱️</span>,
+    title: 'Time Tracking',
     description:
-      'Self-service portal for staff to view shifts, plus on-site kiosk tools with QR/Pin for secure time tracking.',
+      'QR code and PIN-based clock in/out. Track hours, breaks, and overtime automatically. Export for payroll integration.',
   },
 ];
 
 const ticketingFeatures = [
-  { id: 'timed-ticketing', text: 'Timed Ticketing with slot-based entry for auto capacity balancing.' },
-  { id: 'dynamic-pricing', text: 'Dynamic Pricing to adjust costs based on demand or inventory.' },
-  { id: 'multi-pass', text: 'Multi-Haunt and Multi-Attraction passes supported.' },
-  { id: 'fast-payouts', text: 'Fast payouts with 1–2 business day deposits.' },
+  { id: 'timed-ticketing', text: 'Timed ticketing with slot-based entry for automatic capacity balancing.' },
+  { id: 'ticket-types', text: 'Multiple ticket types: general admission, VIP, fast pass, group rates, and combos.' },
+  { id: 'promo-codes', text: 'Flexible promo codes with usage limits, date ranges, and minimum purchase requirements.' },
+  { id: 'fast-payouts', text: 'Stripe Connect integration with 1-2 business day payouts to your bank.' },
+];
+
+const checkInFeatures = [
+  { id: 'barcode-scan', text: 'Lightning-fast barcode and QR code scanning from any device.' },
+  { id: 'capacity-tracking', text: 'Real-time capacity tracking with automatic gate control.' },
+  { id: 'waiver-collection', text: 'Digital waiver collection and signature capture at check-in.' },
+  { id: 'queue-management', text: 'Virtual queue management to reduce wait times and improve guest experience.' },
 ];
 
 export default function HomePage() {
@@ -62,9 +112,19 @@ export default function HomePage() {
       <main id="main-content">
         <HeroSection />
 
+        <StatsSection />
+
+        <FeatureGrid
+          id="platform"
+          title="One Platform to Run Your Entire Operation"
+          features={platformFeatures}
+        />
+
+        <FeaturesShowcase />
+
         <FeatureGrid
           id="staffing"
-          title="Build and Manage Your Dream Scream Team"
+          title="Build and Manage Your Dream Team"
           features={staffingFeatures}
           variant="alt"
         />
@@ -76,20 +136,41 @@ export default function HomePage() {
               Maximize Revenue with{' '}
               <span className="text-[hsl(var(--landing-accent-secondary))]">
                 Smart Ticketing
-              </span>{' '}
-              & Integrated Finance
+              </span>
             </>
           }
-          description="Sell digital tickets via fully branded online pages alongside POS-style interfaces for on-site box office sales."
+          description="Sell tickets online with branded storefronts, or use our POS interface for walk-up sales. Integrated payment processing with Stripe Connect."
           features={ticketingFeatures}
-          ctaText="Explore Finance Features"
-          ctaHref="#"
+          ctaText="Learn About Ticketing"
+          ctaHref="#pricing"
           illustration={<MobileCheckout />}
         />
 
-        <OperationsSection />
+        <SplitSection
+          id="checkin"
+          title={
+            <>
+              Seamless{' '}
+              <span className="text-[hsl(var(--landing-accent-primary))]">
+                Check-In
+              </span>{' '}
+              Experience
+            </>
+          }
+          description="Get guests through the door faster with our streamlined check-in system. Track capacity in real-time and collect digital waivers."
+          features={checkInFeatures}
+          ctaText="See Check-In in Action"
+          ctaHref="#demo"
+          illustration={<CheckInIllustration />}
+          reverse
+          variant="alt"
+        />
 
-        <ScaleSection />
+        <PricingSection />
+
+        <TestimonialsSection />
+
+        <CtaSection />
       </main>
 
       <LandingFooter />
