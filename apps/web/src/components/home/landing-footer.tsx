@@ -1,3 +1,6 @@
+import Image from 'next/image';
+import atrivioLogo from '@/assets/images/atrivio-logo.png';
+
 const footerLinks = {
   solutions: [
     { label: 'Staffing', href: '#staffing' },
@@ -24,18 +27,17 @@ export function LandingFooter() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand column */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <a
-              href="/"
-              className="mb-5 flex items-center gap-2 text-2xl font-extrabold text-[hsl(var(--landing-text-primary))]"
-            >
-              <span className="text-3xl" role="img" aria-label="Ghost">
-                👻
-              </span>
-              <span>UHP</span>
+            <a href="/" className="mb-5 inline-block">
+              <Image
+                src={atrivioLogo}
+                alt="Atrivio"
+                height={40}
+                className="h-10 w-auto"
+              />
             </a>
             <p className="text-[hsl(var(--landing-text-muted))]">
               The ultimate multi-tenant, operator-centric platform for
-              professional haunts and seasonal attractions.
+              professional attractions and entertainment venues.
             </p>
           </div>
 
@@ -105,8 +107,7 @@ export function LandingFooter() {
 
         {/* Copyright */}
         <div className="mt-16 border-t border-[hsl(var(--landing-border-subtle))] pt-8 text-center text-sm text-[hsl(var(--landing-text-muted))]">
-          © {new Date().getFullYear()} Ultimate Haunt Platform. All rights
-          reserved.
+          © {new Date().getFullYear()} Atrivio. All rights reserved.
         </div>
       </div>
     </footer>

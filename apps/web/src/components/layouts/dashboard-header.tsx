@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Bell, LogOut, Settings, User } from 'lucide-react';
+import atrivioLogo from '@/assets/images/atrivio-logo.png';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
 import { useAuthStore } from '@/stores/auth-store';
@@ -57,11 +59,14 @@ export function DashboardHeader() {
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-        <span role="img" aria-label="Ghost">
-          👻
-        </span>
-        <span className="hidden sm:inline">Haunt Platform</span>
+      <Link href="/" className="flex items-center">
+        <Image
+          src={atrivioLogo}
+          alt="Atrivio"
+          height={32}
+          className="h-8 w-auto"
+          priority
+        />
       </Link>
 
       {/* Actions */}

@@ -11,10 +11,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Haunt Platform',
-    template: '%s | Haunt Platform',
+    default: 'Atrivio',
+    template: '%s | Atrivio',
   },
-  description: 'Multi-tenant haunt industry management system',
+  description: 'Multi-tenant attraction industry management system',
 };
 
 export default function RootLayout({
