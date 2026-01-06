@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   Building2,
   Ghost,
@@ -62,15 +63,17 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const { currentOrg, isLoading } = useOrg();
 
-  if (isLoading) {
+  // Only show skeleton on true first load (no cached org data)
+  // This prevents flickering during page transitions
+  if (isLoading && !currentOrg) {
     return (
       <aside className="flex h-full w-64 flex-col border-r bg-card">
         <div className="p-4">
-          <Skeleton className="h-10 w-full" />
+          <Skeleton shimmer className="h-10 w-full" />
         </div>
         <div className="flex-1 space-y-2 p-4">
           {['skeleton-1', 'skeleton-2', 'skeleton-3', 'skeleton-4'].map((id) => (
-            <Skeleton key={id} className="h-10 w-full" />
+            <Skeleton shimmer key={id} className="h-10 w-full" />
           ))}
         </div>
       </aside>
@@ -102,7 +105,7 @@ export function DashboardSidebar() {
             const isActive = pathname === href || (item.href !== '' && pathname.startsWith(href));
 
             return (
-              <a
+              <Link
                 key={item.href}
                 href={href}
                 className={cn(
@@ -114,7 +117,7 @@ export function DashboardSidebar() {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
-              </a>
+              </Link>
             );
           })}
 
@@ -124,7 +127,7 @@ export function DashboardSidebar() {
           const isActive = pathname === href || pathname.startsWith(href);
 
           return (
-            <a
+            <Link
               key={item.href}
               href={href}
               className={cn(
@@ -136,7 +139,7 @@ export function DashboardSidebar() {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
-            </a>
+            </Link>
           );
         })}
       </nav>
@@ -155,7 +158,7 @@ export function DashboardSidebar() {
             const isActive = pathname === href;
 
             return (
-              <a
+              <Link
                 key={item.href}
                 href={href}
                 className={cn(
@@ -167,7 +170,7 @@ export function DashboardSidebar() {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
-              </a>
+              </Link>
             );
           })}
       </nav>

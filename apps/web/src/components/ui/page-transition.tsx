@@ -11,6 +11,7 @@ interface PageTransitionProps {
 
 /**
  * Page transition wrapper that animates content on route changes.
+ * Uses a key-based approach that works with Next.js App Router.
  * Respects user's reduced motion preferences.
  */
 export function PageTransition({ children, className }: PageTransitionProps) {
@@ -23,15 +24,15 @@ export function PageTransition({ children, className }: PageTransitionProps) {
   }
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={pathname}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
+        initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
         transition={{
-          duration: 0.2,
-          ease: [0.4, 0, 0.2, 1],
+          duration: 0.25,
+          ease: [0.32, 0.72, 0, 1],
         }}
         className={className}
       >
