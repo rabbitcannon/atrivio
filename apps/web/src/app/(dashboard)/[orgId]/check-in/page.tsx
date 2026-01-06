@@ -1,5 +1,7 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   QrCode,
@@ -10,17 +12,19 @@ import {
   CheckCircle2,
   AlertTriangle,
   MonitorSmartphone,
+  Loader2,
+  Building2,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { resolveOrgId } from '@/lib/api';
-
-export const metadata: Metadata = {
-  title: 'Check-In',
-};
-
-interface CheckInPageProps {
-  params: Promise<{ orgId: string }>;
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { getAttractions, getCheckInStats, getCapacity, getCheckInQueue } from '@/lib/api/client';
+import type { AttractionListItem, CheckInStats, CapacityResponse, QueueResponse } from '@/lib/api/types';
 
 const NAV_ITEMS = [
   {
@@ -49,21 +53,132 @@ const NAV_ITEMS = [
   },
 ];
 
-export default async function CheckInPage({ params }: CheckInPageProps) {
-  const { orgId: orgIdentifier } = await params;
+export default function CheckInPage() {
+  const params = useParams();
+  const orgIdentifier = params['orgId'] as string;
 
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
-    notFound();
+  const [attractions, setAttractions] = useState<AttractionListItem[]>([]);
+  const [selectedAttractionId, setSelectedAttractionId] = useState<string | null>(null);
+  const [stats, setStats] = useState<CheckInStats | null>(null);
+  const [capacity, setCapacity] = useState<CapacityResponse | null>(null);
+  const [queue, setQueue] = useState<QueueResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Load attractions on mount
+  useEffect(() => {
+    async function loadAttractions() {
+      setIsLoading(true);
+      try {
+        const result = await getAttractions(orgIdentifier);
+        if (result.data?.data) {
+          setAttractions(result.data.data);
+          // Auto-select first attraction or retrieve from localStorage
+          const savedAttractionId = localStorage.getItem(`check-in-attraction-${orgIdentifier}`);
+          const defaultAttraction = result.data.data.find(a => a.id === savedAttractionId) || result.data.data[0];
+          if (defaultAttraction) {
+            setSelectedAttractionId(defaultAttraction.id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load attractions:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadAttractions();
+  }, [orgIdentifier]);
+
+  // Load stats when attraction changes
+  useEffect(() => {
+    if (!selectedAttractionId) return;
+
+    // Save selection to localStorage
+    localStorage.setItem(`check-in-attraction-${orgIdentifier}`, selectedAttractionId);
+
+    async function loadStats() {
+      setIsLoadingStats(true);
+      try {
+        const [statsResult, capacityResult, queueResult] = await Promise.all([
+          getCheckInStats(orgIdentifier, selectedAttractionId!),
+          getCapacity(orgIdentifier, selectedAttractionId!),
+          getCheckInQueue(orgIdentifier, selectedAttractionId!),
+        ]);
+
+        if (statsResult.data) setStats(statsResult.data);
+        if (capacityResult.data) setCapacity(capacityResult.data);
+        if (queueResult.data) setQueue(queueResult.data);
+      } catch (error) {
+        console.error('Failed to load check-in stats:', error);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    }
+    loadStats();
+  }, [orgIdentifier, selectedAttractionId]);
+
+  const handleAttractionChange = (attractionId: string) => {
+    setSelectedAttractionId(attractionId);
+  };
+
+  const selectedAttraction = attractions.find(a => a.id === selectedAttractionId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
+
+  if (attractions.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Check-In</h1>
+          <p className="text-muted-foreground">
+            Manage guest check-ins, stations, and monitor capacity.
+          </p>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Attractions Found</h3>
+            <p className="text-muted-foreground text-center">
+              Create an attraction first to start using check-in features.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const lateCount = queue?.late.length ?? 0;
+  const pendingCount = queue?.pending.length ?? 0;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Check-In</h1>
-        <p className="text-muted-foreground">
-          Manage guest check-ins, stations, and monitor capacity.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Check-In</h1>
+          <p className="text-muted-foreground">
+            Manage guest check-ins, stations, and monitor capacity.
+          </p>
+        </div>
+        <div className="w-full sm:w-64">
+          <Select value={selectedAttractionId ?? ''} onValueChange={handleAttractionChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select attraction" />
+            </SelectTrigger>
+            <SelectContent>
+              {attractions.map((attraction) => (
+                <SelectItem key={attraction.id} value={attraction.id}>
+                  {attraction.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Quick Stats */}
@@ -74,8 +189,16 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">Guests admitted</p>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                stats?.totalCheckedIn ?? '--'
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              of {stats?.totalExpected ?? '--'} expected
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -84,8 +207,18 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
             <Gauge className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--%</div>
-            <p className="text-xs text-muted-foreground">Of max capacity</p>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : capacity ? (
+                `${capacity.percentage}%`
+              ) : (
+                '--%'
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {capacity ? `${capacity.currentCount} / ${capacity.capacity}` : 'Of max capacity'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -94,8 +227,14 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">Expected today</p>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                pendingCount
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Expected soon</p>
           </CardContent>
         </Card>
         <Card>
@@ -104,7 +243,13 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                lateCount
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Past their slot</p>
           </CardContent>
         </Card>
@@ -113,8 +258,11 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
       {/* Navigation Cards */}
       <div className="grid gap-4 md:grid-cols-2">
         {NAV_ITEMS.map((item) => (
-          <Link key={item.href} href={`/${orgIdentifier}${item.href}`}>
-            <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
+          <Link
+            key={item.href}
+            href={`/${orgIdentifier}${item.href}?attractionId=${selectedAttractionId}`}
+          >
+            <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <item.icon className="h-5 w-5" />
@@ -126,6 +274,20 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
           </Link>
         ))}
       </div>
+
+      {/* Current Attraction Info */}
+      {selectedAttraction && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              Currently viewing: {selectedAttraction.name}
+            </CardTitle>
+            <CardDescription>
+              {selectedAttraction.type_name || selectedAttraction.type}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
     </div>
   );
 }

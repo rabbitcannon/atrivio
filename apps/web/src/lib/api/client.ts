@@ -1524,3 +1524,220 @@ export async function getOverdueCheckouts(orgId: string) {
 export async function getStaffCheckouts(orgId: string, staffId: string) {
   return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/inventory/staff/${staffId}/checkouts`);
 }
+
+// ============================================================================
+// Check-In API (F9) - Client-side
+// ============================================================================
+
+import type {
+  CheckInScanRequest,
+  CheckInScanResponse,
+  LookupRequest,
+  LookupResponse,
+  RecordWaiverRequest,
+  CapacityResponse,
+  CheckInStats,
+  QueueResponse,
+  WalkUpSaleRequest,
+  CheckInStation,
+  CreateStationRequest,
+  UpdateStationRequest,
+  CheckInRecord,
+  CheckInMethod,
+} from './types';
+
+export type {
+  CheckInScanRequest,
+  CheckInScanResponse,
+  LookupResponse,
+  CapacityResponse,
+  CheckInStats,
+  QueueResponse,
+  CheckInStation,
+  CheckInRecord,
+  CheckInMethod,
+};
+
+/**
+ * Scan and check in a ticket
+ */
+export async function scanCheckIn(
+  orgId: string,
+  attractionId: string,
+  data: CheckInScanRequest
+) {
+  return api.post<CheckInScanResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/scan`,
+    data
+  );
+}
+
+/**
+ * Look up tickets by email, phone, order number, etc.
+ */
+export async function lookupTickets(
+  orgId: string,
+  attractionId: string,
+  data: LookupRequest
+) {
+  return api.post<LookupResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/lookup`,
+    data
+  );
+}
+
+/**
+ * Record waiver signature
+ */
+export async function recordWaiver(
+  orgId: string,
+  attractionId: string,
+  data: RecordWaiverRequest
+) {
+  return api.post<{ success: boolean; waiverId: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/waiver`,
+    data
+  );
+}
+
+/**
+ * Get current capacity
+ */
+export async function getCapacity(orgId: string, attractionId: string) {
+  return api.get<CapacityResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/capacity`
+  );
+}
+
+/**
+ * Get check-in stats
+ */
+export async function getCheckInStats(
+  orgId: string,
+  attractionId: string,
+  date?: string
+) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  const query = params.toString();
+  return api.get<CheckInStats>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stats${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Get check-in queue (pending arrivals)
+ */
+export async function getCheckInQueue(
+  orgId: string,
+  attractionId: string,
+  filters?: { timeSlotId?: string; status?: 'pending' | 'late' | 'no_show' }
+) {
+  const params = new URLSearchParams();
+  if (filters?.timeSlotId) params.set('timeSlotId', filters.timeSlotId);
+  if (filters?.status) params.set('status', filters.status);
+  const query = params.toString();
+  return api.get<QueueResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/queue${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create walk-up ticket and check in immediately
+ */
+export async function createWalkUpSale(
+  orgId: string,
+  attractionId: string,
+  data: WalkUpSaleRequest
+) {
+  return api.post<{ order: { id: string; orderNumber: string }; checkIns: { id: string }[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/walk-up`,
+    data
+  );
+}
+
+/**
+ * List check-ins
+ */
+export async function listCheckIns(
+  orgId: string,
+  attractionId: string,
+  filters?: {
+    from?: string;
+    to?: string;
+    stationId?: string;
+    method?: CheckInMethod;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.from) params.set('from', filters.from);
+  if (filters?.to) params.set('to', filters.to);
+  if (filters?.stationId) params.set('stationId', filters.stationId);
+  if (filters?.method) params.set('method', filters.method);
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{ checkIns: CheckInRecord[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in${query ? `?${query}` : ''}`
+  );
+}
+
+// ----- Check-In Stations -----
+
+/**
+ * List check-in stations
+ */
+export async function listStations(orgId: string, attractionId: string) {
+  return api.get<{ stations: CheckInStation[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations`
+  );
+}
+
+/**
+ * Get a single station
+ */
+export async function getStation(orgId: string, attractionId: string, stationId: string) {
+  return api.get<CheckInStation>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`
+  );
+}
+
+/**
+ * Create a check-in station
+ */
+export async function createStation(
+  orgId: string,
+  attractionId: string,
+  data: CreateStationRequest
+) {
+  return api.post<CheckInStation>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations`,
+    data
+  );
+}
+
+/**
+ * Update a check-in station
+ */
+export async function updateStation(
+  orgId: string,
+  attractionId: string,
+  stationId: string,
+  data: UpdateStationRequest
+) {
+  return api.patch<CheckInStation>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`,
+    data
+  );
+}
+
+/**
+ * Delete a check-in station
+ */
+export async function deleteStation(orgId: string, attractionId: string, stationId: string) {
+  return api.delete<{ success: boolean }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`
+  );
+}

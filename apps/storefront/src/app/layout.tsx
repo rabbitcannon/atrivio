@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { notFound } from 'next/navigation';
 import { getPublicStorefront } from '@/lib/api';
 import { StorefrontProvider } from '@/lib/storefront-context';
 import { Header } from '@/components/header';
@@ -79,8 +78,26 @@ export default async function RootLayout({
 
   const storefront = await getPublicStorefront(identifier);
 
+  // Storefront not found or not published - show error page
   if (!storefront || !storefront.settings.isPublished) {
-    notFound();
+    return (
+      <html lang="en">
+        <body>
+          <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-8">
+            <div className="max-w-md text-center">
+              <h1 className="text-4xl font-bold mb-4">404</h1>
+              <h2 className="text-xl font-semibold mb-4">Storefront Not Found</h2>
+              <p className="text-gray-400 mb-4">
+                The storefront you&apos;re looking for doesn&apos;t exist or isn&apos;t published yet.
+              </p>
+              <p className="text-gray-500 text-sm">
+                If you believe this is an error, please contact the attraction owner.
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    );
   }
 
   const { settings } = storefront;

@@ -92,6 +92,19 @@ export interface StorefrontFaq {
   isFeatured: boolean;
 }
 
+export interface StorefrontTicketType {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  comparePrice: number | null;
+  category: string | null;
+  includes: string[] | null;
+  maxPerOrder: number;
+  minPerOrder: number;
+  isAvailable: boolean;
+}
+
 export interface StorefrontAnnouncement {
   id: string;
   title: string;
@@ -222,5 +235,28 @@ export async function getPublicFaqs(
   } catch (error) {
     console.error('Error fetching FAQs:', error);
     return { faqs: [], categories: [] };
+  }
+}
+
+/**
+ * Fetch public ticket types for storefront
+ */
+export async function getPublicTicketTypes(
+  storefrontIdentifier: string
+): Promise<{ ticketTypes: StorefrontTicketType[] }> {
+  try {
+    const res = await fetch(
+      `${API_URL}/storefronts/${encodeURIComponent(storefrontIdentifier)}/tickets`,
+      { next: { revalidate: 60 } }
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch ticket types: ${res.status}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching ticket types:', error);
+    return { ticketTypes: [] };
   }
 }

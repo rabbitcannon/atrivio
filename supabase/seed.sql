@@ -1516,28 +1516,28 @@ BEGIN
      2500, NULL, v_general_cat_id, 10,
      ARRAY['Full mansion walkthrough', '25-minute experience', 'Photo opportunity at exit'],
      '{"min_age": 12}'::JSONB, 1, TRUE,
-     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
     ('80000000-0000-0000-0000-000000000002', v_org_id, v_mansion_id, v_season_id,
      'VIP Experience', 'Premium Haunted Mansion experience with exclusive access and perks.',
      4500, 5500, v_vip_cat_id, 6,
      ARRAY['Skip-the-line entry', 'Exclusive VIP lounge access', 'Souvenir photo included', 'Behind-the-scenes tour', 'Meet the actors'],
      '{"min_age": 14}'::JSONB, 2, TRUE,
-     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
     ('80000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id, v_season_id,
      'Fast Pass', 'Express entry with minimal wait time.',
      3500, NULL, v_fast_pass_cat_id, 8,
      ARRAY['Priority queue access', 'Reduced wait time', 'Dedicated fast lane entry'],
      '{"min_age": 12}'::JSONB, 3, TRUE,
-     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
     ('80000000-0000-0000-0000-000000000004', v_org_id, v_mansion_id, v_season_id,
      'Group Ticket (10+)', 'Discounted rate for groups of 10 or more.',
      2000, 2500, v_group_cat_id, 50,
      ARRAY['Discounted group rate', 'Group photo', 'Dedicated entrance time'],
      '{"min_age": 12, "min_quantity": 10}'::JSONB, 4, TRUE,
-     '2025-09-01 00:00:00', '2025-11-01 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
   -- Terror Trail Tickets
     ('80000000-0000-0000-0000-000000000005', v_org_id, v_trail_id, v_season_id,
@@ -1545,14 +1545,14 @@ BEGIN
      3000, NULL, v_general_cat_id, 10,
      ARRAY['Half-mile outdoor trail', '35-minute experience', 'Flashlight prohibited'],
      '{"min_age": 14}'::JSONB, 1, TRUE,
-     '2025-10-01 00:00:00', '2025-10-31 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
     ('80000000-0000-0000-0000-000000000006', v_org_id, v_trail_id, v_season_id,
      'Trail VIP', 'Premium Terror Trail with guide and exclusive scares.',
      5500, NULL, v_vip_cat_id, 4,
      ARRAY['Personal guide', 'Extra scare interactions', 'Night vision goggles provided', 'Hot cocoa at finish'],
      '{"min_age": 16}'::JSONB, 2, TRUE,
-     '2025-10-01 00:00:00', '2025-10-31 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
   -- Combo Tickets
     ('80000000-0000-0000-0000-000000000007', v_org_id, v_mansion_id, v_season_id,
@@ -1560,14 +1560,14 @@ BEGIN
      5000, 5500, v_combo_cat_id, 8,
      ARRAY['Haunted Mansion entry', 'Terror Trail entry', 'Valid same night only', 'Commemorative lanyard'],
      '{"min_age": 14}'::JSONB, 5, TRUE,
-     '2025-10-01 00:00:00', '2025-10-31 23:59:59'),
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 
     ('80000000-0000-0000-0000-000000000008', v_org_id, v_mansion_id, v_season_id,
      'Ultimate Nightmare VIP', 'The complete Nightmare Manor VIP experience.',
      8500, 10000, v_vip_cat_id, 4,
      ARRAY['VIP access to both attractions', 'Reserved parking', 'Dinner at Cryptkeeper Cafe', 'Exclusive merchandise', 'Professional photo package'],
      '{"min_age": 16}'::JSONB, 6, TRUE,
-     '2025-10-01 00:00:00', '2025-10-31 23:59:59')
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59')
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================

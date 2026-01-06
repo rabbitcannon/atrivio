@@ -47,6 +47,32 @@ export function MediaPreviewDialog() {
     zoomOutDisabled,
   } = useImagePreview({ scrollSpeed: SCROLL_SPEED });
 
+  // Get all preview URLs for download functionality
+  const previewUrls = useImagePreviewValue('previewList') as { url: string }[] | undefined;
+  const currentUrl = previewUrls?.[currentUrlIndex ?? 0]?.url;
+
+  const handleDownload = async () => {
+    if (!currentUrl) return;
+
+    try {
+      const response = await fetch(currentUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      // Extract filename from URL or use default
+      const urlParts = currentUrl.split('/');
+      const filename = urlParts[urlParts.length - 1] || 'image';
+      link.download = filename.includes('.') ? filename : `${filename}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download image:', error);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -128,8 +154,13 @@ export function MediaPreviewDialog() {
                 <Plus className="size-4" />
               </button>
             </div>
-            {/* TODO: downLoad the image */}
-            <button className={cn(buttonVariants())} type="button">
+            <button
+              className={cn(buttonVariants({ variant: currentUrl ? 'default' : 'disabled' }))}
+              onClick={handleDownload}
+              disabled={!currentUrl}
+              type="button"
+              title="Download image"
+            >
               <Download className="size-4" />
             </button>
             <button

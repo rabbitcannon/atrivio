@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import {
   Clock,
   Users,
@@ -11,8 +11,9 @@ import {
   Filter,
   RefreshCw,
   User,
-  Ticket,
   Calendar,
+  Loader2,
+  Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,51 +41,156 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import {
+  getAttractions,
+  getCheckInQueue,
+  scanCheckIn,
+} from '@/lib/api/client';
+import type { AttractionListItem, QueueItem, QueueStatus } from '@/lib/api/types';
 
-interface QueuedGuest {
-  id: string;
-  ticketId: string;
-  barcode: string;
-  customerName: string | null;
-  customerEmail: string | null;
-  ticketType: string;
-  timeSlot: {
-    date: string;
-    startTime: string;
-    endTime: string;
-  } | null;
-  orderNumber: string;
-  status: 'pending' | 'late' | 'arriving_soon';
-  minutesUntilSlot: number | null;
+// Extended QueueItem with computed status for display
+interface DisplayQueueItem extends QueueItem {
+  displayStatus: 'pending' | 'late' | 'arriving_soon';
 }
 
-export default function QueuePage() {
+function QueuePageContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
   const orgId = params['orgId'] as string;
 
+  // Get attractionId from URL or localStorage
+  const urlAttractionId = searchParams.get('attractionId');
+
+  const [attractions, setAttractions] = useState<AttractionListItem[]>([]);
+  const [selectedAttractionId, setSelectedAttractionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [guests, setGuests] = useState<QueuedGuest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pendingGuests, setPendingGuests] = useState<QueueItem[]>([]);
+  const [lateGuests, setLateGuests] = useState<QueueItem[]>([]);
+  const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
-  // TODO: Fetch queue data from API
-  // useEffect(() => {
-  //   fetchQueue();
-  // }, []);
+  // Load attractions on mount
+  useEffect(() => {
+    async function loadAttractions() {
+      try {
+        const result = await getAttractions(orgId);
+        if (result.data?.data) {
+          setAttractions(result.data.data);
+          // Determine initial attraction
+          const savedAttractionId = localStorage.getItem(`check-in-attraction-${orgId}`);
+          const targetId = urlAttractionId || savedAttractionId;
+          const defaultAttraction =
+            result.data.data.find((a) => a.id === targetId) || result.data.data[0];
+          if (defaultAttraction) {
+            setSelectedAttractionId(defaultAttraction.id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load attractions:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load attractions',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadAttractions();
+  }, [orgId, urlAttractionId, toast]);
+
+  // Load queue data when attraction changes
+  const loadQueueData = useCallback(async () => {
+    if (!selectedAttractionId) return;
+
+    setIsRefreshing(true);
+    try {
+      const result = await getCheckInQueue(orgId, selectedAttractionId);
+      if (result.data) {
+        setPendingGuests(result.data.pending || []);
+        setLateGuests(result.data.late || []);
+      }
+    } catch (error) {
+      console.error('Failed to load queue:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load queue data',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [orgId, selectedAttractionId, toast]);
+
+  useEffect(() => {
+    if (selectedAttractionId) {
+      localStorage.setItem(`check-in-attraction-${orgId}`, selectedAttractionId);
+      loadQueueData();
+    }
+  }, [selectedAttractionId, orgId, loadQueueData]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (!selectedAttractionId) return;
+    const interval = setInterval(loadQueueData, 30000);
+    return () => clearInterval(interval);
+  }, [selectedAttractionId, loadQueueData]);
+
+  const handleAttractionChange = (attractionId: string) => {
+    setSelectedAttractionId(attractionId);
+  };
 
   const handleRefresh = async () => {
-    setIsLoading(true);
-    // TODO: Implement refresh API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsLoading(false);
+    await loadQueueData();
   };
 
-  const handleManualCheckIn = async (guestId: string) => {
-    // TODO: Implement manual check-in
-    console.log('Manual check-in for:', guestId);
+  const handleManualCheckIn = async (guest: QueueItem) => {
+    if (!selectedAttractionId) return;
+
+    setCheckingIn(guest.ticketId);
+    try {
+      const response = await scanCheckIn(orgId, selectedAttractionId, {
+        barcode: guest.ticketId, // Use ticketId as the barcode/identifier
+        method: 'manual_lookup',
+      });
+
+      if (response.data?.success) {
+        toast({
+          title: 'Checked In',
+          description: `${guest.guestName || 'Guest'} has been checked in.`,
+        });
+        // Refresh queue data
+        await loadQueueData();
+      } else if (response.data?.waiverRequired) {
+        toast({
+          title: 'Waiver Required',
+          description: 'Guest must complete waiver before check-in.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Check-In Failed',
+          description: response.data?.message || 'Unable to check in guest',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Check-in failed:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to check in guest',
+        variant: 'destructive',
+      });
+    } finally {
+      setCheckingIn(null);
+    }
   };
 
-  const getStatusBadge = (status: QueuedGuest['status']) => {
+  const getStatusBadge = (status: 'pending' | 'late' | 'arriving_soon') => {
     switch (status) {
       case 'arriving_soon':
         return <Badge variant="default">Arriving Soon</Badge>;
@@ -95,41 +201,100 @@ export default function QueuePage() {
     }
   };
 
-  const pendingCount = guests.filter((g) => g.status === 'pending').length;
-  const lateCount = guests.filter((g) => g.status === 'late').length;
-  const arrivingSoonCount = guests.filter(
-    (g) => g.status === 'arriving_soon'
-  ).length;
+  // Combine and categorize guests with display status
+  const allGuests: DisplayQueueItem[] = [
+    ...lateGuests.map((g) => ({ ...g, displayStatus: 'late' as const })),
+    ...pendingGuests.map((g) => {
+      // Check if arriving soon (within 30 minutes)
+      if (g.minutesUntil !== undefined && g.minutesUntil <= 30 && g.minutesUntil >= 0) {
+        return { ...g, displayStatus: 'arriving_soon' as const };
+      }
+      return { ...g, displayStatus: 'pending' as const };
+    }),
+  ];
 
-  const filteredGuests = guests.filter((guest) => {
+  const arrivingSoonCount = allGuests.filter((g) => g.displayStatus === 'arriving_soon').length;
+  const pendingCount = allGuests.filter((g) => g.displayStatus === 'pending').length;
+  const lateCount = lateGuests.length;
+
+  const filteredGuests = allGuests.filter((guest) => {
     const matchesSearch =
       !searchQuery ||
-      guest.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.customerEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.barcode.toLowerCase().includes(searchQuery.toLowerCase());
+      guest.guestName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      guest.ticketId.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
-      statusFilter === 'all' || guest.status === statusFilter;
+      statusFilter === 'all' || guest.displayStatus === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (attractions.length === 0) {
+    return (
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Guest Queue</h1>
           <p className="text-muted-foreground">
             View pending arrivals and manage late guests.
           </p>
         </div>
-        <Button onClick={handleRefresh} disabled={isLoading}>
-          <RefreshCw
-            className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
-          />
-          Refresh
-        </Button>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Attractions Found</h3>
+            <p className="text-muted-foreground text-center">
+              Create an attraction first to view the guest queue.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Guest Queue</h1>
+          <p className="text-muted-foreground">
+            View pending arrivals and manage late guests.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={selectedAttractionId ?? ''}
+            onValueChange={handleAttractionChange}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select attraction" />
+            </SelectTrigger>
+            <SelectContent>
+              {attractions.map((attraction) => (
+                <SelectItem key={attraction.id} value={attraction.id}>
+                  {attraction.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing || !selectedAttractionId}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -142,7 +307,13 @@ export default function QueuePage() {
             <Clock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{arrivingSoonCount}</div>
+            <div className="text-2xl font-bold">
+              {isRefreshing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                arrivingSoonCount
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Expected in next 30 min
             </p>
@@ -156,7 +327,13 @@ export default function QueuePage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingCount}</div>
+            <div className="text-2xl font-bold">
+              {isRefreshing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                pendingCount
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Not yet checked in
             </p>
@@ -168,7 +345,13 @@ export default function QueuePage() {
             <AlertTriangle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{lateCount}</div>
+            <div className="text-2xl font-bold text-red-600">
+              {isRefreshing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                lateCount
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Past their time slot</p>
           </CardContent>
         </Card>
@@ -178,7 +361,7 @@ export default function QueuePage() {
       <Tabs defaultValue="all" className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <TabsList>
-            <TabsTrigger value="all">All ({guests.length})</TabsTrigger>
+            <TabsTrigger value="all">All ({allGuests.length})</TabsTrigger>
             <TabsTrigger value="arriving">
               Arriving Soon ({arrivingSoonCount})
             </TabsTrigger>
@@ -215,22 +398,25 @@ export default function QueuePage() {
             guests={filteredGuests}
             onCheckIn={handleManualCheckIn}
             getStatusBadge={getStatusBadge}
+            checkingIn={checkingIn}
           />
         </TabsContent>
 
         <TabsContent value="arriving" className="space-y-4">
           <QueueTable
-            guests={filteredGuests.filter((g) => g.status === 'arriving_soon')}
+            guests={filteredGuests.filter((g) => g.displayStatus === 'arriving_soon')}
             onCheckIn={handleManualCheckIn}
             getStatusBadge={getStatusBadge}
+            checkingIn={checkingIn}
           />
         </TabsContent>
 
         <TabsContent value="late" className="space-y-4">
           <QueueTable
-            guests={filteredGuests.filter((g) => g.status === 'late')}
+            guests={filteredGuests.filter((g) => g.displayStatus === 'late')}
             onCheckIn={handleManualCheckIn}
             getStatusBadge={getStatusBadge}
+            checkingIn={checkingIn}
           />
         </TabsContent>
       </Tabs>
@@ -239,12 +425,13 @@ export default function QueuePage() {
 }
 
 interface QueueTableProps {
-  guests: QueuedGuest[];
-  onCheckIn: (guestId: string) => void;
-  getStatusBadge: (status: QueuedGuest['status']) => React.ReactNode;
+  guests: DisplayQueueItem[];
+  onCheckIn: (guest: QueueItem) => void;
+  getStatusBadge: (status: 'pending' | 'late' | 'arriving_soon') => React.ReactNode;
+  checkingIn: string | null;
 }
 
-function QueueTable({ guests, onCheckIn, getStatusBadge }: QueueTableProps) {
+function QueueTable({ guests, onCheckIn, getStatusBadge, checkingIn }: QueueTableProps) {
   if (guests.length === 0) {
     return (
       <Card>
@@ -277,7 +464,6 @@ function QueueTable({ guests, onCheckIn, getStatusBadge }: QueueTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Guest</TableHead>
-              <TableHead>Ticket Type</TableHead>
               <TableHead>Time Slot</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -285,7 +471,7 @@ function QueueTable({ guests, onCheckIn, getStatusBadge }: QueueTableProps) {
           </TableHeader>
           <TableBody>
             {guests.map((guest) => (
-              <TableRow key={guest.id}>
+              <TableRow key={guest.ticketId}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
@@ -293,43 +479,37 @@ function QueueTable({ guests, onCheckIn, getStatusBadge }: QueueTableProps) {
                     </div>
                     <div>
                       <p className="font-medium">
-                        {guest.customerName || 'Guest'}
+                        {guest.guestName || 'Guest'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Order #{guest.orderNumber}
+                        {guest.ticketId.slice(0, 8)}...
                       </p>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Ticket className="h-4 w-4 text-muted-foreground" />
-                    {guest.ticketType}
                   </div>
                 </TableCell>
                 <TableCell>
                   {guest.timeSlot ? (
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm">{guest.timeSlot.date}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {guest.timeSlot.startTime} - {guest.timeSlot.endTime}
-                        </p>
-                      </div>
+                      <span className="text-sm">{guest.timeSlot}</span>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground">--</span>
+                    <span className="text-muted-foreground">General Admission</span>
                   )}
                 </TableCell>
-                <TableCell>{getStatusBadge(guest.status)}</TableCell>
+                <TableCell>{getStatusBadge(guest.displayStatus)}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onCheckIn(guest.id)}
+                    onClick={() => onCheckIn(guest)}
+                    disabled={checkingIn === guest.ticketId}
                   >
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    {checkingIn === guest.ticketId ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
+                    )}
                     Check In
                   </Button>
                 </TableCell>
@@ -339,5 +519,19 @@ function QueueTable({ guests, onCheckIn, getStatusBadge }: QueueTableProps) {
         </Table>
       </CardContent>
     </Card>
+  );
+}
+
+export default function QueuePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <QueuePageContent />
+    </Suspense>
   );
 }

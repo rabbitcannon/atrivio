@@ -911,3 +911,174 @@ export interface PublicStorefront {
   navigation: StorefrontNavigation;
   domain: string;
 }
+
+// ============================================================================
+// Check-In Types (F9)
+// ============================================================================
+
+export type CheckInMethod = 'barcode_scan' | 'qr_scan' | 'manual_lookup' | 'order_number' | 'walk_up';
+export type LookupType = 'email' | 'phone' | 'order_number' | 'ticket_number' | 'name';
+export type QueueStatus = 'pending' | 'late' | 'no_show';
+export type CapacityStatus = 'normal' | 'busy' | 'critical' | 'full';
+export type WalkUpPaymentMethod = 'cash' | 'card' | 'comp';
+
+export interface CheckInScanRequest {
+  barcode: string;
+  stationId?: string;
+  method: CheckInMethod;
+  guestCount?: number;
+  notes?: string;
+}
+
+export interface CheckInScanResponse {
+  success: boolean;
+  ticket?: {
+    id: string;
+    ticketNumber: string;
+    ticketType: string;
+    guestName: string | null;
+    timeSlot: string | null;
+  };
+  order?: {
+    orderNumber: string;
+    ticketCount: number;
+    checkedInCount: number;
+  };
+  waiverRequired: boolean;
+  waiverSigned: boolean;
+  checkInId?: string;
+  error?: string;
+  message?: string;
+  checkedInAt?: string;
+  requiresWaiver?: boolean;
+}
+
+export interface LookupRequest {
+  query: string;
+  type: LookupType;
+}
+
+export interface LookupTicket {
+  id: string;
+  ticketNumber: string;
+  ticketType: string;
+  timeSlot: string | null;
+  status: string;
+  checkedIn: boolean;
+}
+
+export interface LookupOrder {
+  orderNumber: string;
+  customerName: string | null;
+  tickets: LookupTicket[];
+}
+
+export interface LookupResponse {
+  orders: LookupOrder[];
+}
+
+export interface RecordWaiverRequest {
+  ticketId: string;
+  orderId?: string;
+  guestName: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  guestDob?: string;
+  isMinor?: boolean;
+  guardianName?: string;
+  guardianEmail?: string;
+  guardianPhone?: string;
+  signatureData?: string;
+  waiverVersion?: string;
+}
+
+export interface CapacityResponse {
+  currentCount: number;
+  capacity: number;
+  percentage: number;
+  status: CapacityStatus;
+  estimatedWaitMinutes: number;
+  checkedInLastHour: number;
+  byTimeSlot: {
+    slot: string;
+    expected: number;
+    checkedIn: number;
+  }[];
+}
+
+export interface CheckInStats {
+  date: string;
+  totalCheckedIn: number;
+  totalExpected: number;
+  checkInRate: number;
+  byHour: { hour: string; count: number }[];
+  byStation: { station: string; count: number }[];
+  byMethod: { method: string; count: number }[];
+  avgCheckInTimeSeconds: number;
+}
+
+export interface QueueItem {
+  ticketId: string;
+  guestName: string | null;
+  timeSlot: string;
+  status: QueueStatus;
+  minutesUntil?: number;
+  minutesLate?: number;
+}
+
+export interface QueueResponse {
+  pending: QueueItem[];
+  late: QueueItem[];
+}
+
+export interface WalkUpSaleRequest {
+  ticketTypeId: string;
+  quantity: number;
+  guestNames?: string[];
+  paymentMethod: WalkUpPaymentMethod;
+  waiverSigned?: boolean;
+  notes?: string;
+}
+
+export interface CheckInStation {
+  id: string;
+  name: string;
+  location: string | null;
+  deviceId: string | null;
+  isActive: boolean;
+  lastActivity: string | null;
+  todayCount: number;
+  settings: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateStationRequest {
+  name: string;
+  location?: string;
+  deviceId?: string;
+  isActive?: boolean;
+  settings?: Record<string, unknown>;
+}
+
+export interface UpdateStationRequest {
+  name?: string;
+  location?: string;
+  deviceId?: string;
+  isActive?: boolean;
+  settings?: Record<string, unknown>;
+}
+
+export interface CheckInRecord {
+  id: string;
+  ticketId: string;
+  ticketNumber: string;
+  ticketType: string;
+  guestName: string | null;
+  orderNumber: string | null;
+  checkedInAt: string;
+  checkedInBy: string;
+  stationId: string | null;
+  stationName: string | null;
+  method: CheckInMethod;
+}

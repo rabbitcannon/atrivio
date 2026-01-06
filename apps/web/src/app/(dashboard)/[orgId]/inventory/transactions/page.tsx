@@ -27,7 +27,7 @@ export default async function TransactionsPage({ params }: TransactionsPageProps
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/${orgIdentifier}/inventory`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Back to inventory">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>

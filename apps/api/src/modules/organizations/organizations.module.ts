@@ -7,9 +7,10 @@ import { InvitationsController } from './invitations.controller.js';
 import { InvitationsService } from './invitations.service.js';
 import { TenancyModule } from '../../core/tenancy/tenancy.module.js';
 import { RbacModule } from '../../core/rbac/rbac.module.js';
+import { NotificationsModule } from '../notifications/notifications.module.js';
 
 @Module({
-  imports: [TenancyModule, RbacModule],
+  imports: [TenancyModule, RbacModule, NotificationsModule],
   controllers: [
     OrganizationsController,
     MembersController,

@@ -7,6 +7,7 @@ import { Plate, usePlateEditor } from 'platejs/react';
 
 import { EditorKit } from '@/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/components/ui/editor';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export function PlateEditor() {
   const editor = usePlateEditor({
@@ -15,11 +16,13 @@ export function PlateEditor() {
   });
 
   return (
-    <Plate editor={editor}>
-      <EditorContainer>
-        <Editor variant="demo" />
-      </EditorContainer>
-    </Plate>
+    <TooltipProvider>
+      <Plate editor={editor}>
+        <EditorContainer>
+          <Editor variant="demo" />
+        </EditorContainer>
+      </Plate>
+    </TooltipProvider>
   );
 }
 

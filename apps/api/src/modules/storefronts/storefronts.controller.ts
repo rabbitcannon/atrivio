@@ -13,6 +13,7 @@ import {
   HttpCode,
   NotFoundException,
 } from '@nestjs/common';
+import { CacheControl, CacheControlInterceptor } from '../../core/cache/index.js';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { StorefrontsService } from './storefronts.service.js';
 import {
@@ -377,11 +378,13 @@ export class StorefrontsController {
 
 @ApiTags('Storefronts (Public)')
 @Controller('storefronts')
+@UseInterceptors(CacheControlInterceptor)
 export class PublicStorefrontsController {
   constructor(private storefrontsService: StorefrontsService) {}
 
   @Get(':identifier')
   @Public()
+  @CacheControl({ type: 'public', maxAge: 60, staleWhileRevalidate: 30 })
   @ApiOperation({ summary: 'Get public storefront' })
   async getStorefront(@Param('identifier') identifier: string) {
     const storefront = await this.storefrontsService.getPublicStorefront(identifier);
@@ -393,6 +396,7 @@ export class PublicStorefrontsController {
 
   @Get(':identifier/pages/:slug')
   @Public()
+  @CacheControl({ type: 'public', maxAge: 300, staleWhileRevalidate: 60 })
   @ApiOperation({ summary: 'Get public page' })
   async getPage(
     @Param('identifier') identifier: string,
@@ -407,6 +411,7 @@ export class PublicStorefrontsController {
 
   @Get(':identifier/faqs')
   @Public()
+  @CacheControl({ type: 'public', maxAge: 300, staleWhileRevalidate: 60 })
   @ApiOperation({ summary: 'Get public FAQs' })
   @ApiQuery({ name: 'category', required: false })
   async getFaqs(
@@ -414,5 +419,13 @@ export class PublicStorefrontsController {
     @Query('category') category?: string,
   ) {
     return this.storefrontsService.getPublicFaqs(identifier, category);
+  }
+
+  @Get(':identifier/tickets')
+  @Public()
+  @CacheControl({ type: 'public', maxAge: 60, staleWhileRevalidate: 30 })
+  @ApiOperation({ summary: 'Get public ticket types' })
+  async getTicketTypes(@Param('identifier') identifier: string) {
+    return this.storefrontsService.getPublicTicketTypes(identifier);
   }
 }

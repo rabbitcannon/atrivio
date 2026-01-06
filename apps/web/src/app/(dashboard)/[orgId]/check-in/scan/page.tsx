@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   QrCode,
   Scan,
@@ -13,6 +14,8 @@ import {
   Ticket,
   Hash,
   Loader2,
+  ArrowLeft,
+  FileWarning,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,42 +28,98 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils/cn';
-
-interface CheckInResult {
-  success: boolean;
-  checkIn?: {
-    id: string;
-    ticketId: string;
-    status: string;
-    checkedInAt: string;
-    ticketType: string;
-    customerName: string | null;
-    orderNumber: string | null;
-    timeSlot: {
-      date: string;
-      startTime: string;
-      endTime: string;
-    } | null;
-  };
-  error?: {
-    code: string;
-    message: string;
-  };
-}
+import { scanCheckIn, getAttractions, listStations } from '@/lib/api/client';
+import type { CheckInScanResponse, AttractionListItem, CheckInStation } from '@/lib/api/types';
 
 type ScanStatus = 'idle' | 'scanning' | 'success' | 'error' | 'warning';
 
-export default function ScanPage() {
+interface RecentScan {
+  success: boolean;
+  ticketNumber?: string;
+  customerName?: string | null;
+  ticketType?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  timestamp: Date;
+}
+
+function ScanPageContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const orgId = params['orgId'] as string;
+  const attractionIdFromUrl = searchParams.get('attractionId');
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [barcode, setBarcode] = useState('');
   const [status, setStatus] = useState<ScanStatus>('idle');
-  const [result, setResult] = useState<CheckInResult | null>(null);
+  const [result, setResult] = useState<CheckInScanResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [recentScans, setRecentScans] = useState<CheckInResult[]>([]);
+  const [recentScans, setRecentScans] = useState<RecentScan[]>([]);
+
+  // Attraction and station selection
+  const [attractions, setAttractions] = useState<AttractionListItem[]>([]);
+  const [stations, setStations] = useState<CheckInStation[]>([]);
+  const [attractionId, setAttractionId] = useState<string | null>(attractionIdFromUrl);
+  const [stationId, setStationId] = useState<string | null>(null);
+  const [isLoadingAttractions, setIsLoadingAttractions] = useState(true);
+
+  // Load attractions on mount
+  useEffect(() => {
+    async function loadAttractions() {
+      setIsLoadingAttractions(true);
+      try {
+        const res = await getAttractions(orgId);
+        if (res.data?.data) {
+          setAttractions(res.data.data);
+          // If no attractionId in URL, use saved or first
+          if (!attractionIdFromUrl) {
+            const saved = localStorage.getItem(`check-in-attraction-${orgId}`);
+            const defaultAttraction = res.data.data.find(a => a.id === saved) || res.data.data[0];
+            if (defaultAttraction) {
+              setAttractionId(defaultAttraction.id);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load attractions:', error);
+      } finally {
+        setIsLoadingAttractions(false);
+      }
+    }
+    loadAttractions();
+  }, [orgId, attractionIdFromUrl]);
+
+  // Load stations when attraction changes
+  useEffect(() => {
+    if (!attractionId) return;
+
+    async function loadStations() {
+      try {
+        const res = await listStations(orgId, attractionId!);
+        if (res.data?.stations) {
+          setStations(res.data.stations);
+          // Auto-select first active station
+          const activeStation = res.data.stations.find(s => s.isActive);
+          if (activeStation && !stationId) {
+            setStationId(activeStation.id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load stations:', error);
+      }
+    }
+    loadStations();
+  }, [orgId, attractionId, stationId]);
 
   // Auto-focus the input on mount
   useEffect(() => {
@@ -79,46 +138,96 @@ export default function ScanPage() {
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!barcode.trim() || isProcessing) return;
+    if (!barcode.trim() || isProcessing || !attractionId) return;
 
     setIsProcessing(true);
     setStatus('scanning');
 
     try {
-      // TODO: Implement actual API call
-      // const response = await fetch(`/api/v1/organizations/${orgId}/check-ins/scan`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ barcode: barcode.trim(), method: 'barcode_scan' }),
-      // });
-      // const data = await response.json();
+      const response = await scanCheckIn(orgId, attractionId, {
+        barcode: barcode.trim(),
+        method: 'barcode_scan',
+        stationId: stationId || undefined,
+      });
 
-      // Simulate API call for now
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (response.error) {
+        setResult({
+          success: false,
+          error: response.error.error || 'UNKNOWN_ERROR',
+          message: response.error.message,
+          waiverRequired: false,
+          waiverSigned: false,
+        });
+        setStatus('error');
+        setRecentScans((prev) => [
+          {
+            success: false,
+            errorCode: response.error?.error || 'UNKNOWN_ERROR',
+            errorMessage: response.error?.message,
+            timestamp: new Date(),
+          },
+          ...prev,
+        ].slice(0, 10));
+      } else if (response.data) {
+        const data = response.data;
+        setResult(data);
 
-      // Mock response - in real implementation, parse API response
-      const mockResult: CheckInResult = {
-        success: false,
-        error: {
-          code: 'NOT_IMPLEMENTED',
-          message: 'Check-in API integration pending',
-        },
-      };
-
-      setResult(mockResult);
-      setStatus(mockResult.success ? 'success' : 'error');
-
-      // Add to recent scans
-      setRecentScans((prev) => [mockResult, ...prev].slice(0, 10));
-    } catch {
+        if (data.success) {
+          setStatus('success');
+          setRecentScans((prev) => [
+            {
+              success: true,
+              ticketNumber: data.ticket?.ticketNumber,
+              customerName: data.ticket?.guestName,
+              ticketType: data.ticket?.ticketType,
+              timestamp: new Date(),
+            },
+            ...prev,
+          ].slice(0, 10));
+        } else if (data.requiresWaiver) {
+          setStatus('warning');
+          setRecentScans((prev) => [
+            {
+              success: false,
+              errorCode: 'WAIVER_REQUIRED',
+              errorMessage: 'Guest must sign waiver',
+              ticketNumber: data.ticket?.ticketNumber,
+              timestamp: new Date(),
+            },
+            ...prev,
+          ].slice(0, 10));
+        } else {
+          setStatus('error');
+          setRecentScans((prev) => [
+            {
+              success: false,
+              errorCode: data.error || 'CHECK_IN_FAILED',
+              errorMessage: data.message,
+              timestamp: new Date(),
+            },
+            ...prev,
+          ].slice(0, 10));
+        }
+      }
+    } catch (err) {
+      console.error('Scan error:', err);
       setResult({
         success: false,
-        error: {
-          code: 'NETWORK_ERROR',
-          message: 'Failed to connect to server',
-        },
+        error: 'NETWORK_ERROR',
+        message: 'Failed to connect to server',
+        waiverRequired: false,
+        waiverSigned: false,
       });
       setStatus('error');
+      setRecentScans((prev) => [
+        {
+          success: false,
+          errorCode: 'NETWORK_ERROR',
+          errorMessage: 'Failed to connect to server',
+          timestamp: new Date(),
+        },
+        ...prev,
+      ].slice(0, 10));
     } finally {
       setIsProcessing(false);
       setBarcode('');
@@ -147,7 +256,7 @@ export default function ScanPage() {
       case 'error':
         return <XCircle className="h-16 w-16 text-red-500" />;
       case 'warning':
-        return <AlertTriangle className="h-16 w-16 text-yellow-500" />;
+        return <FileWarning className="h-16 w-16 text-yellow-500" />;
       case 'scanning':
         return <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />;
       default:
@@ -155,13 +264,81 @@ export default function ScanPage() {
     }
   };
 
+  if (isLoadingAttractions) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (attractions.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href={`/${orgId}/check-in`}>
+            <Button variant="ghost" size="icon" aria-label="Back to check-in">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Scan Tickets</h1>
+            <p className="text-muted-foreground">No attractions available</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Scan Tickets</h1>
-        <p className="text-muted-foreground">
-          Scan barcodes or QR codes to check in guests.
-        </p>
+      <div className="flex items-center gap-4">
+        <Link href={`/${orgId}/check-in`}>
+          <Button variant="ghost" size="icon" aria-label="Back to check-in">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold">Scan Tickets</h1>
+          <p className="text-muted-foreground">
+            Scan barcodes or QR codes to check in guests.
+          </p>
+        </div>
+      </div>
+
+      {/* Attraction & Station Selection */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Attraction</Label>
+          <Select value={attractionId ?? ''} onValueChange={setAttractionId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select attraction" />
+            </SelectTrigger>
+            <SelectContent>
+              {attractions.map((attr) => (
+                <SelectItem key={attr.id} value={attr.id}>
+                  {attr.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Station (optional)</Label>
+          <Select value={stationId ?? 'none'} onValueChange={(v) => setStationId(v === 'none' ? null : v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select station" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No station</SelectItem>
+              {stations.filter(s => s.isActive).map((station) => (
+                <SelectItem key={station.id} value={station.id}>
+                  {station.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -186,7 +363,7 @@ export default function ScanPage() {
                   placeholder="Scan or enter ticket code..."
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isProcessing || !attractionId}
                   autoComplete="off"
                   className="text-lg font-mono"
                 />
@@ -194,7 +371,7 @@ export default function ScanPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={!barcode.trim() || isProcessing}
+                disabled={!barcode.trim() || isProcessing || !attractionId}
               >
                 {isProcessing ? (
                   <>
@@ -239,28 +416,61 @@ export default function ScanPage() {
                   <div className="grid gap-2 text-sm">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      <span>{result.checkIn?.customerName || 'Guest'}</span>
+                      <span>{result.ticket?.guestName || 'Guest'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Ticket className="h-4 w-4 text-muted-foreground" />
-                      <span>{result.checkIn?.ticketType}</span>
+                      <span>{result.ticket?.ticketType}</span>
                     </div>
-                    {result.checkIn?.orderNumber && (
+                    {result.ticket?.ticketNumber && (
                       <div className="flex items-center gap-2">
                         <Hash className="h-4 w-4 text-muted-foreground" />
-                        <span>Order #{result.checkIn.orderNumber}</span>
+                        <span>Ticket #{result.ticket.ticketNumber}</span>
                       </div>
                     )}
-                    {result.checkIn?.timeSlot && (
+                    {result.ticket?.timeSlot && (
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>
-                          {result.checkIn.timeSlot.date} at{' '}
-                          {result.checkIn.timeSlot.startTime}
+                        <span>{result.ticket.timeSlot}</span>
+                      </div>
+                    )}
+                    {result.order && (
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                        <span className="text-muted-foreground">Order Progress:</span>
+                        <span className="font-medium">
+                          {result.order.checkedInCount} / {result.order.ticketCount} checked in
                         </span>
                       </div>
                     )}
                   </div>
+                </div>
+              ) : result?.requiresWaiver ? (
+                <div className="w-full space-y-4">
+                  <p className="text-yellow-600 font-bold text-xl text-center">
+                    Waiver Required
+                  </p>
+                  <div className="bg-yellow-50 dark:bg-yellow-950/30 rounded-lg p-4">
+                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                      This guest must sign a waiver before check-in.
+                    </p>
+                    {result.ticket && (
+                      <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                        <p>Ticket: {result.ticket.ticketNumber}</p>
+                        <p>Type: {result.ticket.ticketType}</p>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      // Navigate to waiver signing page (could be implemented later)
+                      alert('Waiver signing UI would open here');
+                    }}
+                  >
+                    <FileWarning className="h-4 w-4 mr-2" />
+                    Sign Waiver
+                  </Button>
                 </div>
               ) : (
                 <div className="w-full space-y-4">
@@ -269,11 +479,16 @@ export default function ScanPage() {
                   </p>
                   <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-4">
                     <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                      {result?.error?.message || 'Unknown error occurred'}
+                      {result?.message || 'Unknown error occurred'}
                     </p>
                     <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      Error Code: {result?.error?.code}
+                      Error Code: {result?.error}
                     </p>
+                    {result?.checkedInAt && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                        Already checked in at: {new Date(result.checkedInAt).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -290,8 +505,7 @@ export default function ScanPage() {
             Recent Scans
           </CardTitle>
           <CardDescription>
-            Last {Math.min(recentScans.length, 10)} check-in attempts this
-            session.
+            Last {Math.min(recentScans.length, 10)} check-in attempts this session.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -322,27 +536,32 @@ export default function ScanPage() {
                       {scan.success ? (
                         <>
                           <p className="font-medium">
-                            {scan.checkIn?.customerName || 'Guest'}
+                            {scan.customerName || 'Guest'}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {scan.checkIn?.ticketType}
+                            {scan.ticketType} - #{scan.ticketNumber}
                           </p>
                         </>
                       ) : (
                         <>
                           <p className="font-medium text-red-700 dark:text-red-300">
-                            {scan.error?.code}
+                            {scan.errorCode}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {scan.error?.message}
+                            {scan.errorMessage}
                           </p>
                         </>
                       )}
                     </div>
                   </div>
-                  <Badge variant={scan.success ? 'default' : 'destructive'}>
-                    {scan.success ? 'Success' : 'Failed'}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {scan.timestamp.toLocaleTimeString()}
+                    </span>
+                    <Badge variant={scan.success ? 'default' : 'destructive'}>
+                      {scan.success ? 'Success' : 'Failed'}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>
@@ -350,5 +569,17 @@ export default function ScanPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ScanPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <ScanPageContent />
+    </Suspense>
   );
 }

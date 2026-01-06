@@ -40,12 +40,20 @@ export class AdminService {
   async getDashboardStats() {
     const client = this.supabase.adminClient;
 
+    // Today's date boundaries in UTC
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setUTCHours(23, 59, 59, 999);
+
     // Get counts in parallel
     const [
       { count: totalUsers },
       { count: totalOrgs },
       { count: totalAttractions },
       healthLogs,
+      todayOrders,
+      todayTickets,
     ] = await Promise.all([
       client.from('profiles').select('*', { count: 'exact', head: true }),
       client.from('organizations').select('*', { count: 'exact', head: true }),
@@ -55,7 +63,29 @@ export class AdminService {
         .select('service, status, latency_ms, checked_at')
         .order('checked_at', { ascending: false })
         .limit(10),
+      // Today's completed orders for revenue
+      client
+        .from('orders')
+        .select('total')
+        .gte('completed_at', todayStart.toISOString())
+        .lte('completed_at', todayEnd.toISOString())
+        .in('status', ['completed', 'partially_refunded']),
+      // Today's tickets sold (count of order_items)
+      client
+        .from('order_items')
+        .select('quantity, orders!inner(completed_at, status)')
+        .gte('orders.completed_at', todayStart.toISOString())
+        .lte('orders.completed_at', todayEnd.toISOString())
+        .in('orders.status', ['completed', 'partially_refunded']),
     ]);
+
+    // Calculate today's revenue
+    const revenueToday = ((todayOrders.data || []) as AnyRecord[])
+      .reduce((sum, order) => sum + (Number(order['total']) || 0), 0);
+
+    // Calculate today's ticket count
+    const ticketsSoldToday = ((todayTickets.data || []) as AnyRecord[])
+      .reduce((sum, item) => sum + (Number(item['quantity']) || 0), 0);
 
     // Get growth stats (7d and 30d)
     const now = new Date();
@@ -115,9 +145,9 @@ export class AdminService {
         total_users: totalUsers || 0,
         total_organizations: totalOrgs || 0,
         total_attractions: totalAttractions || 0,
-        active_seasons: 0, // TODO: implement when seasons table exists
-        tickets_sold_today: 0, // TODO: implement when tickets table exists
-        revenue_today: 0, // TODO: implement when payments exist
+        active_seasons: 0, // Seasons feature not yet implemented
+        tickets_sold_today: ticketsSoldToday,
+        revenue_today: revenueToday, // In cents
       },
       growth: {
         users_7d: users7d || 0,
@@ -502,7 +532,7 @@ export class AdminService {
     // Get owner and counts for each org
     const orgIds = ((data || []) as AnyRecord[]).map((o) => o['id'] as string);
 
-    const [membershipsResult, attractionsResult] = await Promise.all([
+    const [membershipsResult, attractionsResult, ordersResult] = await Promise.all([
       client
         .from('org_memberships')
         .select('org_id, user_id, role, is_owner, profiles(id, email, first_name, last_name)')
@@ -512,12 +542,18 @@ export class AdminService {
         .from('attractions')
         .select('org_id')
         .in('org_id', orgIds),
+      client
+        .from('orders')
+        .select('org_id, total')
+        .in('org_id', orgIds)
+        .in('status', ['completed', 'partially_refunded']),
     ]);
 
     // Group data by org
     const orgOwners: Record<string, { id: string; email: string; name: string }> = {};
     const orgMemberCounts: Record<string, number> = {};
     const orgAttractionCounts: Record<string, number> = {};
+    const orgRevenue: Record<string, number> = {};
 
     for (const m of (membershipsResult.data || []) as AnyRecord[]) {
       const orgId = m['org_id'] as string;
@@ -537,6 +573,11 @@ export class AdminService {
       orgAttractionCounts[orgId] = (orgAttractionCounts[orgId] || 0) + 1;
     }
 
+    for (const o of (ordersResult.data || []) as AnyRecord[]) {
+      const orgId = o['org_id'] as string;
+      orgRevenue[orgId] = (orgRevenue[orgId] || 0) + (Number(o['total']) || 0);
+    }
+
     return {
       data: ((data || []) as AnyRecord[]).map((o) => {
         const orgId = o['id'] as string;
@@ -549,7 +590,7 @@ export class AdminService {
           member_count: orgMemberCounts[orgId] || 0,
           attraction_count: orgAttractionCounts[orgId] || 0,
           stripe_connected: o['stripe_onboarding_complete'] as boolean,
-          total_revenue: 0, // TODO: implement when payments exist
+          total_revenue: orgRevenue[orgId] || 0, // In cents
           created_at: o['created_at'] as string,
         };
       }),
@@ -577,26 +618,47 @@ export class AdminService {
       });
     }
 
-    // Get members
-    const { data: members } = await client
-      .from('org_memberships')
-      .select(`
-        role,
-        is_owner,
-        profiles(id, email, first_name, last_name)
-      `)
-      .eq('org_id', orgId)
-      .eq('status', 'active');
+    // Get members, attractions, and order stats in parallel
+    const [membersResult, attractionsResult, ordersResult, orderItemsResult] = await Promise.all([
+      client
+        .from('org_memberships')
+        .select(`
+          role,
+          is_owner,
+          profiles(id, email, first_name, last_name)
+        `)
+        .eq('org_id', orgId)
+        .eq('status', 'active'),
+      client
+        .from('attractions')
+        .select('id, name, status')
+        .eq('org_id', orgId),
+      // Total revenue from completed orders
+      client
+        .from('orders')
+        .select('total')
+        .eq('org_id', orgId)
+        .in('status', ['completed', 'partially_refunded']),
+      // Total tickets sold (sum of order item quantities)
+      client
+        .from('order_items')
+        .select('quantity, orders!inner(org_id, status)')
+        .eq('orders.org_id', orgId)
+        .in('orders.status', ['completed', 'partially_refunded']),
+    ]);
 
-    // Get attractions
-    const { data: attractions } = await client
-      .from('attractions')
-      .select('id, name, status')
-      .eq('org_id', orgId);
+    const members = membersResult.data || [];
+    const attractions = attractionsResult.data || [];
+
+    // Calculate totals
+    const totalRevenue = ((ordersResult.data || []) as AnyRecord[])
+      .reduce((sum, order) => sum + (Number(order['total']) || 0), 0);
+    const totalTicketsSold = ((orderItemsResult.data || []) as AnyRecord[])
+      .reduce((sum, item) => sum + (Number(item['quantity']) || 0), 0);
 
     return {
       ...org,
-      members: ((members || []) as AnyRecord[]).map((m) => {
+      members: (members as AnyRecord[]).map((m) => {
         const p = m['profiles'] as AnyRecord;
         return {
           id: p?.['id'] as string,
@@ -608,9 +670,9 @@ export class AdminService {
       }),
       attractions: attractions || [],
       stats: {
-        total_tickets_sold: 0, // TODO: implement
-        total_revenue: 0, // TODO: implement
-        active_staff: (members || []).length,
+        total_tickets_sold: totalTicketsSold,
+        total_revenue: totalRevenue, // In cents
+        active_staff: members.length,
       },
     };
   }

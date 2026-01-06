@@ -3,8 +3,10 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
+import { PaymentsService } from '../payments/payments.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
 import type {
   CreateOrderDto,
@@ -20,9 +22,12 @@ import { randomBytes } from 'crypto';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private supabase: SupabaseService,
     private ticketingService: TicketingService,
+    private paymentsService: PaymentsService,
   ) {}
 
   // ============== Orders ==============
@@ -527,8 +532,39 @@ export class OrdersService {
       });
     }
 
-    // TODO: Integrate with Stripe for actual refund processing
-    // For now, just update the status
+    const refundAmount = dto.amount || order.total;
+
+    // If order was paid via Stripe, process refund through Stripe
+    if (order.stripe_payment_intent_id) {
+      // Find the corresponding transaction
+      const { data: transaction } = await this.supabase.adminClient
+        .from('stripe_transactions')
+        .select('id')
+        .eq('stripe_payment_intent_id', order.stripe_payment_intent_id)
+        .eq('type', 'charge')
+        .eq('status', 'succeeded')
+        .single();
+
+      if (transaction) {
+        try {
+          await this.paymentsService.createRefund(orgId, {
+            transaction_id: transaction.id,
+            amount: refundAmount,
+            reason: dto.reason || 'Order refunded',
+          });
+          this.logger.log(`Processed Stripe refund for order ${orderId}, amount: ${refundAmount}`);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unknown error';
+          this.logger.error(`Failed to process Stripe refund for order ${orderId}: ${message}`);
+          throw new BadRequestException({
+            code: 'STRIPE_REFUND_FAILED',
+            message: `Failed to process Stripe refund: ${message}`,
+          });
+        }
+      } else {
+        this.logger.warn(`No Stripe transaction found for order ${orderId}, proceeding with status update only`);
+      }
+    }
 
     // Void all tickets
     await this.supabase.adminClient
@@ -541,7 +577,8 @@ export class OrdersService {
       .from('orders')
       .update({
         status: 'refunded',
-        refund_amount: dto.amount || order.total,
+        refund_amount: refundAmount,
+        refunded_at: new Date().toISOString(),
         notes: dto.reason ? `${order.notes || ''}\nRefunded: ${dto.reason}`.trim() : order.notes,
         updated_at: new Date().toISOString(),
       })
@@ -925,12 +962,23 @@ export class OrdersService {
 
     // Handle waiver if required
     if (dto.waiverAccepted) {
+      // Fetch waiver text from attraction settings
+      const { data: attraction } = await this.supabase.adminClient
+        .from('attractions')
+        .select('waiver_text')
+        .eq('id', cart.attraction_id)
+        .single();
+
+      const waiverText = attraction?.waiver_text ||
+        'By purchasing these tickets, I acknowledge and agree to the standard liability waiver and release of claims. ' +
+        'I understand that participation involves inherent risks and I voluntarily assume all risks associated with my visit.';
+
       await this.supabase.adminClient.from('ticket_waivers').insert({
         org_id: orgId,
         order_id: order.id,
         customer_email: dto.customerEmail,
         customer_name: dto.customerName,
-        waiver_text: 'Standard liability waiver', // TODO: Get actual waiver text from settings
+        waiver_text: waiverText,
         accepted_at: new Date().toISOString(),
         ip_address: null, // Would need to pass from request
       });

@@ -1102,6 +1102,84 @@ export class StorefrontsService {
     return { faqs, categories };
   }
 
+  async getPublicTicketTypes(identifier: string): Promise<{
+    ticketTypes: Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      price: number;
+      comparePrice: number | null;
+      category: string | null;
+      includes: string[] | null;
+      maxPerOrder: number;
+      minPerOrder: number;
+      isAvailable: boolean;
+    }>;
+  }> {
+    // Resolve attraction
+    const storefront = await this.getPublicStorefront(identifier);
+    if (!storefront || !storefront.attraction) {
+      return { ticketTypes: [] };
+    }
+
+    const now = new Date().toISOString();
+
+    // Get active ticket types for this attraction
+    const { data, error } = await this.supabase.adminClient
+      .from('ticket_types')
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        compare_price,
+        category_id,
+        includes,
+        max_per_order,
+        min_per_order,
+        capacity,
+        sold_count,
+        available_from,
+        available_until,
+        ticket_categories ( name )
+      `)
+      .eq('attraction_id', storefront.attraction.id)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) throw error;
+
+    const ticketTypes = (data || []).map((row: Record<string, unknown>) => {
+      // Check availability based on dates and capacity
+      const availableFrom = row['available_from'] as string | null;
+      const availableUntil = row['available_until'] as string | null;
+      const capacity = row['capacity'] as number | null;
+      const soldCount = row['sold_count'] as number | null;
+
+      let isAvailable = true;
+      if (availableFrom && now < availableFrom) isAvailable = false;
+      if (availableUntil && now > availableUntil) isAvailable = false;
+      if (capacity && soldCount && soldCount >= capacity) isAvailable = false;
+
+      const categoryData = row['ticket_categories'] as { name: string } | null;
+
+      return {
+        id: row['id'] as string,
+        name: row['name'] as string,
+        description: row['description'] as string | null,
+        price: row['price'] as number,
+        comparePrice: row['compare_price'] as number | null,
+        category: categoryData?.name ?? null,
+        includes: row['includes'] as string[] | null,
+        maxPerOrder: row['max_per_order'] as number,
+        minPerOrder: row['min_per_order'] as number,
+        isAvailable,
+      };
+    });
+
+    return { ticketTypes };
+  }
+
   // ===========================================================================
   // Mapping Helpers
   // ===========================================================================

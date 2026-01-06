@@ -53,10 +53,10 @@ export class CheckInService {
       };
     }
 
-    // 2. Validate ticket belongs to this attraction
+    // 2. Validate ticket belongs to this attraction and get waiver requirement
     const { data: ticketType } = await this.supabase.adminClient
       .from('ticket_types')
-      .select('attraction_id')
+      .select('attraction_id, requires_waiver')
       .eq('id', ticket.ticket_type_id)
       .single();
 
@@ -95,19 +95,35 @@ export class CheckInService {
     }
 
     // 4. Check waiver requirement
-    // Note: requires_waiver column doesn't exist yet - defaulting to false
-    // TODO: Add requires_waiver column to ticket_types table when waiver feature is fully implemented
-    const waiverRequired = false;
+    const waiverRequired = ticketType.requires_waiver || false;
     let waiverSigned = false;
 
     if (waiverRequired) {
-      const { data: waiver } = await this.supabase.adminClient
+      // Check for guest waiver signed at attraction (check-in waiver)
+      const { data: guestWaiver } = await this.supabase.adminClient
         .from('guest_waivers')
         .select('id')
         .eq('ticket_id', ticket.id)
         .single();
 
-      waiverSigned = !!waiver;
+      // Also check for ticket waiver signed at checkout
+      const { data: ticketWaiver } = await this.supabase.adminClient
+        .from('ticket_waivers')
+        .select('id')
+        .eq('ticket_id', ticket.id)
+        .single();
+
+      waiverSigned = !!(guestWaiver || ticketWaiver);
+
+      // If waiver is required but not signed, return error
+      if (!waiverSigned) {
+        return {
+          success: false,
+          error: 'WAIVER_REQUIRED',
+          message: 'A signed waiver is required before check-in',
+          requiresWaiver: true,
+        };
+      }
     }
 
     // 5. Create check-in record (trigger will update ticket status)

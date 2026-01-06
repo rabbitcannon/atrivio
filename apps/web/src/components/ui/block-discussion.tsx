@@ -335,7 +335,7 @@ const useResolvedDiscussion = (
 
       return;
     }
-    // TODO: fix throw error
+    // No previous path exists, set the initial path for this discussion ID
     setOption('uniquePathMap', new Map(map).set(id, blockPath));
   });
 

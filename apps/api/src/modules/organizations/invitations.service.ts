@@ -4,17 +4,24 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { RbacService } from '../../core/rbac/rbac.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import type { OrgId, UserId, OrgRole } from '@haunt/shared';
 import { randomBytes } from 'crypto';
 
 @Injectable()
 export class InvitationsService {
+  private readonly logger = new Logger(InvitationsService.name);
+
   constructor(
     private supabase: SupabaseService,
     private rbacService: RbacService,
+    private notificationsService: NotificationsService,
+    private config: ConfigService,
   ) {}
 
   /**
@@ -115,9 +122,44 @@ export class InvitationsService {
       });
     }
 
-    // TODO: Send invitation email
+    // Get organization name for the email
+    const { data: org } = await this.supabase.adminClient
+      .from('organizations')
+      .select('name')
+      .eq('id', orgId)
+      .single();
 
+    const orgName = org?.name || 'your organization';
+
+    // Send invitation email
     const inviter = invite.inviter as unknown as { id: string; first_name: string; last_name: string } | null;
+    const inviterName = inviter ? `${inviter.first_name} ${inviter.last_name}`.trim() : 'Someone';
+
+    const appUrl = this.config.get('APP_URL') || 'http://localhost:3000';
+    const inviteUrl = `${appUrl}/invite/${token}`;
+
+    const emailSubject = `You've been invited to join ${orgName}`;
+    const emailBody = `Hi,
+
+${inviterName} has invited you to join ${orgName} as a ${role}.
+
+Click the link below to accept your invitation:
+${inviteUrl}
+
+This invitation will expire in 7 days.
+
+If you weren't expecting this invitation, you can safely ignore this email.
+
+—
+Atrivio Platform`;
+
+    try {
+      await this.notificationsService.sendEmail(email, emailSubject, emailBody, orgId);
+      this.logger.log(`Invitation email sent to ${email} for org ${orgId}`);
+    } catch (emailError) {
+      // Log the error but don't fail the invitation creation
+      this.logger.error(`Failed to send invitation email to ${email}:`, emailError);
+    }
     return {
       id: invite.id,
       email: invite.email,
