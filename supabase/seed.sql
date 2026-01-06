@@ -1,14 +1,35 @@
 -- ============================================================================
--- COMPREHENSIVE TEST DATA FOR F1-F4
--- Password for all test users: "password123"
+-- HAUNT PLATFORM - COMPREHENSIVE DEMO SEED DATA
 -- ============================================================================
--- Uses pgcrypto's crypt() function to properly hash passwords at seed time
+-- This file contains demo seed data for all organizations and feature modules.
+-- 
+-- Organizations (4):
+--   - Nightmare Manor (Pro tier)      - b0000000-0000-0000-0000-000000000001
+--   - Spooky Hollow (Basic tier)      - b0000000-0000-0000-0000-000000000002  
+--   - Terror Collective (Enterprise)  - b0000000-0000-0000-0000-000000000003
+--   - Newhouse Haunts (Onboarding)    - b0000000-0000-0000-0000-000000000004
+--
+-- Users: 26 across all organizations
+-- Password for ALL test users: "password123"
+--
+-- Feature Tiers:
+--   Basic: time_tracking, ticketing, checkin, notifications
+--   Pro: + scheduling, inventory, analytics_pro, storefronts
+--   Enterprise: + virtual_queue, sms_notifications, custom_domains
+--
+-- ============================================================================
+
 
 -- ============================================================================
--- F1: AUTH USERS & PROFILES
+-- 01-AUTH-USERS.SQL - Comprehensive User Accounts
+-- ============================================================================
+-- Password for ALL test users: "password123"
+-- Uses pgcrypto's crypt() function to properly hash passwords
+
+-- ============================================================================
+-- PLATFORM ADMINS
 -- ============================================================================
 
--- Create test users in auth.users
 INSERT INTO auth.users (
   id, instance_id, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
@@ -27,7 +48,31 @@ INSERT INTO auth.users (
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   ),
-  -- Org Owner
+  -- Platform Support Admin
+  (
+    'a0000000-0000-0000-0000-000000000099',
+    '00000000-0000-0000-0000-000000000000',
+    'support@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Support", "last_name": "Admin"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- NIGHTMARE MANOR USERS (Pro Tier - Org 2)
+-- ============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  role, aud, confirmation_token, recovery_token, email_change_token_new,
+  email_change_token_current, email_change, reauthentication_token,
+  phone, phone_change, phone_change_token, is_sso_user, is_anonymous
+) VALUES
+  -- Owner
   (
     'a0000000-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000000',
@@ -38,7 +83,7 @@ INSERT INTO auth.users (
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   ),
-  -- Org Manager
+  -- Manager
   (
     'a0000000-0000-0000-0000-000000000003',
     '00000000-0000-0000-0000-000000000000',
@@ -49,7 +94,7 @@ INSERT INTO auth.users (
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   ),
-  -- Staff members (actors, etc.)
+  -- Actor 1
   (
     'a0000000-0000-0000-0000-000000000004',
     '00000000-0000-0000-0000-000000000000',
@@ -60,6 +105,7 @@ INSERT INTO auth.users (
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   ),
+  -- Actor 2
   (
     'a0000000-0000-0000-0000-000000000005',
     '00000000-0000-0000-0000-000000000000',
@@ -70,6 +116,7 @@ INSERT INTO auth.users (
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   ),
+  -- Actor 3
   (
     'a0000000-0000-0000-0000-000000000006',
     '00000000-0000-0000-0000-000000000000',
@@ -80,6 +127,7 @@ INSERT INTO auth.users (
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   ),
+  -- Box Office
   (
     'a0000000-0000-0000-0000-000000000007',
     '00000000-0000-0000-0000-000000000000',
@@ -89,38 +137,327 @@ INSERT INTO auth.users (
     '{"first_name": "Lisa", "last_name": "Park"}',
     NOW(), NOW(), 'authenticated', 'authenticated',
     '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- HR Manager
+  (
+    'a0000000-0000-0000-0000-000000000008',
+    '00000000-0000-0000-0000-000000000000',
+    'hr@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Rachel", "last_name": "Kim"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Finance
+  (
+    'a0000000-0000-0000-0000-000000000009',
+    '00000000-0000-0000-0000-000000000000',
+    'finance@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "David", "last_name": "Miller"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Scanner
+  (
+    'a0000000-0000-0000-0000-000000000010',
+    '00000000-0000-0000-0000-000000000000',
+    'scanner@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Tom", "last_name": "Garcia"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
   )
 ON CONFLICT (id) DO NOTHING;
 
--- Create identities for the users (required for Supabase Auth)
-INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, created_at, updated_at)
-VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
-   '{"sub": "a0000000-0000-0000-0000-000000000001", "email": "admin@haunt.dev"}', 'email', 'admin@haunt.dev', NOW(), NOW()),
-  ('a0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002',
-   '{"sub": "a0000000-0000-0000-0000-000000000002", "email": "owner@haunt.dev"}', 'email', 'owner@haunt.dev', NOW(), NOW()),
-  ('a0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003',
-   '{"sub": "a0000000-0000-0000-0000-000000000003", "email": "manager@haunt.dev"}', 'email', 'manager@haunt.dev', NOW(), NOW()),
-  ('a0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000004',
-   '{"sub": "a0000000-0000-0000-0000-000000000004", "email": "actor1@haunt.dev"}', 'email', 'actor1@haunt.dev', NOW(), NOW()),
-  ('a0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000005',
-   '{"sub": "a0000000-0000-0000-0000-000000000005", "email": "actor2@haunt.dev"}', 'email', 'actor2@haunt.dev', NOW(), NOW()),
-  ('a0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000006',
-   '{"sub": "a0000000-0000-0000-0000-000000000006", "email": "actor3@haunt.dev"}', 'email', 'actor3@haunt.dev', NOW(), NOW()),
-  ('a0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000007',
-   '{"sub": "a0000000-0000-0000-0000-000000000007", "email": "boxoffice@haunt.dev"}', 'email', 'boxoffice@haunt.dev', NOW(), NOW())
+-- ============================================================================
+-- SPOOKY HOLLOW USERS (Basic Tier - Org 1)
+-- ============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  role, aud, confirmation_token, recovery_token, email_change_token_new,
+  email_change_token_current, email_change, reauthentication_token,
+  phone, phone_change, phone_change_token, is_sso_user, is_anonymous
+) VALUES
+  -- Owner (runs everything)
+  (
+    'a1000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000000',
+    'hollow.owner@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Ben", "last_name": "Crawford"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Part-time Actor 1
+  (
+    'a1000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000000',
+    'hollow.actor1@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Jenny", "last_name": "Adams"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Weekend Actor
+  (
+    'a1000000-0000-0000-0000-000000000003',
+    '00000000-0000-0000-0000-000000000000',
+    'hollow.actor2@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Chris", "last_name": "Baker"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Box Office
+  (
+    'a1000000-0000-0000-0000-000000000004',
+    '00000000-0000-0000-0000-000000000000',
+    'hollow.boxoffice@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Amy", "last_name": "Nelson"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  )
 ON CONFLICT (id) DO NOTHING;
 
--- Create profiles for the test users
+-- ============================================================================
+-- TERROR COLLECTIVE USERS (Enterprise Tier - Org 3)
+-- ============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  role, aud, confirmation_token, recovery_token, email_change_token_new,
+  email_change_token_current, email_change, reauthentication_token,
+  phone, phone_change, phone_change_token, is_sso_user, is_anonymous
+) VALUES
+  -- CEO/Owner
+  (
+    'a3000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000000',
+    'ceo@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Victoria", "last_name": "Sterling"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- COO
+  (
+    'a3000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000000',
+    'coo@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Marcus", "last_name": "Webb"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Venue 1 Manager
+  (
+    'a3000000-0000-0000-0000-000000000003',
+    '00000000-0000-0000-0000-000000000000',
+    'venue1.manager@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Derek", "last_name": "Stone"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Venue 2 Manager
+  (
+    'a3000000-0000-0000-0000-000000000004',
+    '00000000-0000-0000-0000-000000000000',
+    'venue2.manager@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Nina", "last_name": "Reyes"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Marketing Director
+  (
+    'a3000000-0000-0000-0000-000000000005',
+    '00000000-0000-0000-0000-000000000000',
+    'marketing@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Samantha", "last_name": "Fox"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- IT Admin
+  (
+    'a3000000-0000-0000-0000-000000000006',
+    '00000000-0000-0000-0000-000000000000',
+    'it@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Alex", "last_name": "Chen"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Venue 1 Actors
+  (
+    'a3000000-0000-0000-0000-000000000010',
+    '00000000-0000-0000-0000-000000000000',
+    'v1.actor1@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Jordan", "last_name": "Blake"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  (
+    'a3000000-0000-0000-0000-000000000011',
+    '00000000-0000-0000-0000-000000000000',
+    'v1.actor2@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Casey", "last_name": "Morgan"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  -- Venue 2 Actors
+  (
+    'a3000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000000',
+    'v2.actor1@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Riley", "last_name": "Hayes"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  ),
+  (
+    'a3000000-0000-0000-0000-000000000021',
+    '00000000-0000-0000-0000-000000000000',
+    'v2.actor2@terror.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Taylor", "last_name": "Scott"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- NEW HAUNT USER (Onboarding - Org 4)
+-- ============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  role, aud, confirmation_token, recovery_token, email_change_token_new,
+  email_change_token_current, email_change, reauthentication_token,
+  phone, phone_change, phone_change_token, is_sso_user, is_anonymous
+) VALUES
+  (
+    'a4000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000000',
+    'newowner@haunt.dev',
+    crypt('password123', gen_salt('bf')),
+    NOW(), '{"provider": "email", "providers": ["email"]}',
+    '{"first_name": "Jamie", "last_name": "Newhouse"}',
+    NOW(), NOW(), 'authenticated', 'authenticated',
+    '', '', '', '', '', '', NULL, '', '', FALSE, FALSE
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- AUTH IDENTITIES (required for Supabase Auth)
+-- ============================================================================
+
+INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, created_at, updated_at)
+VALUES
+  -- Platform admins
+  ('a0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', '{"sub": "a0000000-0000-0000-0000-000000000001", "email": "admin@haunt.dev"}', 'email', 'admin@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000099', 'a0000000-0000-0000-0000-000000000099', '{"sub": "a0000000-0000-0000-0000-000000000099", "email": "support@haunt.dev"}', 'email', 'support@haunt.dev', NOW(), NOW()),
+
+  -- Nightmare Manor
+  ('a0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', '{"sub": "a0000000-0000-0000-0000-000000000002", "email": "owner@haunt.dev"}', 'email', 'owner@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', '{"sub": "a0000000-0000-0000-0000-000000000003", "email": "manager@haunt.dev"}', 'email', 'manager@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000004', '{"sub": "a0000000-0000-0000-0000-000000000004", "email": "actor1@haunt.dev"}', 'email', 'actor1@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000005', '{"sub": "a0000000-0000-0000-0000-000000000005", "email": "actor2@haunt.dev"}', 'email', 'actor2@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000006', '{"sub": "a0000000-0000-0000-0000-000000000006", "email": "actor3@haunt.dev"}', 'email', 'actor3@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000007', '{"sub": "a0000000-0000-0000-0000-000000000007", "email": "boxoffice@haunt.dev"}', 'email', 'boxoffice@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000008', '{"sub": "a0000000-0000-0000-0000-000000000008", "email": "hr@haunt.dev"}', 'email', 'hr@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000009', 'a0000000-0000-0000-0000-000000000009', '{"sub": "a0000000-0000-0000-0000-000000000009", "email": "finance@haunt.dev"}', 'email', 'finance@haunt.dev', NOW(), NOW()),
+  ('a0000000-0000-0000-0000-000000000010', 'a0000000-0000-0000-0000-000000000010', '{"sub": "a0000000-0000-0000-0000-000000000010", "email": "scanner@haunt.dev"}', 'email', 'scanner@haunt.dev', NOW(), NOW()),
+
+  -- Spooky Hollow
+  ('a1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', '{"sub": "a1000000-0000-0000-0000-000000000001", "email": "hollow.owner@haunt.dev"}', 'email', 'hollow.owner@haunt.dev', NOW(), NOW()),
+  ('a1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000002', '{"sub": "a1000000-0000-0000-0000-000000000002", "email": "hollow.actor1@haunt.dev"}', 'email', 'hollow.actor1@haunt.dev', NOW(), NOW()),
+  ('a1000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000003', '{"sub": "a1000000-0000-0000-0000-000000000003", "email": "hollow.actor2@haunt.dev"}', 'email', 'hollow.actor2@haunt.dev', NOW(), NOW()),
+  ('a1000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000004', '{"sub": "a1000000-0000-0000-0000-000000000004", "email": "hollow.boxoffice@haunt.dev"}', 'email', 'hollow.boxoffice@haunt.dev', NOW(), NOW()),
+
+  -- Terror Collective
+  ('a3000000-0000-0000-0000-000000000001', 'a3000000-0000-0000-0000-000000000001', '{"sub": "a3000000-0000-0000-0000-000000000001", "email": "ceo@terror.dev"}', 'email', 'ceo@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000002', 'a3000000-0000-0000-0000-000000000002', '{"sub": "a3000000-0000-0000-0000-000000000002", "email": "coo@terror.dev"}', 'email', 'coo@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003', '{"sub": "a3000000-0000-0000-0000-000000000003", "email": "venue1.manager@terror.dev"}', 'email', 'venue1.manager@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000004', 'a3000000-0000-0000-0000-000000000004', '{"sub": "a3000000-0000-0000-0000-000000000004", "email": "venue2.manager@terror.dev"}', 'email', 'venue2.manager@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000005', 'a3000000-0000-0000-0000-000000000005', '{"sub": "a3000000-0000-0000-0000-000000000005", "email": "marketing@terror.dev"}', 'email', 'marketing@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000006', 'a3000000-0000-0000-0000-000000000006', '{"sub": "a3000000-0000-0000-0000-000000000006", "email": "it@terror.dev"}', 'email', 'it@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000010', 'a3000000-0000-0000-0000-000000000010', '{"sub": "a3000000-0000-0000-0000-000000000010", "email": "v1.actor1@terror.dev"}', 'email', 'v1.actor1@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000011', 'a3000000-0000-0000-0000-000000000011', '{"sub": "a3000000-0000-0000-0000-000000000011", "email": "v1.actor2@terror.dev"}', 'email', 'v1.actor2@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000020', 'a3000000-0000-0000-0000-000000000020', '{"sub": "a3000000-0000-0000-0000-000000000020", "email": "v2.actor1@terror.dev"}', 'email', 'v2.actor1@terror.dev', NOW(), NOW()),
+  ('a3000000-0000-0000-0000-000000000021', 'a3000000-0000-0000-0000-000000000021', '{"sub": "a3000000-0000-0000-0000-000000000021", "email": "v2.actor2@terror.dev"}', 'email', 'v2.actor2@terror.dev', NOW(), NOW()),
+
+  -- New Haunt
+  ('a4000000-0000-0000-0000-000000000001', 'a4000000-0000-0000-0000-000000000001', '{"sub": "a4000000-0000-0000-0000-000000000001", "email": "newowner@haunt.dev"}', 'email', 'newowner@haunt.dev', NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- PROFILES (public.profiles)
+-- ============================================================================
+
 INSERT INTO public.profiles (id, email, first_name, last_name, display_name, phone, is_super_admin)
 VALUES
+  -- Platform admins
   ('a0000000-0000-0000-0000-000000000001', 'admin@haunt.dev', 'Super', 'Admin', 'Super Admin', NULL, TRUE),
+  ('a0000000-0000-0000-0000-000000000099', 'support@haunt.dev', 'Support', 'Admin', 'Support Admin', NULL, TRUE),
+
+  -- Nightmare Manor
   ('a0000000-0000-0000-0000-000000000002', 'owner@haunt.dev', 'Marcus', 'Holloway', 'Marcus Holloway', '555-0100', FALSE),
   ('a0000000-0000-0000-0000-000000000003', 'manager@haunt.dev', 'Sarah', 'Chen', 'Sarah Chen', '555-0101', FALSE),
   ('a0000000-0000-0000-0000-000000000004', 'actor1@haunt.dev', 'Jake', 'Morrison', 'Jake Morrison', '555-0102', FALSE),
   ('a0000000-0000-0000-0000-000000000005', 'actor2@haunt.dev', 'Emily', 'Rodriguez', 'Emily Rodriguez', '555-0103', FALSE),
   ('a0000000-0000-0000-0000-000000000006', 'actor3@haunt.dev', 'Mike', 'Thompson', 'Mike Thompson', '555-0104', FALSE),
-  ('a0000000-0000-0000-0000-000000000007', 'boxoffice@haunt.dev', 'Lisa', 'Park', 'Lisa Park', '555-0105', FALSE)
+  ('a0000000-0000-0000-0000-000000000007', 'boxoffice@haunt.dev', 'Lisa', 'Park', 'Lisa Park', '555-0105', FALSE),
+  ('a0000000-0000-0000-0000-000000000008', 'hr@haunt.dev', 'Rachel', 'Kim', 'Rachel Kim', '555-0106', FALSE),
+  ('a0000000-0000-0000-0000-000000000009', 'finance@haunt.dev', 'David', 'Miller', 'David Miller', '555-0107', FALSE),
+  ('a0000000-0000-0000-0000-000000000010', 'scanner@haunt.dev', 'Tom', 'Garcia', 'Tom Garcia', '555-0108', FALSE),
+
+  -- Spooky Hollow
+  ('a1000000-0000-0000-0000-000000000001', 'hollow.owner@haunt.dev', 'Ben', 'Crawford', 'Ben Crawford', '555-1001', FALSE),
+  ('a1000000-0000-0000-0000-000000000002', 'hollow.actor1@haunt.dev', 'Jenny', 'Adams', 'Jenny Adams', '555-1002', FALSE),
+  ('a1000000-0000-0000-0000-000000000003', 'hollow.actor2@haunt.dev', 'Chris', 'Baker', 'Chris Baker', '555-1003', FALSE),
+  ('a1000000-0000-0000-0000-000000000004', 'hollow.boxoffice@haunt.dev', 'Amy', 'Nelson', 'Amy Nelson', '555-1004', FALSE),
+
+  -- Terror Collective
+  ('a3000000-0000-0000-0000-000000000001', 'ceo@terror.dev', 'Victoria', 'Sterling', 'Victoria Sterling', '555-3001', FALSE),
+  ('a3000000-0000-0000-0000-000000000002', 'coo@terror.dev', 'Marcus', 'Webb', 'Marcus Webb', '555-3002', FALSE),
+  ('a3000000-0000-0000-0000-000000000003', 'venue1.manager@terror.dev', 'Derek', 'Stone', 'Derek Stone', '555-3003', FALSE),
+  ('a3000000-0000-0000-0000-000000000004', 'venue2.manager@terror.dev', 'Nina', 'Reyes', 'Nina Reyes', '555-3004', FALSE),
+  ('a3000000-0000-0000-0000-000000000005', 'marketing@terror.dev', 'Samantha', 'Fox', 'Samantha Fox', '555-3005', FALSE),
+  ('a3000000-0000-0000-0000-000000000006', 'it@terror.dev', 'Alex', 'Chen', 'Alex Chen', '555-3006', FALSE),
+  ('a3000000-0000-0000-0000-000000000010', 'v1.actor1@terror.dev', 'Jordan', 'Blake', 'Jordan Blake', '555-3010', FALSE),
+  ('a3000000-0000-0000-0000-000000000011', 'v1.actor2@terror.dev', 'Casey', 'Morgan', 'Casey Morgan', '555-3011', FALSE),
+  ('a3000000-0000-0000-0000-000000000020', 'v2.actor1@terror.dev', 'Riley', 'Hayes', 'Riley Hayes', '555-3020', FALSE),
+  ('a3000000-0000-0000-0000-000000000021', 'v2.actor2@terror.dev', 'Taylor', 'Scott', 'Taylor Scott', '555-3021', FALSE),
+
+  -- New Haunt
+  ('a4000000-0000-0000-0000-000000000001', 'newowner@haunt.dev', 'Jamie', 'Newhouse', 'Jamie Newhouse', '555-4001', FALSE)
 ON CONFLICT (id) DO UPDATE SET
   is_super_admin = EXCLUDED.is_super_admin,
   first_name = EXCLUDED.first_name,
@@ -128,11 +465,32 @@ ON CONFLICT (id) DO UPDATE SET
   display_name = EXCLUDED.display_name;
 
 -- ============================================================================
--- F2: ORGANIZATIONS
+-- SUMMARY: 26 user accounts
+-- ============================================================================
+-- Platform: 2 (admin, support)
+-- Nightmare Manor (Pro): 9 (owner, manager, 3 actors, boxoffice, hr, finance, scanner)
+-- Spooky Hollow (Basic): 4 (owner, 2 actors, boxoffice)
+-- Terror Collective (Enterprise): 10 (ceo, coo, 2 venue managers, marketing, IT, 4 actors)
+-- New Haunt (Onboarding): 1 (owner)
+
+
+-- ============================================================================
+-- 02-ORGANIZATIONS.SQL - Organizations & Memberships
+-- ============================================================================
+-- 4 Organizations at different subscription tiers:
+-- - Nightmare Manor (Pro) - Full operations, multiple attractions
+-- - Spooky Hollow (Basic) - Small operation, limited features
+-- - Terror Collective (Enterprise) - Multi-venue chain
+-- - New Haunt (Onboarding) - Fresh org, minimal data
+-- ============================================================================
+
+-- ============================================================================
+-- ORGANIZATIONS
 -- ============================================================================
 
 INSERT INTO public.organizations (id, name, slug, email, phone, website, address_line1, city, state, postal_code, status)
 VALUES
+  -- Nightmare Manor (Pro Tier) - Primary demo organization
   (
     'b0000000-0000-0000-0000-000000000001',
     'Nightmare Manor',
@@ -146,6 +504,7 @@ VALUES
     '01970',
     'active'
   ),
+  -- Spooky Hollow (Basic Tier) - Small family-run haunt
   (
     'b0000000-0000-0000-0000-000000000002',
     'Spooky Hollow',
@@ -158,25 +517,142 @@ VALUES
     'NY',
     '10591',
     'active'
+  ),
+  -- Terror Collective (Enterprise Tier) - Multi-venue chain
+  (
+    'b0000000-0000-0000-0000-000000000003',
+    'Terror Collective',
+    'terror-collective',
+    'corporate@terrorcollective.com',
+    '555-TERROR',
+    'https://terrorcollective.com',
+    '999 Corporate Plaza',
+    'Los Angeles',
+    'CA',
+    '90028',
+    'active'
+  ),
+  -- New Haunt (Onboarding) - Newly created, minimal data
+  (
+    'b0000000-0000-0000-0000-000000000004',
+    'Newhouse Haunts',
+    'newhouse-haunts',
+    'jamie@newhousehaunts.com',
+    '555-4001',
+    NULL,
+    '123 Startup Way',
+    'Austin',
+    'TX',
+    '78701',
+    'active'
   )
 ON CONFLICT (id) DO NOTHING;
 
--- Add members to the organization
+-- ============================================================================
+-- ORG MEMBERSHIPS - Nightmare Manor (Pro)
+-- ============================================================================
+
 INSERT INTO public.org_memberships (id, org_id, user_id, role, is_owner, status, accepted_at)
 VALUES
+  -- Owner (Marcus Holloway)
   ('d0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', 'owner', TRUE, 'active', NOW()),
+  -- Manager (Sarah Chen)
   ('d0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000003', 'manager', FALSE, 'active', NOW()),
+  -- Actor 1 (Jake Morrison)
   ('d0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000004', 'actor', FALSE, 'active', NOW()),
+  -- Actor 2 (Emily Rodriguez)
   ('d0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000005', 'actor', FALSE, 'active', NOW()),
+  -- Actor 3 (Mike Thompson)
   ('d0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000006', 'actor', FALSE, 'active', NOW()),
-  ('d0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000007', 'box_office', FALSE, 'active', NOW())
+  -- Box Office (Lisa Park)
+  ('d0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000007', 'box_office', FALSE, 'active', NOW()),
+  -- HR (Rachel Kim)
+  ('d0000000-0000-0000-0000-000000000007', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000008', 'hr', FALSE, 'active', NOW()),
+  -- Finance (David Miller)
+  ('d0000000-0000-0000-0000-000000000008', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000009', 'finance', FALSE, 'active', NOW()),
+  -- Scanner (Tom Garcia)
+  ('d0000000-0000-0000-0000-000000000009', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000010', 'scanner', FALSE, 'active', NOW())
 ON CONFLICT (org_id, user_id) DO NOTHING;
 
 -- ============================================================================
--- F3: ATTRACTIONS
+-- ORG MEMBERSHIPS - Spooky Hollow (Basic)
 -- ============================================================================
 
--- Create attractions
+INSERT INTO public.org_memberships (id, org_id, user_id, role, is_owner, status, accepted_at)
+VALUES
+  -- Owner (Ben Crawford) - runs everything
+  ('d1000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001', 'owner', TRUE, 'active', NOW()),
+  -- Part-time Actor 1 (Jenny Adams)
+  ('d1000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000002', 'actor', FALSE, 'active', NOW()),
+  -- Weekend Actor (Chris Baker)
+  ('d1000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000003', 'actor', FALSE, 'active', NOW()),
+  -- Box Office (Amy Nelson)
+  ('d1000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000004', 'box_office', FALSE, 'active', NOW())
+ON CONFLICT (org_id, user_id) DO NOTHING;
+
+-- ============================================================================
+-- ORG MEMBERSHIPS - Terror Collective (Enterprise)
+-- ============================================================================
+
+INSERT INTO public.org_memberships (id, org_id, user_id, role, is_owner, status, accepted_at)
+VALUES
+  -- CEO/Owner (Victoria Sterling)
+  ('d3000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000001', 'owner', TRUE, 'active', NOW()),
+  -- COO (Marcus Webb) - Admin role
+  ('d3000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000002', 'admin', FALSE, 'active', NOW()),
+  -- Venue 1 Manager (Derek Stone)
+  ('d3000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000003', 'manager', FALSE, 'active', NOW()),
+  -- Venue 2 Manager (Nina Reyes)
+  ('d3000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000004', 'manager', FALSE, 'active', NOW()),
+  -- Marketing Director (Samantha Fox) - Admin for marketing access
+  ('d3000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000005', 'admin', FALSE, 'active', NOW()),
+  -- IT Admin (Alex Chen) - Admin role
+  ('d3000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000006', 'admin', FALSE, 'active', NOW()),
+  -- Venue 1 Actors
+  ('d3000000-0000-0000-0000-000000000010', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000010', 'actor', FALSE, 'active', NOW()),
+  ('d3000000-0000-0000-0000-000000000011', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000011', 'actor', FALSE, 'active', NOW()),
+  -- Venue 2 Actors
+  ('d3000000-0000-0000-0000-000000000020', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000020', 'actor', FALSE, 'active', NOW()),
+  ('d3000000-0000-0000-0000-000000000021', 'b0000000-0000-0000-0000-000000000003', 'a3000000-0000-0000-0000-000000000021', 'actor', FALSE, 'active', NOW())
+ON CONFLICT (org_id, user_id) DO NOTHING;
+
+-- ============================================================================
+-- ORG MEMBERSHIPS - New Haunt (Onboarding)
+-- ============================================================================
+
+INSERT INTO public.org_memberships (id, org_id, user_id, role, is_owner, status, accepted_at)
+VALUES
+  -- Owner (Jamie Newhouse) - just signed up
+  ('d4000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000004', 'a4000000-0000-0000-0000-000000000001', 'owner', TRUE, 'active', NOW())
+ON CONFLICT (org_id, user_id) DO NOTHING;
+
+-- ============================================================================
+-- SUMMARY
+-- ============================================================================
+-- Organizations: 4
+--   - Nightmare Manor (Pro): 9 members
+--   - Spooky Hollow (Basic): 4 members
+--   - Terror Collective (Enterprise): 10 members
+--   - Newhouse Haunts (Onboarding): 1 member
+-- Total memberships: 24
+-- ============================================================================
+
+
+-- ============================================================================
+-- 03-ATTRACTIONS.SQL - Attractions, Zones, and Seasons
+-- ============================================================================
+-- Attraction distribution by organization:
+-- - Nightmare Manor (Pro): 3 attractions
+-- - Spooky Hollow (Basic): 1 attraction
+-- - Terror Collective (Enterprise): 6 attractions (2 venues x 3 each)
+-- - New Haunt (Onboarding): 1 attraction (in setup)
+-- ============================================================================
+
+-- ============================================================================
+-- NIGHTMARE MANOR ATTRACTIONS (Pro Tier)
+-- ============================================================================
+
+-- The Haunted Mansion (Primary attraction)
 INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status, address_line1, city, state, postal_code)
 SELECT
   'c0000000-0000-0000-0000-000000000001',
@@ -189,6 +665,7 @@ SELECT
 FROM public.attraction_types WHERE key = 'haunted_house'
 ON CONFLICT (id) DO NOTHING;
 
+-- Terror Trail (Outdoor trail)
 INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status)
 SELECT
   'c0000000-0000-0000-0000-000000000002',
@@ -200,6 +677,7 @@ SELECT
 FROM public.attraction_types WHERE key = 'haunted_trail'
 ON CONFLICT (id) DO NOTHING;
 
+-- Escape the Asylum (Escape room)
 INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status)
 SELECT
   'c0000000-0000-0000-0000-000000000003',
@@ -211,7 +689,11 @@ SELECT
 FROM public.attraction_types WHERE key = 'escape_room'
 ON CONFLICT (id) DO NOTHING;
 
--- Create zones for The Haunted Mansion
+-- ============================================================================
+-- NIGHTMARE MANOR ZONES
+-- ============================================================================
+
+-- Zones for The Haunted Mansion
 INSERT INTO public.zones (id, attraction_id, name, description, capacity, sort_order, color)
 VALUES
   ('e0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'Entry Hall', 'Victorian foyer with moving portraits', 20, 1, '#6B21A8'),
@@ -223,7 +705,7 @@ VALUES
   ('e0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000001', 'Basement', 'The final descent into darkness', 15, 7, '#4C1D95')
 ON CONFLICT (id) DO NOTHING;
 
--- Create zones for Terror Trail
+-- Zones for Terror Trail
 INSERT INTO public.zones (id, attraction_id, name, description, capacity, sort_order, color)
 VALUES
   ('e0000000-0000-0000-0000-000000000008', 'c0000000-0000-0000-0000-000000000002', 'Trail Entrance', 'The point of no return', 10, 1, '#14532D'),
@@ -233,41 +715,244 @@ VALUES
   ('e0000000-0000-0000-0000-000000000012', 'c0000000-0000-0000-0000-000000000002', 'Final Stretch', 'Sprint to safety... if you can', 10, 5, '#22C55E')
 ON CONFLICT (id) DO NOTHING;
 
--- Create seasons
+-- ============================================================================
+-- NIGHTMARE MANOR SEASONS
+-- ============================================================================
+
 INSERT INTO public.seasons (id, attraction_id, name, year, start_date, end_date, status)
 VALUES
   ('f0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'Halloween Season', 2024, '2024-09-27', '2024-11-02', 'completed'),
-  ('f0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'Halloween Season', 2025, '2025-09-26', '2025-11-01', 'upcoming'),
+  ('f0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'Halloween Season', 2025, '2025-09-26', '2025-11-01', 'active'),
   ('f0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000002', 'Halloween Season', 2024, '2024-10-01', '2024-10-31', 'completed'),
-  ('f0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000002', 'Halloween Season', 2025, '2025-10-01', '2025-10-31', 'upcoming')
+  ('f0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000002', 'Halloween Season', 2025, '2025-10-01', '2025-10-31', 'active')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
--- F4: STAFF PROFILES & ASSIGNMENTS
+-- SPOOKY HOLLOW ATTRACTIONS (Basic Tier)
 -- ============================================================================
 
--- Create staff profiles (linked to org_memberships)
+-- The Hollow - Single haunted attraction
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status, address_line1, city, state, postal_code)
+SELECT
+  'c1000000-0000-0000-0000-000000000001',
+  'b0000000-0000-0000-0000-000000000002',
+  'The Hollow',
+  'the-hollow',
+  'A classic haunted hayride and walk-through experience. Family-friendly scares for all ages.',
+  id, 50, 8, 2, 20, 'active',
+  '666 Pumpkin Lane', 'Sleepy Hollow', 'NY', '10591'
+FROM public.attraction_types WHERE key = 'haunted_house'
+ON CONFLICT (id) DO NOTHING;
+
+-- Zones for The Hollow
+INSERT INTO public.zones (id, attraction_id, name, description, capacity, sort_order, color)
+VALUES
+  ('e1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', 'Pumpkin Patch', 'Where the scarecrows watch', 15, 1, '#F97316'),
+  ('e1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000001', 'Cornfield', 'Lost in the stalks', 10, 2, '#FBBF24'),
+  ('e1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000001', 'Old Barn', 'What lurks in the shadows', 12, 3, '#EF4444')
+ON CONFLICT (id) DO NOTHING;
+
+-- Seasons for Spooky Hollow
+INSERT INTO public.seasons (id, attraction_id, name, year, start_date, end_date, status)
+VALUES
+  ('f1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', 'Fall Season', 2024, '2024-10-01', '2024-10-31', 'completed'),
+  ('f1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000001', 'Fall Season', 2025, '2025-10-01', '2025-10-31', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- TERROR COLLECTIVE ATTRACTIONS (Enterprise Tier)
+-- ============================================================================
+
+-- Venue 1: Dread Factory (Industrial horror complex)
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status, address_line1, city, state, postal_code)
+SELECT
+  'c3000000-0000-0000-0000-000000000001',
+  'b0000000-0000-0000-0000-000000000003',
+  'Dread Factory',
+  'dread-factory',
+  'An abandoned industrial complex where the machines have awakened. High-intensity scares and immersive theatrical experiences.',
+  id, 200, 16, 5, 30, 'active',
+  '500 Industrial Way', 'Los Angeles', 'CA', '90028'
+FROM public.attraction_types WHERE key = 'haunted_house'
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status)
+SELECT
+  'c3000000-0000-0000-0000-000000000002',
+  'b0000000-0000-0000-0000-000000000003',
+  'The Dark Experiment',
+  'dark-experiment',
+  'You are the subject. A psychological thriller escape experience where nothing is as it seems.',
+  id, 8, 18, 5, 60, 'active'
+FROM public.attraction_types WHERE key = 'escape_room'
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status)
+SELECT
+  'c3000000-0000-0000-0000-000000000003',
+  'b0000000-0000-0000-0000-000000000003',
+  'Void Maze',
+  'void-maze',
+  'Complete darkness. No light. No escape. Find your way through the void or be consumed by it.',
+  id, 30, 14, 4, 15, 'active'
+FROM public.attraction_types WHERE key = 'corn_maze'
+ON CONFLICT (id) DO NOTHING;
+
+-- Venue 2: Nightmare Kingdom (Fantasy horror theme park)
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status, address_line1, city, state, postal_code)
+SELECT
+  'c3000000-0000-0000-0000-000000000004',
+  'b0000000-0000-0000-0000-000000000003',
+  'Nightmare Kingdom',
+  'nightmare-kingdom',
+  'A twisted fairy tale kingdom where every story ends in terror. Walk through lands of corrupted magic.',
+  id, 250, 12, 4, 40, 'active',
+  '1000 Kingdom Drive', 'Anaheim', 'CA', '92802'
+FROM public.attraction_types WHERE key = 'haunted_house'
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status)
+SELECT
+  'c3000000-0000-0000-0000-000000000005',
+  'b0000000-0000-0000-0000-000000000003',
+  'Cursed Forest',
+  'cursed-forest',
+  'The enchanted forest has been corrupted. Venture through if you dare.',
+  id, 100, 10, 3, 25, 'active'
+FROM public.attraction_types WHERE key = 'haunted_trail'
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status)
+SELECT
+  'c3000000-0000-0000-0000-000000000006',
+  'b0000000-0000-0000-0000-000000000003',
+  'Dragon''s Lair Escape',
+  'dragons-lair',
+  'The dragon sleeps. Can your team steal the treasure and escape before it wakes?',
+  id, 6, 12, 3, 45, 'active'
+FROM public.attraction_types WHERE key = 'escape_room'
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- TERROR COLLECTIVE ZONES
+-- ============================================================================
+
+-- Zones for Dread Factory
+INSERT INTO public.zones (id, attraction_id, name, description, capacity, sort_order, color)
+VALUES
+  ('e3000000-0000-0000-0000-000000000001', 'c3000000-0000-0000-0000-000000000001', 'Loading Dock', 'Where the screams begin', 25, 1, '#374151'),
+  ('e3000000-0000-0000-0000-000000000002', 'c3000000-0000-0000-0000-000000000001', 'Assembly Line', 'The machines never stop', 30, 2, '#4B5563'),
+  ('e3000000-0000-0000-0000-000000000003', 'c3000000-0000-0000-0000-000000000001', 'Processing', 'You are next', 20, 3, '#6B7280'),
+  ('e3000000-0000-0000-0000-000000000004', 'c3000000-0000-0000-0000-000000000001', 'Incinerator', 'Feel the heat', 15, 4, '#EF4444')
+ON CONFLICT (id) DO NOTHING;
+
+-- Zones for Nightmare Kingdom
+INSERT INTO public.zones (id, attraction_id, name, description, capacity, sort_order, color)
+VALUES
+  ('e3000000-0000-0000-0000-000000000010', 'c3000000-0000-0000-0000-000000000004', 'Castle Gates', 'Welcome to the kingdom', 40, 1, '#4F46E5'),
+  ('e3000000-0000-0000-0000-000000000011', 'c3000000-0000-0000-0000-000000000004', 'Twisted Village', 'Where fairy tales go wrong', 35, 2, '#7C3AED'),
+  ('e3000000-0000-0000-0000-000000000012', 'c3000000-0000-0000-0000-000000000004', 'Dark Tower', 'The princess is not what you expect', 25, 3, '#9333EA'),
+  ('e3000000-0000-0000-0000-000000000013', 'c3000000-0000-0000-0000-000000000004', 'Dragon Keep', 'The beast awaits', 20, 4, '#DC2626')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- TERROR COLLECTIVE SEASONS
+-- ============================================================================
+
+INSERT INTO public.seasons (id, attraction_id, name, year, start_date, end_date, status)
+VALUES
+  -- Dread Factory (year-round with seasons)
+  ('f3000000-0000-0000-0000-000000000001', 'c3000000-0000-0000-0000-000000000001', 'Halloween 2024', 2024, '2024-09-15', '2024-11-02', 'completed'),
+  ('f3000000-0000-0000-0000-000000000002', 'c3000000-0000-0000-0000-000000000001', 'Halloween 2025', 2025, '2025-09-15', '2025-11-02', 'active'),
+  -- Nightmare Kingdom
+  ('f3000000-0000-0000-0000-000000000010', 'c3000000-0000-0000-0000-000000000004', 'Halloween 2024', 2024, '2024-09-20', '2024-11-03', 'completed'),
+  ('f3000000-0000-0000-0000-000000000011', 'c3000000-0000-0000-0000-000000000004', 'Halloween 2025', 2025, '2025-09-20', '2025-11-03', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- NEW HAUNT ATTRACTION (Onboarding)
+-- ============================================================================
+
+-- First attraction in setup/draft mode
+INSERT INTO public.attractions (id, org_id, name, slug, description, type_id, capacity, min_age, intensity_level, duration_minutes, status, address_line1, city, state, postal_code)
+SELECT
+  'c4000000-0000-0000-0000-000000000001',
+  'b0000000-0000-0000-0000-000000000004',
+  'The First Fear',
+  'first-fear',
+  'Coming soon! Our debut haunted experience.',
+  id, 40, 12, 3, 20, 'draft',
+  '123 Startup Way', 'Austin', 'TX', '78701'
+FROM public.attraction_types WHERE key = 'haunted_house'
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- SUMMARY
+-- ============================================================================
+-- Total Attractions: 11
+--   - Nightmare Manor: 3 (Haunted Mansion, Terror Trail, Escape Asylum)
+--   - Spooky Hollow: 1 (The Hollow)
+--   - Terror Collective: 6 (Dread Factory venue: 3, Nightmare Kingdom venue: 3)
+--   - Newhouse Haunts: 1 (First Fear - draft)
+-- Total Zones: 18
+-- Total Seasons: 10
+-- ============================================================================
+
+
+-- ============================================================================
+-- 04-STAFF.SQL - Staff Profiles, Skills, Certifications, and Time Entries
+-- ============================================================================
+-- Staff profiles link to org_memberships via the membership ID
+-- Only staff-role members (actors, box_office, scanner, etc.) need staff profiles
+-- ============================================================================
+
+-- ============================================================================
+-- NIGHTMARE MANOR STAFF PROFILES (Pro Tier)
+-- ============================================================================
+
 INSERT INTO public.staff_profiles (id, org_id, employee_id, emergency_contact_name, emergency_contact_phone, emergency_contact_relation, hire_date, hourly_rate, employment_type, status, shirt_size)
 VALUES
+  -- Manager (Sarah Chen) - d0000000-0000-0000-0000-000000000002
   ('d0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'NM-MGR-001', 'David Chen', '555-0201', 'spouse', '2022-08-15', 2500, 'full_time', 'active', 'M'),
+  -- Actor 1 (Jake Morrison) - d0000000-0000-0000-0000-000000000003
   ('d0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'NM-ACT-001', 'Mary Morrison', '555-0202', 'mother', '2023-09-01', 1800, 'seasonal', 'active', 'L'),
+  -- Actor 2 (Emily Rodriguez) - d0000000-0000-0000-0000-000000000004
   ('d0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001', 'NM-ACT-002', 'Carlos Rodriguez', '555-0203', 'father', '2023-09-01', 1800, 'seasonal', 'active', 'S'),
+  -- Actor 3 (Mike Thompson) - d0000000-0000-0000-0000-000000000005
   ('d0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000001', 'NM-ACT-003', 'Susan Thompson', '555-0204', 'mother', '2024-09-15', 1600, 'seasonal', 'active', 'XL'),
-  ('d0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000001', 'NM-BOX-001', 'James Park', '555-0205', 'spouse', '2023-08-01', 1500, 'part_time', 'active', 'M')
+  -- Box Office (Lisa Park) - d0000000-0000-0000-0000-000000000006
+  ('d0000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000001', 'NM-BOX-001', 'James Park', '555-0205', 'spouse', '2023-08-01', 1500, 'part_time', 'active', 'M'),
+  -- HR (Rachel Kim) - d0000000-0000-0000-0000-000000000007
+  ('d0000000-0000-0000-0000-000000000007', 'b0000000-0000-0000-0000-000000000001', 'NM-HR-001', 'John Kim', '555-0206', 'brother', '2023-01-15', 2200, 'full_time', 'active', 'S'),
+  -- Finance (David Miller) - d0000000-0000-0000-0000-000000000008
+  ('d0000000-0000-0000-0000-000000000008', 'b0000000-0000-0000-0000-000000000001', 'NM-FIN-001', 'Susan Miller', '555-0207', 'spouse', '2022-05-01', 2800, 'full_time', 'active', 'L'),
+  -- Scanner (Tom Garcia) - d0000000-0000-0000-0000-000000000009
+  ('d0000000-0000-0000-0000-000000000009', 'b0000000-0000-0000-0000-000000000001', 'NM-SCN-001', 'Maria Garcia', '555-0208', 'spouse', '2024-09-01', 1400, 'seasonal', 'active', 'M')
 ON CONFLICT (id) DO NOTHING;
 
--- Assign staff to attractions
+-- ============================================================================
+-- NIGHTMARE MANOR STAFF ATTRACTION ASSIGNMENTS
+-- ============================================================================
+
 INSERT INTO public.staff_attraction_assignments (id, staff_id, attraction_id, is_primary)
 VALUES
+  -- Manager assigned to both attractions
   ('cc000000-0000-0000-0001-000000000001', 'd0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', TRUE),
   ('cc000000-0000-0000-0001-000000000002', 'd0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000002', FALSE),
+  -- Actors assigned to attractions
   ('cc000000-0000-0000-0001-000000000003', 'd0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', TRUE),
   ('cc000000-0000-0000-0001-000000000004', 'd0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', TRUE),
   ('cc000000-0000-0000-0001-000000000005', 'd0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000002', TRUE),
-  ('cc000000-0000-0000-0001-000000000006', 'd0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', TRUE)
+  -- Box office at main attraction
+  ('cc000000-0000-0000-0001-000000000006', 'd0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', TRUE),
+  -- Scanner at main attraction
+  ('cc000000-0000-0000-0001-000000000009', 'd0000000-0000-0000-0000-000000000009', 'c0000000-0000-0000-0000-000000000001', TRUE)
 ON CONFLICT (id) DO NOTHING;
 
--- Assign skills to staff
+-- ============================================================================
+-- NIGHTMARE MANOR STAFF SKILLS
+-- ============================================================================
+
 INSERT INTO public.staff_skills (id, staff_id, skill_type_id, level, notes)
 SELECT
   'dd000000-0000-0000-0001-000000000001',
@@ -324,7 +1009,10 @@ SELECT
 FROM public.skill_types WHERE key = 'customer_service' AND org_id IS NULL
 ON CONFLICT (id) DO NOTHING;
 
--- Add certifications
+-- ============================================================================
+-- NIGHTMARE MANOR CERTIFICATIONS
+-- ============================================================================
+
 INSERT INTO public.staff_certifications (id, staff_id, cert_type_id, issued_at, expires_at, certificate_number)
 SELECT
   'ee000000-0000-0000-0001-000000000001',
@@ -349,7 +1037,10 @@ SELECT
 FROM public.certification_types WHERE key = 'background_check' AND org_id IS NULL
 ON CONFLICT (id) DO NOTHING;
 
--- Add some time entries for recent activity
+-- ============================================================================
+-- NIGHTMARE MANOR TIME ENTRIES (Recent Activity)
+-- ============================================================================
+
 INSERT INTO public.staff_time_entries (id, staff_id, org_id, attraction_id, clock_in, clock_out, break_minutes, status)
 VALUES
   ('aa000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', NOW() - INTERVAL '2 days' + INTERVAL '18 hours', NOW() - INTERVAL '2 days' + INTERVAL '23 hours', 30, 'approved'),
@@ -359,134 +1050,294 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
--- F5: PLATFORM ADMIN DATA
+-- SPOOKY HOLLOW STAFF PROFILES (Basic Tier)
 -- ============================================================================
 
--- Feature flags with various states (using valid hex UUIDs: 1f = feature flags)
--- Tier mapping: basic (included), pro (upgrade), enterprise (premium)
-INSERT INTO public.feature_flags (id, key, name, description, enabled, rollout_percentage, org_ids, user_ids, metadata)
+INSERT INTO public.staff_profiles (id, org_id, employee_id, emergency_contact_name, emergency_contact_phone, emergency_contact_relation, hire_date, hourly_rate, employment_type, status, shirt_size)
 VALUES
-  -- Legacy/experimental flags
-  ('1f000000-0000-0000-0000-000000000001', 'virtual_queue_v2', 'Virtual Queue V2', 'New virtual queue system with SMS notifications and improved UX', FALSE, 25, '{}', '{}', '{"release_date": "2025-Q1", "ticket": "HAUNT-1234"}'),
-  ('1f000000-0000-0000-0000-000000000002', 'new_checkout_flow', 'Streamlined Checkout', 'One-page checkout experience with Apple Pay support', TRUE, 0, '{}', '{}', '{"a_b_test": true}'),
-  ('1f000000-0000-0000-0000-000000000003', 'staff_mobile_app', 'Staff Mobile App', 'Mobile app for staff to clock in/out and view schedules', FALSE, 0, ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[], '{}', '{"beta_org": true}'),
-  ('1f000000-0000-0000-0000-000000000004', 'advanced_analytics', 'Advanced Analytics Dashboard', 'Enhanced analytics with real-time metrics and forecasting', FALSE, 50, '{}', '{}', '{"premium_feature": true}'),
-  ('1f000000-0000-0000-0000-000000000005', 'ai_scheduling', 'AI-Powered Scheduling', 'Machine learning powered staff scheduling optimization', FALSE, 0, '{}', ARRAY['a0000000-0000-0000-0000-000000000002']::UUID[], '{"experimental": true}'),
-
-  -- Module flags (F7-F14)
-  -- Basic tier: ticketing, checkin, time_tracking (always on for all orgs)
-  -- NOTE: 'notifications' flag is created by F12 migration, not here
-  ('1f000000-0000-0000-0000-000000000006', 'ticketing', 'Ticketing Module', 'Core ticketing functionality including ticket types, orders, and promo codes (F8)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F8", "module": true}'),
-  ('1f000000-0000-0000-0000-000000000007', 'checkin', 'Check-In Module', 'Guest check-in with barcode scanning, capacity tracking, and waivers (F9)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F9", "module": true}'),
-  ('1f000000-0000-0000-0000-00000000000e', 'time_tracking', 'Time Tracking Module', 'Staff time clock with clock in/out, time entries, and approval workflows (F7a)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F7a", "module": true}'),
-  -- NOTE: 'storefronts' flag is created by F14 migration with ON CONFLICT handling
-
-  -- Pro tier: scheduling, inventory, analytics_pro
-  ('1f000000-0000-0000-0000-000000000008', 'scheduling', 'Scheduling Module', 'Staff scheduling with availability, shift templates, and swap requests (F7)', TRUE, 100, '{}', '{}', '{"tier": "pro", "feature": "F7", "module": true}'),
-  ('1f000000-0000-0000-0000-000000000009', 'inventory', 'Inventory Module', 'Inventory tracking with categories, checkouts, and low stock alerts (F10)', TRUE, 100, '{}', '{}', '{"tier": "pro", "feature": "F10", "module": true}'),
-  ('1f000000-0000-0000-0000-00000000000a', 'analytics_pro', 'Analytics Pro', 'Advanced analytics with custom reports, exports, and forecasting (F13)', FALSE, 0, '{}', '{}', '{"tier": "pro", "feature": "F13", "module": true}'),
-
-  -- Enterprise tier: virtual_queue, sms_notifications, custom_domains
-  -- Enable virtual_queue for Nightmare Manor (test org) to support E2E tests and demos
-  -- NOTE: ID 00c is used by 'notifications' in F12 migration
-  ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue', 'Real-time virtual queue with position tracking and notifications (F11)', FALSE, 0, ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[], '{}', '{"tier": "enterprise", "feature": "F11", "module": true}'),
-  ('1f000000-0000-0000-0000-000000000010', 'sms_notifications', 'SMS Notifications', 'SMS delivery for queue alerts, shift reminders, and guest communications (F11/F12)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F11,F12", "has_usage_cost": true}'),
-  ('1f000000-0000-0000-0000-00000000000d', 'custom_domains', 'Custom Domains', 'Custom domain support for public storefronts with SSL provisioning (F14)', FALSE, 0, '{}', '{}', '{"tier": "enterprise", "feature": "F14", "has_infra_cost": true}')
+  -- Part-time Actor 1 (Jenny Adams) - d1000000-0000-0000-0000-000000000002
+  ('d1000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002', 'SH-ACT-001', 'Robert Adams', '555-1201', 'father', '2024-09-01', 1200, 'seasonal', 'active', 'S'),
+  -- Weekend Actor (Chris Baker) - d1000000-0000-0000-0000-000000000003
+  ('d1000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000002', 'SH-ACT-002', 'Linda Baker', '555-1202', 'mother', '2024-09-15', 1200, 'seasonal', 'active', 'M'),
+  -- Box Office (Amy Nelson) - d1000000-0000-0000-0000-000000000004
+  ('d1000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000002', 'SH-BOX-001', 'Tom Nelson', '555-1203', 'spouse', '2024-09-01', 1100, 'seasonal', 'active', 'M')
 ON CONFLICT (id) DO NOTHING;
 
--- Platform announcements (using valid hex UUIDs: 2a = announcements)
-INSERT INTO public.platform_announcements (id, title, content, type, target_roles, starts_at, expires_at, is_dismissible, created_by)
+-- Spooky Hollow staff attraction assignments
+INSERT INTO public.staff_attraction_assignments (id, staff_id, attraction_id, is_primary)
 VALUES
-  ('2a000000-0000-0000-0000-000000000001', 'Welcome to Haunt Platform!', 'Thank you for joining the Haunt Platform. We''re excited to help you manage your attractions more effectively. Check out our getting started guide in the documentation.', 'feature', '{}', NOW() - INTERVAL '7 days', NULL, TRUE, 'a0000000-0000-0000-0000-000000000001'),
-  ('2a000000-0000-0000-0000-000000000002', 'New Feature: Real-time Analytics', 'We''ve launched real-time analytics for all attractions! Visit your dashboard to see live visitor counts, wait times, and more.', 'feature', ARRAY['owner', 'admin', 'manager']::org_role[], NOW() - INTERVAL '3 days', NOW() + INTERVAL '14 days', TRUE, 'a0000000-0000-0000-0000-000000000001'),
-  ('2a000000-0000-0000-0000-000000000003', 'Scheduled Maintenance', 'We will be performing scheduled maintenance on January 15th from 2:00 AM - 4:00 AM EST. The platform may be unavailable during this time.', 'maintenance', '{}', NOW() - INTERVAL '1 day', NOW() + INTERVAL '5 days', FALSE, 'a0000000-0000-0000-0000-000000000001')
+  ('cc100000-0000-0000-0001-000000000001', 'd1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000001', TRUE),
+  ('cc100000-0000-0000-0001-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000001', TRUE),
+  ('cc100000-0000-0000-0001-000000000003', 'd1000000-0000-0000-0000-000000000004', 'c1000000-0000-0000-0000-000000000001', TRUE)
 ON CONFLICT (id) DO NOTHING;
 
--- Audit logs showing recent platform activity (using valid hex UUIDs: 3b = audit logs)
-INSERT INTO public.audit_logs (id, actor_id, actor_type, action, resource_type, resource_id, org_id, changes, metadata, ip_address, created_at)
+-- ============================================================================
+-- TERROR COLLECTIVE STAFF PROFILES (Enterprise Tier)
+-- ============================================================================
+
+INSERT INTO public.staff_profiles (id, org_id, employee_id, emergency_contact_name, emergency_contact_phone, emergency_contact_relation, hire_date, hourly_rate, employment_type, status, shirt_size)
 VALUES
-  -- User management actions
-  ('3b000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'user', 'user.create', 'user', 'a0000000-0000-0000-0000-000000000002', NULL, '{"email": "owner@haunt.dev"}', '{}', '192.168.1.1', NOW() - INTERVAL '30 days'),
-  ('3b000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', 'user', 'org.create', 'organization', 'b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"name": "Nightmare Manor", "slug": "nightmare-manor"}', '{}', '192.168.1.2', NOW() - INTERVAL '29 days'),
-  ('3b000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.create', 'attraction', 'c0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"name": "The Haunted Mansion"}', '{}', '192.168.1.2', NOW() - INTERVAL '28 days'),
-  ('3b000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.create', 'attraction', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"name": "Terror Trail"}', '{}', '192.168.1.2', NOW() - INTERVAL '28 days'),
-  ('3b000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000002', 'user', 'member.invite', 'org_membership', 'd0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"email": "manager@haunt.dev", "role": "manager"}', '{}', '192.168.1.2', NOW() - INTERVAL '27 days'),
-  ('3b000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000003', 'user', 'invitation.accept', 'org_membership', 'd0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{}', '{}', '192.168.1.3', NOW() - INTERVAL '26 days'),
-
-  -- Staff management
-  ('3b000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.create', 'staff_profile', 'd0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', '{"employee_id": "NM-ACT-001", "name": "Jake Morrison"}', '{}', '192.168.1.3', NOW() - INTERVAL '20 days'),
-  ('3b000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.create', 'staff_profile', 'd0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001', '{"employee_id": "NM-ACT-002", "name": "Emily Rodriguez"}', '{}', '192.168.1.3', NOW() - INTERVAL '20 days'),
-  ('3b000000-0000-0000-0000-000000000009', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.skill_add', 'staff_skill', 'dd000000-0000-0000-0001-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"skill": "acting", "level": 5}', '{}', '192.168.1.3', NOW() - INTERVAL '19 days'),
-  ('3b000000-0000-0000-0000-00000000000a', 'a0000000-0000-0000-0000-000000000003', 'user', 'staff.certification_add', 'staff_certification', 'ee000000-0000-0000-0001-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"cert": "first_aid"}', '{}', '192.168.1.3', NOW() - INTERVAL '18 days'),
-
-  -- Attraction updates
-  ('3b000000-0000-0000-0000-00000000000b', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.update', 'attraction', 'c0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"status": {"from": "draft", "to": "active"}}', '{}', '192.168.1.2', NOW() - INTERVAL '15 days'),
-  ('3b000000-0000-0000-0000-00000000000c', 'a0000000-0000-0000-0000-000000000002', 'user', 'attraction.update', 'attraction', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"status": {"from": "draft", "to": "active"}}', '{}', '192.168.1.2', NOW() - INTERVAL '15 days'),
-  ('3b000000-0000-0000-0000-00000000000d', 'a0000000-0000-0000-0000-000000000003', 'user', 'zone.create', 'zone', 'e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"name": "Entry Hall"}', '{}', '192.168.1.3', NOW() - INTERVAL '14 days'),
-  ('3b000000-0000-0000-0000-00000000000e', 'a0000000-0000-0000-0000-000000000003', 'user', 'season.create', 'season', 'f0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{"name": "Halloween Season 2025", "year": 2025}', '{}', '192.168.1.3', NOW() - INTERVAL '10 days'),
-
-  -- Recent activity (last 7 days)
-  ('3b000000-0000-0000-0000-00000000000f', 'a0000000-0000-0000-0000-000000000004', 'user', 'time.clock_in', 'time_entry', 'aa000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{}', '{}', '192.168.1.4', NOW() - INTERVAL '5 days'),
-  ('3b000000-0000-0000-0000-000000000010', 'a0000000-0000-0000-0000-000000000004', 'user', 'time.clock_out', 'time_entry', 'aa000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{}', '{}', '192.168.1.4', NOW() - INTERVAL '5 days'),
-  ('3b000000-0000-0000-0000-000000000011', 'a0000000-0000-0000-0000-000000000003', 'user', 'time.approve', 'time_entry', 'aa000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"status": {"from": "pending", "to": "approved"}}', '{}', '192.168.1.3', NOW() - INTERVAL '4 days'),
-  ('3b000000-0000-0000-0000-000000000012', 'a0000000-0000-0000-0000-000000000002', 'user', 'org.settings_update', 'organization', 'b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '{"settings": {"notifications": true}}', '{}', '192.168.1.2', NOW() - INTERVAL '3 days'),
-  ('3b000000-0000-0000-0000-000000000013', 'a0000000-0000-0000-0000-000000000001', 'user', 'flag.update', 'feature_flag', '1f000000-0000-0000-0000-000000000002', NULL, '{"enabled": {"from": false, "to": true}}', '{}', '10.0.0.1', NOW() - INTERVAL '2 days'),
-  ('3b000000-0000-0000-0000-000000000014', 'a0000000-0000-0000-0000-000000000001', 'user', 'announcement.create', 'announcement', '2a000000-0000-0000-0000-000000000003', NULL, '{"title": "Scheduled Maintenance"}', '{}', '10.0.0.1', NOW() - INTERVAL '1 day'),
-
-  -- System events
-  ('3b000000-0000-0000-0000-000000000015', NULL, 'system', 'system.backup_complete', 'system', NULL, NULL, '{"size_mb": 256, "duration_seconds": 45}', '{}', NULL, NOW() - INTERVAL '12 hours'),
-  ('3b000000-0000-0000-0000-000000000016', NULL, 'system', 'system.cleanup_job', 'system', NULL, NULL, '{"expired_sessions": 150, "old_logs": 1024}', '{}', NULL, NOW() - INTERVAL '6 hours'),
-  ('3b000000-0000-0000-0000-000000000017', 'a0000000-0000-0000-0000-000000000002', 'user', 'auth.login', 'user', 'a0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', '{}', '{"user_agent": "Mozilla/5.0"}', '192.168.1.2', NOW() - INTERVAL '2 hours'),
-  ('3b000000-0000-0000-0000-000000000018', 'a0000000-0000-0000-0000-000000000003', 'user', 'auth.login', 'user', 'a0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', '{}', '{"user_agent": "Mozilla/5.0"}', '192.168.1.3', NOW() - INTERVAL '1 hour')
+  -- Venue 1 Manager (Derek Stone) - d3000000-0000-0000-0000-000000000003
+  ('d3000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000003', 'TC-V1-MGR', 'Lisa Stone', '555-3201', 'spouse', '2020-03-01', 3500, 'full_time', 'active', 'L'),
+  -- Venue 2 Manager (Nina Reyes) - d3000000-0000-0000-0000-000000000004
+  ('d3000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000003', 'TC-V2-MGR', 'Carlos Reyes', '555-3202', 'brother', '2021-06-15', 3500, 'full_time', 'active', 'M'),
+  -- Venue 1 Actor 1 (Jordan Blake) - d3000000-0000-0000-0000-000000000010
+  ('d3000000-0000-0000-0000-000000000010', 'b0000000-0000-0000-0000-000000000003', 'TC-V1-ACT01', 'Michael Blake', '555-3210', 'father', '2023-08-01', 2000, 'seasonal', 'active', 'M'),
+  -- Venue 1 Actor 2 (Casey Morgan) - d3000000-0000-0000-0000-000000000011
+  ('d3000000-0000-0000-0000-000000000011', 'b0000000-0000-0000-0000-000000000003', 'TC-V1-ACT02', 'Sarah Morgan', '555-3211', 'mother', '2023-08-01', 2000, 'seasonal', 'active', 'S'),
+  -- Venue 2 Actor 1 (Riley Hayes) - d3000000-0000-0000-0000-000000000020
+  ('d3000000-0000-0000-0000-000000000020', 'b0000000-0000-0000-0000-000000000003', 'TC-V2-ACT01', 'James Hayes', '555-3220', 'father', '2022-09-01', 2200, 'seasonal', 'active', 'L'),
+  -- Venue 2 Actor 2 (Taylor Scott) - d3000000-0000-0000-0000-000000000021
+  ('d3000000-0000-0000-0000-000000000021', 'b0000000-0000-0000-0000-000000000003', 'TC-V2-ACT02', 'Emma Scott', '555-3221', 'sister', '2023-09-01', 2000, 'seasonal', 'active', 'M')
 ON CONFLICT (id) DO NOTHING;
 
--- System health logs for demo
-INSERT INTO public.system_health_logs (id, service, status, latency_ms, metadata, checked_at)
+-- Terror Collective staff attraction assignments
+INSERT INTO public.staff_attraction_assignments (id, staff_id, attraction_id, is_primary)
 VALUES
-  ('5a000000-0000-0000-0000-000000000001', 'api', 'healthy', 12, '{"requests_per_minute": 450}', NOW() - INTERVAL '1 hour'),
-  ('5a000000-0000-0000-0000-000000000002', 'database', 'healthy', 5, '{"connections": 25, "max_connections": 100}', NOW() - INTERVAL '1 hour'),
-  ('5a000000-0000-0000-0000-000000000003', 'redis', 'healthy', 2, '{"memory_used_mb": 128}', NOW() - INTERVAL '1 hour'),
-  ('5a000000-0000-0000-0000-000000000004', 'stripe', 'healthy', 150, '{}', NOW() - INTERVAL '1 hour'),
-  ('5a000000-0000-0000-0000-000000000005', 'supabase_auth', 'healthy', 45, '{}', NOW() - INTERVAL '1 hour'),
-  ('5a000000-0000-0000-0000-000000000006', 'supabase_storage', 'healthy', 35, '{}', NOW() - INTERVAL '1 hour'),
-  ('5a000000-0000-0000-0000-000000000007', 'api', 'healthy', 15, '{"requests_per_minute": 420}', NOW() - INTERVAL '30 minutes'),
-  ('5a000000-0000-0000-0000-000000000008', 'database', 'healthy', 4, '{"connections": 22, "max_connections": 100}', NOW() - INTERVAL '30 minutes'),
-  ('5a000000-0000-0000-0000-000000000009', 'api', 'healthy', 10, '{"requests_per_minute": 480}', NOW()),
-  ('5a000000-0000-0000-0000-00000000000a', 'database', 'healthy', 6, '{"connections": 28, "max_connections": 100}', NOW())
+  -- Venue 1 Manager manages all venue 1 attractions
+  ('cc300000-0000-0000-0001-000000000001', 'd3000000-0000-0000-0000-000000000003', 'c3000000-0000-0000-0000-000000000001', TRUE),
+  ('cc300000-0000-0000-0001-000000000002', 'd3000000-0000-0000-0000-000000000003', 'c3000000-0000-0000-0000-000000000002', FALSE),
+  ('cc300000-0000-0000-0001-000000000003', 'd3000000-0000-0000-0000-000000000003', 'c3000000-0000-0000-0000-000000000003', FALSE),
+  -- Venue 2 Manager manages all venue 2 attractions
+  ('cc300000-0000-0000-0001-000000000010', 'd3000000-0000-0000-0000-000000000004', 'c3000000-0000-0000-0000-000000000004', TRUE),
+  ('cc300000-0000-0000-0001-000000000011', 'd3000000-0000-0000-0000-000000000004', 'c3000000-0000-0000-0000-000000000005', FALSE),
+  ('cc300000-0000-0000-0001-000000000012', 'd3000000-0000-0000-0000-000000000004', 'c3000000-0000-0000-0000-000000000006', FALSE),
+  -- Venue 1 Actors
+  ('cc300000-0000-0000-0001-000000000020', 'd3000000-0000-0000-0000-000000000010', 'c3000000-0000-0000-0000-000000000001', TRUE),
+  ('cc300000-0000-0000-0001-000000000021', 'd3000000-0000-0000-0000-000000000011', 'c3000000-0000-0000-0000-000000000001', TRUE),
+  -- Venue 2 Actors
+  ('cc300000-0000-0000-0001-000000000030', 'd3000000-0000-0000-0000-000000000020', 'c3000000-0000-0000-0000-000000000004', TRUE),
+  ('cc300000-0000-0000-0001-000000000031', 'd3000000-0000-0000-0000-000000000021', 'c3000000-0000-0000-0000-000000000004', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+-- Terror Collective staff skills
+INSERT INTO public.staff_skills (id, staff_id, skill_type_id, level, notes)
+SELECT
+  'dd300000-0000-0000-0001-000000000001',
+  'd3000000-0000-0000-0000-000000000010',
+  id, 5, 'Professional stunt performer'
+FROM public.skill_types WHERE key = 'acting' AND org_id IS NULL
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.staff_skills (id, staff_id, skill_type_id, level)
+SELECT
+  'dd300000-0000-0000-0001-000000000002',
+  'd3000000-0000-0000-0000-000000000020',
+  id, 4
+FROM public.skill_types WHERE key = 'acting' AND org_id IS NULL
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- SUMMARY
 -- ============================================================================
--- Test Accounts (password: password123):
---   admin@haunt.dev     - Super Admin (platform level)
---   owner@haunt.dev     - Org Owner (Nightmare Manor)
---   manager@haunt.dev   - Manager (Nightmare Manor)
---   actor1@haunt.dev    - Actor - Jake Morrison
---   actor2@haunt.dev    - Actor - Emily Rodriguez
---   actor3@haunt.dev    - Actor - Mike Thompson
---   boxoffice@haunt.dev - Box Office - Lisa Park
+-- Staff Profiles: 17
+--   - Nightmare Manor: 8 (manager, 3 actors, box office, hr, finance, scanner)
+--   - Spooky Hollow: 3 (2 actors, box office)
+--   - Terror Collective: 6 (2 managers, 4 actors)
+--   - Newhouse Haunts: 0 (owner only, no staff yet)
+-- Attraction Assignments: 20
+-- Staff Skills: 9
+-- Certifications: 3
+-- Time Entries: 4
+-- ============================================================================
+
+
+-- ============================================================================
+-- 05-FEATURE-FLAGS.SQL - Tier-Based Feature Flag Configuration
+-- ============================================================================
+-- Feature flags control access to platform features by subscription tier:
+-- - Basic: Core features (ticketing, checkin, time_tracking, notifications)
+-- - Pro: Advanced features (scheduling, inventory, analytics_pro)
+-- - Enterprise: Premium features (virtual_queue, sms_notifications, custom_domains)
 --
--- Organization: Nightmare Manor (slug: nightmare-manor)
+-- Organization Tiers:
+-- - Spooky Hollow: Basic tier
+-- - Nightmare Manor: Pro tier
+-- - Terror Collective: Enterprise tier
+-- - Newhouse Haunts: Onboarding (Basic tier trial)
+-- ============================================================================
+
+-- ============================================================================
+-- CORE FEATURE FLAGS
+-- ============================================================================
+
+-- Module flags with tier-based access
+INSERT INTO public.feature_flags (id, key, name, description, enabled, rollout_percentage, org_ids, user_ids, metadata)
+VALUES
+  -- ============================================================================
+  -- BASIC TIER (All orgs get these)
+  -- ============================================================================
+
+  -- Time Tracking (F7a) - Basic tier
+  ('1f000000-0000-0000-0000-00000000000e', 'time_tracking', 'Time Tracking Module',
+   'Staff time clock with clock in/out, time entries, and approval workflows (F7a)',
+   TRUE, 100, '{}', '{}',
+   '{"tier": "basic", "feature": "F7a", "module": true}'),
+
+  -- Ticketing (F8) - Basic tier
+  ('1f000000-0000-0000-0000-000000000006', 'ticketing', 'Ticketing Module',
+   'Core ticketing functionality including ticket types, orders, and promo codes (F8)',
+   TRUE, 100, '{}', '{}',
+   '{"tier": "basic", "feature": "F8", "module": true}'),
+
+  -- Check-In (F9) - Basic tier
+  ('1f000000-0000-0000-0000-000000000007', 'checkin', 'Check-In Module',
+   'Guest check-in with barcode scanning, capacity tracking, and waivers (F9)',
+   TRUE, 100, '{}', '{}',
+   '{"tier": "basic", "feature": "F9", "module": true}'),
+
+  -- Notifications (F12) - Basic tier (in-app only)
+  -- NOTE: This may be created by F12 migration, use ON CONFLICT
+  ('1f000000-0000-0000-0000-00000000000c', 'notifications', 'Notifications Module',
+   'Multi-channel notification system with in-app, email, and SMS delivery (F12)',
+   TRUE, 100, '{}', '{}',
+   '{"tier": "basic", "feature": "F12", "module": true}'),
+
+  -- ============================================================================
+  -- PRO TIER (Pro and Enterprise orgs)
+  -- ============================================================================
+
+  -- Scheduling (F7b) - Pro tier
+  -- Enabled for: Nightmare Manor, Terror Collective
+  ('1f000000-0000-0000-0000-000000000008', 'scheduling', 'Scheduling Module',
+   'Staff scheduling with availability, shift templates, and swap requests (F7)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "pro", "feature": "F7b", "module": true}'),
+
+  -- Inventory (F10) - Pro tier
+  -- Enabled for: Nightmare Manor, Terror Collective
+  ('1f000000-0000-0000-0000-000000000009', 'inventory', 'Inventory Module',
+   'Inventory tracking with categories, checkouts, and low stock alerts (F10)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "pro", "feature": "F10", "module": true}'),
+
+  -- Analytics Pro (F13) - Pro tier
+  -- Enabled for: Nightmare Manor, Terror Collective
+  ('1f000000-0000-0000-0000-00000000000a', 'analytics_pro', 'Analytics Pro',
+   'Advanced analytics with custom reports, exports, and forecasting (F13)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "pro", "feature": "F13", "module": true}'),
+
+  -- Storefronts (F14) - Pro tier
+  -- NOTE: This may be created by F14 migration, use ON CONFLICT
+  ('1f000000-0000-0000-0000-00000000000f', 'storefronts', 'Storefronts Module',
+   'Public-facing storefront for ticket sales with customizable themes (F14)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "pro", "feature": "F14", "module": true}'),
+
+  -- ============================================================================
+  -- ENTERPRISE TIER (Enterprise orgs only)
+  -- ============================================================================
+
+  -- Virtual Queue (F11) - Enterprise tier
+  -- Enabled for: Terror Collective + Nightmare Manor (for testing)
+  ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue',
+   'Real-time virtual queue with position tracking and notifications (F11)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "enterprise", "feature": "F11", "module": true}'),
+
+  -- SMS Notifications - Enterprise tier
+  -- Enabled for: Terror Collective only (has SMS gateway configured)
+  ('1f000000-0000-0000-0000-000000000010', 'sms_notifications', 'SMS Notifications',
+   'SMS delivery for queue alerts, shift reminders, and guest communications (F11/F12)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "enterprise", "feature": "F11,F12", "has_usage_cost": true}'),
+
+  -- Custom Domains - Enterprise tier
+  -- Enabled for: Terror Collective only
+  ('1f000000-0000-0000-0000-00000000000d', 'custom_domains', 'Custom Domains',
+   'Custom domain support for public storefronts with SSL provisioning (F14)',
+   TRUE, 100,
+   ARRAY['b0000000-0000-0000-0000-000000000003']::UUID[],
+   '{}',
+   '{"tier": "enterprise", "feature": "F14", "has_infra_cost": true}'),
+
+  -- ============================================================================
+  -- EXPERIMENTAL/BETA FLAGS
+  -- ============================================================================
+
+  -- Virtual Queue V2 (beta)
+  ('1f000000-0000-0000-0000-000000000001', 'virtual_queue_v2', 'Virtual Queue V2',
+   'New virtual queue system with SMS notifications and improved UX',
+   FALSE, 25, '{}', '{}',
+   '{"release_date": "2025-Q1", "ticket": "HAUNT-1234"}'),
+
+  -- Streamlined Checkout (A/B test)
+  ('1f000000-0000-0000-0000-000000000002', 'new_checkout_flow', 'Streamlined Checkout',
+   'One-page checkout experience with Apple Pay support',
+   TRUE, 0, '{}', '{}',
+   '{"a_b_test": true}'),
+
+  -- Staff Mobile App (beta for Nightmare Manor)
+  ('1f000000-0000-0000-0000-000000000003', 'staff_mobile_app', 'Staff Mobile App',
+   'Mobile app for staff to clock in/out and view schedules',
+   FALSE, 0,
+   ARRAY['b0000000-0000-0000-0000-000000000001']::UUID[],
+   '{}',
+   '{"beta_org": true}'),
+
+  -- Advanced Analytics Dashboard
+  ('1f000000-0000-0000-0000-000000000004', 'advanced_analytics', 'Advanced Analytics Dashboard',
+   'Enhanced analytics with real-time metrics and forecasting',
+   FALSE, 50, '{}', '{}',
+   '{"premium_feature": true}'),
+
+  -- AI Scheduling (experimental, single user)
+  ('1f000000-0000-0000-0000-000000000005', 'ai_scheduling', 'AI-Powered Scheduling',
+   'Machine learning powered staff scheduling optimization',
+   FALSE, 0, '{}',
+   ARRAY['a0000000-0000-0000-0000-000000000002']::UUID[],
+   '{"experimental": true}')
+
+ON CONFLICT (key) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  enabled = EXCLUDED.enabled,
+  rollout_percentage = EXCLUDED.rollout_percentage,
+  org_ids = EXCLUDED.org_ids,
+  user_ids = EXCLUDED.user_ids,
+  metadata = EXCLUDED.metadata;
+
+
+-- ============================================================================
+-- SUMMARY - Feature Access by Organization
+-- ============================================================================
 --
--- Attractions:
---   1. The Haunted Mansion (active, 7 zones)
---   2. Terror Trail (active, 5 zones)
---   3. Escape the Asylum (draft)
+-- Spooky Hollow (Basic):
+--   ✅ time_tracking, ticketing, checkin, notifications
+--   ❌ scheduling, inventory, analytics_pro, storefronts
+--   ❌ virtual_queue, sms_notifications, custom_domains
 --
--- Staff: 5 members with skills, certifications, and time entries
+-- Nightmare Manor (Pro):
+--   ✅ time_tracking, ticketing, checkin, notifications
+--   ✅ scheduling, inventory, analytics_pro, storefronts
+--   ✅ virtual_queue (testing only)
+--   ❌ sms_notifications, custom_domains
 --
--- F5 Platform Admin Data:
---   - Feature Flags: 5 (various states: enabled, percentage rollout, org-specific)
---   - Audit Logs: 24 entries showing platform activity
---   - Announcements: 3 (welcome, feature, maintenance)
---   - Health Logs: 10 entries for system monitoring demo
+-- Terror Collective (Enterprise):
+--   ✅ time_tracking, ticketing, checkin, notifications
+--   ✅ scheduling, inventory, analytics_pro, storefronts
+--   ✅ virtual_queue, sms_notifications, custom_domains
 --
--- F6 Stripe Connect Data:
---   - Nightmare Manor: Connected with active Stripe account
---   - 5 payouts with various statuses
---   - 12 transactions showing payment history
---   - 8 webhook events for integration demo
+-- Newhouse Haunts (Onboarding/Basic Trial):
+--   ✅ time_tracking, ticketing, checkin, notifications
+--   ❌ scheduling, inventory, analytics_pro, storefronts
+--   ❌ virtual_queue, sms_notifications, custom_domains
+--
+-- ============================================================================
+
 
 -- ============================================================================
 -- F6: STRIPE CONNECT DATA

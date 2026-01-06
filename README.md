@@ -76,26 +76,64 @@ Connection string: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 
 ### Test Accounts (Local Development Only)
 
-After running `supabase db reset`, these test accounts are available:
+After running `supabase db reset`, these test accounts are available (password: `password123` for all):
 
-| Email | Password | Role | Organization |
-|-------|----------|------|--------------|
-| `admin@haunt.dev` | `password123` | Super Admin | - |
-| `owner@haunt.dev` | `password123` | Org Owner | Nightmare Manor |
-| `manager@haunt.dev` | `password123` | Manager | Nightmare Manor |
-| `actor1@haunt.dev` | `password123` | Actor | Nightmare Manor |
-| `actor2@haunt.dev` | `password123` | Actor | Nightmare Manor |
-| `actor3@haunt.dev` | `password123` | Actor | Nightmare Manor |
-| `boxoffice@haunt.dev` | `password123` | Box Office | Nightmare Manor |
+**Platform Admins:**
+
+| Email | Role |
+|-------|------|
+| `admin@haunt.dev` | Super Admin |
+| `support@haunt.dev` | Support Admin |
+
+**Nightmare Manor** (Pro tier - `nightmare-manor`):
+
+| Email | Role |
+|-------|------|
+| `owner@haunt.dev` | Owner |
+| `manager@haunt.dev` | Manager |
+| `hr@haunt.dev` | HR |
+| `finance@haunt.dev` | Finance |
+| `boxoffice@haunt.dev` | Box Office |
+| `actor1@haunt.dev` | Actor |
+| `actor2@haunt.dev` | Actor |
+| `actor3@haunt.dev` | Actor |
+| `scanner@haunt.dev` | Scanner |
+
+**Spooky Hollow** (Basic tier - `spooky-hollow`):
+
+| Email | Role |
+|-------|------|
+| `hollow.owner@haunt.dev` | Owner |
+| `hollow.boxoffice@haunt.dev` | Box Office |
+| `hollow.actor1@haunt.dev` | Actor |
+| `hollow.actor2@haunt.dev` | Actor |
+
+**Terror Collective** (Enterprise tier - `terror-collective`):
+
+| Email | Role |
+|-------|------|
+| `ceo@terror.dev` | Owner |
+| `coo@terror.dev` | Admin |
+| `marketing@terror.dev` | Admin |
+| `it@terror.dev` | Admin |
+| `venue1.manager@terror.dev` | Manager |
+| `venue2.manager@terror.dev` | Manager |
+| `v1.actor1@terror.dev` | Actor |
+| `v1.actor2@terror.dev` | Actor |
+| `v2.actor1@terror.dev` | Actor |
+| `v2.actor2@terror.dev` | Actor |
+
+**Newhouse Haunts** (Onboarding - `newhouse-haunts`):
+
+| Email | Role |
+|-------|------|
+| `newowner@haunt.dev` | Owner |
 
 **Test Data:**
-- **Organization**: "Nightmare Manor" (slug: `nightmare-manor`)
-- **Attractions**:
-  - The Haunted Mansion (active, 7 zones)
-  - Terror Trail (active, 5 zones)
-  - Escape the Asylum (draft)
-- **Staff**: 5 members with skills, certifications, and time entries
-- **Seasons**: 2024 (completed) and 2025 (upcoming) for each attraction
+- **4 Organizations** at different subscription tiers (Basic, Pro, Enterprise, Onboarding)
+- **11 Attractions** across all organizations with zones and seasons
+- **17 Staff profiles** with skills, certifications, and time entries
+- **Feature flags** configured per tier (scheduling, inventory, virtual queue, etc.)
 
 > **Note:** These accounts only exist in local development. Production users sign up through the app.
 
