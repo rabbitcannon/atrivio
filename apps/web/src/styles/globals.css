@@ -32,44 +32,44 @@
   }
 
   .dark {
-    /* Deep charcoal - warm neutral, no blue tint */
-    --background: 0 0% 7%;
-    --foreground: 0 0% 93%;
+    /* Deep dark with subtle purple undertone */
+    --background: 260 20% 5%;
+    --foreground: 0 0% 95%;
 
     /* Cards slightly elevated */
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 93%;
+    --card: 260 15% 8%;
+    --card-foreground: 0 0% 95%;
 
     /* Popovers/dropdowns */
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 260 15% 10%;
+    --popover-foreground: 0 0% 95%;
 
-    /* Primary - warm amber/orange for haunt theme */
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 2%;
+    /* Primary - vibrant purple */
+    --primary: 270 91% 65%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary - subtle elevated surface */
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 88%;
+    --secondary: 260 15% 15%;
+    --secondary-foreground: 0 0% 90%;
 
     /* Muted - tabs, badges, subtle backgrounds */
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 260 15% 15%;
+    --muted-foreground: 260 5% 50%;
 
-    /* Accent - hover states */
-    --accent: 0 0% 18%;
-    --accent-foreground: 0 0% 93%;
+    /* Accent - teal/cyan for highlights */
+    --accent: 260 20% 18%;
+    --accent-foreground: 0 0% 95%;
 
     /* Destructive */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Borders - very subtle */
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
+    /* Borders - subtle with purple tint */
+    --border: 260 15% 18%;
+    --input: 260 15% 18%;
 
-    /* Focus ring */
-    --ring: 25 95% 53%;
+    /* Focus ring - matches primary */
+    --ring: 270 91% 65%;
   }
 }
 

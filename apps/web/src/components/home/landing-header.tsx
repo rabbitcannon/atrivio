@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
+import atrivioLogo from '@/assets/images/atrivio-logo.png';
 
 const navLinks = [
   { href: '#platform', label: 'Platform Core' },
@@ -17,14 +19,15 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 border-b border-[hsl(var(--landing-border-subtle))] bg-[hsl(var(--landing-bg-darkest)/0.95)] backdrop-blur-md">
       <div className="mx-auto flex h-[70px] max-w-[var(--landing-container-max)] items-center justify-between px-5">
         {/* Logo */}
-        <a
-          href="/"
-          className="flex items-center gap-2 text-2xl font-extrabold text-[hsl(var(--landing-text-primary))]"
-        >
-          <span className="text-3xl" role="img" aria-label="Ghost">
-            👻
-          </span>
-          <span>UHP</span>
+        <a href="/" className="flex items-center">
+          <Image
+            src={atrivioLogo}
+            alt="Atrivio"
+            height={56}
+            width={84}
+            className="h-14 w-auto object-contain"
+            priority
+          />
         </a>
 
         {/* Desktop Navigation */}

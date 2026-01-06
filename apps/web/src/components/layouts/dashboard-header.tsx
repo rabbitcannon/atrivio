@@ -57,14 +57,13 @@ export function DashboardHeader() {
   const userAvatar = user?.user_metadata?.['avatar_url'] as string | undefined;
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+    <header className="flex h-20 items-center justify-between border-b bg-card px-6">
       {/* Logo */}
       <Link href="/" className="flex items-center">
         <Image
           src={atrivioLogo}
           alt="Atrivio"
-          height={32}
-          className="h-8 w-auto"
+          className="h-15 w-auto object-contain"
           priority
         />
       </Link>
