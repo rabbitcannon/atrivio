@@ -5,7 +5,16 @@ import { Ghost, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import { getOrganization, getStaff, resolveOrgId, getCurrentUserRole } from '@/lib/api';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { TimeClockWidget } from '@/components/features/time-clock';
-import { MyScheduleWidget, MyCheckoutsWidget, MyHoursWidget } from '@/components/features/dashboard';
+import {
+  MyScheduleWidget,
+  MyCheckoutsWidget,
+  MyHoursWidget,
+  AnimatedDashboardHeader,
+  AnimatedStatsGrid,
+  AnimatedCardGrid,
+  AnimatedQuickLink,
+  AnimatedContainer,
+} from '@/components/features/dashboard';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -64,36 +73,34 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
         title: 'Attractions',
         value: attractionCount.toString(),
         description: 'Total attractions',
-        icon: Ghost,
+        icon: <Ghost className="h-4 w-4" />,
       },
       {
         title: 'Members',
         value: memberCount.toString(),
         description: 'Organization members',
-        icon: Users,
+        icon: <Users className="h-4 w-4" />,
       },
       {
         title: 'Staff',
         value: staffCount.toString(),
         description: 'Active staff',
-        icon: Users,
+        icon: <Users className="h-4 w-4" />,
       },
       {
         title: 'Revenue',
         value: '$0',
         description: 'This month',
-        icon: DollarSign,
+        icon: <DollarSign className="h-4 w-4" />,
       },
     ];
 
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back to {orgName}! Here is your organization overview.
-          </p>
-        </div>
+      <AnimatedContainer>
+        <AnimatedDashboardHeader
+          title="Dashboard"
+          subtitle={`Welcome back to ${orgName}! Here is your organization overview.`}
+        />
 
         {hasError && (
           <Alert variant="destructive">
@@ -106,23 +113,10 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
         )}
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">{stat.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <AnimatedStatsGrid stats={stats} />
 
         {/* Recent Activity and Time Clock */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <AnimatedCardGrid className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" baseDelay={0.5}>
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
@@ -139,47 +133,32 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
               <CardDescription>Common tasks and shortcuts</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <a
-                href={`/${orgSlug}/attractions/new`}
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-              >
-                <Ghost className="h-4 w-4" />
+              <AnimatedQuickLink href={`/${orgSlug}/attractions/new`} icon={<Ghost className="h-4 w-4" />}>
                 Add New Attraction
-              </a>
-              <a
-                href={`/${orgSlug}/staff/new`}
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-              >
-                <Users className="h-4 w-4" />
+              </AnimatedQuickLink>
+              <AnimatedQuickLink href={`/${orgSlug}/staff/new`} icon={<Users className="h-4 w-4" />}>
                 Add Staff Member
-              </a>
-              <a
-                href={`/${orgSlug}/invitations`}
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-              >
-                <Calendar className="h-4 w-4" />
+              </AnimatedQuickLink>
+              <AnimatedQuickLink href={`/${orgSlug}/invitations`} icon={<Calendar className="h-4 w-4" />}>
                 Send Invitation
-              </a>
+              </AnimatedQuickLink>
             </CardContent>
           </Card>
 
           {/* Time Clock Widget */}
           <TimeClockWidget orgId={orgId} orgSlug={orgSlug} />
-        </div>
-      </div>
+        </AnimatedCardGrid>
+      </AnimatedContainer>
     );
   }
 
   // Staff/Actor Dashboard (actors, scanner, and other non-management roles)
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back to {orgName}!</p>
-      </div>
+    <AnimatedContainer>
+      <AnimatedDashboardHeader title="Dashboard" subtitle={`Welcome back to ${orgName}!`} />
 
       {/* Staff Widgets Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <AnimatedCardGrid className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" baseDelay={0.1}>
         {/* Time Clock Widget - most important for staff */}
         <TimeClockWidget orgId={orgId} orgSlug={orgSlug} />
 
@@ -191,45 +170,31 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
 
         {/* My Checkouts Widget */}
         <MyCheckoutsWidget orgId={orgId} orgSlug={orgSlug} />
-      </div>
+      </AnimatedCardGrid>
 
       {/* Quick Links for Staff */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Links</CardTitle>
-          <CardDescription>Common tasks and shortcuts</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-          <a
-            href={`/${orgSlug}/time/schedule`}
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-          >
-            <Calendar className="h-4 w-4" />
-            View Full Schedule
-          </a>
-          <a
-            href={`/${orgSlug}/time/availability`}
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-          >
-            <Calendar className="h-4 w-4" />
-            Set Availability
-          </a>
-          <a
-            href={`/${orgSlug}/time/swaps`}
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-          >
-            <Users className="h-4 w-4" />
-            Shift Swaps
-          </a>
-          <a
-            href={`/${orgSlug}/time`}
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
-          >
-            <Ghost className="h-4 w-4" />
-            Time Clock
-          </a>
-        </CardContent>
-      </Card>
-    </div>
+      <AnimatedCardGrid className="grid gap-4" baseDelay={0.5}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Links</CardTitle>
+            <CardDescription>Common tasks and shortcuts</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
+            <AnimatedQuickLink href={`/${orgSlug}/time/schedule`} icon={<Calendar className="h-4 w-4" />}>
+              View Full Schedule
+            </AnimatedQuickLink>
+            <AnimatedQuickLink href={`/${orgSlug}/time/availability`} icon={<Calendar className="h-4 w-4" />}>
+              Set Availability
+            </AnimatedQuickLink>
+            <AnimatedQuickLink href={`/${orgSlug}/time/swaps`} icon={<Users className="h-4 w-4" />}>
+              Shift Swaps
+            </AnimatedQuickLink>
+            <AnimatedQuickLink href={`/${orgSlug}/time`} icon={<Ghost className="h-4 w-4" />}>
+              Time Clock
+            </AnimatedQuickLink>
+          </CardContent>
+        </Card>
+      </AnimatedCardGrid>
+    </AnimatedContainer>
   );
 }

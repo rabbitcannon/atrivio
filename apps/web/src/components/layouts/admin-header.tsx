@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -66,8 +67,12 @@ export function AdminHeader() {
         </span>
       </Link>
 
-      {/* User Menu */}
-      <div className="flex items-center gap-4">
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
+        {/* User Menu */}
         {isLoading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (

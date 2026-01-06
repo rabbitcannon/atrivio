@@ -2395,16 +2395,19 @@ BEGIN
   -- ============================================================================
 
   -- Note: Storefronts are now per-attraction, not per-org
+  -- Theme presets: dark, light, horror, vintage, neon, blood-moon, forest, carnival
+  -- See @haunt/shared/constants/themes.ts for full preset definitions
   INSERT INTO storefront_settings (
     id, org_id, attraction_id, tagline, description,
     logo_url, favicon_url, hero_image_url, hero_title, hero_subtitle,
-    theme_preset, primary_color, secondary_color, accent_color,
+    theme_preset, primary_color, secondary_color, accent_color, background_color, text_color,
+    font_heading, font_body,
     social_facebook, social_instagram, social_twitter, social_tiktok,
     seo_title, seo_description, seo_keywords,
     show_attractions, show_calendar, show_faq, show_reviews,
     featured_attraction_ids, is_published, published_at
   ) VALUES
-    -- The Haunted Mansion storefront (published)
+    -- The Haunted Mansion storefront (published) - uses 'horror' preset
     (
       'f0000000-0000-0000-0000-000000000001',
       v_org_id,
@@ -2416,10 +2419,14 @@ BEGIN
       'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1920',
       'Face Your Fears',
       'A terrifying journey through a Victorian mansion.',
-      'dark',
-      '#7C3AED',  -- Purple
-      '#1F2937',  -- Dark gray
-      '#F59E0B',  -- Orange/amber
+      'horror',        -- Horror theme preset
+      '#b91c1c',       -- Red-700 (deeper, bloodier)
+      '#18181b',       -- Zinc-900
+      '#a3e635',       -- Lime-400 (toxic green)
+      '#09090b',       -- Zinc-950
+      '#e4e4e7',       -- Zinc-200
+      'Creepster',     -- Horror heading font
+      'Inter',         -- Clean body font
       'https://facebook.com/nightmaremanor',
       'https://instagram.com/nightmaremanor',
       'https://twitter.com/nightmaremanor',
@@ -2435,7 +2442,7 @@ BEGIN
       TRUE,
       NOW() - INTERVAL '30 days'
     ),
-    -- Terror Trail storefront (draft)
+    -- Terror Trail storefront (draft) - uses 'forest' preset
     (
       'f0000000-0000-0000-0000-000000000002',
       v_org_id,
@@ -2447,10 +2454,14 @@ BEGIN
       NULL,
       'Terror Trail',
       'Not for the faint of heart',
-      'dark',
-      '#DC2626',  -- Red
-      '#1F2937',
-      '#F59E0B',
+      'forest',        -- Forest theme preset for outdoor trail
+      '#15803d',       -- Green-700
+      '#1a2e05',       -- Dark forest green
+      '#ca8a04',       -- Yellow-600 (lantern light)
+      '#0f1a0a',       -- Deep forest
+      '#d1fae5',       -- Emerald-100
+      'Playfair Display',
+      'Inter',
       NULL,
       NULL,
       NULL,

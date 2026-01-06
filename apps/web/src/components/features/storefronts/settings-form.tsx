@@ -1,18 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Save, Palette, Image, Search, BarChart3, Share2 } from 'lucide-react';
+import { Loader2, Save, Palette, Image, Search, BarChart3, Share2, Check, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect } from '@/lib/api/client';
 import type { StorefrontSettings } from '@/lib/api/types';
+import {
+  THEME_PRESETS,
+  THEME_CATEGORIES,
+  THEME_FONT_OPTIONS,
+  getThemePreset,
+  getDefaultTheme,
+  type ThemePreset,
+  type ThemePresetKey,
+} from '@haunt/shared/constants';
 
 interface SettingsFormProps {
   orgId: string;
@@ -20,41 +29,112 @@ interface SettingsFormProps {
   settings: StorefrontSettings | null;
 }
 
-const FONT_OPTIONS = [
-  { value: 'Inter', label: 'Inter' },
-  { value: 'Roboto', label: 'Roboto' },
-  { value: 'Open Sans', label: 'Open Sans' },
-  { value: 'Montserrat', label: 'Montserrat' },
-  { value: 'Playfair Display', label: 'Playfair Display' },
-  { value: 'Creepster', label: 'Creepster' },
-  { value: 'Nosifer', label: 'Nosifer' },
-  { value: 'Eater', label: 'Eater' },
-];
-
-const PRESET_OPTIONS = [
-  { value: 'dark', label: 'Dark' },
-  { value: 'light', label: 'Light' },
-  { value: 'horror', label: 'Horror' },
-  { value: 'vintage', label: 'Vintage' },
-];
+/**
+ * Theme preset preview component for the dropdown
+ */
+function ThemePresetPreview({ preset }: { preset: ThemePreset }) {
+  return (
+    <div className="flex items-center gap-3 w-full">
+      {/* Color preview dots */}
+      <div className="flex gap-1">
+        <div
+          className="w-4 h-4 rounded-full border border-white/20"
+          style={{ backgroundColor: preset.colors.primary }}
+          title="Primary"
+        />
+        <div
+          className="w-4 h-4 rounded-full border border-white/20"
+          style={{ backgroundColor: preset.colors.background }}
+          title="Background"
+        />
+        <div
+          className="w-4 h-4 rounded-full border border-white/20"
+          style={{ backgroundColor: preset.colors.accent }}
+          title="Accent"
+        />
+      </div>
+      {/* Name and description */}
+      <div className="flex-1 min-w-0">
+        <div className="font-medium">{preset.name}</div>
+        <div className="text-xs text-muted-foreground truncate">{preset.description}</div>
+      </div>
+    </div>
+  );
+}
 
 export function StorefrontSettingsForm({ orgId, attractionId, settings }: SettingsFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
+  // Get initial theme values - use saved values or default preset
+  const getInitialTheme = () => {
+    const defaultPreset = getDefaultTheme();
+    const savedPreset = settings?.theme?.preset;
+    const preset = savedPreset && getThemePreset(savedPreset) ? savedPreset : defaultPreset.key;
+
+    return {
+      preset,
+      primaryColor: settings?.theme?.primaryColor || defaultPreset.colors.primary,
+      secondaryColor: settings?.theme?.secondaryColor || defaultPreset.colors.secondary,
+      accentColor: settings?.theme?.accentColor || defaultPreset.colors.accent,
+      backgroundColor: settings?.theme?.backgroundColor || defaultPreset.colors.background,
+      textColor: settings?.theme?.textColor || defaultPreset.colors.text,
+      fontHeading: settings?.theme?.fontHeading || defaultPreset.fonts.heading,
+      fontBody: settings?.theme?.fontBody || defaultPreset.fonts.body,
+      customCss: settings?.theme?.customCss || '',
+    };
+  };
+
   // Theme state
-  const [theme, setTheme] = useState({
-    preset: settings?.theme?.preset || 'dark',
-    primaryColor: settings?.theme?.primaryColor || '#dc2626',
-    secondaryColor: settings?.theme?.secondaryColor || '#1f2937',
-    accentColor: settings?.theme?.accentColor || '#f59e0b',
-    backgroundColor: settings?.theme?.backgroundColor || '#0a0a0a',
-    textColor: settings?.theme?.textColor || '#f5f5f5',
-    fontHeading: settings?.theme?.fontHeading || 'Inter',
-    fontBody: settings?.theme?.fontBody || 'Inter',
-    customCss: settings?.theme?.customCss || '',
-  });
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  // Track if colors have been customized from the preset
+  const [isCustomized, setIsCustomized] = useState(false);
+
+  /**
+   * Apply a theme preset - updates all colors and fonts
+   */
+  const applyPreset = useCallback((presetKey: string) => {
+    const preset = getThemePreset(presetKey);
+    if (!preset) return;
+
+    setTheme({
+      preset: presetKey,
+      primaryColor: preset.colors.primary,
+      secondaryColor: preset.colors.secondary,
+      accentColor: preset.colors.accent,
+      backgroundColor: preset.colors.background,
+      textColor: preset.colors.text,
+      fontHeading: preset.fonts.heading,
+      fontBody: preset.fonts.body,
+      customCss: theme.customCss, // Preserve custom CSS
+    });
+    setIsCustomized(false);
+
+    toast({
+      title: `Applied "${preset.name}" theme`,
+      description: 'Colors and fonts updated. Remember to save your changes.',
+    });
+  }, [theme.customCss, toast]);
+
+  /**
+   * Reset to current preset's default colors
+   */
+  const resetToPreset = useCallback(() => {
+    applyPreset(theme.preset);
+  }, [theme.preset, applyPreset]);
+
+  /**
+   * Handle individual color/font changes - marks as customized
+   */
+  const updateThemeField = useCallback((field: string, value: string) => {
+    setTheme(prev => ({ ...prev, [field]: value }));
+    setIsCustomized(true);
+  }, []);
+
+  // Get current preset for display
+  const currentPreset = getThemePreset(theme.preset);
 
   // Hero state
   const [hero, setHero] = useState({
@@ -249,18 +329,54 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="preset">Theme Preset</Label>
-                    <Select value={theme.preset} onValueChange={(v) => setTheme({ ...theme, preset: v })}>
+                    <Select value={theme.preset} onValueChange={applyPreset}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue>
+                          {currentPreset && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex gap-0.5">
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: currentPreset.colors.primary }}
+                                />
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: currentPreset.colors.background }}
+                                />
+                              </div>
+                              <span>{currentPreset.name}</span>
+                              {isCustomized && (
+                                <span className="text-xs text-muted-foreground">(customized)</span>
+                              )}
+                            </div>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
-                      <SelectContent>
-                        {PRESET_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
+                      <SelectContent className="w-80">
+                        {THEME_CATEGORIES.map((category) => (
+                          <SelectGroup key={category.name}>
+                            <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">
+                              {category.name}
+                            </SelectLabel>
+                            {category.presets.map((presetKey) => {
+                              const preset = THEME_PRESETS[presetKey];
+                              return (
+                                <SelectItem
+                                  key={presetKey}
+                                  value={presetKey}
+                                  className="py-3"
+                                >
+                                  <ThemePresetPreview preset={preset} />
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Select a preset to apply colors and fonts automatically
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -277,7 +393,72 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
 
               {/* Colors */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium">Colors</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium">Colors</h3>
+                  {isCustomized && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetToPreset}
+                      className="text-xs"
+                    >
+                      <RotateCcw className="mr-1 h-3 w-3" />
+                      Reset to {currentPreset?.name || 'preset'}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Live Theme Preview */}
+                <div
+                  className="rounded-lg border p-4 transition-colors"
+                  style={{ backgroundColor: theme.backgroundColor }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <h4
+                        className="text-lg font-bold mb-1"
+                        style={{
+                          color: theme.textColor,
+                          fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
+                        }}
+                      >
+                        Preview Title
+                      </h4>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: theme.textColor,
+                          opacity: 0.8,
+                          fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
+                        }}
+                      >
+                        This is how your storefront text will look.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <div
+                        className="px-4 py-2 rounded-md text-sm font-medium"
+                        style={{
+                          backgroundColor: theme.primaryColor,
+                          color: '#ffffff',
+                        }}
+                      >
+                        Primary
+                      </div>
+                      <div
+                        className="px-4 py-2 rounded-md text-sm font-medium"
+                        style={{
+                          backgroundColor: theme.accentColor,
+                          color: '#000000',
+                        }}
+                      >
+                        Accent
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
                   <div className="space-y-2">
                     <Label htmlFor="primaryColor">Primary</Label>
@@ -286,13 +467,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         type="color"
                         id="primaryColor"
                         value={theme.primaryColor}
-                        onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
+                        onChange={(e) => updateThemeField('primaryColor', e.target.value)}
                         className="h-10 w-14 cursor-pointer rounded border"
                       />
                       <Input
                         value={theme.primaryColor}
-                        onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
-                        className="flex-1"
+                        onChange={(e) => updateThemeField('primaryColor', e.target.value)}
+                        className="flex-1 font-mono text-sm"
                       />
                     </div>
                   </div>
@@ -303,13 +484,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         type="color"
                         id="secondaryColor"
                         value={theme.secondaryColor}
-                        onChange={(e) => setTheme({ ...theme, secondaryColor: e.target.value })}
+                        onChange={(e) => updateThemeField('secondaryColor', e.target.value)}
                         className="h-10 w-14 cursor-pointer rounded border"
                       />
                       <Input
                         value={theme.secondaryColor}
-                        onChange={(e) => setTheme({ ...theme, secondaryColor: e.target.value })}
-                        className="flex-1"
+                        onChange={(e) => updateThemeField('secondaryColor', e.target.value)}
+                        className="flex-1 font-mono text-sm"
                       />
                     </div>
                   </div>
@@ -320,13 +501,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         type="color"
                         id="accentColor"
                         value={theme.accentColor}
-                        onChange={(e) => setTheme({ ...theme, accentColor: e.target.value })}
+                        onChange={(e) => updateThemeField('accentColor', e.target.value)}
                         className="h-10 w-14 cursor-pointer rounded border"
                       />
                       <Input
                         value={theme.accentColor}
-                        onChange={(e) => setTheme({ ...theme, accentColor: e.target.value })}
-                        className="flex-1"
+                        onChange={(e) => updateThemeField('accentColor', e.target.value)}
+                        className="flex-1 font-mono text-sm"
                       />
                     </div>
                   </div>
@@ -337,13 +518,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         type="color"
                         id="backgroundColor"
                         value={theme.backgroundColor}
-                        onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
+                        onChange={(e) => updateThemeField('backgroundColor', e.target.value)}
                         className="h-10 w-14 cursor-pointer rounded border"
                       />
                       <Input
                         value={theme.backgroundColor}
-                        onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
-                        className="flex-1"
+                        onChange={(e) => updateThemeField('backgroundColor', e.target.value)}
+                        className="flex-1 font-mono text-sm"
                       />
                     </div>
                   </div>
@@ -354,13 +535,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         type="color"
                         id="textColor"
                         value={theme.textColor}
-                        onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
+                        onChange={(e) => updateThemeField('textColor', e.target.value)}
                         className="h-10 w-14 cursor-pointer rounded border"
                       />
                       <Input
                         value={theme.textColor}
-                        onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                        className="flex-1"
+                        onChange={(e) => updateThemeField('textColor', e.target.value)}
+                        className="flex-1 font-mono text-sm"
                       />
                     </div>
                   </div>
@@ -373,33 +554,80 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="fontHeading">Heading Font</Label>
-                    <Select value={theme.fontHeading} onValueChange={(v) => setTheme({ ...theme, fontHeading: v })}>
+                    <Select
+                      value={theme.fontHeading}
+                      onValueChange={(v) => updateThemeField('fontHeading', v)}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue>
+                          <span style={{ fontFamily: `'${theme.fontHeading}', system-ui` }}>
+                            {theme.fontHeading}
+                          </span>
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {FONT_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          <SelectLabel className="text-xs uppercase tracking-wider">Sans-serif</SelectLabel>
+                          {THEME_FONT_OPTIONS.filter(f => f.category === 'sans-serif').map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <span style={{ fontFamily: `'${opt.value}', system-ui` }}>{opt.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs uppercase tracking-wider">Serif</SelectLabel>
+                          {THEME_FONT_OPTIONS.filter(f => f.category === 'serif').map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <span style={{ fontFamily: `'${opt.value}', serif` }}>{opt.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs uppercase tracking-wider">Horror / Display</SelectLabel>
+                          {THEME_FONT_OPTIONS.filter(f => f.category === 'horror').map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <span style={{ fontFamily: `'${opt.value}', cursive` }}>{opt.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="fontBody">Body Font</Label>
-                    <Select value={theme.fontBody} onValueChange={(v) => setTheme({ ...theme, fontBody: v })}>
+                    <Select
+                      value={theme.fontBody}
+                      onValueChange={(v) => updateThemeField('fontBody', v)}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue>
+                          <span style={{ fontFamily: `'${theme.fontBody}', system-ui` }}>
+                            {theme.fontBody}
+                          </span>
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {FONT_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          <SelectLabel className="text-xs uppercase tracking-wider">Sans-serif</SelectLabel>
+                          {THEME_FONT_OPTIONS.filter(f => f.category === 'sans-serif').map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <span style={{ fontFamily: `'${opt.value}', system-ui` }}>{opt.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs uppercase tracking-wider">Serif</SelectLabel>
+                          {THEME_FONT_OPTIONS.filter(f => f.category === 'serif').map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <span style={{ fontFamily: `'${opt.value}', serif` }}>{opt.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: Use readable fonts for body text
+                    </p>
                   </div>
                 </div>
               </div>

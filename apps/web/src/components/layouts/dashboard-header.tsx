@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, Settings, User } from 'lucide-react';
+import { Bell, LogOut, Settings, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
 import { useAuthStore } from '@/stores/auth-store';
@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -63,8 +64,19 @@ export function DashboardHeader() {
         <span className="hidden sm:inline">Haunt Platform</span>
       </Link>
 
-      {/* User Menu */}
-      <div className="flex items-center gap-4">
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
+        {/* Notifications (placeholder for future) */}
+        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+          <Bell className="h-5 w-5" />
+          {/* Notification badge - uncomment when needed */}
+          {/* <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" /> */}
+        </Button>
+
+        {/* User Menu */}
         {isLoading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
