@@ -30,6 +30,14 @@ import type {
   NotificationsResponse,
   InAppNotificationsResponse,
   PreferencesResponse,
+  StorefrontSettings,
+  StorefrontPage,
+  StorefrontDomain,
+  StorefrontFaq,
+  StorefrontAnnouncement,
+  StorefrontNavigation,
+  PageStatus,
+  PublicStorefront,
 } from './types';
 
 import type { OrgRole } from '@haunt/shared';
@@ -622,4 +630,404 @@ export async function updateNotificationPreferences(
   if (orgId) params.set('orgId', orgId);
   const query = params.toString();
   return serverApi.patch(`/notifications/preferences${query ? `?${query}` : ''}`, { preferences });
+}
+
+// ============================================================================
+// Storefronts API (Server-side) - Per-Attraction Scoped
+// ============================================================================
+
+/**
+ * Get storefront settings for an attraction
+ */
+export async function getStorefrontSettings(orgId: string, attractionId: string) {
+  return serverApi.get<{ settings: StorefrontSettings }>(`/organizations/${orgId}/attractions/${attractionId}/storefront`);
+}
+
+/**
+ * Update storefront settings
+ */
+export async function updateStorefrontSettings(
+  orgId: string,
+  attractionId: string,
+  data: {
+    tagline?: string;
+    description?: string;
+    hero?: {
+      imageUrl?: string;
+      videoUrl?: string;
+      title?: string;
+      subtitle?: string;
+    };
+    theme?: {
+      preset?: string;
+      primaryColor?: string;
+      secondaryColor?: string;
+      accentColor?: string;
+      backgroundColor?: string;
+      textColor?: string;
+      fontHeading?: string;
+      fontBody?: string;
+      customCss?: string;
+    };
+    social?: {
+      facebook?: string;
+      instagram?: string;
+      twitter?: string;
+      tiktok?: string;
+      youtube?: string;
+    };
+    seo?: {
+      title?: string;
+      description?: string;
+      keywords?: string[];
+      ogImageUrl?: string;
+    };
+    analytics?: {
+      googleAnalyticsId?: string;
+      facebookPixelId?: string;
+      customHeadScripts?: string;
+    };
+    features?: {
+      showAttractions?: boolean;
+      showCalendar?: boolean;
+      showFaq?: boolean;
+      showReviews?: boolean;
+      featuredAttractionIds?: string[];
+    };
+    showAddress?: boolean;
+    showPhone?: boolean;
+    showEmail?: boolean;
+  }
+) {
+  return serverApi.patch<{ settings: StorefrontSettings }>(`/organizations/${orgId}/attractions/${attractionId}/storefront`, data);
+}
+
+/**
+ * Publish storefront
+ */
+export async function publishStorefront(orgId: string, attractionId: string) {
+  return serverApi.post<{ published: boolean; publishedAt: string }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/publish`, {});
+}
+
+/**
+ * Unpublish storefront
+ */
+export async function unpublishStorefront(orgId: string, attractionId: string) {
+  return serverApi.post<{ published: boolean }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/unpublish`, {});
+}
+
+/**
+ * Get storefront preview URL
+ */
+export async function getStorefrontPreviewUrl(orgId: string, attractionId: string) {
+  return serverApi.get<{ previewUrl: string }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/preview`);
+}
+
+// ===================== Storefront Pages =====================
+
+/**
+ * Get storefront pages
+ */
+export async function getStorefrontPages(orgId: string, attractionId: string, status?: PageStatus) {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  const query = params.toString();
+  return serverApi.get<{ pages: StorefrontPage[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get a single storefront page
+ */
+export async function getStorefrontPage(orgId: string, attractionId: string, pageId: string) {
+  return serverApi.get<{ page: StorefrontPage }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`);
+}
+
+/**
+ * Create a storefront page
+ */
+export async function createStorefrontPage(
+  orgId: string,
+  attractionId: string,
+  data: {
+    pageType: string;
+    slug?: string;
+    title: string;
+    content?: string;
+    contentFormat?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    featuredImageUrl?: string;
+    status?: string;
+    sortOrder?: number;
+    showInNav?: boolean;
+  }
+) {
+  return serverApi.post<{ page: StorefrontPage }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages`, data);
+}
+
+/**
+ * Update a storefront page
+ */
+export async function updateStorefrontPage(
+  orgId: string,
+  attractionId: string,
+  pageId: string,
+  data: Partial<{
+    slug: string;
+    title: string;
+    content: string;
+    contentFormat: string;
+    metaTitle: string;
+    metaDescription: string;
+    featuredImageUrl: string;
+    status: string;
+    sortOrder: number;
+    showInNav: boolean;
+  }>
+) {
+  return serverApi.patch<{ page: StorefrontPage }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`, data);
+}
+
+/**
+ * Delete a storefront page
+ */
+export async function deleteStorefrontPage(orgId: string, attractionId: string, pageId: string) {
+  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`);
+}
+
+// ===================== Storefront Domains =====================
+
+/**
+ * Get storefront domains
+ */
+export async function getStorefrontDomains(orgId: string, attractionId: string) {
+  return serverApi.get<{ domains: StorefrontDomain[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains`);
+}
+
+/**
+ * Add a custom domain
+ */
+export async function addStorefrontDomain(orgId: string, attractionId: string, domain: string) {
+  return serverApi.post<{ domain: StorefrontDomain }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains`, { domain });
+}
+
+/**
+ * Verify a domain
+ */
+export async function verifyStorefrontDomain(orgId: string, attractionId: string, domainId: string) {
+  return serverApi.post<{ domain: StorefrontDomain }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}/verify`, {});
+}
+
+/**
+ * Set primary domain
+ */
+export async function setStorefrontPrimaryDomain(orgId: string, attractionId: string, domainId: string) {
+  return serverApi.post<{ success: boolean }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}/set-primary`, {});
+}
+
+/**
+ * Delete a domain
+ */
+export async function deleteStorefrontDomain(orgId: string, attractionId: string, domainId: string) {
+  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}`);
+}
+
+// ===================== Storefront FAQs =====================
+
+/**
+ * Get storefront FAQs
+ */
+export async function getStorefrontFaqs(
+  orgId: string,
+  attractionId: string,
+  category?: string
+) {
+  const params = new URLSearchParams();
+  if (category) params.set('category', category);
+  const query = params.toString();
+  return serverApi.get<{ faqs: StorefrontFaq[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Create a FAQ
+ */
+export async function createStorefrontFaq(
+  orgId: string,
+  attractionId: string,
+  data: {
+    question: string;
+    answer: string;
+    category?: string;
+    isFeatured?: boolean;
+  }
+) {
+  return serverApi.post<{ faq: StorefrontFaq }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs`, data);
+}
+
+/**
+ * Update a FAQ
+ */
+export async function updateStorefrontFaq(
+  orgId: string,
+  attractionId: string,
+  faqId: string,
+  data: Partial<{
+    question: string;
+    answer: string;
+    category: string;
+    isFeatured: boolean;
+    isActive: boolean;
+  }>
+) {
+  return serverApi.patch<{ faq: StorefrontFaq }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`, data);
+}
+
+/**
+ * Delete a FAQ
+ */
+export async function deleteStorefrontFaq(orgId: string, attractionId: string, faqId: string) {
+  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`);
+}
+
+/**
+ * Reorder FAQs
+ */
+export async function reorderStorefrontFaqs(orgId: string, attractionId: string, order: Array<{ id: string; sortOrder: number }>) {
+  return serverApi.post<{ success: boolean }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/reorder`, { order });
+}
+
+// ===================== Storefront Announcements =====================
+
+/**
+ * Get storefront announcements
+ */
+export async function getStorefrontAnnouncements(orgId: string, attractionId: string) {
+  return serverApi.get<{ announcements: StorefrontAnnouncement[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`);
+}
+
+/**
+ * Create an announcement
+ */
+export async function createStorefrontAnnouncement(
+  orgId: string,
+  attractionId: string,
+  data: {
+    title: string;
+    content: string;
+    announcementType?: string;
+    startsAt?: string;
+    endsAt?: string;
+    showOnHome?: boolean;
+  }
+) {
+  return serverApi.post<{ announcement: StorefrontAnnouncement }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`, data);
+}
+
+/**
+ * Update an announcement
+ */
+export async function updateStorefrontAnnouncement(
+  orgId: string,
+  attractionId: string,
+  announcementId: string,
+  data: Partial<{
+    title: string;
+    content: string;
+    announcementType: string;
+    startsAt: string;
+    endsAt: string;
+    isActive: boolean;
+    showOnHome: boolean;
+  }>
+) {
+  return serverApi.patch<{ announcement: StorefrontAnnouncement }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements/${announcementId}`, data);
+}
+
+/**
+ * Delete an announcement
+ */
+export async function deleteStorefrontAnnouncement(orgId: string, attractionId: string, announcementId: string) {
+  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements/${announcementId}`);
+}
+
+// ===================== Storefront Navigation =====================
+
+/**
+ * Get storefront navigation
+ */
+export async function getStorefrontNavigation(orgId: string, attractionId: string) {
+  return serverApi.get<{ navigation: StorefrontNavigation }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`);
+}
+
+/**
+ * Update storefront navigation
+ */
+export async function updateStorefrontNavigation(
+  orgId: string,
+  attractionId: string,
+  navigation: {
+    header?: Array<{
+      id?: string;
+      label: string;
+      type: 'page' | 'link' | 'dropdown';
+      pageId?: string;
+      url?: string;
+      openNewTab?: boolean;
+      children?: Array<{
+        id?: string;
+        label: string;
+        type: 'page' | 'link';
+        pageId?: string;
+        url?: string;
+        openNewTab?: boolean;
+      }>;
+    }>;
+    footer?: Array<{
+      id?: string;
+      label: string;
+      type: 'page' | 'link' | 'dropdown';
+      pageId?: string;
+      url?: string;
+      openNewTab?: boolean;
+      children?: Array<{
+        id?: string;
+        label: string;
+        type: 'page' | 'link';
+        pageId?: string;
+        url?: string;
+        openNewTab?: boolean;
+      }>;
+    }>;
+  }
+) {
+  return serverApi.put<{ navigation: StorefrontNavigation }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`, navigation);
+}
+
+// ===================== Public Storefront =====================
+
+/**
+ * Get public storefront by identifier (slug or domain)
+ */
+export async function getPublicStorefront(identifier: string) {
+  return serverApi.get<PublicStorefront>(`/storefronts/${identifier}`);
+}
+
+/**
+ * Get public page by identifier and slug
+ */
+export async function getPublicStorefrontPage(identifier: string, slug: string) {
+  return serverApi.get<{ page: StorefrontPage }>(`/storefronts/${identifier}/pages/${slug}`);
+}
+
+/**
+ * Get public FAQs by identifier (attraction slug or domain)
+ */
+export async function getPublicStorefrontFaqs(
+  identifier: string,
+  category?: string
+) {
+  const params = new URLSearchParams();
+  if (category) params.set('category', category);
+  const query = params.toString();
+  return serverApi.get<{ faqs: StorefrontFaq[] }>(`/storefronts/${identifier}/faqs${query ? `?${query}` : ''}`);
 }

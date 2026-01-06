@@ -105,21 +105,37 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError) {
+    console.error('[API] Session error:', sessionError);
+    throw new Error('Authentication error. Please try logging in again.');
+  }
+
+  if (!session?.access_token) {
+    console.error('[API] No session found - user may need to log in');
+    throw new Error('Not authenticated. Please log in to continue.');
+  }
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
 
-  if (session?.access_token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
-  }
+  (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  console.log('[API]', options.method || 'GET', endpoint);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (fetchError) {
+    console.error('[API] Network error:', fetchError);
+    throw new Error('Network error. Please check your connection and try again.');
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({

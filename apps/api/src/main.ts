@@ -16,7 +16,10 @@ async function bootstrap() {
   // CORS configuration
   app.enableCors({
     origin: process.env['CORS_ORIGINS']?.split(',') ?? ['http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
+    maxAge: 1, // 1 second cache to prevent stale preflight issues during development
   });
 
   // Swagger/OpenAPI setup

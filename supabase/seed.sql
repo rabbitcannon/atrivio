@@ -132,19 +132,33 @@ ON CONFLICT (id) DO UPDATE SET
 -- ============================================================================
 
 INSERT INTO public.organizations (id, name, slug, email, phone, website, address_line1, city, state, postal_code, status)
-VALUES (
-  'b0000000-0000-0000-0000-000000000001',
-  'Nightmare Manor',
-  'nightmare-manor',
-  'info@nightmaremanor.com',
-  '555-SCARE',
-  'https://nightmaremanor.com',
-  '1313 Mockingbird Lane',
-  'Salem',
-  'MA',
-  '01970',
-  'active'
-)
+VALUES
+  (
+    'b0000000-0000-0000-0000-000000000001',
+    'Nightmare Manor',
+    'nightmare-manor',
+    'info@nightmaremanor.com',
+    '555-SCARE',
+    'https://nightmaremanor.com',
+    '1313 Mockingbird Lane',
+    'Salem',
+    'MA',
+    '01970',
+    'active'
+  ),
+  (
+    'b0000000-0000-0000-0000-000000000002',
+    'Spooky Hollow',
+    'spooky-hollow',
+    'info@spookyhollow.com',
+    '555-SPOOK',
+    'https://spookyhollow.com',
+    '666 Pumpkin Lane',
+    'Sleepy Hollow',
+    'NY',
+    '10591',
+    'active'
+  )
 ON CONFLICT (id) DO NOTHING;
 
 -- Add members to the organization
@@ -365,6 +379,7 @@ VALUES
   ('1f000000-0000-0000-0000-000000000006', 'ticketing', 'Ticketing Module', 'Core ticketing functionality including ticket types, orders, and promo codes (F8)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F8", "module": true}'),
   ('1f000000-0000-0000-0000-000000000007', 'checkin', 'Check-In Module', 'Guest check-in with barcode scanning, capacity tracking, and waivers (F9)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F9", "module": true}'),
   ('1f000000-0000-0000-0000-00000000000e', 'time_tracking', 'Time Tracking Module', 'Staff time clock with clock in/out, time entries, and approval workflows (F7a)', TRUE, 100, '{}', '{}', '{"tier": "basic", "feature": "F7a", "module": true}'),
+  -- NOTE: 'storefronts' flag is created by F14 migration with ON CONFLICT handling
 
   -- Pro tier: scheduling, inventory, analytics_pro
   ('1f000000-0000-0000-0000-000000000008', 'scheduling', 'Scheduling Module', 'Staff scheduling with availability, shift templates, and swap requests (F7)', TRUE, 100, '{}', '{}', '{"tier": "pro", "feature": "F7", "module": true}'),
@@ -1506,3 +1521,588 @@ END $$;
 -- Queue Entries: 24 (waiting, notified, called, checked_in, expired, left, no_show)
 -- Queue Notifications: 7 (joined, almost_ready, ready, expired, reminder)
 -- Queue Stats: 12 hourly records (today + yesterday)
+
+-- ============================================================================
+-- F14: STOREFRONTS SEED DATA
+-- ============================================================================
+
+DO $$
+DECLARE
+  v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';          -- Nightmare Manor
+  v_org2_id UUID := 'b0000000-0000-0000-0000-000000000002';         -- Spooky Hollow
+  v_mansion_id UUID := 'c0000000-0000-0000-0000-000000000001';      -- Haunted Mansion
+  v_trail_id UUID := 'c0000000-0000-0000-0000-000000000002';        -- Terror Trail
+  v_owner_id UUID := 'a0000000-0000-0000-0000-000000000002';        -- owner@haunt.dev
+  v_manager_id UUID := 'a0000000-0000-0000-0000-000000000003';      -- manager@haunt.dev
+  v_about_page_id UUID := 'f1000000-0000-0000-0000-000000000001';
+  v_faq_page_id UUID := 'f1000000-0000-0000-0000-000000000002';
+  v_contact_page_id UUID := 'f1000000-0000-0000-0000-000000000003';
+  v_rules_page_id UUID := 'f1000000-0000-0000-0000-000000000004';
+BEGIN
+  -- ============================================================================
+  -- STOREFRONT SETTINGS
+  -- ============================================================================
+
+  -- Note: Storefronts are now per-attraction, not per-org
+  INSERT INTO storefront_settings (
+    id, org_id, attraction_id, tagline, description,
+    logo_url, favicon_url, hero_image_url, hero_title, hero_subtitle,
+    theme_preset, primary_color, secondary_color, accent_color,
+    social_facebook, social_instagram, social_twitter, social_tiktok,
+    seo_title, seo_description, seo_keywords,
+    show_attractions, show_calendar, show_faq, show_reviews,
+    featured_attraction_ids, is_published, published_at
+  ) VALUES
+    -- The Haunted Mansion storefront (published)
+    (
+      'f0000000-0000-0000-0000-000000000001',
+      v_org_id,
+      v_mansion_id,
+      'Where Nightmares Come Alive',
+      'The Haunted Mansion is the premier haunted attraction in the region, featuring world-class actors, incredible set designs, and terrifying experiences that will leave you breathless.',
+      'https://images.unsplash.com/photo-1509557965875-b88c97052f0e?w=200',
+      'https://images.unsplash.com/photo-1509557965875-b88c97052f0e?w=32',
+      'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1920',
+      'Face Your Fears',
+      'A terrifying journey through a Victorian mansion.',
+      'dark',
+      '#7C3AED',  -- Purple
+      '#1F2937',  -- Dark gray
+      '#F59E0B',  -- Orange/amber
+      'https://facebook.com/nightmaremanor',
+      'https://instagram.com/nightmaremanor',
+      'https://twitter.com/nightmaremanor',
+      'https://tiktok.com/@nightmaremanor',
+      'The Haunted Mansion - Premier Haunted Attraction',
+      'Experience the most terrifying haunted mansion in the region. World-class actors and unforgettable scares await.',
+      ARRAY['haunted house', 'haunted attraction', 'halloween', 'scary', 'horror', 'haunted mansion'],
+      TRUE,
+      TRUE,
+      TRUE,
+      FALSE,
+      NULL,
+      TRUE,
+      NOW() - INTERVAL '30 days'
+    ),
+    -- Terror Trail storefront (draft)
+    (
+      'f0000000-0000-0000-0000-000000000002',
+      v_org_id,
+      v_trail_id,
+      'Into the Dark Woods',
+      'Terror Trail is a half-mile outdoor experience through dark woods where creatures lurk behind every tree.',
+      NULL,
+      NULL,
+      NULL,
+      'Terror Trail',
+      'Not for the faint of heart',
+      'dark',
+      '#DC2626',  -- Red
+      '#1F2937',
+      '#F59E0B',
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      TRUE,
+      TRUE,
+      TRUE,
+      FALSE,
+      NULL,
+      FALSE,
+      NULL
+    )
+  ON CONFLICT (attraction_id) DO NOTHING;
+
+  -- ============================================================================
+  -- STOREFRONT DOMAINS
+  -- ============================================================================
+
+  INSERT INTO storefront_domains (
+    id, org_id, attraction_id, domain, domain_type, is_primary,
+    verification_token, verification_method, verified_at,
+    ssl_status, status
+  ) VALUES
+    -- Haunted Mansion subdomain (auto-verified)
+    (
+      'f2000000-0000-0000-0000-000000000001',
+      v_org_id,
+      v_mansion_id,
+      'haunted-mansion.hauntplatform.com',
+      'subdomain',
+      TRUE,
+      NULL,
+      'dns_txt',
+      NOW() - INTERVAL '30 days',
+      'active',
+      'active'
+    ),
+    -- Haunted Mansion custom domain (example - verified)
+    (
+      'f2000000-0000-0000-0000-000000000002',
+      v_org_id,
+      v_mansion_id,
+      'hauntedmansion.com',
+      'custom',
+      FALSE,
+      'verify_abc123def456',
+      'dns_txt',
+      NOW() - INTERVAL '25 days',
+      'active',
+      'active'
+    ),
+    -- Terror Trail subdomain (auto-verified)
+    (
+      'f2000000-0000-0000-0000-000000000003',
+      v_org_id,
+      v_trail_id,
+      'terror-trail.hauntplatform.com',
+      'subdomain',
+      TRUE,
+      NULL,
+      'dns_txt',
+      NOW() - INTERVAL '15 days',
+      'active',
+      'active'
+    )
+  ON CONFLICT (id) DO NOTHING;
+
+  -- ============================================================================
+  -- STOREFRONT PAGES
+  -- ============================================================================
+
+  INSERT INTO storefront_pages (
+    id, org_id, attraction_id, slug, title, content, content_format, page_type,
+    seo_title, seo_description,
+    show_in_nav, nav_order, icon, status, published_at,
+    created_by, updated_by
+  ) VALUES
+    -- About Page
+    (
+      v_about_page_id,
+      v_org_id,
+      v_mansion_id,
+      'about',
+      'About Nightmare Manor',
+      '# Our Story
+
+Nightmare Manor has been terrifying visitors since 2010. What started as a small backyard haunt has grown into the region''s most acclaimed haunted attraction.
+
+## Our Mission
+
+We believe that fear is an art form. Our team of talented actors, designers, and technicians work year-round to create immersive experiences that blur the line between reality and nightmare.
+
+## Awards & Recognition
+
+- **Best Haunted Attraction** - Regional Horror Awards 2023
+- **Top 10 Haunts** - HauntWorld Magazine 2022
+- **Excellence in Set Design** - Halloween Industry Awards 2021
+
+## The Team
+
+Our cast includes over 50 professional actors, supported by a dedicated crew of makeup artists, sound engineers, and special effects technicians.
+
+![Team Photo](https://images.unsplash.com/photo-1509557965875-b88c97052f0e?w=800)
+
+## Visit Us
+
+Ready to face your fears? [Get tickets](/tickets) and join us for a night you''ll never forget.',
+      'markdown',
+      'about',
+      'About Us - Nightmare Manor',
+      'Learn about Nightmare Manor''s history, awards, and the team behind the scares.',
+      TRUE,
+      1,
+      'info',
+      'published',
+      NOW() - INTERVAL '28 days',
+      v_owner_id,
+      v_manager_id
+    ),
+    -- FAQ Page
+    (
+      v_faq_page_id,
+      v_org_id,
+      v_mansion_id,
+      'faq',
+      'Frequently Asked Questions',
+      '# Frequently Asked Questions
+
+Find answers to common questions about visiting Nightmare Manor below. Can''t find what you''re looking for? [Contact us](/contact).',
+      'markdown',
+      'faq',
+      'FAQ - Nightmare Manor',
+      'Find answers to frequently asked questions about Nightmare Manor.',
+      TRUE,
+      2,
+      'help-circle',
+      'published',
+      NOW() - INTERVAL '28 days',
+      v_owner_id,
+      NULL
+    ),
+    -- Contact Page
+    (
+      v_contact_page_id,
+      v_org_id,
+      v_mansion_id,
+      'contact',
+      'Contact Us',
+      '# Contact Us
+
+We''d love to hear from you! Whether you have questions, feedback, or want to book a private event, we''re here to help.
+
+## General Inquiries
+
+- **Email**: info@nightmaremanor.com
+- **Phone**: (555) 123-4567
+
+## Hours of Operation
+
+- **Box Office**: Opens 1 hour before event start
+- **Event Hours**: Check our [calendar](/calendar) for specific dates
+
+## Location
+
+123 Spooky Lane
+Frightville, CA 90210
+
+[Get Directions](https://maps.google.com)
+
+## Private Events & Group Bookings
+
+Interested in hosting a private event or booking for a large group? Contact our events team:
+
+- **Email**: events@nightmaremanor.com
+- **Phone**: (555) 123-4568
+
+## Media & Press
+
+For media inquiries, please contact:
+
+- **Email**: press@nightmaremanor.com',
+      'markdown',
+      'contact',
+      'Contact Us - Nightmare Manor',
+      'Get in touch with Nightmare Manor for questions, bookings, or media inquiries.',
+      TRUE,
+      3,
+      'mail',
+      'published',
+      NOW() - INTERVAL '28 days',
+      v_owner_id,
+      NULL
+    ),
+    -- Rules & Policies Page
+    (
+      v_rules_page_id,
+      v_org_id,
+      v_mansion_id,
+      'rules',
+      'Rules & Policies',
+      '# Rules & Policies
+
+Please review the following rules and policies before your visit to ensure a safe and enjoyable experience for everyone.
+
+## Safety Rules
+
+1. **No Running** - Walk at all times throughout the attraction
+2. **No Touching** - Do not touch actors, props, or set pieces
+3. **No Photography** - Cameras, phones, and recording devices are not permitted inside attractions
+4. **Stay on the Path** - Follow the designated route at all times
+5. **No Re-Entry** - Once you exit, you cannot re-enter
+
+## Age Recommendations
+
+- **Haunted Mansion**: Recommended for ages 13+
+- **Terror Trail**: Recommended for ages 16+
+
+*Parental discretion advised. Children under 13 must be accompanied by an adult.*
+
+## Health Warnings
+
+Our attractions contain:
+- Strobe lights and fog effects
+- Loud sounds and sudden scares
+- Confined spaces and uneven terrain
+- Actors in frightening costumes
+
+*Not recommended for individuals with heart conditions, epilepsy, respiratory issues, or those who are pregnant.*
+
+## Refund Policy
+
+- Tickets are non-refundable but may be transferred
+- In case of inclement weather, tickets will be valid for any remaining date in the season
+- VIP upgrades are non-refundable
+
+## Questions?
+
+If you have any questions about our policies, please [contact us](/contact).',
+      'markdown',
+      'policies',
+      'Rules & Policies - Nightmare Manor',
+      'Review safety rules, age recommendations, and policies for visiting Nightmare Manor.',
+      TRUE,
+      4,
+      'shield',
+      'published',
+      NOW() - INTERVAL '28 days',
+      v_owner_id,
+      NULL
+    ),
+    -- Gallery Page (draft)
+    (
+      'f1000000-0000-0000-0000-000000000005',
+      v_org_id,
+      v_mansion_id,
+      'gallery',
+      'Photo Gallery',
+      '# Photo Gallery
+
+Coming soon! Check back for photos from this season.',
+      'markdown',
+      'custom',
+      'Photo Gallery - Nightmare Manor',
+      'View photos from Nightmare Manor.',
+      FALSE,
+      5,
+      'image',
+      'draft',
+      NULL,
+      v_manager_id,
+      NULL
+    ),
+    -- Jobs Page
+    (
+      'f1000000-0000-0000-0000-000000000006',
+      v_org_id,
+      v_mansion_id,
+      'jobs',
+      'Join Our Team',
+      '# Join the Nightmare Manor Team
+
+Are you passionate about horror and entertainment? We''re always looking for talented individuals to join our crew!
+
+## Open Positions
+
+### Scare Actors
+- No experience necessary - we provide training
+- Must be 16+ years old
+- Available weekends September through November
+
+### Makeup Artists
+- Experience with theatrical or SFX makeup preferred
+- Portfolio review required
+- Part-time and full-time positions available
+
+### Technical Crew
+- Sound, lighting, and special effects positions
+- Experience with live entertainment preferred
+
+## How to Apply
+
+Send your resume and a brief introduction to jobs@nightmaremanor.com
+
+Or apply in person at our hiring events (dates TBA).',
+      'markdown',
+      'custom',
+      'Careers - Join the Nightmare Manor Team',
+      'Apply to work at Nightmare Manor. Scare actors, makeup artists, and technical crew positions available.',
+      TRUE,
+      6,
+      'users',
+      'published',
+      NOW() - INTERVAL '20 days',
+      v_owner_id,
+      NULL
+    )
+  ON CONFLICT (attraction_id, slug) DO NOTHING;
+
+  -- ============================================================================
+  -- STOREFRONT NAVIGATION
+  -- ============================================================================
+
+  INSERT INTO storefront_navigation (
+    id, org_id, label, link_type, page_id, external_url, attraction_id,
+    position, sort_order, is_visible, open_in_new_tab
+  ) VALUES
+    -- Header Navigation
+    ('f3000000-0000-0000-0000-000000000001', v_org_id, 'Home', 'home', NULL, NULL, v_mansion_id, 'header', 0, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000002', v_org_id, 'Attractions', 'tickets', NULL, NULL, v_mansion_id, 'header', 1, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000003', v_org_id, 'About', 'page', v_about_page_id, NULL, v_mansion_id, 'header', 2, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000004', v_org_id, 'FAQ', 'page', v_faq_page_id, NULL, v_mansion_id, 'header', 3, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000005', v_org_id, 'Buy Tickets', 'tickets', NULL, NULL, v_mansion_id, 'header', 4, TRUE, FALSE),
+
+    -- Footer Navigation
+    ('f3000000-0000-0000-0000-000000000006', v_org_id, 'Contact', 'page', v_contact_page_id, NULL, v_mansion_id, 'footer', 0, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000007', v_org_id, 'Rules & Policies', 'page', v_rules_page_id, NULL, v_mansion_id, 'footer', 1, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000008', v_org_id, 'Careers', 'page', 'f1000000-0000-0000-0000-000000000006', NULL, v_mansion_id, 'footer', 2, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000009', v_org_id, 'Instagram', 'external', NULL, 'https://instagram.com/nightmaremanor', v_mansion_id, 'footer', 3, TRUE, TRUE),
+    ('f3000000-0000-0000-0000-000000000010', v_org_id, 'Facebook', 'external', NULL, 'https://facebook.com/nightmaremanor', v_mansion_id, 'footer', 4, TRUE, TRUE)
+  ON CONFLICT DO NOTHING;
+
+  -- ============================================================================
+  -- STOREFRONT FAQS
+  -- ============================================================================
+
+  INSERT INTO storefront_faqs (
+    id, org_id, attraction_id, question, answer, category, sort_order, is_published
+  ) VALUES
+    -- General FAQs (for Haunted Mansion storefront)
+    ('f4000000-0000-0000-0000-000000000001', v_org_id, v_mansion_id,
+     'What are your hours of operation?',
+     'We are open select nights from late September through early November. Box office opens 1 hour before the attraction. Check our calendar for specific dates and times.',
+     'General', 1, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000002', v_org_id, v_mansion_id,
+     'How long does the experience last?',
+     'The Haunted Mansion takes approximately 20-25 minutes. Terror Trail takes about 15-20 minutes. Total visit time including wait is typically 1-2 hours depending on crowds.',
+     'General', 2, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000003', v_org_id, v_mansion_id,
+     'Is Nightmare Manor appropriate for children?',
+     'We recommend ages 13+ for the Haunted Mansion and 16+ for Terror Trail. Children under 13 must be accompanied by an adult. Parental discretion is strongly advised.',
+     'General', 3, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000004', v_org_id, v_mansion_id,
+     'Do you have a "lights on" or less scary option?',
+     'We do not offer a lights-on tour or reduced scare option. The full experience is designed to be intense and scary.',
+     'General', 4, TRUE),
+
+    -- Tickets & Pricing FAQs
+    ('f4000000-0000-0000-0000-000000000005', v_org_id, v_mansion_id,
+     'Can I buy tickets at the door?',
+     'Yes, tickets are available at the box office if not sold out. However, we strongly recommend purchasing online in advance as we frequently sell out, especially on weekends.',
+     'Tickets', 5, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000006', v_org_id, v_mansion_id,
+     'What is VIP/Fast Pass?',
+     'VIP tickets allow you to skip the general admission line and enter through a priority queue. This can save significant wait time on busy nights.',
+     'Tickets', 6, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000007', v_org_id, v_mansion_id,
+     'What is your refund policy?',
+     'Tickets are non-refundable but may be transferred to another person. In case of weather cancellation, tickets are valid for any remaining date in the season.',
+     'Tickets', 7, TRUE),
+
+    -- Safety FAQs
+    ('f4000000-0000-0000-0000-000000000008', v_org_id, v_mansion_id,
+     'Are there strobe lights or fog effects?',
+     'Yes, our attractions use strobe lights, fog machines, loud sounds, and other special effects. These may not be suitable for individuals with epilepsy, heart conditions, or respiratory issues.',
+     'Safety', 8, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000009', v_org_id, v_mansion_id,
+     'Is the attraction wheelchair accessible?',
+     'The Haunted Mansion has limited accessibility due to stairs and narrow passages. Terror Trail is an outdoor path with uneven terrain. Please contact us in advance to discuss accommodations.',
+     'Safety', 9, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000010', v_org_id, v_mansion_id,
+     'Will actors touch me?',
+     'Our actors will NOT touch guests. However, they may get very close, block your path momentarily, and use props near you. If you need space, simply say "I need space" and actors will back away.',
+     'Safety', 10, TRUE),
+
+    -- Attraction-Specific FAQs
+    ('f4000000-0000-0000-0000-000000000011', v_org_id, v_mansion_id,
+     'What is the Haunted Mansion?',
+     'The Haunted Mansion is our flagship indoor attraction featuring multiple themed rooms, live actors, and state-of-the-art special effects. Navigate through the cursed Victorian manor and face the spirits within.',
+     'Attractions', 11, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000012', v_org_id, v_trail_id,
+     'What is Terror Trail?',
+     'Terror Trail is our outdoor haunted trail experience. Wind through the dark forest, encounter creatures lurking in the shadows, and try to escape before they catch you.',
+     'Attractions', 12, TRUE),
+
+    -- Parking & Location FAQs
+    ('f4000000-0000-0000-0000-000000000013', v_org_id, v_mansion_id,
+     'Is parking free?',
+     'Yes! Free parking is available on-site. Follow the signs from the main entrance. During peak nights, additional overflow parking is available.',
+     'Location', 13, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000014', v_org_id, v_mansion_id,
+     'What should I wear?',
+     'Wear comfortable, closed-toe shoes suitable for walking. Terror Trail has uneven terrain. Costumes are welcome but masks may need to be removed for identification.',
+     'General', 14, TRUE),
+
+    ('f4000000-0000-0000-0000-000000000015', v_org_id, v_mansion_id,
+     'Can I take photos or videos?',
+     'Photography and recording are NOT permitted inside the attractions for safety reasons and to preserve the experience for others. Photo opportunities are available outside.',
+     'General', 15, TRUE)
+  ON CONFLICT DO NOTHING;
+
+  -- ============================================================================
+  -- STOREFRONT ANNOUNCEMENTS
+  -- ============================================================================
+
+  INSERT INTO storefront_announcements (
+    id, org_id, attraction_id, title, content, link_url, link_text,
+    type, position, is_dismissible,
+    starts_at, ends_at, is_active, created_by
+  ) VALUES
+    -- Active banner announcement
+    (
+      'f5000000-0000-0000-0000-000000000001',
+      v_org_id,
+      v_mansion_id,
+      'Opening Night October 1st!',
+      'The season kicks off with our biggest opening night ever. Special performances, giveaways, and surprises await!',
+      '/tickets',
+      'Get Tickets',
+      'promo',
+      'banner',
+      TRUE,
+      NOW() - INTERVAL '5 days',
+      NOW() + INTERVAL '30 days',
+      TRUE,
+      v_owner_id
+    ),
+    -- VIP upgrade popup
+    (
+      'f5000000-0000-0000-0000-000000000002',
+      v_org_id,
+      v_mansion_id,
+      'Skip the Line with VIP!',
+      'Upgrade to VIP and enjoy priority entry on even the busiest nights.',
+      '/tickets?upgrade=vip',
+      'Learn More',
+      'info',
+      'popup',
+      TRUE,
+      NOW() - INTERVAL '10 days',
+      NOW() + INTERVAL '60 days',
+      TRUE,
+      v_manager_id
+    ),
+    -- Weather warning (inactive - example)
+    (
+      'f5000000-0000-0000-0000-000000000003',
+      v_org_id,
+      v_mansion_id,
+      'Weather Advisory',
+      'Tonight''s event may be affected by weather. Check your email for updates.',
+      NULL,
+      NULL,
+      'warning',
+      'banner',
+      FALSE,
+      NOW() - INTERVAL '2 days',
+      NOW() - INTERVAL '1 day',
+      FALSE,
+      v_owner_id
+    )
+  ON CONFLICT DO NOTHING;
+
+  RAISE NOTICE 'F14 storefront seed data created successfully';
+END $$;
+
+-- ============================================================================
+-- F14 SEED SUMMARY
+-- ============================================================================
+-- Storefront Settings: 2 (Nightmare Manor - published, Spooky Hollow - draft)
+-- Storefront Domains: 3 (2 for Nightmare Manor, 1 for Spooky Hollow)
+-- Storefront Pages: 6 (About, FAQ, Contact, Rules, Gallery draft, Jobs)
+-- Storefront Navigation: 10 (5 header, 5 footer)
+-- Storefront FAQs: 15 (General, Tickets, Safety, Attractions, Location categories)
+-- Storefront Announcements: 3 (2 active, 1 inactive)

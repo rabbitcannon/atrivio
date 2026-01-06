@@ -754,3 +754,160 @@ export interface InAppNotificationsResponse {
 export interface PreferencesResponse {
   data: NotificationPreference[];
 }
+
+// ============================================================================
+// Storefront Types (F14)
+// These types match the API response format (camelCase)
+// ============================================================================
+
+export type ContentFormat = 'markdown' | 'html' | 'plain';
+export type PageType = 'home' | 'about' | 'faq' | 'contact' | 'rules' | 'jobs' | 'gallery' | 'custom';
+export type PageStatus = 'draft' | 'published' | 'archived';
+export type DomainType = 'subdomain' | 'custom';
+export type DomainStatus = 'pending' | 'verifying' | 'active' | 'failed' | 'expired';
+export type SslStatus = 'pending' | 'provisioning' | 'active' | 'failed';
+export type AnnouncementType = 'info' | 'warning' | 'success' | 'promotion' | 'urgent';
+export type AnnouncementPosition = 'banner' | 'popup' | 'modal' | 'inline';
+
+export interface StorefrontSettings {
+  id: string;
+  tagline: string | null;
+  description: string | null;
+  hero: {
+    imageUrl: string | null;
+    videoUrl: string | null;
+    title: string | null;
+    subtitle: string | null;
+  };
+  theme: {
+    preset: string | null;
+    primaryColor: string | null;
+    secondaryColor: string | null;
+    accentColor: string | null;
+    backgroundColor: string | null;
+    textColor: string | null;
+    fontHeading: string | null;
+    fontBody: string | null;
+    customCss: string | null;
+  };
+  social: {
+    facebook: string | null;
+    instagram: string | null;
+    twitter: string | null;
+    tiktok: string | null;
+    youtube: string | null;
+  };
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string[] | null;
+    ogImageUrl: string | null;
+  };
+  analytics: {
+    googleAnalyticsId: string | null;
+    facebookPixelId: string | null;
+    customHeadScripts: string | null;
+  };
+  features: {
+    showAttractions: boolean | null;
+    showCalendar: boolean | null;
+    showFaq: boolean | null;
+    showReviews: boolean | null;
+    featuredAttractionIds: string[] | null;
+  };
+  isPublished: boolean;
+  publishedAt: string | null;
+}
+
+export interface StorefrontPage {
+  id: string;
+  slug: string;
+  title: string;
+  content: string | null;
+  contentFormat: ContentFormat;
+  pageType: PageType;
+  status: PageStatus;
+  showInNav: boolean;
+  seo: {
+    title: string | null;
+    description: string | null;
+    ogImageUrl: string | null;
+  };
+  updatedAt: string;
+}
+
+export interface StorefrontDomain {
+  id: string;
+  domain: string;
+  domainType: DomainType;
+  isPrimary: boolean;
+  status: DomainStatus;
+  sslStatus: SslStatus;
+  verifiedAt: string | null;
+  verification?: {
+    method: string;
+    recordName: string;
+    recordValue: string;
+    instructions: string;
+  };
+}
+
+export interface StorefrontFaq {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  sortOrder: number;
+  isPublished: boolean;
+  isFeatured?: boolean;
+  isActive?: boolean;
+}
+
+export interface StorefrontAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  type: AnnouncementType;
+  position: AnnouncementPosition;
+  linkUrl: string | null;
+  linkText: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  isActive: boolean;
+  isDismissible: boolean;
+  announcementType?: AnnouncementType; // Alias for backwards compat
+  showOnHome?: boolean;
+}
+
+export interface StorefrontNavItem {
+  id: string;
+  label: string;
+  linkType: 'home' | 'page' | 'external' | 'tickets';
+  type?: 'page' | 'link' | 'dropdown'; // Alias for backwards compat
+  pageId: string | null;
+  externalUrl: string | null;
+  url?: string; // Alias for backwards compat
+  openInNewTab: boolean;
+  openNewTab?: boolean; // Alias for backwards compat
+  sortOrder: number;
+  children?: StorefrontNavItem[];
+}
+
+export interface StorefrontNavigation {
+  header: StorefrontNavItem[];
+  footer: StorefrontNavItem[];
+}
+
+export interface PublicStorefront {
+  attraction: {
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+  };
+  storefront: StorefrontSettings;
+  pages: StorefrontPage[];
+  announcements: StorefrontAnnouncement[];
+  navigation: StorefrontNavigation;
+  domain: string;
+}

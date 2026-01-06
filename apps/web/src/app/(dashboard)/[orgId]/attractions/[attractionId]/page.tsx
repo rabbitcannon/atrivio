@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Settings, MapPin, Calendar, AlertCircle } from 'lucide-react';
+import { Settings, MapPin, Calendar, AlertCircle, Store } from 'lucide-react';
 import { getAttraction, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -70,6 +70,7 @@ export default async function AttractionDetailPage({ params }: AttractionDetailP
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="zones">Zones</TabsTrigger>
           <TabsTrigger value="seasons">Seasons</TabsTrigger>
+          <TabsTrigger value="storefront">Storefront</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -146,6 +147,32 @@ export default async function AttractionDetailPage({ params }: AttractionDetailP
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Configure operating hours and seasonal settings.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="storefront">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Storefront</CardTitle>
+                  <CardDescription>
+                    Manage your public-facing storefront for ticket sales and information.
+                  </CardDescription>
+                </div>
+                <Button asChild>
+                  <a href={`/${orgIdentifier}/attractions/${attractionId}/storefront`}>
+                    <Store className="mr-2 h-4 w-4" />
+                    Manage Storefront
+                  </a>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Configure your storefront appearance, pages, FAQs, domains, and announcements.
               </p>
             </CardContent>
           </Card>

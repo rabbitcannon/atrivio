@@ -38,6 +38,9 @@ import { QueueModule } from './modules/queue/queue.module.js';
 // Notifications (F12 Notifications)
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 
+// Storefronts (F14 Storefronts)
+import { StorefrontsModule } from './modules/storefronts/storefronts.module.js';
+
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';
 // import { OperationsModule } from './modules/operations/operations.module.js';
@@ -88,6 +91,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 
     // Notifications (F12 Notifications)
     NotificationsModule,
+
+    // Storefronts (F14 Storefronts)
+    StorefrontsModule,
   ],
   controllers: [],
   providers: [

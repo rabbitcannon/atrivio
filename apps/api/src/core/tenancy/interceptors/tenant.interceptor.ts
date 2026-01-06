@@ -13,6 +13,7 @@ import type { OrgId, UserId } from '@haunt/shared';
 /**
  * Interceptor that resolves tenant context from :orgId route parameter
  * Accepts both UUID and slug for organization identification
+ * Also resolves :attractionId if present (UUID or slug)
  *
  * Usage: Apply to controllers/routes that need org context
  *
@@ -32,6 +33,7 @@ export class TenantInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const orgIdentifier = request.params.orgId as string;
+    const attractionIdentifier = request.params.attractionId as string | undefined;
 
     if (!user) {
       throw new ForbiddenException({
@@ -57,6 +59,19 @@ export class TenantInterceptor implements NestInterceptor {
     }
 
     const orgId = org.id;
+
+    // Resolve attraction from UUID or slug if present
+    if (attractionIdentifier) {
+      const attraction = await this.tenancyService.resolveAttraction(orgId, attractionIdentifier);
+      if (!attraction) {
+        throw new NotFoundException({
+          code: 'ATTRACTION_NOT_FOUND',
+          message: 'Attraction not found',
+        });
+      }
+      // Replace the param with the resolved UUID
+      request.params.attractionId = attraction.id;
+    }
 
     // Check if user is super admin (bypasses org membership check)
     const isSuperAdmin = await this.tenancyService.isSuperAdmin(

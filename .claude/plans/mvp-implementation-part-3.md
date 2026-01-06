@@ -1,35 +1,33 @@
-# Haunt Platform - Implementation Plan Part 3: Engagement & Growth (F11-F16)
+# Haunt Platform - Implementation Plan Part 3: Engagement & Growth (F11-F12, F14-F15)
 
 **Created Date**: 2025-12-31
 **Last Updated**: 2026-01-05
-**Current Session**: F12 Notifications - E2E Tests Complete
-**Overall Progress**: 50% Complete
+**Current Session**: F14 Storefronts - Frontend Complete
+**Overall Progress**: 85% Complete (F11, F12 done; F14 database + API + Frontend done, Testing remaining)
 
-> **Note**: Part 3 covers Engagement & Growth features (F11-F16). Requires Part 1 (MVP F1-F6) and Part 2 (F7-F10) to be complete.
+> **Note**: Part 3 covers Engagement & Growth features (F11-F12, F14-F15). F13 Analytics has been deferred to post-MVP (see `.claude/plans/analytics.md`).
 
 ## Quick Start for Next Session
 
 **Prerequisites**: Parts 1-2 (F1-F10) should be complete before starting Part 3
-**Last Completed**: F12 Notifications - Full implementation including:
-  - **Database**: Migration with 5 tables, 8 system templates, RLS policies, feature flag
-  - **API**: NestJS module with Twilio SMS + SendGrid email, dev mode logging
-  - **Frontend**: 4 pages (landing, templates, history, send) with full UI
-    - Notifications landing page with stats cards and navigation
-    - Templates page with tabbed view by channel and variable display
-    - History page with channel filters and status badges
-    - Send notification form with email/SMS toggle
-    - RadioGroup component for channel selection
-    - API client functions for all notification operations
-  - **E2E Tests**: 32 tests covering all notification endpoints
-    - Templates: list, filter by channel, get specific, 404 for missing
-    - Send: template-based SMS, direct SMS/email, role authorization
-    - History: list, filter, pagination
-    - User inbox: list, filter by read, unread count
-    - Preferences: get/update per-category settings
-    - Push devices: register/unregister iOS/Android/web
-    - Feature flag gating
-**Currently Working On**: F13 Analytics or F14 Storefronts
-**Next Action**: Start F13 Analytics ERD review and migration, or F14 Storefronts
+**Last Completed**: F14 Storefronts - Database layer including:
+  - **ERD Review**: Complete - 6 tables, 10 enums, comprehensive schema
+  - **Migration**: `20260105000001_f14_storefronts.sql` with:
+    - 10 enums (content_format, page_type, page_status, domain_type, etc.)
+    - 6 tables (storefront_settings, pages, domains, navigation, faqs, announcements)
+    - RLS policies for public read + manager/admin management
+    - Functions: resolve_storefront_domain, get_storefront_by_domain
+    - Triggers: updated_at, published_at, verification_token, single primary domain
+    - Feature flag: `storefronts` (pro tier)
+  - **Seed Data**: Comprehensive demo data
+    - 2 orgs: Nightmare Manor (published), Spooky Hollow (draft)
+    - 6 pages: About, FAQ, Contact, Rules, Gallery (draft), Jobs
+    - 3 domains: 2 for Nightmare Manor (subdomain + custom), 1 for Spooky Hollow
+    - 10 navigation items (5 header, 5 footer)
+    - 15 FAQs across 5 categories
+    - 3 announcements (2 active, 1 inactive)
+**Currently Working On**: F14 Storefronts Testing
+**Next Action**: Create storefront E2E tests and verify seed data
 
 ### Agent Assignments by Phase
 - **Phase 11 (Database)**: backend-architect
@@ -46,12 +44,13 @@
 
 | Phase | Name | Status | Features | Notes |
 |-------|------|--------|----------|-------|
-| 11 | Engagement Database | In Progress | F11-F14 | F11 complete, F12-F14 pending |
-| 12 | Engagement API | In Progress | F11-F14 | F11 complete with feature flag, F12-F14 pending |
-| 13 | Engagement Frontend | In Progress | F11-F14 | F11 complete (4 interactive pages), F12-F14 pending |
-| 14 | Engagement Testing | In Progress | F11-F14 | F11 E2E complete (35 tests), F12-F14 pending |
-| 15 | Documentation Site | Not Started | F15 | Docusaurus + Playwright screenshots |
-| 16 | Integration Testing | Not Started | F1-F15 | Full system E2E tests |
+| 11 | Engagement Database | Complete | F11-F12, F14 | All migrations and seed data done |
+| 12 | Engagement API | Complete | F11-F12, F14 | All API modules complete |
+| 13 | Engagement Frontend | In Progress | F11-F12, F14 | F11-F12 complete, F14 pending |
+| 14 | Engagement Testing | In Progress | F11-F12, F14 | F11-F12 E2E complete, F14 pending |
+| 14b | Documentation Site | Not Started | F15 | Docusaurus + Playwright screenshots |
+| 15 | Comprehensive Demo Seeding | Not Started | All | 4 orgs, 60+ tables, Stripe test accounts |
+| 16 | Integration Testing | Not Started | F1-F12, F14 | Full system E2E tests (uses seeded data) |
 | 17 | Final Polish & Deploy | Not Started | All | Dark theme, UX polish, production deploy |
 
 **Status Legend**: Not Started | In Progress | Complete | Blocked | On Hold
@@ -64,17 +63,18 @@
 |---------|----------|-----------|-----------|-----|----------|-------|--------|
 | **F11** Virtual Queue | Complete | Complete | Complete | Complete | Complete | Complete | ✅ Complete |
 | **F12** Notifications | Complete | Complete | Complete | Complete | Complete | Complete | ✅ Complete |
-| **F13** Analytics | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
-| **F14** Storefronts | Exists | Not Started | Not Started | Not Started | Not Started | Not Started | Not Started |
+| **F14** Storefronts | Complete | Complete | Complete | Complete | Complete | Not Started | 🔄 In Progress |
 | **F15** Documentation Site | Not Started | N/A | N/A | N/A | Not Started | Not Started | Not Started |
+
+> **Note**: F13 Analytics has been deferred to post-MVP. See `.claude/plans/analytics.md`
 
 ---
 
-## Seed Data Strategy (F11-F14)
+## Seed Data Strategy (F11-F12, F14)
 
 ### Purpose
 Comprehensive seed data for engagement features enables:
-1. **Demo**: Show virtual queue, notifications, analytics dashboards, storefronts
+1. **Demo**: Show virtual queue, notifications, storefronts
 2. **Testing**: Realistic data for E2E tests
 3. **Development**: Consistent environment for building features
 
@@ -112,24 +112,6 @@ Comprehensive seed data for engagement features enables:
 - Push notification for queue ready
 - User updates notification preferences
 
-#### F13: Analytics
-**File**: `infrastructure/supabase/seed.sql` (extend)
-
-| Entity | Count | Demo Scenarios |
-|--------|-------|----------------|
-| Daily Metrics | 60 | 2 months of daily data |
-| Hourly Metrics | 200 | Detailed hourly breakdown |
-| Ticket Type Metrics | 40 | Per-ticket-type performance |
-| Promo Metrics | 20 | Promo code effectiveness |
-| Staff Metrics | 50 | Staff performance data |
-| Saved Reports | 5 | Pre-configured report templates |
-
-**Demo Scenarios**:
-- Dashboard shows revenue trends
-- Ticket type performance comparison
-- Staff hours and productivity
-- Peak attendance patterns
-
 #### F14: Storefronts
 **File**: `infrastructure/supabase/seed.sql` (extend)
 
@@ -158,11 +140,11 @@ Comprehensive seed data for engagement features enables:
 
 ---
 
-## Phase 11: Engagement Database (F11-F14)
+## Phase 11: Engagement Database (F11-F12, F14)
 
 ### Objectives
-- Implement virtual queue, notifications, analytics, and storefront schemas
-- Create notification templates and analytics materialized views
+- Implement virtual queue, notifications, and storefront schemas
+- Create notification templates
 - Set up RLS policies for public and authenticated access
 
 ### Tasks
@@ -176,64 +158,67 @@ Comprehensive seed data for engagement features enables:
   - Dependencies: F1 Auth complete
   - Acceptance criteria: notification_templates, notifications, preferences, push_devices tables
   - **Completed**: 2026-01-04 - ERD reviewed, migration created with 5 tables + RLS
-- [ ] Task 3: Review and refine F13 Analytics ERD
-  - **Agent**: backend-architect
-  - Dependencies: All features for aggregation
-  - Acceptance criteria: daily_metrics, hourly_metrics, ticket_type_metrics, staff_metrics, saved_reports
-- [ ] Task 4: Review and refine F14 Storefronts ERD
+- [x] Task 3: Review and refine F14 Storefronts ERD
   - **Agent**: backend-architect
   - Dependencies: F2 Organizations, F3 Attractions complete
   - Acceptance criteria: storefront_settings, pages, domains, navigation, faqs, announcements tables
-- [x] Task 5: Write migration for F11 Virtual Queue
+  - **Completed**: 2026-01-05 - ERD reviewed, 6 tables with 10 enums defined
+- [x] Task 4: Write migration for F11 Virtual Queue
   - **Agent**: backend-architect
   - Dependencies: Task 1
   - Acceptance criteria: `20260103000001_f11_virtual_queue.sql` migration runs clean
   - **Completed**: 2026-01-03 - Migration includes queue_configs, queue_entries, queue_notifications, queue_stats tables with RLS policies and helper functions
-- [x] Task 6: Create seed data for F11 Virtual Queue
+- [x] Task 5: Create seed data for F11 Virtual Queue
   - **Agent**: backend-architect
-  - Dependencies: Task 5
+  - Dependencies: Task 4
   - Acceptance criteria:
     - 2 queue configs with realistic settings (Haunted Mansion, Terror Trail)
     - 24 queue entries in various states (waiting, notified, called, checked_in, expired, left, no_show)
     - 7 queue notifications (sms, push types)
     - 12 hourly stats records
   - **Completed**: 2026-01-03 - Seed data added to supabase/seed.sql
-- [x] Task 7a: Write migration for F12 Notifications
+- [x] Task 6: Write migration for F12 Notifications
   - **Agent**: backend-architect
   - Dependencies: Task 2
   - Acceptance criteria: `20260104000000_f12_notifications.sql` migration runs clean
   - **Completed**: 2026-01-04 - Migration includes 5 tables, 8 system templates, RLS policies, feature flag
-- [ ] Task 7b: Write migration for F13-F14
+- [x] Task 7: Write migration for F14 Storefronts
   - **Agent**: backend-architect
-  - Dependencies: Tasks 3-4
-  - Acceptance criteria: Migrations for analytics, storefronts run clean
-- [x] Task 8a: Create seed data for F12 Notifications
+  - Dependencies: Task 3
+  - Acceptance criteria: Storefronts migration runs clean
+  - **Completed**: 2026-01-05 - `20260105000001_f14_storefronts.sql` with 6 tables, 10 enums, RLS, functions, triggers
+- [x] Task 8: Create seed data for F12 Notifications
   - **Agent**: backend-architect
-  - Dependencies: Task 7a
+  - Dependencies: Task 6
   - Acceptance criteria:
     - 8 system notification templates (queue, tickets, schedule)
     - Feature flag for notifications module
   - **Completed**: 2026-01-04 - System templates included in migration, feature flag added
-- [ ] Task 8b: Create seed data for F13-F14
+- [x] Task 9: Create seed data for F14 Storefronts
   - **Agent**: backend-architect
-  - Dependencies: Task 7b
+  - Dependencies: Task 7
   - Acceptance criteria:
-    - 60 days of daily metrics
     - Storefront settings with custom branding
     - 8 storefront pages with content
     - 15 FAQs across categories
+  - **Completed**: 2026-01-05 - Comprehensive seed data:
+    - 2 storefront settings (Nightmare Manor published, Spooky Hollow draft)
+    - 3 domains (2 for Nightmare Manor, 1 for Spooky Hollow)
+    - 6 pages with full markdown content
+    - 10 navigation items (header + footer)
+    - 15 FAQs in 5 categories
+    - 3 announcements (banner, popup, weather warning)
 
 ### Phase Summary
-**Status**: In Progress (F11 Complete, F12 Migration + Seed Complete)
+**Status**: Complete (F11-F12 Complete, F14 Database Complete)
 
 ---
 
-## Phase 12: Engagement API (F11-F14)
+## Phase 12: Engagement API (F11-F12, F14)
 
 ### Objectives
-- Build NestJS modules for queue, notifications, analytics, storefronts
+- Build NestJS modules for queue, notifications, storefronts
 - Implement real-time features (queue updates, notifications)
-- Create analytics aggregation jobs
 
 ### Tasks
 - [x] Task 1: Build modules/queue
@@ -258,15 +243,7 @@ Comprehensive seed data for engagement features enables:
     - NotificationsController (org-scoped: send, templates, history)
     - UserNotificationsController (user-scoped: inbox, preferences, devices)
     - Feature flag gating (`notifications` basic tier)
-- [ ] Task 3: Build modules/analytics
-  - **Agent**: backend-architect
-  - Dependencies: Phase 11
-  - Acceptance criteria:
-    - Dashboard metrics endpoints
-    - Date range filtering
-    - Report generation
-    - Aggregation job triggers
-- [ ] Task 4: Build modules/storefronts
+- [x] Task 3: Build modules/storefronts
   - **Agent**: backend-architect
   - Dependencies: Phase 11
   - Acceptance criteria:
@@ -274,31 +251,35 @@ Comprehensive seed data for engagement features enables:
     - Page CRUD with publishing
     - Domain verification workflow
     - Public storefront API (no auth)
-- [x] Task 5: Verify F11 seed data via API
+  - **Completed**: 2026-01-05 - NestJS module with:
+    - StorefrontsService (settings, pages, domains, FAQs, announcements, navigation)
+    - StorefrontsController (admin: settings CRUD, pages CRUD, domains, FAQs, announcements, navigation)
+    - PublicStorefrontsController (public: get storefront, get page, get FAQs)
+    - Feature flag gating (`storefronts` pro tier)
+    - Domain verification workflow (DNS TXT/CNAME)
+- [x] Task 4: Verify F11 seed data via API
   - **Agent**: backend-architect
   - Dependencies: Task 1
   - Acceptance criteria:
     - Queue shows current entries and wait times
   - **Completed**: 2026-01-03 - All queue endpoints tested and working
-- [ ] Task 6: Verify F12-F14 seed data via API
+- [ ] Task 5: Verify F12-F14 seed data via API
   - **Agent**: backend-architect
-  - Dependencies: Tasks 2-4
+  - Dependencies: Tasks 2-3
   - Acceptance criteria:
     - Notifications list shows history
-    - Analytics returns seeded metrics
     - Public storefront API returns published content
 
 ### Phase Summary
-**Status**: In Progress (F11 Complete, F12 Complete)
+**Status**: Complete (F11-F12 Complete, F14 Complete)
 
 ---
 
-## Phase 13: Engagement Frontend (F11-F14)
+## Phase 13: Engagement Frontend (F11-F12, F14)
 
 ### Objectives
 - Build queue management and guest-facing UI
 - Build notification center and preferences
-- Build analytics dashboards with charts
 - Build storefront editor and preview
 
 ### Tasks
@@ -325,16 +306,7 @@ Comprehensive seed data for engagement features enables:
     - ✅ API client functions (templates, history, send, preferences)
     - User preference settings (TODO: user-facing preferences page)
   - **Completed**: 2026-01-04 - 4 pages, types, API functions, new UI component
-- [ ] Task 3: Create analytics dashboard
-  - **Agent**: frontend-architect
-  - Dependencies: Phase 12
-  - Acceptance criteria:
-    - Revenue and sales charts
-    - Attendance and capacity graphs
-    - Ticket type performance
-    - Staff metrics dashboard
-    - Saved reports management
-- [ ] Task 4: Create storefront editor
+- [ ] Task 3: Create storefront editor
   - **Agent**: frontend-architect
   - Dependencies: Phase 12
   - Acceptance criteria:
@@ -345,30 +317,29 @@ Comprehensive seed data for engagement features enables:
     - FAQ manager
     - Announcement manager
     - Live preview
-- [ ] Task 5: Create public storefront
+- [ ] Task 4: Create public storefront
   - **Agent**: frontend-architect
-  - Dependencies: Task 4
+  - Dependencies: Task 3
   - Acceptance criteria:
     - Public homepage with hero
     - Attractions listing
     - Custom pages
     - FAQ page
     - Ticket purchase flow
-- [ ] Task 6: Verify UI displays seed data correctly
+- [ ] Task 5: Verify UI displays seed data correctly
   - **Agent**: frontend-architect
-  - Dependencies: Tasks 1-5
+  - Dependencies: Tasks 1-4
   - Acceptance criteria:
     - Queue dashboard shows 50 seeded entries
-    - Analytics shows 60 days of metrics
     - Storefront displays custom branding
     - Public storefront renders all pages
 
 ### Phase Summary
-**Status**: In Progress (F11 Queue 90%, F12 Notifications Complete)
+**Status**: In Progress (F11 Queue 90%, F12 Notifications Complete, F14 Pending)
 
 ---
 
-## Phase 14: Engagement Testing (F11-F14)
+## Phase 14: Engagement Testing (F11-F12, F14)
 
 ### Objectives
 - E2E testing of engagement workflows
@@ -399,14 +370,7 @@ Comprehensive seed data for engagement features enables:
     - Push devices: register iOS/Android/web, reject invalid, unregister
     - Feature flag gating
   - **Completed**: 2026-01-05 - 32 E2E tests covering all notification endpoints
-- [ ] Task 3: Create analytics E2E tests
-  - **Agent**: qa
-  - Dependencies: Phase 13
-  - Acceptance criteria:
-    - Dashboard loads with data
-    - Date range filtering works
-    - Export report generates file
-- [ ] Task 4: Create storefront E2E tests
+- [ ] Task 3: Create storefront E2E tests
   - **Agent**: qa
   - Dependencies: Phase 13
   - Acceptance criteria:
@@ -414,16 +378,15 @@ Comprehensive seed data for engagement features enables:
     - Custom pages render
     - Ticket purchase flow completes
     - Domain verification flow
-- [ ] Task 5: Verify seed data integrity
+- [ ] Task 4: Verify seed data integrity
   - **Agent**: qa
-  - Dependencies: Tasks 1-4
+  - Dependencies: Tasks 1-3
   - Acceptance criteria:
     - All seeded queue entries accessible
-    - Analytics metrics aggregate correctly
     - Storefront content displays properly
 
 ### Phase Summary
-**Status**: In Progress (F11 Queue E2E Complete, F12 Notifications E2E Complete)
+**Status**: In Progress (F11-F12 E2E Complete, F14 Pending)
 
 ---
 
@@ -523,7 +486,72 @@ test('capture time clock screenshots', async ({ page }) => {
 
 ---
 
-## Phase 15: Integration Testing (F1-F15)
+## Phase 15: Comprehensive Demo Seeding
+
+### Objectives
+- Replace existing piecemeal seed data with unified, comprehensive demo environment
+- Create multiple organizations with varying subscription tiers (Basic, Pro, Enterprise, Onboarding)
+- Seed all 60+ tables with interconnected, realistic data
+- Pre-configure Stripe test accounts for consistent payment testing
+- Enable complete demo walkthroughs for all user journeys
+
+### Reference
+See `.claude/plans/comprehensive-seeding.md` for complete specification including:
+- Database schema reference (60 tables, 28 critical)
+- 8 data relationship flow diagrams
+- UUID naming conventions
+- Stripe test account strategy
+- Demo scenarios and test account reference
+
+### Organizations to Seed
+
+| Tier | Org Name | Slug | Purpose |
+|------|----------|------|---------|
+| Basic | Spooky Hollow | spooky-hollow | Small seasonal operation, limited features |
+| Pro | Nightmare Manor | nightmare-manor | Established haunt, full operations (flagship demo) |
+| Enterprise | Terror Collective | terror-collective | Multi-venue operation, all features |
+| Onboarding | New Haunt | new-haunt | Fresh org for onboarding flow demo |
+
+### Tasks
+- [ ] Task 1: Create new UUID schema with org prefixes
+  - **Agent**: backend-architect
+  - Acceptance criteria: Deterministic UUIDs like `a{org}000000-0000-0000-0000-{seq}`
+
+- [ ] Task 2: Restructure seed file architecture
+  - **Agent**: backend-architect
+  - Acceptance criteria: Modular seed files in `supabase/seed/` directory
+
+- [ ] Task 3: Seed all user accounts (25+ users across 4 orgs)
+  - **Agent**: backend-architect
+  - Acceptance criteria: All roles covered (owner, admin, manager, hr, actor, box_office, finance, scanner)
+
+- [ ] Task 4: Seed organizations with tier-appropriate feature flags
+  - **Agent**: backend-architect
+  - Acceptance criteria: Feature flags correctly gate features per tier
+
+- [ ] Task 5: Seed complete relationship chains (see flows in spec)
+  - **Agent**: backend-architect
+  - Acceptance criteria: All 8 data flows demonstrable
+
+- [ ] Task 6: Create Stripe test account setup script
+  - **Agent**: backend-architect
+  - Acceptance criteria: One-time script to create persistent Stripe test accounts
+
+- [ ] Task 7: Seed sample transactions and payouts
+  - **Agent**: backend-architect
+  - Acceptance criteria: Stripe transactions for Pro/Enterprise orgs
+
+- [ ] Task 8: Validate with E2E tests
+  - **Agent**: qa
+  - Acceptance criteria: All E2E tests pass, demo scenarios walkthrough complete
+
+### Phase Summary
+**Status**: Not Started
+**Estimated Records**: 500+ across 60 tables
+
+---
+
+## Phase 16: Integration Testing (F1-F12, F14-F15)
 
 ### Objectives
 - Full system E2E testing across all features
@@ -534,7 +562,7 @@ test('capture time clock screenshots', async ({ page }) => {
 ### Tasks
 - [ ] Task 1: Create cross-feature E2E tests
   - **Agent**: qa
-  - Dependencies: Phase 14
+  - Dependencies: Phase 15 (Comprehensive Seeding)
   - Acceptance criteria:
     - User journey from signup to ticket purchase
     - Staff journey from login to shift completion
@@ -549,7 +577,7 @@ test('capture time clock screenshots', async ({ page }) => {
     - Ticketing + Payments integration
     - Check-in + Queue integration
     - Notifications across all features
-    - Analytics data accuracy from all sources
+    - Storefront + Ticketing integration
 
 - [ ] Task 3: Performance testing
   - **Agent**: qa, devops
@@ -634,9 +662,21 @@ test('capture time clock screenshots', async ({ page }) => {
     - Loading states and empty states consistent
     - Animation timing consistency across components
 
-- [ ] Task 4: Accessibility audit
-  - **Agent**: frontend-architect, qa
+- [ ] Task 4: TODO cleanup and technical debt
+  - **Agent**: frontend-architect, backend-architect
   - Dependencies: Task 3
+  - Acceptance criteria:
+    - Scan codebase for all TODO, FIXME, HACK, XXX comments
+    - Categorize by priority (critical, important, nice-to-have)
+    - Address all critical and important TODOs
+    - Document or create tickets for deferred items
+    - Remove stale or completed TODO comments
+    - Check for incomplete feature implementations
+    - Verify all "TODO: WebSocket" and similar placeholders are addressed or documented
+
+- [ ] Task 5: Accessibility audit
+  - **Agent**: frontend-architect, qa
+  - Dependencies: Task 4
   - Acceptance criteria:
     - WCAG 2.1 AA compliance
     - Keyboard navigation for all features
@@ -645,9 +685,9 @@ test('capture time clock screenshots', async ({ page }) => {
     - Focus indicators visible
     - Reduced motion preferences respected
 
-- [ ] Task 5: Performance optimization
+- [ ] Task 6: Performance optimization
   - **Agent**: frontend-architect, backend-architect
-  - Dependencies: Task 3
+  - Dependencies: Task 4
   - Acceptance criteria:
     - Lighthouse score > 90 (Performance)
     - Bundle size optimization
@@ -656,9 +696,9 @@ test('capture time clock screenshots', async ({ page }) => {
     - Database query optimization
     - Animation performance (GPU-accelerated transforms)
 
-- [ ] Task 6: Production deployment
+- [ ] Task 7: Production deployment
   - **Agent**: devops, backend-architect
-  - Dependencies: Tasks 1-5
+  - Dependencies: Tasks 1-6
   - Acceptance criteria:
     - Environment configuration (staging, production)
     - CI/CD pipeline setup
@@ -667,9 +707,9 @@ test('capture time clock screenshots', async ({ page }) => {
     - Backup and recovery procedures
     - SSL certificates and domain configuration
 
-- [ ] Task 7: Documentation and handoff
+- [ ] Task 8: Documentation and handoff
   - **Agent**: scribe, backend-architect
-  - Dependencies: Task 6
+  - Dependencies: Task 7
   - Acceptance criteria:
     - API documentation complete
     - User guide for each role
@@ -691,7 +731,6 @@ test('capture time clock screenshots', async ({ page }) => {
 | `supabase/seed.sql` | F11 Virtual Queue seed data | Complete |
 | `docs/features/F11-queue/ERD.md` | Queue ERD | Complete |
 | `docs/features/F12-notifications/ERD.md` | Notifications ERD | Exists |
-| `docs/features/F13-analytics/ERD.md` | Analytics ERD | Exists |
 | `docs/features/F14-storefronts/ERD.md` | Storefronts ERD | Exists |
 
 ### F15 Documentation Site Files
@@ -711,9 +750,8 @@ test('capture time clock screenshots', async ({ page }) => {
 | Queue (Public) | `/api/v1/attractions/:attractionSlug/queue/*` | None (feature check in service) | Complete |
 | Notifications | `/api/v1/organizations/:orgId/notifications/*` | JWT + Roles + Feature (`notifications`) | Complete |
 | User Notifications | `/api/v1/notifications/*` (inbox, preferences, devices) | JWT | Complete |
-| Analytics | `/api/v1/organizations/:orgId/analytics/*` | JWT + Roles | Not Started |
-| Storefronts | `/api/v1/organizations/:orgId/storefront/*` | JWT + Roles | Not Started |
-| Storefronts (Public) | `/api/v1/public/storefront/:domain/*` | None | Not Started |
+| Storefronts | `/api/v1/organizations/:orgId/storefront/*` | JWT + Roles + Feature (`storefronts`) | Complete |
+| Storefronts (Public) | `/api/v1/storefronts/:identifier/*` | None | Complete |
 
 ---
 
@@ -724,18 +762,15 @@ test('capture time clock screenshots', async ({ page }) => {
 - **F1 Auth**: Required for notifications (user preferences)
 - **F2 Organizations**: Required for storefronts
 - **F3 Attractions**: Required for storefronts (featured attractions)
-- **All Features**: Required for analytics (aggregates all data)
 
 ### Internal Dependencies (Part 3)
 - **F12 Notifications** supports **F11 Queue** (SMS/push delivery)
-- **F13 Analytics** aggregates data from **F7-F12**
 - **F14 Storefronts** integrates with **F8 Ticketing** for purchases
 
 ### Recommended Implementation Order
-1. F12 Notifications (foundational for queue and system alerts)
-2. F11 Virtual Queue (uses notifications for alerts)
-3. F14 Storefronts (public-facing, high visibility)
-4. F13 Analytics (aggregates all data, build last)
+1. F11 Virtual Queue ✅ (complete)
+2. F12 Notifications ✅ (complete)
+3. F14 Storefronts (public-facing, enables ticket sales)
 
 ---
 
@@ -752,12 +787,6 @@ test('capture time clock screenshots', async ({ page }) => {
 - **Push**: Firebase Cloud Messaging for mobile push
 - **Rate Limiting**: Prevent notification spam
 
-### F13 Analytics
-- **Materialized Views**: Use for expensive aggregations
-- **Cron Jobs**: Daily aggregation jobs for metrics
-- **Data Retention**: Consider archiving old hourly metrics
-- **Export Formats**: CSV, PDF report generation
-
 ### F14 Storefronts
 - **Multi-Domain Routing**: Next.js middleware for domain resolution
 - **SSL Automation**: Let's Encrypt or Cloudflare for custom domains
@@ -769,16 +798,18 @@ test('capture time clock screenshots', async ({ page }) => {
 ## Metrics (Part 3)
 
 ### Estimated Scope
-- **New Database Tables**: ~20
-- **New API Modules**: 4 (queue, notifications, analytics, storefronts)
-- **New API Endpoints**: ~35
-- **New Frontend Pages**: ~20
-- **Seed Data Entities**: ~500 records
-- **Integration Tests**: ~50 cross-feature tests
+- **New Database Tables**: ~15
+- **New API Modules**: 3 (queue, notifications, storefronts)
+- **New API Endpoints**: ~25
+- **New Frontend Pages**: ~15
+- **Seed Data Entities**: ~200 records
+- **Integration Tests**: ~40 cross-feature tests
 - **E2E User Journeys**: 4 complete workflows
 - **Polish Tasks**: Dark theme, accessibility, performance optimization
 - **Documentation Pages**: ~50+ (user guides, API reference, tutorials)
 - **Automated Screenshots**: ~100+ (via Playwright)
+
+> **Note**: F13 Analytics has been deferred to post-MVP. See `.claude/plans/analytics.md`
 
 ---
 
@@ -802,8 +833,8 @@ All other routes require authentication with appropriate role permissions.
 - Part 1 (MVP F1-F6): `.claude/plans/mvp-implementation.md`
 - Part 2 (Operations F7-F10): `.claude/plans/mvp-implementation-part-2.md`
 - Feature Roadmap: `.claude/plans/feature-roadmap.md`
+- F13 Analytics (deferred): `.claude/plans/analytics.md`
 - F15 Docs Spec: `docs/features/F15-docs/SPEC.md`
-- API Docs: `docs/features/F11-F14/API.md`
-- ERD Docs: `docs/features/F11-F14/ERD.md`
+- **Comprehensive Seeding Plan**: `.claude/plans/comprehensive-seeding.md`
 
-> **Note**: Part 3 includes the final phases (15-17) which cover documentation site, integration testing, dark theme, UX polish, and production deployment for ALL features (F1-F15).
+> **Note**: Part 3 includes the final phases (15-17) which cover documentation site, integration testing, dark theme, UX polish, and production deployment for ALL MVP features (F1-F12, F14-F15). F13 Analytics has been deferred to post-MVP.
