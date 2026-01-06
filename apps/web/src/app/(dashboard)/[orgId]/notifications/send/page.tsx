@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Mail, MessageSquare, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, MessageSquare, Send } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -216,18 +216,9 @@ export default function SendNotificationPage() {
 
             {/* Submit */}
             <div className="flex gap-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Notification
-                  </>
-                )}
+              <Button type="submit" isLoading={isLoading} loadingText="Sending...">
+                <Send className="h-4 w-4" />
+                Send Notification
               </Button>
               <Button
                 type="button"

@@ -7,16 +7,16 @@ export default function StaffLoading() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
-          <Skeleton className="h-9 w-32" />
-          <Skeleton className="h-5 w-64" />
+          <Skeleton shimmer className="h-9 w-32" />
+          <Skeleton shimmer className="h-5 w-64" />
         </div>
-        <Skeleton className="h-10 w-32" />
+        <Skeleton shimmer className="h-10 w-32" />
       </div>
 
       {/* Filters */}
       <div className="flex gap-2">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-10 w-32" />
+        <Skeleton shimmer className="h-10 w-64" />
+        <Skeleton shimmer className="h-10 w-32" />
       </div>
 
       {/* Staff Grid */}
@@ -24,15 +24,15 @@ export default function StaffLoading() {
         {[...Array(6)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center gap-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
+              <Skeleton shimmer className="h-12 w-12 rounded-full" />
               <div className="space-y-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-4 w-24" />
+                <Skeleton shimmer className="h-5 w-32" />
+                <Skeleton shimmer className="h-4 w-24" />
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
+              <Skeleton shimmer className="h-4 w-full" />
+              <Skeleton shimmer className="h-4 w-3/4" />
             </CardContent>
           </Card>
         ))}

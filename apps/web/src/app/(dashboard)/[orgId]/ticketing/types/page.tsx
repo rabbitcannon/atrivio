@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Plus, Pencil, Trash2, MoreHorizontal, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, MoreHorizontal, Package, Loader2 } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -84,6 +84,7 @@ export default function TicketTypesPage() {
   const [categories, setCategories] = useState<TicketCategory[]>([]);
   const [attractions, setAttractions] = useState<Attraction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<TicketType | null>(null);
   const [resolvedOrgId, setResolvedOrgId] = useState<string | null>(null);
@@ -192,6 +193,7 @@ export default function TicketTypesPage() {
   async function handleSubmit() {
     if (!resolvedOrgId || !formData.attractionId) return;
 
+    setIsSaving(true);
     const payload = {
       name: formData.name,
       description: formData.description || undefined,
@@ -231,6 +233,8 @@ export default function TicketTypesPage() {
         description: 'Failed to save ticket type',
         variant: 'destructive',
       });
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -277,7 +281,7 @@ export default function TicketTypesPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading...</div>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -560,10 +564,15 @@ export default function TicketTypesPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={!formData.name || !formData.price}>
+            <Button
+              onClick={handleSubmit}
+              disabled={!formData.name || !formData.price}
+              isLoading={isSaving}
+              loadingText={editingType ? 'Saving...' : 'Creating...'}
+            >
               {editingType ? 'Save Changes' : 'Create'}
             </Button>
           </DialogFooter>
