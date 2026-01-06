@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FadeTransition } from '@/components/ui/page-transition';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +16,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">{children}</div>
+        <FadeTransition className="w-full max-w-md">
+          {children}
+        </FadeTransition>
       </main>
 
       {/* Footer */}

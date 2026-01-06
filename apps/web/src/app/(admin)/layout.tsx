@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getUser, createClient } from '@/lib/supabase/server';
 import { AdminHeader } from '@/components/layouts/admin-header';
 import { AdminSidebar } from '@/components/layouts/admin-sidebar';
+import { PageTransition } from '@/components/ui/page-transition';
 
 interface AdminData {
   is_super_admin: boolean;
@@ -36,7 +37,9 @@ export default async function AdminLayout({
       <AdminHeader />
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar />
-        <main className="flex-1 overflow-auto bg-background p-6">{children}</main>
+        <main className="flex-1 overflow-auto bg-background p-6">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );
