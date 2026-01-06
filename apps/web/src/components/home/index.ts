@@ -1,4 +1,5 @@
 export { LandingHeader } from './landing-header';
+export { LandingContent } from './landing-content';
 export { HeroSection } from './hero-section';
 export { FeatureGrid } from './feature-grid';
 export { SplitSection } from './split-section';

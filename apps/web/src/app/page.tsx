@@ -1,18 +1,11 @@
 import type { Metadata } from 'next';
-import {
-  LandingHeader,
-  HeroSection,
-  FeatureGrid,
-  SplitSection,
-  LandingFooter,
-} from '@/components/home';
-import { StatsSection } from '@/components/home/stats-section';
-import { PricingSection } from '@/components/home/pricing-section';
-import { TestimonialsSection } from '@/components/home/testimonials-section';
-import { CtaSection } from '@/components/home/cta-section';
-import { FeaturesShowcase } from '@/components/home/features-showcase';
-import { MobileCheckout } from '@/components/home/illustrations/mobile-checkout';
-import { CheckInIllustration } from '@/components/home/illustrations/check-in-illustration';
+import dynamic from 'next/dynamic';
+
+// Dynamic import with SSR disabled to avoid motion library hydration issues
+const LandingContent = dynamic(
+  () => import('@/components/home/landing-content').then((mod) => mod.LandingContent),
+  { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: 'Atrivio | The Complete Attractions Management Platform',
@@ -35,145 +28,6 @@ export const metadata: Metadata = {
   },
 };
 
-const platformFeatures = [
-  {
-    id: 'multi-tenant',
-    icon: <span aria-hidden="true">🏢</span>,
-    title: 'Multi-Location Management',
-    description:
-      'Manage all your attractions from a single dashboard. Perfect for operators with multiple haunts, escape rooms, or venues.',
-  },
-  {
-    id: 'role-based',
-    icon: <span aria-hidden="true">🔐</span>,
-    title: 'Role-Based Access',
-    description:
-      'Fine-grained permissions with owner, admin, manager, and specialized roles. Everyone sees exactly what they need.',
-  },
-  {
-    id: 'real-time',
-    icon: <span aria-hidden="true">⚡</span>,
-    title: 'Real-Time Operations',
-    description:
-      'Live dashboards showing guest flow, staff status, capacity, and revenue. Make decisions with up-to-the-minute data.',
-  },
-];
-
-const staffingFeatures = [
-  {
-    id: 'recruit',
-    icon: <span aria-hidden="true">📢</span>,
-    title: 'Recruit & Onboard',
-    description:
-      'Branded application forms with custom workflows. Review applicants, attach notes, assign roles, and manage certifications.',
-  },
-  {
-    id: 'schedule',
-    icon: <span aria-hidden="true">📅</span>,
-    title: 'Smart Scheduling',
-    description:
-      'Drag-and-drop builder with shift templates, availability management, conflict detection, and shift swap requests.',
-  },
-  {
-    id: 'time-tracking',
-    icon: <span aria-hidden="true">⏱️</span>,
-    title: 'Time Tracking',
-    description:
-      'QR code and PIN-based clock in/out. Track hours, breaks, and overtime automatically. Export for payroll integration.',
-  },
-];
-
-const ticketingFeatures = [
-  { id: 'timed-ticketing', text: 'Timed ticketing with slot-based entry for automatic capacity balancing.' },
-  { id: 'ticket-types', text: 'Multiple ticket types: general admission, VIP, fast pass, group rates, and combos.' },
-  { id: 'promo-codes', text: 'Flexible promo codes with usage limits, date ranges, and minimum purchase requirements.' },
-  { id: 'fast-payouts', text: 'Stripe Connect integration with 1-2 business day payouts to your bank.' },
-];
-
-const checkInFeatures = [
-  { id: 'barcode-scan', text: 'Lightning-fast barcode and QR code scanning from any device.' },
-  { id: 'capacity-tracking', text: 'Real-time capacity tracking with automatic gate control.' },
-  { id: 'waiver-collection', text: 'Digital waiver collection and signature capture at check-in.' },
-  { id: 'queue-management', text: 'Virtual queue management to reduce wait times and improve guest experience.' },
-];
-
 export default function HomePage() {
-  return (
-    <div data-theme="landing" className="min-h-screen bg-[hsl(var(--landing-bg-darkest))] text-[hsl(var(--landing-text-primary))]">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-[hsl(var(--landing-accent-primary))] focus:px-4 focus:py-2 focus:text-white focus:outline-none"
-      >
-        Skip to main content
-      </a>
-
-      <LandingHeader />
-
-      <main id="main-content">
-        <HeroSection />
-
-        <StatsSection />
-
-        <FeatureGrid
-          id="platform"
-          title="One Platform to Run Your Entire Operation"
-          features={platformFeatures}
-        />
-
-        <FeaturesShowcase />
-
-        <FeatureGrid
-          id="staffing"
-          title="Build and Manage Your Dream Team"
-          features={staffingFeatures}
-          variant="alt"
-        />
-
-        <SplitSection
-          id="ticketing"
-          title={
-            <>
-              Maximize Revenue with{' '}
-              <span className="text-[hsl(var(--landing-accent-secondary))]">
-                Smart Ticketing
-              </span>
-            </>
-          }
-          description="Sell tickets online with branded storefronts, or use our POS interface for walk-up sales. Integrated payment processing with Stripe Connect."
-          features={ticketingFeatures}
-          ctaText="Learn About Ticketing"
-          ctaHref="#pricing"
-          illustration={<MobileCheckout />}
-        />
-
-        <SplitSection
-          id="checkin"
-          title={
-            <>
-              Seamless{' '}
-              <span className="text-[hsl(var(--landing-accent-primary))]">
-                Check-In
-              </span>{' '}
-              Experience
-            </>
-          }
-          description="Get guests through the door faster with our streamlined check-in system. Track capacity in real-time and collect digital waivers."
-          features={checkInFeatures}
-          ctaText="See Check-In in Action"
-          ctaHref="#demo"
-          illustration={<CheckInIllustration />}
-          reverse
-          variant="alt"
-        />
-
-        <PricingSection />
-
-        <TestimonialsSection />
-
-        <CtaSection />
-      </main>
-
-      <LandingFooter />
-    </div>
-  );
+  return <LandingContent />;
 }

@@ -1,3 +1,6 @@
+'use client';
+
+import { motion } from 'motion/react';
 import { DashboardViz } from './illustrations/dashboard-viz';
 
 export function HeroSection() {
@@ -11,29 +14,49 @@ export function HeroSection() {
     >
       <div className="mx-auto max-w-[var(--landing-container-max)] text-center">
         {/* Badge */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--landing-accent-primary)/0.3)] bg-[hsl(var(--landing-accent-primary)/0.1)] px-4 py-2 text-sm font-medium text-[hsl(var(--landing-accent-primary))]">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--landing-accent-primary)/0.3)] bg-[hsl(var(--landing-accent-primary)/0.1)] px-4 py-2 text-sm font-medium text-[hsl(var(--landing-accent-primary))]"
+        >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--landing-accent-secondary))] opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[hsl(var(--landing-accent-secondary))]" />
           </span>
           Now with Virtual Queue Management
-        </div>
+        </motion.div>
 
-        <h1 className="mb-5 text-4xl font-bold leading-tight tracking-tight text-[hsl(var(--landing-text-primary))] sm:text-5xl lg:text-6xl">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-5 text-4xl font-bold leading-tight tracking-tight text-[hsl(var(--landing-text-primary))] sm:text-5xl lg:text-6xl"
+        >
           The All-in-One Platform for
           <br />
           <span className="text-[hsl(var(--landing-accent-primary))]">
             Attractions & Entertainment
           </span>
-        </h1>
+        </motion.h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg text-[hsl(var(--landing-text-muted))] sm:text-xl">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mx-auto mb-10 max-w-2xl text-lg text-[hsl(var(--landing-text-muted))] sm:text-xl"
+        >
           Ticketing, staff scheduling, check-in, and payments — everything you need
           to run haunted attractions, escape rooms, theme parks, and entertainment
           venues. All in one place.
-        </p>
+        </motion.p>
 
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-col items-center justify-center gap-4 sm:flex-row"
+        >
           <a
             href="#demo"
             className="inline-flex items-center gap-2 rounded-lg bg-[hsl(var(--landing-accent-primary))] px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-[hsl(var(--landing-glow-primary))] transition-all duration-[var(--landing-transition-normal)] hover:-translate-y-1 hover:bg-[hsl(var(--landing-accent-primary-hover))] hover:shadow-xl hover:shadow-[hsl(var(--landing-glow-primary))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] focus-visible:ring-offset-4 focus-visible:ring-offset-[hsl(var(--landing-bg-darkest))]"
@@ -74,15 +97,25 @@ export function HeroSection() {
             </svg>
             Watch Demo
           </a>
-        </div>
+        </motion.div>
 
-        <p className="mt-6 text-sm text-[hsl(var(--landing-text-muted))]">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mt-6 text-sm text-[hsl(var(--landing-text-muted))]"
+        >
           No credit card required. 14-day free trial on all plans.
-        </p>
+        </motion.p>
 
-        <div className="mt-16 sm:mt-20">
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="mt-16 sm:mt-20"
+        >
           <DashboardViz />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

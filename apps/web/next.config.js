@@ -4,6 +4,9 @@ const nextConfig = {
 
   // Note: @haunt/shared is pre-built, no need to transpile
 
+  // Transpile motion and framer-motion for proper ESM support
+  transpilePackages: ['motion', 'framer-motion'],
+
   // Experimental features
   experimental: {
     // typedRoutes disabled - causes issues with dynamic routes
@@ -86,6 +89,15 @@ const nextConfig = {
         lodash: 'lodash-es',
       };
     }
+
+    // Fix motion/framer-motion module resolution
+    // Ensure consistent module resolution to avoid 'call' errors
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Force ESM imports for motion packages
+      'motion/react': require.resolve('motion/react'),
+      'framer-motion': require.resolve('framer-motion'),
+    };
 
     return config;
   },

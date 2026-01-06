@@ -1,3 +1,8 @@
+'use client';
+
+import { useRef } from 'react';
+import { motion, useInView } from 'motion/react';
+
 const stats = [
   {
     id: 'tickets',
@@ -26,12 +31,25 @@ const stats = [
 ];
 
 export function StatsSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+
   return (
     <section className="border-y border-[hsl(var(--landing-border-subtle))] bg-[hsl(var(--landing-bg-card))] px-5 py-12">
-      <div className="mx-auto max-w-[var(--landing-container-max)]">
+      <div ref={ref} className="mx-auto max-w-[var(--landing-container-max)]">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.id} className="text-center">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: [0.21, 0.47, 0.32, 0.98],
+              }}
+              className="text-center"
+            >
               <div className="text-4xl font-bold text-[hsl(var(--landing-accent-primary))] sm:text-5xl">
                 {stat.value}
               </div>
@@ -41,7 +59,7 @@ export function StatsSection() {
               <div className="text-sm text-[hsl(var(--landing-text-muted))]">
                 {stat.description}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

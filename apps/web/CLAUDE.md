@@ -214,3 +214,45 @@ className="text-foreground"
 className="bg-primary"
 className="text-muted-foreground"
 ```
+
+## Animations
+
+### Library
+- Uses `motion` package (v12+) - import from `motion/react`
+- Motion is a wrapper around framer-motion (same library, new branding)
+- All animation components must have `'use client'` directive
+
+### Pre-built Components (`@/components/ui/motion`)
+| Component | Use Case |
+|-----------|----------|
+| `MotionDiv` | General animated container |
+| `MotionCard` | Cards with hover effects |
+| `MotionList/Item` | Staggered list animations |
+| `FadeIn` | Simple fade with direction |
+| `StaggerContainer/Item` | Grid animations |
+
+### Variants (`@/lib/motion`)
+- `fadeVariants`, `fadeUpVariants` - Fade animations
+- `scaleVariants` - Scale in/out
+- `slideLeftVariants`, `slideRightVariants` - Slide panels
+- `cardHover`, `buttonStates` - Interactive states
+
+### Accessibility
+- All components check `useReducedMotion()`
+- Fallback to static rendering when reduced motion preferred
+- Use `prefersReducedMotion()` utility for custom animations
+
+### When to Use What
+| Context | Approach |
+|---------|----------|
+| Landing page sections | `FadeIn`, `StaggerContainer` with `useInView` |
+| Dashboard cards | `MotionCard` or CSS transitions |
+| Page transitions | `PageTransition` component |
+| Hover effects | `cardHover` or `buttonStates` presets |
+| Loading states | CSS `skeleton-shimmer` class |
+
+### Configuration (next.config.js)
+```js
+transpilePackages: ['motion', 'framer-motion'],
+// Both needed - motion re-exports framer-motion
+```

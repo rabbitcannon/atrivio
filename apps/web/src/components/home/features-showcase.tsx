@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { motion, useInView, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {
@@ -100,11 +101,18 @@ const features: Feature[] = [
 
 export function FeaturesShowcase() {
   const [activeFeature, setActiveFeature] = useState(features[0]);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
     <section className="bg-[hsl(var(--landing-bg-dark))] px-5 py-[var(--landing-section-spacing)]">
-      <div className="mx-auto max-w-[var(--landing-container-max)]">
-        <div className="mb-12 text-center">
+      <div ref={ref} className="mx-auto max-w-[var(--landing-container-max)]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="mb-12 text-center"
+        >
           <h2 className="mb-4 text-3xl font-bold text-[hsl(var(--landing-text-primary))] sm:text-4xl">
             Everything You Need, Nothing You Don&apos;t
           </h2>
@@ -112,16 +120,30 @@ export function FeaturesShowcase() {
             Purpose-built for attractions, our platform gives you the tools to run
             your operation efficiently — without the bloat of generic software.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Feature tabs */}
-          <div className="space-y-2 lg:col-span-1">
-            {features.map((feature) => (
-              <button
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="space-y-2 lg:col-span-1"
+          >
+            {features.map((feature, index) => (
+              <motion.button
                 key={feature.id}
                 type="button"
                 onClick={() => setActiveFeature(feature)}
+                initial={{ opacity: 0, x: -20 }}
+                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                transition={{
+                  duration: 0.4,
+                  delay: 0.2 + index * 0.05,
+                  ease: [0.21, 0.47, 0.32, 0.98],
+                }}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
                   'w-full rounded-xl p-4 text-left transition-all duration-[var(--landing-transition-normal)]',
                   activeFeature.id === feature.id
@@ -133,38 +155,60 @@ export function FeaturesShowcase() {
                   <span className="text-2xl" aria-hidden="true">{feature.icon}</span>
                   <span className="font-semibold">{feature.title}</span>
                 </div>
-              </button>
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
 
           {/* Feature details */}
-          <div className="rounded-2xl bg-[hsl(var(--landing-bg-card))] p-8 lg:col-span-2">
-            <div className="mb-6 flex items-center gap-4">
-              <span className="text-5xl" aria-hidden="true">{activeFeature.icon}</span>
-              <div>
-                <h3 className="text-2xl font-bold text-[hsl(var(--landing-text-primary))]">
-                  {activeFeature.title}
-                </h3>
-                <p className="text-[hsl(var(--landing-text-muted))]">
-                  {activeFeature.description}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {activeFeature.details.map((detail) => (
-                <div
-                  key={detail}
-                  className="flex items-start gap-3 rounded-lg bg-[hsl(var(--landing-bg-dark))] p-4"
-                >
-                  <span className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]" aria-hidden="true">
-                    ✓
-                  </span>
-                  <span className="text-[hsl(var(--landing-text-muted))]">{detail}</span>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="rounded-2xl bg-[hsl(var(--landing-bg-card))] p-8 lg:col-span-2"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeFeature.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
+              >
+                <div className="mb-6 flex items-center gap-4">
+                  <span className="text-5xl" aria-hidden="true">{activeFeature.icon}</span>
+                  <div>
+                    <h3 className="text-2xl font-bold text-[hsl(var(--landing-text-primary))]">
+                      {activeFeature.title}
+                    </h3>
+                    <p className="text-[hsl(var(--landing-text-muted))]">
+                      {activeFeature.description}
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {activeFeature.details.map((detail, index) => (
+                    <motion.div
+                      key={detail}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.05,
+                        ease: [0.21, 0.47, 0.32, 0.98],
+                      }}
+                      className="flex items-start gap-3 rounded-lg bg-[hsl(var(--landing-bg-dark))] p-4"
+                    >
+                      <span className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]" aria-hidden="true">
+                        ✓
+                      </span>
+                      <span className="text-[hsl(var(--landing-text-muted))]">{detail}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </section>

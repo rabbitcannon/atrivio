@@ -1,3 +1,7 @@
+'use client';
+
+import { useRef } from 'react';
+import { motion, useInView } from 'motion/react';
 import { cn } from '@/lib/utils/cn';
 
 interface PricingTier {
@@ -70,10 +74,18 @@ const tiers: PricingTier[] = [
 ];
 
 export function PricingSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+
   return (
     <section id="pricing" className="bg-[hsl(var(--landing-bg-dark))] px-5 py-[var(--landing-section-spacing)]">
-      <div className="mx-auto max-w-[var(--landing-container-max)]">
-        <div className="mb-12 text-center">
+      <div ref={ref} className="mx-auto max-w-[var(--landing-container-max)]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="mb-12 text-center"
+        >
           <h2 className="mb-4 text-3xl font-bold text-[hsl(var(--landing-text-primary))] sm:text-4xl">
             Simple, Transparent Pricing
           </h2>
@@ -81,12 +93,20 @@ export function PricingSection() {
             No hidden fees. No long-term contracts. Scale your plan as your
             operation grows.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {tiers.map((tier) => (
-            <div
+          {tiers.map((tier, index) => (
+            <motion.div
               key={tier.id}
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.1 + index * 0.1,
+                ease: [0.21, 0.47, 0.32, 0.98],
+              }}
+              whileHover={{ y: -8, transition: { duration: 0.2 } }}
               className={cn(
                 'relative rounded-2xl p-8',
                 tier.highlighted
@@ -95,9 +115,14 @@ export function PricingSection() {
               )}
             >
               {tier.highlighted && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-[hsl(var(--landing-accent-primary))] px-4 py-1 text-sm font-semibold text-white">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3, delay: 0.4 }}
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-[hsl(var(--landing-accent-primary))] px-4 py-1 text-sm font-semibold text-white"
+                >
                   Most Popular
-                </div>
+                </motion.div>
               )}
 
               <div className="mb-6">
@@ -117,20 +142,29 @@ export function PricingSection() {
               </div>
 
               <ul className="mb-8 space-y-3">
-                {tier.features.map((feature) => (
-                  <li
+                {tier.features.map((feature, featureIndex) => (
+                  <motion.li
                     key={feature}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: 0.3 + index * 0.1 + featureIndex * 0.03,
+                      ease: [0.21, 0.47, 0.32, 0.98],
+                    }}
                     className="flex items-start gap-3 text-sm text-[hsl(var(--landing-text-muted))]"
                   >
                     <span className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]" aria-hidden="true">
                       ✓
                     </span>
                     <span>{feature}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
 
-              <a
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 href={tier.ctaHref}
                 className={cn(
                   'block w-full rounded-lg py-3 text-center font-semibold transition-all duration-[var(--landing-transition-normal)]',
@@ -140,14 +174,19 @@ export function PricingSection() {
                 )}
               >
                 {tier.ctaText}
-              </a>
-            </div>
+              </motion.a>
+            </motion.div>
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-[hsl(var(--landing-text-muted))]">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-8 text-center text-sm text-[hsl(var(--landing-text-muted))]"
+        >
           All plans include a 14-day free trial. No credit card required.
-        </p>
+        </motion.p>
       </div>
     </section>
   );
