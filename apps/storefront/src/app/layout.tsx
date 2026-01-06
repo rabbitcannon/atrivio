@@ -89,11 +89,11 @@ export default async function RootLayout({
   // Convert hex to HSL for CSS variables
   function hexToHSL(hex: string): string {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return '0 0% 0%';
+    if (!result || !result[1] || !result[2] || !result[3]) return '0 0% 0%';
 
-    let r = parseInt(result[1], 16) / 255;
-    let g = parseInt(result[2], 16) / 255;
-    let b = parseInt(result[3], 16) / 255;
+    const r = parseInt(result[1], 16) / 255;
+    const g = parseInt(result[2], 16) / 255;
+    const b = parseInt(result[3], 16) / 255;
 
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -116,7 +116,7 @@ export default async function RootLayout({
   // Determine if background is light or dark for contrast
   function isLightColor(hex: string): boolean {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return false;
+    if (!result || !result[1] || !result[2] || !result[3]) return false;
     const r = parseInt(result[1], 16);
     const g = parseInt(result[2], 16);
     const b = parseInt(result[3], 16);

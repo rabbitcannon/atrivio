@@ -8,6 +8,11 @@
     "noEmit": true,
     "allowJs": true,
     "incremental": true,
+    "exactOptionalPropertyTypes": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "declaration": false,
+    "declarationMap": false,
     "plugins": [
       {
         "name": "next"

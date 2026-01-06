@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Plus, Eye, Edit, MoreHorizontal, Globe, EyeOff, Archive } from 'lucide-react';
+import { ArrowLeft, FileText, Plus, Eye, Edit, Globe, EyeOff, Archive } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId, getStorefrontPages } from '@/lib/api';
+import { resolveOrgId, getStorefrontPages, getAttraction, updateStorefrontPage, deleteStorefrontPage } from '@/lib/api';
 import type { StorefrontPage, PageStatus } from '@/lib/api/types';
+import { PageActions } from './_components/page-actions';
 
 export const metadata: Metadata = {
   title: 'Storefront Pages',
@@ -36,18 +37,24 @@ const STATUS_CONFIG: Record<PageStatus, { label: string; variant: 'default' | 's
 export default async function StorefrontPagesPage({ params }: PagesPageProps) {
   const { orgId: orgIdentifier, attractionId } = await params;
 
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
+  const resolvedOrgId = await resolveOrgId(orgIdentifier);
+  if (!resolvedOrgId) {
     notFound();
   }
+  const orgId: string = resolvedOrgId;
 
   const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
 
   let pages: StorefrontPage[] = [];
+  let attractionSlug: string | undefined;
 
   try {
-    const pagesResult = await getStorefrontPages(orgId, attractionId);
+    const [pagesResult, attractionResult] = await Promise.all([
+      getStorefrontPages(orgId, attractionId),
+      getAttraction(orgId, attractionId),
+    ]);
     pages = pagesResult.data?.pages ?? [];
+    attractionSlug = attractionResult.data?.slug;
   } catch {
     // Feature might not be enabled
   }
@@ -56,6 +63,27 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
   const publishedPages = pages.filter((p) => p.status === 'published');
   const draftPages = pages.filter((p) => p.status === 'draft');
   const archivedPages = pages.filter((p) => p.status === 'archived');
+
+  // Capture values for server actions
+  const capturedOrgId = orgId;
+  const capturedAttractionId = attractionId;
+
+  // Server actions for page operations
+  async function handleStatusChange(pageId: string, newStatus: PageStatus) {
+    'use server';
+    await updateStorefrontPage(capturedOrgId, capturedAttractionId, pageId, { status: newStatus });
+  }
+
+  async function handleDelete(pageIdToDelete: string) {
+    'use server';
+    await deleteStorefrontPage(capturedOrgId, capturedAttractionId, pageIdToDelete);
+  }
+
+  const getPreviewUrl = (slug: string) => {
+    return attractionSlug
+      ? `http://localhost:3002/${slug}?storefront=${attractionSlug}`
+      : `http://localhost:3002/${slug}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -76,10 +104,12 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
             Create and manage your storefront content pages.
           </p>
         </div>
-        <Button disabled>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Page
-        </Button>
+        <Link href={`${basePath}/storefront/pages/new`}>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Page
+          </Button>
+        </Link>
       </div>
 
       {/* Stats */}
@@ -129,10 +159,12 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
               <p className="text-muted-foreground mb-4">
                 Create your first page to start building your storefront.
               </p>
-              <Button disabled>
-                <Plus className="mr-2 h-4 w-4" />
-                Create First Page
-              </Button>
+              <Link href={`${basePath}/storefront/pages/new`}>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create First Page
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="space-y-2">
@@ -159,11 +191,11 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span>/{page.slug}</span>
-                          <span>•</span>
+                          <span>-</span>
                           <span>{PAGE_TYPE_LABELS[page.pageType] || page.pageType}</span>
                           {page.showInNav && (
                             <>
-                              <span>•</span>
+                              <span>-</span>
                               <span className="flex items-center gap-1">
                                 <Globe className="h-3 w-3" />
                                 In navigation
@@ -174,17 +206,31 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" disabled>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Preview
-                      </Button>
-                      <Button variant="ghost" size="sm" disabled>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button variant="ghost" size="icon" disabled>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      {page.status === 'published' && (
+                        <a
+                          href={getPreviewUrl(page.slug)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="ghost" size="sm">
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
+                          </Button>
+                        </a>
+                      )}
+                      <Link href={`${basePath}/storefront/pages/${page.id}/edit`}>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                      </Link>
+                      <PageActions
+                        pageId={page.id}
+                        pageTitle={page.title}
+                        currentStatus={page.status}
+                        onStatusChange={handleStatusChange}
+                        onDelete={handleDelete}
+                      />
                     </div>
                   </div>
                 );
@@ -193,10 +239,6 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
           )}
         </CardContent>
       </Card>
-
-      <p className="text-sm text-muted-foreground text-center">
-        Page creation and editing will be available in a future update.
-      </p>
     </div>
   );
 }

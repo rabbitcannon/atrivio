@@ -1,5 +1,10 @@
 @import 'tailwindcss';
+
+@plugin 'tailwind-scrollbar-hide';
 @import './themes/landing.css';
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 @config "../../tailwind.config.js";
 
 @layer base {
@@ -54,6 +59,30 @@
     @apply border-border;
   }
 
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+:root {
+  --highlight: oklch(0.852 0.199 91.936);
+  --brand: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --highlight: oklch(0.852 0.199 91.936);
+  --brand: oklch(0.707 0.165 254.624);
+}
+
+@theme inline {
+  --color-highlight: var(--highlight);
+  --color-brand: var(--brand);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
   body {
     @apply bg-background text-foreground;
   }

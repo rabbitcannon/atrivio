@@ -760,7 +760,7 @@ export interface PreferencesResponse {
 // These types match the API response format (camelCase)
 // ============================================================================
 
-export type ContentFormat = 'markdown' | 'html' | 'plain';
+export type ContentFormat = 'markdown' | 'html' | 'plain' | 'richtext';
 export type PageType = 'home' | 'about' | 'faq' | 'contact' | 'rules' | 'jobs' | 'gallery' | 'custom';
 export type PageStatus = 'draft' | 'published' | 'archived';
 export type DomainType = 'subdomain' | 'custom';

@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, Ticket } from 'lucide-react';
 import { useStorefront } from '@/lib/storefront-context';
 import { cn } from '@/lib/utils';
+import { StorefrontLink } from './storefront-link';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,16 +17,16 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <StorefrontLink href="/" className="flex items-center gap-2">
             <span className="text-xl font-heading font-bold text-storefront-primary">
               {attraction.name}
             </span>
-          </Link>
+          </StorefrontLink>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             {headerLinks.map((link, index) => (
-              <Link
+              <StorefrontLink
                 key={link.id || `nav-${index}`}
                 href={link.url}
                 target={link.openInNewTab ? '_blank' : undefined}
@@ -34,15 +34,15 @@ export function Header() {
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
-              </Link>
+              </StorefrontLink>
             ))}
-            <Link
+            <StorefrontLink
               href="/tickets"
               className="inline-flex items-center gap-2 rounded-md bg-storefront-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
             >
               <Ticket className="h-4 w-4" />
               Buy Tickets
-            </Link>
+            </StorefrontLink>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -65,7 +65,7 @@ export function Header() {
         >
           <nav className="flex flex-col gap-2">
             {headerLinks.map((link, index) => (
-              <Link
+              <StorefrontLink
                 key={link.id || `mobile-nav-${index}`}
                 href={link.url}
                 target={link.openInNewTab ? '_blank' : undefined}
@@ -74,16 +74,16 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
-              </Link>
+              </StorefrontLink>
             ))}
-            <Link
+            <StorefrontLink
               href="/tickets"
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-storefront-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Ticket className="h-4 w-4" />
               Buy Tickets
-            </Link>
+            </StorefrontLink>
           </nav>
         </div>
       </div>

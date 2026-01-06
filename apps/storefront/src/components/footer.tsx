@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { useStorefront } from '@/lib/storefront-context';
+import { StorefrontLink } from './storefront-link';
 
 export function Footer() {
   const { attraction, navigation, settings } = useStorefront();
@@ -37,14 +37,14 @@ export function Footer() {
               <ul className="space-y-2">
                 {footerLinks.map((link, index) => (
                   <li key={link.id || `footer-${index}`}>
-                    <Link
+                    <StorefrontLink
                       href={link.url}
                       target={link.openInNewTab ? '_blank' : undefined}
                       rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
                       className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {link.label}
-                    </Link>
+                    </StorefrontLink>
                   </li>
                 ))}
               </ul>
