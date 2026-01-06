@@ -49,7 +49,10 @@ database.types.ts
 # Playwright
 playwright-report
 test-results
+.playwright-mcp
 
+# Or via npm
+npm install -g supabase
 # Deployment
 .vercel
 .netlify
