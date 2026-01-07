@@ -1,7 +1,9 @@
 import Image from 'next/image';
 import atrivioLogo from '@/assets/images/atrivio-logo.png';
 
-const footerLinks = {
+type FooterLink = { label: string; href: string; external?: boolean };
+
+const footerLinks: Record<string, FooterLink[]> = {
   product: [
     { label: 'Ticketing', href: '#ticketing' },
     { label: 'Staff Scheduling', href: '#staffing' },
@@ -25,8 +27,7 @@ const footerLinks = {
     { label: 'Press Kit', href: '#' },
   ],
   resources: [
-    { label: 'Help Center', href: '#' },
-    { label: 'API Documentation', href: '#' },
+    { label: 'Documentation', href: '/docs', external: true },
     { label: 'System Status', href: '#' },
     { label: 'Security', href: '#' },
     { label: 'Privacy Policy', href: '#' },
@@ -181,6 +182,7 @@ export function LandingFooter() {
                   <li key={link.label}>
                     <a
                       href={link.href}
+                      {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                       className="text-sm text-[hsl(var(--landing-text-muted))] transition-colors duration-[var(--landing-transition-fast)] hover:text-[hsl(var(--landing-accent-primary))]"
                     >
                       {link.label}

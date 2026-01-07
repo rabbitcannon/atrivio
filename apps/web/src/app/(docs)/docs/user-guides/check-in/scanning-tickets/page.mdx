@@ -1,0 +1,118 @@
+# Scanning Tickets
+
+Learn how to scan and validate guest tickets at entry points.
+
+![Check-In Interface](/docs/screenshots/check-in.png)
+
+## Overview
+
+The check-in system allows staff to quickly validate tickets using barcode scanners or mobile devices. Each scan verifies the ticket and updates capacity tracking in real-time.
+
+## Getting Started
+
+### Access the Scanner
+
+1. Navigate to **Check-In** → **Scan**
+2. Select your check-in station (if multiple)
+3. The scanner interface will open
+
+### Scanner Options
+
+- **Camera Scan**: Use device camera to scan QR codes
+- **Manual Entry**: Type ticket code manually
+- **Hardware Scanner**: Connect USB barcode scanner
+
+## Scanning Process
+
+### Valid Ticket
+
+When a ticket scans successfully:
+
+1. ✅ Green confirmation appears
+2. Guest name displayed
+3. Ticket details shown
+4. Entry recorded automatically
+
+### Invalid Ticket
+
+If a ticket fails validation:
+
+1. ❌ Red error displayed
+2. Error reason shown:
+   - Already used
+   - Wrong date/time
+   - Expired
+   - Not found
+3. Follow error handling procedures
+
+## Ticket Validation
+
+The system checks:
+
+| Check | Description |
+|-------|-------------|
+| Valid Code | Ticket exists in system |
+| Not Used | Hasn't been scanned before |
+| Correct Date | Valid for today's date |
+| Correct Time | Within valid time window |
+| Not Cancelled | Order wasn't refunded |
+
+## Handling Issues
+
+### Already Scanned
+
+If ticket shows as used:
+
+1. Ask guest if they've entered before
+2. Check scan history for timestamp
+3. Contact supervisor if dispute
+
+### Wrong Date
+
+If ticket is for different date:
+
+1. Inform guest of the issue
+2. Check if date change is possible
+3. Direct to box office if needed
+
+### Refunded Ticket
+
+If ticket was refunded:
+
+1. Ticket is invalid
+2. Guest must purchase new ticket
+3. Direct to box office
+
+## Scanner Tips
+
+### Speed Tips
+
+- Keep scanner ready between guests
+- Good lighting helps camera scans
+- Hardware scanners are fastest
+
+### Troubleshooting
+
+- **Camera not working**: Check browser permissions
+- **Slow scans**: Ensure good lighting
+- **Scanner disconnected**: Refresh page
+
+## Capacity Tracking
+
+Each scan updates:
+- Current attendance count
+- Remaining capacity
+- Time slot availability
+
+View capacity status on the dashboard.
+
+## Reporting
+
+After your shift, view:
+- Total scans processed
+- Error rate
+- Peak check-in times
+
+## Next Steps
+
+- [Walk-Up Guests](/docs/user-guides/check-in/walk-up-guests) - Handle on-site purchases

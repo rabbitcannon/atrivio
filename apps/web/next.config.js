@@ -1,6 +1,15 @@
+import createMDX from '@next/mdx';
+import remarkGfm from 'remark-gfm';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Enable MDX pages
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
   // Note: @haunt/shared is pre-built, no need to transpile
 
@@ -50,10 +59,15 @@ const nextConfig = {
 
   // Headers for caching and security
   async headers() {
+    // No custom cache headers in development
+    if (process.env.NODE_ENV === 'development') {
+      return [];
+    }
+
     return [
       {
-        // Cache static assets aggressively
-        source: '/:path*.(ico|png|jpg|jpeg|gif|svg|woff|woff2)',
+        // Content-hashed assets: cache forever (safe - filename changes on content change)
+        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -62,12 +76,12 @@ const nextConfig = {
         ],
       },
       {
-        // Cache JS/CSS with revalidation
-        source: '/_next/static/:path*',
+        // Non-hashed static assets: cache 1 day, revalidate in background for 1 week
+        source: '/:path*.(ico|png|jpg|jpeg|gif|svg|woff|woff2)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
           },
         ],
       },
@@ -98,4 +112,11 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [remarkGfm],
+    rehypePlugins: [],
+  },
+});
+
+export default withMDX(nextConfig);

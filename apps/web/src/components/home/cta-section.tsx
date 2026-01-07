@@ -82,7 +82,7 @@ export function CtaSection() {
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
-            href="mailto:sales@atrivio.com"
+            href="mailto:sales@atrivio.io"
             className="inline-flex items-center gap-2 rounded-lg border-2 border-white/30 bg-transparent px-8 py-4 text-lg font-semibold text-white transition-all duration-[var(--landing-transition-normal)] hover:border-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[hsl(var(--landing-accent-primary))]"
           >
             <svg

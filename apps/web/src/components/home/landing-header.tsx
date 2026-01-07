@@ -5,12 +5,13 @@ import { useState } from 'react';
 import atrivioLogo from '@/assets/images/atrivio-logo.png';
 import { cn } from '@/lib/utils/cn';
 
-const navLinks = [
+const navLinks: Array<{ href: string; label: string; external?: boolean }> = [
   { href: '#platform', label: 'Platform' },
   { href: '#staffing', label: 'Staffing' },
   { href: '#ticketing', label: 'Ticketing' },
   { href: '#checkin', label: 'Check-In' },
   { href: '#pricing', label: 'Pricing' },
+  { href: '/docs', label: 'Docs', external: true },
 ];
 
 export function LandingHeader() {
@@ -37,6 +38,7 @@ export function LandingHeader() {
             <a
               key={link.href}
               href={link.href}
+              {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               className="text-[0.95rem] font-medium text-[hsl(var(--landing-text-muted))] transition-colors duration-[var(--landing-transition-fast)] hover:text-[hsl(var(--landing-accent-primary))] focus:text-[hsl(var(--landing-accent-primary))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--landing-bg-darkest))]"
             >
               {link.label}
@@ -103,6 +105,7 @@ export function LandingHeader() {
             <a
               key={link.href}
               href={link.href}
+              {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               className="rounded-md px-4 py-3 text-[hsl(var(--landing-text-muted))] transition-colors hover:bg-[hsl(var(--landing-bg-card))] hover:text-[hsl(var(--landing-text-primary))]"
               onClick={() => setMobileMenuOpen(false)}
             >
