@@ -27,16 +27,18 @@ async function bootstrap() {
     maxAge: 1, // 1 second cache to prevent stale preflight issues during development
   });
 
-  // Swagger/OpenAPI setup
-  const config = new DocumentBuilder()
-    .setTitle('Haunt Platform API')
-    .setDescription('Multi-tenant haunt industry management system API')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  // Swagger/OpenAPI setup (development only)
+  if (process.env['NODE_ENV'] !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Haunt Platform API')
+      .setDescription('Multi-tenant haunt industry management system API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env['PORT'] ?? 3001;
   await app.listen(port, '0.0.0.0');

@@ -215,9 +215,14 @@ function MobileNav() {
             onClick={() => setIsOpen(false)}
           />
           <div className="fixed inset-y-0 left-0 w-64 bg-background border-r z-50 lg:hidden overflow-y-auto p-4">
-            <div className="mb-4 flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              <span className="font-semibold">Documentation</span>
+            <div className="mb-4 flex items-center">
+              <img
+                src="/atrivio-logo.png"
+                alt="Atrivio"
+                height={24}
+                className="h-6"
+              />
+              <span className="ml-2 font-semibold">Docs</span>
             </div>
             <nav className="space-y-2">
               {navigation.map((item) => (
@@ -236,10 +241,15 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold">Atrivio</span>
+            <Link href="/" className="flex items-center">
+              <img
+                src="/atrivio-logo.png"
+                alt="Atrivio"
+                height={32}
+                className="h-8"
+              />
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <Link
