@@ -1357,6 +1357,31 @@ export class AdminService {
         value_type: 'number',
         default_value: 3.0,
       },
+      support_email: {
+        category: 'general',
+        value_type: 'string',
+        default_value: 'support@haunt.dev',
+      },
+      terms_version: {
+        category: 'general',
+        value_type: 'string',
+        default_value: '2024-01-01',
+      },
+      privacy_version: {
+        category: 'general',
+        value_type: 'string',
+        default_value: '2024-01-01',
+      },
+      max_attractions_per_org: {
+        category: 'limits',
+        value_type: 'number',
+        default_value: 10,
+      },
+      default_timezone: {
+        category: 'general',
+        value_type: 'string',
+        default_value: 'America/New_York',
+      },
     };
 
     // Return as array with all expected fields
