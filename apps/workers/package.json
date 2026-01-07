@@ -16,15 +16,15 @@
   },
   "dependencies": {
     "@haunt/shared": "workspace:*",
-    "@supabase/supabase-js": "^2.47.10",
-    "bullmq": "^5.31.0",
-    "ioredis": "^5.4.2",
+    "@supabase/supabase-js": "^2.89.0",
+    "bullmq": "^5.66.4",
+    "ioredis": "^5.9.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "vitest": "^2.1.8"
   }
 }

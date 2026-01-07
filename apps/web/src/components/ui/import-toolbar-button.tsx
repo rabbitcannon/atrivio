@@ -46,8 +46,9 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],
     multiple: false,
-    onFilesSelected: async ({ plainFiles }) => {
-      const text = await plainFiles[0].text();
+    onFilesSelected: async (data: { plainFiles?: File[] }) => {
+      if (!data.plainFiles?.length) return;
+      const text = await data.plainFiles[0].text();
 
       const nodes = getFileNodes(text, 'markdown');
 
@@ -58,8 +59,9 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
   const { openFilePicker: openHtmlFilePicker } = useFilePicker({
     accept: ['text/html'],
     multiple: false,
-    onFilesSelected: async ({ plainFiles }) => {
-      const text = await plainFiles[0].text();
+    onFilesSelected: async (data: { plainFiles?: File[] }) => {
+      if (!data.plainFiles?.length) return;
+      const text = await data.plainFiles[0].text();
 
       const nodes = getFileNodes(text, 'html');
 

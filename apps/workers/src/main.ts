@@ -1,15 +1,10 @@
-import { Worker } from 'bullmq';
-import IORedis from 'ioredis';
-
-// Redis connection for BullMQ
-const connection = new IORedis(process.env['REDIS_URL'] ?? 'redis://localhost:6379', {
-  maxRetriesPerRequest: null,
-});
+import type { Worker } from 'bullmq';
+import type { Redis as RedisType } from 'ioredis';
 
 console.log('🔧 Haunt Platform Workers starting...');
 
 // Queue definitions (to be implemented with feature modules)
-const queues = [
+const queues: string[] = [
   // 'cart-recovery',
   // 'ticket-settlement',
   // 'export',
@@ -22,6 +17,14 @@ const queues = [
 // Workers will be added as features are implemented
 
 async function startWorkers() {
+  // Dynamic import for ESM compatibility
+  const { Redis } = await import('ioredis');
+
+  // Redis connection for BullMQ
+  const connection = new Redis(process.env['REDIS_URL'] ?? 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+  });
+
   console.log('📋 Registered queues:', queues.length > 0 ? queues.join(', ') : 'none');
 
   // Health check endpoint would go here in production
