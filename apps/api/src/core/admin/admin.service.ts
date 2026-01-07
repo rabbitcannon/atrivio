@@ -1327,15 +1327,57 @@ export class AdminService {
       });
     }
 
-    const settings: Record<string, { value: unknown; description: string | null; updated_at: string }> = {};
-    for (const s of (data || []) as AnyRecord[]) {
+    // Metadata for known settings (category, value_type, default_value)
+    const settingsMetadata: Record<
+      string,
+      { category: string; value_type: string; default_value: unknown }
+    > = {
+      maintenance_mode: {
+        category: 'system',
+        value_type: 'object',
+        default_value: { enabled: false, message: null, allow_admins: true },
+      },
+      registration_enabled: {
+        category: 'security',
+        value_type: 'boolean',
+        default_value: true,
+      },
+      max_orgs_per_user: {
+        category: 'limits',
+        value_type: 'number',
+        default_value: 5,
+      },
+      default_trial_days: {
+        category: 'billing',
+        value_type: 'number',
+        default_value: 14,
+      },
+      stripe_platform_fee_percent: {
+        category: 'billing',
+        value_type: 'number',
+        default_value: 3.0,
+      },
+    };
+
+    // Return as array with all expected fields
+    const settings = (data || []).map((s: AnyRecord) => {
       const key = s['key'] as string;
-      settings[key] = {
+      const metadata = settingsMetadata[key] || {
+        category: 'general',
+        value_type: typeof s['value'],
+        default_value: null,
+      };
+
+      return {
+        key,
         value: s['value'],
         description: s['description'] as string | null,
         updated_at: s['updated_at'] as string,
+        value_type: metadata.value_type,
+        category: metadata.category,
+        default_value: metadata.default_value,
       };
-    }
+    });
 
     return { settings };
   }
