@@ -766,8 +766,8 @@ export type PageStatus = 'draft' | 'published' | 'archived';
 export type DomainType = 'subdomain' | 'custom';
 export type DomainStatus = 'pending' | 'verifying' | 'active' | 'failed' | 'expired';
 export type SslStatus = 'pending' | 'provisioning' | 'active' | 'failed';
-export type AnnouncementType = 'info' | 'warning' | 'success' | 'promotion' | 'urgent';
-export type AnnouncementPosition = 'banner' | 'popup' | 'modal' | 'inline';
+export type AnnouncementType = 'info' | 'warning' | 'critical' | 'success' | 'promo';
+export type AnnouncementPosition = 'banner' | 'popup' | 'inline';
 
 export interface StorefrontSettings {
   id: string;

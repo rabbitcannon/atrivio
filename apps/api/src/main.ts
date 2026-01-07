@@ -1,3 +1,4 @@
+import fastifyCors from '@fastify/cors';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -13,11 +14,12 @@ async function bootstrap() {
   // Global prefix for all routes
   app.setGlobalPrefix('api/v1');
 
-  // CORS configuration
-  app.enableCors({
-    origin: process.env['CORS_ORIGINS']?.split(',') ?? ['http://localhost:3000'],
+  // CORS configuration using Fastify's native plugin for better compatibility
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await app.register(fastifyCors as any, {
+    origin: process.env['CORS_ORIGINS']?.split(',') ?? ['http://localhost:3000', 'http://localhost:3002'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
     credentials: true,
     maxAge: 1, // 1 second cache to prevent stale preflight issues during development
   });
