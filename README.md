@@ -156,7 +156,7 @@ pnpm --filter @haunt/workers dev
 haunt-platform/
 ├── apps/
 │   ├── api/          # NestJS backend (Fastify)
-│   ├── web/          # Next.js 14 frontend
+│   ├── web/          # Next.js 15 frontend
 │   └── workers/      # BullMQ background jobs
 ├── packages/
 │   ├── shared/       # Shared types & utilities
@@ -172,8 +172,8 @@ haunt-platform/
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 14 (App Router), React 18, Tailwind CSS v4, shadcn/ui |
-| Backend | NestJS 10+ with Fastify adapter |
+| Frontend | Next.js 15 (App Router), React 19, Tailwind CSS v4, shadcn/ui |
+| Backend | NestJS 11+ with Fastify adapter |
 | Database | Supabase (PostgreSQL + Row Level Security) |
 | Auth | Supabase Auth (PKCE flow) |
 | Payments | Stripe Connect (Express accounts) |

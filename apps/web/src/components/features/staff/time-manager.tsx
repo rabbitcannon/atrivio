@@ -1,21 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, CheckCircle, Clock, LogIn, LogOut, MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -25,35 +16,36 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  AlertCircle,
-  Clock,
-  LogIn,
-  LogOut,
-  MoreHorizontal,
-  CheckCircle,
-  Pencil,
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  getTimeEntries,
-  getAttractions,
+  approveTimeEntry,
   clockIn,
   clockOut,
-  approveTimeEntry,
+  getAttractions,
+  getTimeEntries,
   type TimeEntry,
 } from '@/lib/api/client';
 import type { AttractionListItem } from '@/lib/api/types';
@@ -61,11 +53,13 @@ import type { AttractionListItem } from '@/lib/api/types';
 interface TimeManagerProps {
   orgId: string;
   staffId: string;
-  timeSummary?: {
-    current_week_hours: number;
-    current_month_hours: number;
-    season_total_hours: number;
-  } | undefined;
+  timeSummary?:
+    | {
+        current_week_hours: number;
+        current_month_hours: number;
+        season_total_hours: number;
+      }
+    | undefined;
   /** Whether the current user can approve time entries (requires manager role) */
   canApprove?: boolean;
 }
@@ -172,7 +166,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
 
   useEffect(() => {
     fetchData();
-  }, [orgId, staffId]);
+  }, []);
 
   function openClockInDialog() {
     setSelectedAttraction('');
@@ -223,7 +217,11 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
     if (breakMins > 0) data.break_minutes = breakMins;
     if (clockOutNotes.trim()) data.notes = clockOutNotes.trim();
 
-    const { error: apiError } = await clockOut(orgId, staffId, Object.keys(data).length > 0 ? data : undefined);
+    const { error: apiError } = await clockOut(
+      orgId,
+      staffId,
+      Object.keys(data).length > 0 ? data : undefined
+    );
 
     if (apiError) {
       setClockOutError(apiError.message || 'Failed to clock out');
@@ -245,7 +243,6 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
     const { data, error: apiError } = await approveTimeEntry(orgId, entry.id);
 
     if (apiError) {
-      console.error('Failed to approve:', apiError.message);
     } else if (data) {
       setEntries((prev) =>
         prev.map((e) => (e.id === entry.id ? { ...e, status: 'approved' as const } : e))
@@ -289,9 +286,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
             <CardTitle className="text-sm font-medium">This Month</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {timeSummary?.current_month_hours ?? 0} hours
-            </div>
+            <div className="text-2xl font-bold">{timeSummary?.current_month_hours ?? 0} hours</div>
           </CardContent>
         </Card>
         <Card>
@@ -299,9 +294,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
             <CardTitle className="text-sm font-medium">This Season</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {timeSummary?.season_total_hours ?? 0} hours
-            </div>
+            <div className="text-2xl font-bold">{timeSummary?.season_total_hours ?? 0} hours</div>
           </CardContent>
         </Card>
       </div>
@@ -378,9 +371,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
                         {entry.total_hours?.toFixed(1) || '-'}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={entry.status === 'approved' ? 'default' : 'secondary'}
-                        >
+                        <Badge variant={entry.status === 'approved' ? 'default' : 'secondary'}>
                           {entry.status}
                         </Badge>
                       </TableCell>
@@ -388,11 +379,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
                         {canApprove && entry.clock_out && entry.status === 'pending' && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={isApproving}
-                              >
+                              <Button variant="ghost" size="icon" disabled={isApproving}>
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Actions</span>
                               </Button>
@@ -464,10 +451,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleClockIn}
-              disabled={clockInLoading || !selectedAttraction}
-            >
+            <Button onClick={handleClockIn} disabled={clockInLoading || !selectedAttraction}>
               {clockInLoading ? 'Clocking In...' : 'Clock In'}
             </Button>
           </DialogFooter>
@@ -479,9 +463,7 @@ export function TimeManager({ orgId, staffId, timeSummary, canApprove = false }:
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Clock Out</DialogTitle>
-            <DialogDescription>
-              Enter any break time and optional notes.
-            </DialogDescription>
+            <DialogDescription>Enter any break time and optional notes.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {clockOutError && (

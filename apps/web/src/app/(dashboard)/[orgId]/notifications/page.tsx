@@ -1,7 +1,7 @@
+import { Bell, FileText, History, Mail, MessageSquare, Send, Smartphone } from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, FileText, History, Send, Mail, MessageSquare, Smartphone } from 'lucide-react';
+import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { resolveOrgId } from '@/lib/api';
 
@@ -119,9 +119,7 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
             <Bell className="h-5 w-5" />
             Channel Configuration
           </CardTitle>
-          <CardDescription>
-            Status of notification channel integrations
-          </CardDescription>
+          <CardDescription>Status of notification channel integrations</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
@@ -129,27 +127,21 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
               <Mail className="h-8 w-8 text-blue-500" />
               <div>
                 <p className="font-medium">Email (SendGrid)</p>
-                <p className="text-sm text-muted-foreground">
-                  Check .env for SENDGRID_API_KEY
-                </p>
+                <p className="text-sm text-muted-foreground">Check .env for SENDGRID_API_KEY</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg border">
               <MessageSquare className="h-8 w-8 text-green-500" />
               <div>
                 <p className="font-medium">SMS (Twilio)</p>
-                <p className="text-sm text-muted-foreground">
-                  Check .env for TWILIO_* keys
-                </p>
+                <p className="text-sm text-muted-foreground">Check .env for TWILIO_* keys</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg border">
               <Bell className="h-8 w-8 text-purple-500" />
               <div>
                 <p className="font-medium">In-App</p>
-                <p className="text-sm text-muted-foreground">
-                  Always available
-                </p>
+                <p className="text-sm text-muted-foreground">Always available</p>
               </div>
             </div>
           </div>

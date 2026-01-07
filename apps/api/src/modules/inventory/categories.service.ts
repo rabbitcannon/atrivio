@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
 
 @Injectable()

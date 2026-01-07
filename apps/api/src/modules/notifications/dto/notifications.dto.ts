@@ -1,20 +1,35 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsBoolean,
-  IsEnum,
   IsArray,
-  IsUUID,
+  IsBoolean,
+  IsEmail,
+  IsEnum,
   IsObject,
-  MaxLength,
+  IsOptional,
   IsPhoneNumber,
+  IsString,
+  IsUUID,
+  MaxLength,
 } from 'class-validator';
 
 export type NotificationChannel = 'email' | 'sms' | 'push' | 'in_app';
-export type NotificationStatus = 'pending' | 'queued' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'failed' | 'bounced' | 'unsubscribed';
-export type NotificationCategory = 'tickets' | 'queue' | 'schedule' | 'announcements' | 'marketing' | 'system';
+export type NotificationStatus =
+  | 'pending'
+  | 'queued'
+  | 'sent'
+  | 'delivered'
+  | 'opened'
+  | 'clicked'
+  | 'failed'
+  | 'bounced'
+  | 'unsubscribed';
+export type NotificationCategory =
+  | 'tickets'
+  | 'queue'
+  | 'schedule'
+  | 'announcements'
+  | 'marketing'
+  | 'system';
 export type RecipientType = 'user' | 'customer' | 'staff' | 'guest';
 export type DevicePlatform = 'ios' | 'android' | 'web';
 
@@ -86,7 +101,9 @@ export class SendDirectNotificationDto {
   @IsString()
   body!: string;
 
-  @ApiPropertyOptional({ enum: ['tickets', 'queue', 'schedule', 'announcements', 'marketing', 'system'] })
+  @ApiPropertyOptional({
+    enum: ['tickets', 'queue', 'schedule', 'announcements', 'marketing', 'system'],
+  })
   @IsEnum(['tickets', 'queue', 'schedule', 'announcements', 'marketing', 'system'])
   @IsOptional()
   category?: NotificationCategory;

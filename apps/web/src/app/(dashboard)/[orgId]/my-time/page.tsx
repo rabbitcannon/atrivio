@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
 import { resolveOrgId } from '@/lib/api';
+import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
   title: 'My Time Tracking',
@@ -22,7 +22,9 @@ export default async function MyTimePage({ params }: MyTimePageProps) {
 
   // Get current user
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');

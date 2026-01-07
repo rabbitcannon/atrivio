@@ -24,7 +24,9 @@ export default async function NewStaffPage({ params }: NewStaffPageProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Invite Staff Member</h1>
-        <p className="text-muted-foreground">Send an invitation to add a new staff member to your organization.</p>
+        <p className="text-muted-foreground">
+          Send an invitation to add a new staff member to your organization.
+        </p>
       </div>
 
       <StaffForm orgId={orgId} />

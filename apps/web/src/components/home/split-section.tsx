@@ -1,8 +1,8 @@
 'use client';
 
+import { motion, useInView } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
-import { motion, useInView } from 'motion/react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {

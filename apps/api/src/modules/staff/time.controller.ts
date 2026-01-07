@@ -1,26 +1,32 @@
+import type { UserId } from '@haunt/shared';
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Patch,
-  Body,
   Param,
+  Patch,
+  Post,
   Query,
-  UseInterceptors,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { TimeService } from './time.service.js';
-import { ClockInDto, ClockOutDto, UpdateTimeEntryDto, BulkApproveDto, TimeQueryDto } from './dto/time.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
 import { Feature } from '../../core/features/decorators/feature.decorator.js';
-import type { UserId } from '@haunt/shared';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
+  BulkApproveDto,
+  ClockInDto,
+  ClockOutDto,
+  TimeQueryDto,
+  UpdateTimeEntryDto,
+} from './dto/time.dto.js';
+import { TimeService } from './time.service.js';
 
 @ApiTags('Staff Time Entries')
 @ApiBearerAuth()
@@ -37,10 +43,7 @@ export class TimeController {
 
   @Get('organizations/:orgId/time/my-status')
   @ApiOperation({ summary: 'Get current user time clock status' })
-  async getMyStatus(
-    @Tenant() ctx: TenantContext,
-    @CurrentUser('id') userId: UserId,
-  ) {
+  async getMyStatus(@Tenant() ctx: TenantContext, @CurrentUser('id') userId: UserId) {
     return this.timeService.getMyStatus(ctx.orgId, userId);
   }
 
@@ -49,7 +52,7 @@ export class TimeController {
   async selfClockIn(
     @Tenant() ctx: TenantContext,
     @CurrentUser('id') userId: UserId,
-    @Body() dto: ClockInDto,
+    @Body() dto: ClockInDto
   ) {
     return this.timeService.selfClockIn(ctx.orgId, userId, dto);
   }
@@ -59,7 +62,7 @@ export class TimeController {
   async selfClockOut(
     @Tenant() ctx: TenantContext,
     @CurrentUser('id') userId: UserId,
-    @Body() dto: ClockOutDto,
+    @Body() dto: ClockOutDto
   ) {
     return this.timeService.selfClockOut(ctx.orgId, userId, dto);
   }
@@ -81,7 +84,7 @@ export class TimeController {
   async clockIn(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Body() dto: ClockInDto,
+    @Body() dto: ClockInDto
   ) {
     return this.timeService.clockIn(ctx.orgId, staffId, dto);
   }
@@ -91,7 +94,7 @@ export class TimeController {
   async clockOut(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Body() dto: ClockOutDto,
+    @Body() dto: ClockOutDto
   ) {
     return this.timeService.clockOut(ctx.orgId, staffId, dto);
   }
@@ -101,7 +104,7 @@ export class TimeController {
   async list(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Query() query: TimeQueryDto,
+    @Query() query: TimeQueryDto
   ) {
     return this.timeService.findAll(ctx.orgId, staffId, query);
   }
@@ -113,7 +116,7 @@ export class TimeController {
   async update(
     @Tenant() ctx: TenantContext,
     @Param('entryId') entryId: string,
-    @Body() dto: UpdateTimeEntryDto,
+    @Body() dto: UpdateTimeEntryDto
   ) {
     return this.timeService.update(ctx.orgId, entryId, dto);
   }
@@ -125,7 +128,7 @@ export class TimeController {
   async approve(
     @Tenant() ctx: TenantContext,
     @Param('entryId') entryId: string,
-    @CurrentUser('id') userId: UserId,
+    @CurrentUser('id') userId: UserId
   ) {
     return this.timeService.approve(ctx.orgId, entryId, userId);
   }
@@ -137,7 +140,7 @@ export class TimeController {
   async bulkApprove(
     @Tenant() ctx: TenantContext,
     @Body() dto: BulkApproveDto,
-    @CurrentUser('id') userId: UserId,
+    @CurrentUser('id') userId: UserId
   ) {
     return this.timeService.bulkApprove(ctx.orgId, dto.entry_ids, userId);
   }

@@ -74,7 +74,9 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} {attraction.name}. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} {attraction.name}. All rights reserved.
+          </p>
           <p className="mt-1 text-xs">
             Powered by{' '}
             <a

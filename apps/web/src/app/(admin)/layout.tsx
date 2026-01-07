@@ -1,18 +1,17 @@
 import { redirect } from 'next/navigation';
-import { getUser, createClient } from '@/lib/supabase/server';
 import { AdminHeader } from '@/components/layouts/admin-header';
 import { AdminSidebar } from '@/components/layouts/admin-sidebar';
 import { PageTransition } from '@/components/ui/page-transition';
+import { createClient, getUser } from '@/lib/supabase/server';
+
+// Force dynamic rendering - admin pages require authentication
+export const dynamic = 'force-dynamic';
 
 interface AdminData {
   is_super_admin: boolean;
 }
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
 
   if (!user) {

@@ -2,8 +2,8 @@
 
 ## Stack
 
-- Next.js 14 with **App Router** (not Pages Router)
-- React 18 with Server Components by default
+- Next.js 15 with **App Router** (not Pages Router)
+- React 19 with Server Components by default
 - Tailwind CSS v4 + shadcn/ui + CVA
 - TanStack Query for server state
 - Zustand for client state
@@ -36,6 +36,17 @@ src/
 2. **Server Actions**: For mutations, not API routes
 3. **Suspense**: Use for loading states, no `isLoading` booleans
 4. **CVA**: Use class-variance-authority for component variants
+
+### React 19 Features (Available)
+- **ref as prop**: Can pass `ref` directly to components without `forwardRef` wrapper
+- **use() hook**: Unwrap promises/context in render (alternative to Suspense)
+- **Actions**: Form handling with `useActionState`, `useFormStatus`, `useOptimistic`
+- **Note**: 85 existing `forwardRef` usages work unchanged (backward compatible)
+
+### Next.js 15 Notes
+- **Async Request APIs**: `params`, `searchParams`, `cookies()`, `headers()` are async
+- **Caching**: Default is `no-store` (fetch caching opt-in)
+- **Auth layouts**: Use `export const dynamic = 'force-dynamic'` for pages requiring cookies
 
 ## Auth Flow
 

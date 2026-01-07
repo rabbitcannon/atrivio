@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { AddSkillDto } from './dto/skills.dto.js';
 
 @Injectable()
@@ -49,10 +44,12 @@ export class SkillsService {
         skill: s.skill,
         level: s.level,
         notes: s.notes,
-        endorsed_by: s.endorser ? {
-          id: s.endorser.id,
-          name: `${s.endorser.first_name} ${s.endorser.last_name}`,
-        } : null,
+        endorsed_by: s.endorser
+          ? {
+              id: s.endorser.id,
+              name: `${s.endorser.first_name} ${s.endorser.last_name}`,
+            }
+          : null,
         created_at: s.created_at,
       })),
     };
@@ -103,15 +100,21 @@ export class SkillsService {
         });
       }
 
-      const endorser = data.endorser as unknown as { id: string; first_name: string; last_name: string } | null;
+      const endorser = data.endorser as unknown as {
+        id: string;
+        first_name: string;
+        last_name: string;
+      } | null;
       return {
         id: data.id,
         skill: data.skill,
         level: data.level,
-        endorsed_by: endorser ? {
-          id: endorser.id,
-          name: `${endorser.first_name} ${endorser.last_name}`,
-        } : null,
+        endorsed_by: endorser
+          ? {
+              id: endorser.id,
+              name: `${endorser.first_name} ${endorser.last_name}`,
+            }
+          : null,
       };
     }
 
@@ -145,15 +148,21 @@ export class SkillsService {
       });
     }
 
-    const endorser = data.endorser as unknown as { id: string; first_name: string; last_name: string } | null;
+    const endorser = data.endorser as unknown as {
+      id: string;
+      first_name: string;
+      last_name: string;
+    } | null;
     return {
       id: data.id,
       skill: data.skill,
       level: data.level,
-      endorsed_by: endorser ? {
-        id: endorser.id,
-        name: `${endorser.first_name} ${endorser.last_name}`,
-      } : null,
+      endorsed_by: endorser
+        ? {
+            id: endorser.id,
+            name: `${endorser.first_name} ${endorser.last_name}`,
+          }
+        : null,
     };
   }
 

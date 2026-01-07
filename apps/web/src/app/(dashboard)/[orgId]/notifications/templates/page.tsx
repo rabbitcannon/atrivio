@@ -1,12 +1,20 @@
+import {
+  ArrowLeft,
+  Bell,
+  FileText,
+  type LucideIcon,
+  Mail,
+  MessageSquare,
+  Smartphone,
+} from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Mail, MessageSquare, Bell, Smartphone, FileText, type LucideIcon } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { resolveOrgId, getNotificationTemplates } from '@/lib/api';
+import { getNotificationTemplates, resolveOrgId } from '@/lib/api';
 import type { NotificationChannel, NotificationTemplate } from '@/lib/api/types';
 
 export const metadata: Metadata = {
@@ -44,9 +52,7 @@ function TemplateCard({ template }: { template: NotificationTemplate }) {
             <CardTitle className="text-lg">{template.name}</CardTitle>
           </div>
           <div className="flex gap-2">
-            {template.isSystem && (
-              <Badge variant="secondary">System</Badge>
-            )}
+            {template.isSystem && <Badge variant="secondary">System</Badge>}
             <Badge variant={template.isActive ? 'default' : 'outline'}>
               {template.isActive ? 'Active' : 'Inactive'}
             </Badge>

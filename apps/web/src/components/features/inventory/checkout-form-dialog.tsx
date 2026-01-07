@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,8 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import {
   createInventoryCheckout,
   getInventoryItems,
@@ -71,15 +71,12 @@ export function CheckoutFormDialog({
 
     async function loadData() {
       setLoadingData(true);
-      const [itemsRes, staffRes] = await Promise.all([
-        getInventoryItems(orgId),
-        getStaff(orgId),
-      ]);
+      const [itemsRes, staffRes] = await Promise.all([getInventoryItems(orgId), getStaff(orgId)]);
 
       if (itemsRes.data?.items) {
         // Only show items that require checkout and have available quantity
-        const checkoutItems = itemsRes.data.items.filter((item) =>
-          item.type?.requires_checkout && item.quantity > 0
+        const checkoutItems = itemsRes.data.items.filter(
+          (item) => item.type?.requires_checkout && item.quantity > 0
         );
         setItems(checkoutItems);
       }
@@ -139,9 +136,7 @@ export function CheckoutFormDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>New Checkout</DialogTitle>
-            <DialogDescription>
-              Check out an item to a staff member.
-            </DialogDescription>
+            <DialogDescription>Check out an item to a staff member.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
@@ -162,7 +157,9 @@ export function CheckoutFormDialog({
                   <Label htmlFor="itemId">Item *</Label>
                   <Select
                     value={formData.itemId}
-                    onValueChange={(value) => setFormData({ ...formData, itemId: value, quantity: 1 })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, itemId: value, quantity: 1 })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select an item" />

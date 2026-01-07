@@ -1,21 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsInt,
-  IsUUID,
   IsArray,
-  IsEnum,
+  IsBoolean,
   IsDateString,
-  Min,
-  Max,
-  MinLength,
-  MaxLength,
-  ValidateNested,
+  IsEnum,
+  IsInt,
   IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
 } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
 
 // ============================================================================
 // PAGINATION

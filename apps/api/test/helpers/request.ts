@@ -1,5 +1,5 @@
-import { getTestApp } from './test-app.js';
 import type { LightMyRequestResponse } from 'fastify';
+import { getTestApp } from './test-app.js';
 
 export interface RequestOptions {
   token?: string;

@@ -1,36 +1,36 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseInterceptors,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { NotificationsService } from './notifications.service.js';
-import {
-  SendNotificationDto,
-  SendDirectNotificationDto,
-  UpdateTemplateDto,
-  UpdatePreferencesDto,
-  RegisterDeviceDto,
-} from './dto/index.js';
-import type { NotificationChannel } from './dto/index.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../../core/auth/auth.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
 import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
+  NotificationChannel,
+  RegisterDeviceDto,
+  SendDirectNotificationDto,
+  SendNotificationDto,
+  UpdatePreferencesDto,
+  UpdateTemplateDto,
+} from './dto/index.js';
+import { NotificationsService } from './notifications.service.js';
 
 // =============================================================================
 // Org-Scoped Notifications Controller
@@ -51,10 +51,7 @@ export class NotificationsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Send notification using template' })
-  async sendFromTemplate(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: SendNotificationDto,
-  ) {
+  async sendFromTemplate(@Tenant() ctx: TenantContext, @Body() dto: SendNotificationDto) {
     return this.notificationsService.sendFromTemplate(ctx.orgId, dto);
   }
 
@@ -62,10 +59,7 @@ export class NotificationsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Send direct email or SMS without template' })
-  async sendDirect(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: SendDirectNotificationDto,
-  ) {
+  async sendDirect(@Tenant() ctx: TenantContext, @Body() dto: SendDirectNotificationDto) {
     return this.notificationsService.sendDirect(ctx.orgId, dto);
   }
 
@@ -78,7 +72,7 @@ export class NotificationsController {
   @ApiQuery({ name: 'channel', required: false, enum: ['email', 'sms', 'push', 'in_app'] })
   async listTemplates(
     @Tenant() ctx: TenantContext,
-    @Query('channel') channel?: NotificationChannel,
+    @Query('channel') channel?: NotificationChannel
   ) {
     return this.notificationsService.getTemplates(ctx.orgId, channel);
   }
@@ -90,7 +84,7 @@ export class NotificationsController {
   async getTemplate(
     @Tenant() ctx: TenantContext,
     @Param('templateKey') templateKey: string,
-    @Param('channel') channel: NotificationChannel,
+    @Param('channel') channel: NotificationChannel
   ) {
     const template = await this.notificationsService.getTemplate(ctx.orgId, templateKey, channel);
     if (!template) {
@@ -106,7 +100,7 @@ export class NotificationsController {
   async updateTemplate(
     @Tenant() ctx: TenantContext,
     @Param('templateId') templateId: string,
-    @Body() dto: UpdateTemplateDto,
+    @Body() dto: UpdateTemplateDto
   ) {
     await this.notificationsService.updateTemplate(ctx.orgId, templateId, dto);
     return { success: true };
@@ -127,9 +121,14 @@ export class NotificationsController {
     @Query('channel') channel?: NotificationChannel,
     @Query('status') status?: string,
     @Query('limit') limit?: string,
-    @Query('offset') offset?: string,
+    @Query('offset') offset?: string
   ) {
-    const options: { channel?: NotificationChannel; status?: string; limit?: number; offset?: number } = {};
+    const options: {
+      channel?: NotificationChannel;
+      status?: string;
+      limit?: number;
+      offset?: number;
+    } = {};
     if (channel) options.channel = channel;
     if (status) options.status = status;
     if (limit) options.limit = Number(limit);
@@ -158,7 +157,7 @@ export class UserNotificationsController {
   async getInbox(
     @CurrentUser() user: AuthUser,
     @Query('read') read?: string,
-    @Query('limit') limit?: string,
+    @Query('limit') limit?: string
   ) {
     const options: { read?: boolean; limit?: number } = {};
     if (read !== undefined) options.read = read === 'true';
@@ -170,10 +169,7 @@ export class UserNotificationsController {
   @Post(':notificationId/read')
   @HttpCode(200)
   @ApiOperation({ summary: 'Mark notification as read' })
-  async markAsRead(
-    @CurrentUser() user: AuthUser,
-    @Param('notificationId') notificationId: string,
-  ) {
+  async markAsRead(@CurrentUser() user: AuthUser, @Param('notificationId') notificationId: string) {
     await this.notificationsService.markAsRead(user.id, notificationId);
     return { success: true };
   }
@@ -191,10 +187,7 @@ export class UserNotificationsController {
   @Get('preferences')
   @ApiOperation({ summary: 'Get notification preferences' })
   @ApiQuery({ name: 'orgId', required: false })
-  async getPreferences(
-    @CurrentUser() user: AuthUser,
-    @Query('orgId') orgId?: string,
-  ) {
+  async getPreferences(@CurrentUser() user: AuthUser, @Query('orgId') orgId?: string) {
     return this.notificationsService.getPreferences(user.id, orgId);
   }
 
@@ -204,7 +197,7 @@ export class UserNotificationsController {
   async updatePreferences(
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdatePreferencesDto,
-    @Query('orgId') orgId?: string,
+    @Query('orgId') orgId?: string
   ) {
     await this.notificationsService.updatePreferences(user.id, orgId ?? null, dto);
     return { success: true };
@@ -214,20 +207,14 @@ export class UserNotificationsController {
 
   @Post('devices')
   @ApiOperation({ summary: 'Register push notification device' })
-  async registerDevice(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: RegisterDeviceDto,
-  ) {
+  async registerDevice(@CurrentUser() user: AuthUser, @Body() dto: RegisterDeviceDto) {
     await this.notificationsService.registerDevice(user.id, dto);
     return { success: true };
   }
 
   @Delete('devices/:deviceToken')
   @ApiOperation({ summary: 'Unregister push notification device' })
-  async unregisterDevice(
-    @CurrentUser() user: AuthUser,
-    @Param('deviceToken') deviceToken: string,
-  ) {
+  async unregisterDevice(@CurrentUser() user: AuthUser, @Param('deviceToken') deviceToken: string) {
     await this.notificationsService.unregisterDevice(user.id, deviceToken);
     return { success: true };
   }

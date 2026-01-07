@@ -7,7 +7,7 @@
  * @see https://motion.dev/docs
  */
 
-import type { Transition, Variants, Target } from 'motion/react';
+import type { Target, Transition, Variants } from 'motion/react';
 
 // ============================================================================
 // TRANSITION PRESETS

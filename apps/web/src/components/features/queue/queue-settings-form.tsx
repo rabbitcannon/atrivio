@@ -1,23 +1,14 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { Bell, Clock, Loader2, Pause, Play, Save, Settings2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import {
-  Save,
-  Play,
-  Pause,
-  Clock,
-  Users,
-  Bell,
-  Settings2,
-  Loader2,
-} from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import type { QueueConfig } from '@/lib/api/types';
 
@@ -124,7 +115,7 @@ export function QueueSettingsForm({
         throw new Error('Failed to toggle queue status');
       }
 
-      setFormData(prev => ({ ...prev, isActive: !prev.isActive }));
+      setFormData((prev) => ({ ...prev, isActive: !prev.isActive }));
       toast({
         title: formData.isActive ? 'Queue disabled' : 'Queue enabled',
         description: formData.isActive
@@ -161,7 +152,7 @@ export function QueueSettingsForm({
         throw new Error('Failed to toggle pause status');
       }
 
-      setFormData(prev => ({ ...prev, isPaused: !prev.isPaused }));
+      setFormData((prev) => ({ ...prev, isPaused: !prev.isPaused }));
       toast({
         title: formData.isPaused ? 'Queue resumed' : 'Queue paused',
         description: formData.isPaused
@@ -184,7 +175,7 @@ export function QueueSettingsForm({
   };
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const isLoading = isSaving || isPending;
@@ -198,9 +189,7 @@ export function QueueSettingsForm({
             <Settings2 className="h-5 w-5" />
             Queue Status
           </CardTitle>
-          <CardDescription>
-            Control whether guests can join the queue.
-          </CardDescription>
+          <CardDescription>Control whether guests can join the queue.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
@@ -248,11 +237,7 @@ export function QueueSettingsForm({
               {formData.isActive ? 'Disable Queue' : 'Enable Queue'}
             </Button>
             {formData.isActive && (
-              <Button
-                variant="outline"
-                onClick={handleTogglePause}
-                disabled={isLoading}
-              >
+              <Button variant="outline" onClick={handleTogglePause} disabled={isLoading}>
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : formData.isPaused ? (
@@ -274,9 +259,7 @@ export function QueueSettingsForm({
             <Users className="h-5 w-5" />
             Capacity Settings
           </CardTitle>
-          <CardDescription>
-            Configure how many guests can be processed at once.
-          </CardDescription>
+          <CardDescription>Configure how many guests can be processed at once.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
@@ -288,7 +271,7 @@ export function QueueSettingsForm({
                 min={1}
                 max={100}
                 value={formData.capacityPerBatch}
-                onChange={(e) => updateField('capacityPerBatch', parseInt(e.target.value) || 1)}
+                onChange={(e) => updateField('capacityPerBatch', parseInt(e.target.value, 10) || 1)}
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
@@ -303,12 +286,12 @@ export function QueueSettingsForm({
                 min={1}
                 max={60}
                 value={formData.batchIntervalMinutes}
-                onChange={(e) => updateField('batchIntervalMinutes', parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateField('batchIntervalMinutes', parseInt(e.target.value, 10) || 1)
+                }
                 disabled={isLoading}
               />
-              <p className="text-xs text-muted-foreground">
-                Time between calling batches.
-              </p>
+              <p className="text-xs text-muted-foreground">Time between calling batches.</p>
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -320,7 +303,7 @@ export function QueueSettingsForm({
                 min={1}
                 max={10000}
                 value={formData.maxQueueSize}
-                onChange={(e) => updateField('maxQueueSize', parseInt(e.target.value) || 1)}
+                onChange={(e) => updateField('maxQueueSize', parseInt(e.target.value, 10) || 1)}
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
@@ -335,7 +318,7 @@ export function QueueSettingsForm({
                 min={15}
                 max={480}
                 value={formData.maxWaitMinutes}
-                onChange={(e) => updateField('maxWaitMinutes', parseInt(e.target.value) || 15)}
+                onChange={(e) => updateField('maxWaitMinutes', parseInt(e.target.value, 10) || 15)}
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
@@ -353,9 +336,7 @@ export function QueueSettingsForm({
             <Bell className="h-5 w-5" />
             Notification Settings
           </CardTitle>
-          <CardDescription>
-            Configure how and when guests are notified.
-          </CardDescription>
+          <CardDescription>Configure how and when guests are notified.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
@@ -367,7 +348,9 @@ export function QueueSettingsForm({
                 min={1}
                 max={60}
                 value={formData.notificationLeadMinutes}
-                onChange={(e) => updateField('notificationLeadMinutes', parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  updateField('notificationLeadMinutes', parseInt(e.target.value, 10) || 1)
+                }
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
@@ -382,7 +365,7 @@ export function QueueSettingsForm({
                 min={1}
                 max={60}
                 value={formData.expiryMinutes}
-                onChange={(e) => updateField('expiryMinutes', parseInt(e.target.value) || 1)}
+                onChange={(e) => updateField('expiryMinutes', parseInt(e.target.value, 10) || 1)}
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
@@ -400,9 +383,7 @@ export function QueueSettingsForm({
             <Clock className="h-5 w-5" />
             Guest Options
           </CardTitle>
-          <CardDescription>
-            Configure guest experience and requirements.
-          </CardDescription>
+          <CardDescription>Configure guest experience and requirements.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">

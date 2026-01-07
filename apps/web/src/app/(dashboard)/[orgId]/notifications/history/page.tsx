@@ -1,13 +1,33 @@
+import {
+  AlertCircle,
+  ArrowLeft,
+  Bell,
+  CheckCircle,
+  Clock,
+  Eye,
+  type LucideIcon,
+  Mail,
+  MessageSquare,
+  MousePointerClick,
+  Smartphone,
+  XCircle,
+} from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Mail, MessageSquare, Bell, Smartphone, CheckCircle, XCircle, Clock, Eye, MousePointerClick, AlertCircle, type LucideIcon } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { resolveOrgId, getNotificationHistory } from '@/lib/api';
-import type { NotificationChannel, NotificationStatus, Notification } from '@/lib/api/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { getNotificationHistory, resolveOrgId } from '@/lib/api';
+import type { Notification, NotificationChannel, NotificationStatus } from '@/lib/api/types';
 
 export const metadata: Metadata = {
   title: 'Notification History',
@@ -25,7 +45,10 @@ const CHANNEL_ICONS: Record<NotificationChannel, LucideIcon> = {
   in_app: Bell,
 };
 
-const STATUS_CONFIG: Record<NotificationStatus, { icon: LucideIcon; variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+const STATUS_CONFIG: Record<
+  NotificationStatus,
+  { icon: LucideIcon; variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
+> = {
   pending: { icon: Clock, variant: 'secondary', label: 'Pending' },
   queued: { icon: Clock, variant: 'secondary', label: 'Queued' },
   sent: { icon: CheckCircle, variant: 'outline', label: 'Sent' },
@@ -96,7 +119,9 @@ export default async function HistoryPage({ params, searchParams }: HistoryPageP
   }
 
   // Build filters object conditionally to avoid undefined values
-  const filters: { channel?: NotificationChannel; status?: NotificationStatus; limit: number } = { limit: 50 };
+  const filters: { channel?: NotificationChannel; status?: NotificationStatus; limit: number } = {
+    limit: 50,
+  };
   if (channel) filters.channel = channel;
   if (status) filters.status = status;
 

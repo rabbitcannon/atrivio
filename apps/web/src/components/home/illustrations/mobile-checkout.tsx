@@ -31,11 +31,31 @@ export function MobileCheckout() {
             {/* QR code placeholder */}
             <div className="mx-auto mb-4 grid h-20 w-20 grid-cols-5 gap-0.5 rounded-lg bg-white p-2 sm:h-24 sm:w-24">
               {[
-                { id: 'qr-0', fill: true }, { id: 'qr-1', fill: true }, { id: 'qr-2', fill: false }, { id: 'qr-3', fill: true }, { id: 'qr-4', fill: false },
-                { id: 'qr-5', fill: false }, { id: 'qr-6', fill: true }, { id: 'qr-7', fill: true }, { id: 'qr-8', fill: true }, { id: 'qr-9', fill: false },
-                { id: 'qr-10', fill: true }, { id: 'qr-11', fill: false }, { id: 'qr-12', fill: true }, { id: 'qr-13', fill: false }, { id: 'qr-14', fill: true },
-                { id: 'qr-15', fill: false }, { id: 'qr-16', fill: true }, { id: 'qr-17', fill: false }, { id: 'qr-18', fill: true }, { id: 'qr-19', fill: true },
-                { id: 'qr-20', fill: true }, { id: 'qr-21', fill: false }, { id: 'qr-22', fill: false }, { id: 'qr-23', fill: true }, { id: 'qr-24', fill: true },
+                { id: 'qr-0', fill: true },
+                { id: 'qr-1', fill: true },
+                { id: 'qr-2', fill: false },
+                { id: 'qr-3', fill: true },
+                { id: 'qr-4', fill: false },
+                { id: 'qr-5', fill: false },
+                { id: 'qr-6', fill: true },
+                { id: 'qr-7', fill: true },
+                { id: 'qr-8', fill: true },
+                { id: 'qr-9', fill: false },
+                { id: 'qr-10', fill: true },
+                { id: 'qr-11', fill: false },
+                { id: 'qr-12', fill: true },
+                { id: 'qr-13', fill: false },
+                { id: 'qr-14', fill: true },
+                { id: 'qr-15', fill: false },
+                { id: 'qr-16', fill: true },
+                { id: 'qr-17', fill: false },
+                { id: 'qr-18', fill: true },
+                { id: 'qr-19', fill: true },
+                { id: 'qr-20', fill: true },
+                { id: 'qr-21', fill: false },
+                { id: 'qr-22', fill: false },
+                { id: 'qr-23', fill: true },
+                { id: 'qr-24', fill: true },
               ].map((cell) => (
                 <div
                   key={cell.id}
@@ -104,9 +124,7 @@ export function MobileCheckout() {
 
               {/* Total */}
               <div className="mt-3 flex items-center justify-between border-t border-[hsl(var(--landing-border-subtle))] pt-2">
-                <span className="text-xs text-[hsl(var(--landing-text-muted))]">
-                  Total
-                </span>
+                <span className="text-xs text-[hsl(var(--landing-text-muted))]">Total</span>
                 <span className="text-sm font-bold text-[hsl(var(--landing-accent-secondary))]">
                   $89.00
                 </span>

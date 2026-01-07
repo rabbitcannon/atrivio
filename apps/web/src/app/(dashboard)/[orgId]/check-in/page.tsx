@@ -1,20 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import {
+  Activity,
+  AlertTriangle,
+  Building2,
+  CheckCircle2,
+  Clock,
+  Gauge,
+  Loader2,
+  MonitorSmartphone,
   QrCode,
   Users,
-  Activity,
-  Gauge,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  MonitorSmartphone,
-  Loader2,
-  Building2,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -23,8 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getAttractions, getCheckInStats, getCapacity, getCheckInQueue } from '@/lib/api/client';
-import type { AttractionListItem, CheckInStats, CapacityResponse, QueueResponse } from '@/lib/api/types';
+import { getAttractions, getCapacity, getCheckInQueue, getCheckInStats } from '@/lib/api/client';
+import type {
+  AttractionListItem,
+  CapacityResponse,
+  CheckInStats,
+  QueueResponse,
+} from '@/lib/api/types';
 
 const NAV_ITEMS = [
   {
@@ -75,13 +80,13 @@ export default function CheckInPage() {
           setAttractions(result.data.data);
           // Auto-select first attraction or retrieve from localStorage
           const savedAttractionId = localStorage.getItem(`check-in-attraction-${orgIdentifier}`);
-          const defaultAttraction = result.data.data.find(a => a.id === savedAttractionId) || result.data.data[0];
+          const defaultAttraction =
+            result.data.data.find((a) => a.id === savedAttractionId) || result.data.data[0];
           if (defaultAttraction) {
             setSelectedAttractionId(defaultAttraction.id);
           }
         }
-      } catch (error) {
-        console.error('Failed to load attractions:', error);
+      } catch (_error) {
       } finally {
         setIsLoading(false);
       }
@@ -108,8 +113,7 @@ export default function CheckInPage() {
         if (statsResult.data) setStats(statsResult.data);
         if (capacityResult.data) setCapacity(capacityResult.data);
         if (queueResult.data) setQueue(queueResult.data);
-      } catch (error) {
-        console.error('Failed to load check-in stats:', error);
+      } catch (_error) {
       } finally {
         setIsLoadingStats(false);
       }
@@ -121,7 +125,7 @@ export default function CheckInPage() {
     setSelectedAttractionId(attractionId);
   };
 
-  const selectedAttraction = attractions.find(a => a.id === selectedAttractionId);
+  const selectedAttraction = attractions.find((a) => a.id === selectedAttractionId);
 
   if (isLoading) {
     return (
@@ -193,7 +197,7 @@ export default function CheckInPage() {
               {isLoadingStats ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                stats?.totalCheckedIn ?? '--'
+                (stats?.totalCheckedIn ?? '--')
               )}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -228,11 +232,7 @@ export default function CheckInPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoadingStats ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                pendingCount
-              )}
+              {isLoadingStats ? <Loader2 className="h-5 w-5 animate-spin" /> : pendingCount}
             </div>
             <p className="text-xs text-muted-foreground">Expected soon</p>
           </CardContent>
@@ -244,11 +244,7 @@ export default function CheckInPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoadingStats ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                lateCount
-              )}
+              {isLoadingStats ? <Loader2 className="h-5 w-5 animate-spin" /> : lateCount}
             </div>
             <p className="text-xs text-muted-foreground">Past their slot</p>
           </CardContent>

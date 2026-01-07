@@ -1,41 +1,41 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
+  Post,
   Query,
-  UseInterceptors,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { InventoryService } from './inventory.service.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
 import { CategoriesService } from './categories.service.js';
 import { CheckoutsService } from './checkouts.service.js';
-import {
-  CreateInventoryItemDto,
-  UpdateInventoryItemDto,
+import type { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
+import type {
+  CreateCheckoutDto,
+  ListCheckoutsQueryDto,
+  ReturnCheckoutDto,
+} from './dto/checkout.dto.js';
+import type {
   AdjustQuantityDto,
+  CreateInventoryItemDto,
+  CreateInventoryTypeDto,
   ListInventoryItemsQueryDto,
   ListTransactionsQueryDto,
-  CreateInventoryTypeDto,
+  UpdateInventoryItemDto,
   UpdateInventoryTypeDto,
 } from './dto/inventory.dto.js';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto.js';
-import {
-  CreateCheckoutDto,
-  ReturnCheckoutDto,
-  ListCheckoutsQueryDto,
-} from './dto/checkout.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
-import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { InventoryService } from './inventory.service.js';
 
 @ApiTags('Inventory')
 @Controller('organizations/:orgId/inventory')
@@ -47,7 +47,7 @@ export class InventoryController {
   constructor(
     private inventoryService: InventoryService,
     private categoriesService: CategoriesService,
-    private checkoutsService: CheckoutsService,
+    private checkoutsService: CheckoutsService
   ) {}
 
   // ============== Inventory Summary ==============
@@ -82,10 +82,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Create custom inventory type' })
-  async createType(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: CreateInventoryTypeDto,
-  ) {
+  async createType(@Tenant() ctx: TenantContext, @Body() dto: CreateInventoryTypeDto) {
     return this.inventoryService.createType(ctx.orgId, dto);
   }
 
@@ -96,7 +93,7 @@ export class InventoryController {
   async updateType(
     @Tenant() ctx: TenantContext,
     @Param('typeId') typeId: string,
-    @Body() dto: UpdateInventoryTypeDto,
+    @Body() dto: UpdateInventoryTypeDto
   ) {
     return this.inventoryService.updateType(ctx.orgId, typeId, dto);
   }
@@ -105,10 +102,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Delete inventory type' })
-  async deleteType(
-    @Tenant() ctx: TenantContext,
-    @Param('typeId') typeId: string,
-  ) {
+  async deleteType(@Tenant() ctx: TenantContext, @Param('typeId') typeId: string) {
     return this.inventoryService.deleteType(ctx.orgId, typeId);
   }
 
@@ -126,10 +120,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'actor')
   @ApiOperation({ summary: 'Get category details' })
-  async getCategory(
-    @Tenant() ctx: TenantContext,
-    @Param('categoryId') categoryId: string,
-  ) {
+  async getCategory(@Tenant() ctx: TenantContext, @Param('categoryId') categoryId: string) {
     return this.categoriesService.getCategory(ctx.orgId, categoryId);
   }
 
@@ -137,10 +128,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Create category' })
-  async createCategory(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: CreateCategoryDto,
-  ) {
+  async createCategory(@Tenant() ctx: TenantContext, @Body() dto: CreateCategoryDto) {
     return this.categoriesService.createCategory(ctx.orgId, dto);
   }
 
@@ -151,7 +139,7 @@ export class InventoryController {
   async updateCategory(
     @Tenant() ctx: TenantContext,
     @Param('categoryId') categoryId: string,
-    @Body() dto: UpdateCategoryDto,
+    @Body() dto: UpdateCategoryDto
   ) {
     return this.categoriesService.updateCategory(ctx.orgId, categoryId, dto);
   }
@@ -160,10 +148,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Delete category' })
-  async deleteCategory(
-    @Tenant() ctx: TenantContext,
-    @Param('categoryId') categoryId: string,
-  ) {
+  async deleteCategory(@Tenant() ctx: TenantContext, @Param('categoryId') categoryId: string) {
     return this.categoriesService.deleteCategory(ctx.orgId, categoryId);
   }
 
@@ -173,10 +158,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'actor')
   @ApiOperation({ summary: 'List inventory items' })
-  async listItems(
-    @Tenant() ctx: TenantContext,
-    @Query() query: ListInventoryItemsQueryDto,
-  ) {
+  async listItems(@Tenant() ctx: TenantContext, @Query() query: ListInventoryItemsQueryDto) {
     return this.inventoryService.listItems(ctx.orgId, query);
   }
 
@@ -184,10 +166,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'actor')
   @ApiOperation({ summary: 'Get item details' })
-  async getItem(
-    @Tenant() ctx: TenantContext,
-    @Param('itemId') itemId: string,
-  ) {
+  async getItem(@Tenant() ctx: TenantContext, @Param('itemId') itemId: string) {
     return this.inventoryService.getItem(ctx.orgId, itemId);
   }
 
@@ -195,10 +174,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Create inventory item' })
-  async createItem(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: CreateInventoryItemDto,
-  ) {
+  async createItem(@Tenant() ctx: TenantContext, @Body() dto: CreateInventoryItemDto) {
     return this.inventoryService.createItem(ctx.orgId, dto);
   }
 
@@ -209,7 +185,7 @@ export class InventoryController {
   async updateItem(
     @Tenant() ctx: TenantContext,
     @Param('itemId') itemId: string,
-    @Body() dto: UpdateInventoryItemDto,
+    @Body() dto: UpdateInventoryItemDto
   ) {
     return this.inventoryService.updateItem(ctx.orgId, itemId, dto);
   }
@@ -218,10 +194,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Delete inventory item' })
-  async deleteItem(
-    @Tenant() ctx: TenantContext,
-    @Param('itemId') itemId: string,
-  ) {
+  async deleteItem(@Tenant() ctx: TenantContext, @Param('itemId') itemId: string) {
     return this.inventoryService.deleteItem(ctx.orgId, itemId);
   }
 
@@ -232,7 +205,7 @@ export class InventoryController {
   async adjustQuantity(
     @Tenant() ctx: TenantContext,
     @Param('itemId') itemId: string,
-    @Body() dto: AdjustQuantityDto,
+    @Body() dto: AdjustQuantityDto
   ) {
     return this.inventoryService.adjustQuantity(ctx.orgId, itemId, ctx.userId, dto);
   }
@@ -243,10 +216,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'List inventory transactions' })
-  async listTransactions(
-    @Tenant() ctx: TenantContext,
-    @Query() query: ListTransactionsQueryDto,
-  ) {
+  async listTransactions(@Tenant() ctx: TenantContext, @Query() query: ListTransactionsQueryDto) {
     return this.inventoryService.listTransactions(ctx.orgId, query);
   }
 
@@ -256,10 +226,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'actor')
   @ApiOperation({ summary: 'List checkouts' })
-  async listCheckouts(
-    @Tenant() ctx: TenantContext,
-    @Query() query: ListCheckoutsQueryDto,
-  ) {
+  async listCheckouts(@Tenant() ctx: TenantContext, @Query() query: ListCheckoutsQueryDto) {
     return this.checkoutsService.listCheckouts(ctx.orgId, query);
   }
 
@@ -275,10 +242,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'actor')
   @ApiOperation({ summary: 'Get checkout details' })
-  async getCheckout(
-    @Tenant() ctx: TenantContext,
-    @Param('checkoutId') checkoutId: string,
-  ) {
+  async getCheckout(@Tenant() ctx: TenantContext, @Param('checkoutId') checkoutId: string) {
     return this.checkoutsService.getCheckout(ctx.orgId, checkoutId);
   }
 
@@ -286,10 +250,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Check out item to staff' })
-  async createCheckout(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: CreateCheckoutDto,
-  ) {
+  async createCheckout(@Tenant() ctx: TenantContext, @Body() dto: CreateCheckoutDto) {
     return this.checkoutsService.createCheckout(ctx.orgId, ctx.userId, dto);
   }
 
@@ -300,7 +261,7 @@ export class InventoryController {
   async returnCheckout(
     @Tenant() ctx: TenantContext,
     @Param('checkoutId') checkoutId: string,
-    @Body() dto: ReturnCheckoutDto,
+    @Body() dto: ReturnCheckoutDto
   ) {
     return this.checkoutsService.returnCheckout(ctx.orgId, checkoutId, ctx.userId, dto);
   }
@@ -309,10 +270,7 @@ export class InventoryController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'actor')
   @ApiOperation({ summary: 'Get active checkouts for staff member' })
-  async getStaffCheckouts(
-    @Tenant() ctx: TenantContext,
-    @Param('staffId') staffId: string,
-  ) {
+  async getStaffCheckouts(@Tenant() ctx: TenantContext, @Param('staffId') staffId: string) {
     return this.checkoutsService.getActiveCheckoutsForStaff(ctx.orgId, staffId);
   }
 }

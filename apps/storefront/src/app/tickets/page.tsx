@@ -1,6 +1,6 @@
+import { Check, Ticket } from 'lucide-react';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { Ticket, Clock, Users, Star, Check } from 'lucide-react';
 import { getPublicStorefront, getPublicTicketTypes, type StorefrontTicketType } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -125,11 +125,7 @@ export default async function TicketsPage() {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {ticketTypes.map((ticket, index) => (
-            <TicketCard
-              key={ticket.id}
-              ticket={ticket}
-              isPopular={index === popularIndex}
-            />
+            <TicketCard key={ticket.id} ticket={ticket} isPopular={index === popularIndex} />
           ))}
         </div>
       </div>

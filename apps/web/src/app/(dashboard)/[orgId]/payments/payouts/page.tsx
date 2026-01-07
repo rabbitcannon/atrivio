@@ -1,21 +1,21 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
-  ArrowLeft,
   AlertCircle,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Truck,
+  ArrowLeft,
   Ban,
+  CheckCircle2,
+  Clock,
   CreditCard,
   Landmark,
+  Truck,
+  XCircle,
 } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -24,8 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { resolveOrgId, getPayouts, getPaymentStatus } from '@/lib/api';
 import type { PayoutStatus } from '@/lib/api';
+import { getPaymentStatus, getPayouts, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Payouts',
@@ -68,7 +68,9 @@ function getStatusIcon(status: PayoutStatus) {
   }
 }
 
-function getStatusBadgeVariant(status: PayoutStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getStatusBadgeVariant(
+  status: PayoutStatus
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'paid':
       return 'default';
@@ -122,9 +124,7 @@ export default async function PayoutsPage({ params }: PayoutsPageProps) {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Stripe not connected</AlertTitle>
-          <AlertDescription>
-            Connect your Stripe account to view payouts.
-          </AlertDescription>
+          <AlertDescription>Connect your Stripe account to view payouts.</AlertDescription>
         </Alert>
       </div>
     );
@@ -144,9 +144,7 @@ export default async function PayoutsPage({ params }: PayoutsPageProps) {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Payouts not enabled</AlertTitle>
-          <AlertDescription>
-            Complete your Stripe account setup to enable payouts.
-          </AlertDescription>
+          <AlertDescription>Complete your Stripe account setup to enable payouts.</AlertDescription>
         </Alert>
       </div>
     );
@@ -198,9 +196,7 @@ export default async function PayoutsPage({ params }: PayoutsPageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Payout History</CardTitle>
-          <CardDescription>
-            {total} total payouts
-          </CardDescription>
+          <CardDescription>{total} total payouts</CardDescription>
         </CardHeader>
         <CardContent>
           {payouts.length === 0 ? (
@@ -239,12 +235,8 @@ export default async function PayoutsPage({ params }: PayoutsPageProps) {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="capitalize">
-                      {payout.method || 'Standard'}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(payout.arrival_date)}
-                    </TableCell>
+                    <TableCell className="capitalize">{payout.method || 'Standard'}</TableCell>
+                    <TableCell>{formatDate(payout.arrival_date)}</TableCell>
                     <TableCell className="text-right font-medium">
                       {formatCurrency(payout.amount, payout.currency)}
                     </TableCell>

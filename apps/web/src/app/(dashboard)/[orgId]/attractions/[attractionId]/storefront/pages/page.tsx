@@ -1,12 +1,18 @@
+import { Archive, ArrowLeft, Edit, Eye, EyeOff, FileText, Globe, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Plus, Eye, Edit, Globe, EyeOff, Archive } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId, getStorefrontPages, getAttraction, updateStorefrontPage, deleteStorefrontPage } from '@/lib/api';
-import type { StorefrontPage, PageStatus } from '@/lib/api/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  deleteStorefrontPage,
+  getAttraction,
+  getStorefrontPages,
+  resolveOrgId,
+  updateStorefrontPage,
+} from '@/lib/api';
+import type { PageStatus, StorefrontPage } from '@/lib/api/types';
 import { PageActions } from './_components/page-actions';
 
 export const metadata: Metadata = {
@@ -28,7 +34,10 @@ const PAGE_TYPE_LABELS: Record<string, string> = {
   custom: 'Custom',
 };
 
-const STATUS_CONFIG: Record<PageStatus, { label: string; variant: 'default' | 'secondary' | 'outline'; icon: typeof Eye }> = {
+const STATUS_CONFIG: Record<
+  PageStatus,
+  { label: string; variant: 'default' | 'secondary' | 'outline'; icon: typeof Eye }
+> = {
   published: { label: 'Published', variant: 'default', icon: Eye },
   draft: { label: 'Draft', variant: 'secondary', icon: EyeOff },
   archived: { label: 'Archived', variant: 'outline', icon: Archive },
@@ -100,9 +109,7 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Pages</h1>
-          <p className="text-muted-foreground">
-            Create and manage your storefront content pages.
-          </p>
+          <p className="text-muted-foreground">Create and manage your storefront content pages.</p>
         </div>
         <Link href={`${basePath}/storefront/pages/new`}>
           <Button>
@@ -147,9 +154,7 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
             <FileText className="h-5 w-5" />
             All Pages
           </CardTitle>
-          <CardDescription>
-            {pages.length} total pages
-          </CardDescription>
+          <CardDescription>{pages.length} total pages</CardDescription>
         </CardHeader>
         <CardContent>
           {pages.length === 0 ? (

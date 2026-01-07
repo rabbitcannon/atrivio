@@ -1,19 +1,12 @@
 'use client';
 
-import * as React from 'react';
+import { PlaceholderPlugin } from '@platejs/media/react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
-import { PlaceholderPlugin } from '@platejs/media/react';
-import {
-  AudioLinesIcon,
-  FileUpIcon,
-  FilmIcon,
-  ImageIcon,
-  LinkIcon,
-} from 'lucide-react';
+import { AudioLinesIcon, FileUpIcon, FilmIcon, ImageIcon, LinkIcon } from 'lucide-react';
 import { isUrl, KEYS } from 'platejs';
 import { useEditorRef } from 'platejs/react';
+import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
@@ -111,25 +104,14 @@ export function MediaToolbarButton({
         }}
         pressed={open}
       >
-        <ToolbarSplitButtonPrimary>
-          {currentConfig.icon}
-        </ToolbarSplitButtonPrimary>
+        <ToolbarSplitButtonPrimary>{currentConfig.icon}</ToolbarSplitButtonPrimary>
 
-        <DropdownMenu
-          open={open}
-          onOpenChange={setOpen}
-          modal={false}
-          {...props}
-        >
+        <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
           <DropdownMenuTrigger asChild>
             <ToolbarSplitButtonSecondary />
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            onClick={(e) => e.stopPropagation()}
-            align="start"
-            alignOffset={-32}
-          >
+          <DropdownMenuContent onClick={(e) => e.stopPropagation()} align="start" alignOffset={-32}>
             <DropdownMenuGroup>
               <DropdownMenuItem onSelect={() => openFilePicker()}>
                 {currentConfig.icon}

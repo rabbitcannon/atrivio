@@ -1,8 +1,6 @@
 // @ts-nocheck - Plate-generated code with React 19 ref types incompatible with React 18
 'use client';
 
-import * as React from 'react';
-
 import {
   type FloatingToolbarState,
   flip,
@@ -12,11 +10,8 @@ import {
 } from '@platejs/floating';
 import { useComposedRef } from '@udecode/cn';
 import { KEYS } from 'platejs';
-import {
-  useEditorId,
-  useEventEditorValue,
-  usePluginOption,
-} from 'platejs/react';
+import { useEditorId, useEventEditorValue, usePluginOption } from 'platejs/react';
+import type * as React from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
@@ -44,12 +39,7 @@ export function FloatingToolbar({
       middleware: [
         offset(12),
         flip({
-          fallbackPlacements: [
-            'top-start',
-            'top-end',
-            'bottom-start',
-            'bottom-end',
-          ],
+          fallbackPlacements: ['top-start', 'top-end', 'bottom-start', 'bottom-end'],
           padding: 12,
         }),
       ],

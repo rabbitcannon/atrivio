@@ -1,11 +1,18 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -32,12 +39,7 @@ interface SeasonFormProps {
 // Generate year options (current year - 1 to current year + 2)
 function getYearOptions() {
   const currentYear = new Date().getFullYear();
-  return [
-    currentYear - 1,
-    currentYear,
-    currentYear + 1,
-    currentYear + 2,
-  ];
+  return [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
 }
 
 const statusOptions = [
@@ -68,7 +70,12 @@ export function SeasonForm({ orgId, attractionId, season, onSuccess }: SeasonFor
     const yearStr = formData.get('year') as string;
     const startDate = formData.get('start_date') as string;
     const endDate = formData.get('end_date') as string;
-    const status = formData.get('status') as 'upcoming' | 'active' | 'completed' | 'cancelled' | null;
+    const status = formData.get('status') as
+      | 'upcoming'
+      | 'active'
+      | 'completed'
+      | 'cancelled'
+      | null;
 
     // Validate dates
     if (new Date(endDate) < new Date(startDate)) {
@@ -216,7 +223,11 @@ export function SeasonForm({ orgId, attractionId, season, onSuccess }: SeasonFor
           {isEditing && (
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select name="status" defaultValue={season?.status || 'upcoming'} disabled={isLoading}>
+              <Select
+                name="status"
+                defaultValue={season?.status || 'upcoming'}
+                disabled={isLoading}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>

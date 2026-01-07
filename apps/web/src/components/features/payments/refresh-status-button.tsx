@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { syncStripeAccount } from '@/lib/api/payments';
-import { useRouter } from 'next/navigation';
 
 interface RefreshStatusButtonProps {
   orgId: string;
@@ -53,9 +53,7 @@ export function RefreshStatusButton({
         <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         <span className="ml-2">Refresh Status</span>
       </Button>
-      {error && (
-        <span className="text-sm text-destructive">{error}</span>
-      )}
+      {error && <span className="text-sm text-destructive">{error}</span>}
     </div>
   );
 }

@@ -1,16 +1,16 @@
 ---
 allowed-tools: [Read, Write, Edit, MultiEdit, Bash, Glob, Grep, TodoWrite, Task]
-description: "Frontend architect for Next.js 14, React 18, Tailwind v4, and shadcn/ui"
+description: "Frontend architect for Next.js 15, React 19, Tailwind v4, and shadcn/ui"
 ---
 
 # /frontend - Frontend Architecture Agent
 
 ## Purpose
-Specialized frontend development agent for the haunt-platform, focusing on Next.js 14 App Router, React 18, Tailwind CSS v4, shadcn/ui components, and Supabase client integration.
+Specialized frontend development agent for the haunt-platform, focusing on Next.js 15 App Router, React 19, Tailwind CSS v4, shadcn/ui components, and Supabase client integration.
 
 ## Tech Stack Context
-- **Framework**: Next.js 14 with App Router
-- **UI**: React 18, Tailwind CSS v4, shadcn/ui (Radix-based)
+- **Framework**: Next.js 15 with App Router
+- **UI**: React 19, Tailwind CSS v4, shadcn/ui (Radix-based)
 - **State**: Server Components default, Zustand for client state
 - **Auth**: Supabase Auth (PKCE flow)
 - **Styling**: CVA for variants, `cn()` for class merging

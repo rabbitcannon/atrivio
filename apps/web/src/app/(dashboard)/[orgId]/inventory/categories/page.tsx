@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { CategoriesList } from '@/components/features/inventory';
 import { Button } from '@/components/ui/button';
 import { resolveOrgId } from '@/lib/api';
-import { CategoriesList } from '@/components/features/inventory';
 
 export const metadata: Metadata = {
   title: 'Inventory Categories',

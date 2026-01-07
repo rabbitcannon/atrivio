@@ -1,11 +1,11 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import Stripe from 'stripe';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 
 @Injectable()
 export class WebhooksService {
@@ -34,11 +34,7 @@ export class WebhooksService {
     if (webhookSecret) {
       // Production: verify signature
       try {
-        event = this.stripe.webhooks.constructEvent(
-          payload,
-          signature,
-          webhookSecret
-        );
+        event = this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
         this.logger.log(`Verified webhook signature for event ${event.id}`);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error';
@@ -74,16 +70,14 @@ export class WebhooksService {
     }
 
     // Store the event for processing
-    const { error: insertError } = await this.supabase.adminClient
-      .from('stripe_webhooks')
-      .upsert({
-        stripe_event_id: event.id,
-        type: event.type,
-        api_version: event.api_version,
-        payload: event,
-        processed: false,
-        attempts: existing ? (existing.id ? 1 : 0) : 0,
-      });
+    const { error: insertError } = await this.supabase.adminClient.from('stripe_webhooks').upsert({
+      stripe_event_id: event.id,
+      type: event.type,
+      api_version: event.api_version,
+      payload: event,
+      processed: false,
+      attempts: existing ? (existing.id ? 1 : 0) : 0,
+    });
 
     if (insertError) {
       this.logger.error(`Failed to store webhook event: ${insertError.message}`);
@@ -126,7 +120,9 @@ export class WebhooksService {
    * For Connect webhooks, event.account contains the connected account ID
    */
   private async processEvent(event: Stripe.Event): Promise<void> {
-    this.logger.log(`Processing event: ${event.type}${event.account ? ` for account ${event.account}` : ''}`);
+    this.logger.log(
+      `Processing event: ${event.type}${event.account ? ` for account ${event.account}` : ''}`
+    );
 
     // For Connect webhooks, the connected account ID is in event.account
     const connectedAccountId = event.account;
@@ -256,7 +252,8 @@ export class WebhooksService {
     payout: Stripe.Payout,
     connectedAccountId?: string
   ): Promise<void> {
-    const destination = typeof payout.destination === 'string' ? payout.destination : payout.destination?.id;
+    const destination =
+      typeof payout.destination === 'string' ? payout.destination : payout.destination?.id;
     const payoutId = payout.id;
     const amount = payout.amount;
     const currency = payout.currency;
@@ -285,21 +282,17 @@ export class WebhooksService {
       return;
     }
 
-    const { error } = await this.supabase.adminClient
-      .from('stripe_payouts')
-      .insert({
-        stripe_account_id: account.id,
-        stripe_payout_id: payoutId,
-        amount,
-        currency,
-        status: payoutStatus,
-        arrival_date: arrivalDate
-          ? new Date(arrivalDate * 1000).toISOString().split('T')[0]
-          : null,
-        method,
-        destination_type: destinationType,
-        destination_last4: undefined, // Bank account last4 not directly available from payout object
-      });
+    const { error } = await this.supabase.adminClient.from('stripe_payouts').insert({
+      stripe_account_id: account.id,
+      stripe_payout_id: payoutId,
+      amount,
+      currency,
+      status: payoutStatus,
+      arrival_date: arrivalDate ? new Date(arrivalDate * 1000).toISOString().split('T')[0] : null,
+      method,
+      destination_type: destinationType,
+      destination_last4: undefined, // Bank account last4 not directly available from payout object
+    });
 
     if (error) {
       throw new InternalServerErrorException(`Failed to create payout: ${error.message}`);
@@ -340,12 +333,14 @@ export class WebhooksService {
     connectedAccountId?: string
   ): Promise<void> {
     // Get connected account ID: prefer event.account, fallback to PaymentIntent fields
-    const onBehalfOf = typeof paymentIntent.on_behalf_of === 'string'
-      ? paymentIntent.on_behalf_of
-      : paymentIntent.on_behalf_of?.id;
-    const transferDestination = typeof paymentIntent.transfer_data?.destination === 'string'
-      ? paymentIntent.transfer_data.destination
-      : paymentIntent.transfer_data?.destination?.id;
+    const onBehalfOf =
+      typeof paymentIntent.on_behalf_of === 'string'
+        ? paymentIntent.on_behalf_of
+        : paymentIntent.on_behalf_of?.id;
+    const transferDestination =
+      typeof paymentIntent.transfer_data?.destination === 'string'
+        ? paymentIntent.transfer_data.destination
+        : paymentIntent.transfer_data?.destination?.id;
     const stripeAccountId = connectedAccountId || onBehalfOf || transferDestination;
 
     if (!stripeAccountId) {
@@ -364,9 +359,10 @@ export class WebhooksService {
       return;
     }
 
-    const latestCharge = typeof paymentIntent.latest_charge === 'string'
-      ? paymentIntent.latest_charge
-      : paymentIntent.latest_charge?.id;
+    const latestCharge =
+      typeof paymentIntent.latest_charge === 'string'
+        ? paymentIntent.latest_charge
+        : paymentIntent.latest_charge?.id;
 
     // Calculate fees
     const amount = paymentIntent.amount;
@@ -374,9 +370,8 @@ export class WebhooksService {
     const stripeFee = Math.round(amount * 0.029 + 30); // Estimate Stripe fee
 
     // Use upsert to handle race conditions with charge.succeeded event
-    const { error } = await this.supabase.adminClient
-      .from('stripe_transactions')
-      .upsert({
+    const { error } = await this.supabase.adminClient.from('stripe_transactions').upsert(
+      {
         stripe_account_id: account.id,
         stripe_payment_intent_id: paymentIntent.id,
         stripe_charge_id: latestCharge,
@@ -390,13 +385,17 @@ export class WebhooksService {
         description: paymentIntent.description,
         customer_email: paymentIntent.receipt_email,
         metadata: paymentIntent.metadata,
-      }, { onConflict: 'stripe_charge_id', ignoreDuplicates: true });
+      },
+      { onConflict: 'stripe_charge_id', ignoreDuplicates: true }
+    );
 
     if (error) {
       throw new InternalServerErrorException(`Failed to create transaction: ${error.message}`);
     }
 
-    this.logger.log(`Processed transaction for payment ${paymentIntent.id} on account ${stripeAccountId}`);
+    this.logger.log(
+      `Processed transaction for payment ${paymentIntent.id} on account ${stripeAccountId}`
+    );
   }
 
   /**
@@ -406,12 +405,14 @@ export class WebhooksService {
     paymentIntent: Stripe.PaymentIntent,
     connectedAccountId?: string
   ): Promise<void> {
-    const onBehalfOf = typeof paymentIntent.on_behalf_of === 'string'
-      ? paymentIntent.on_behalf_of
-      : paymentIntent.on_behalf_of?.id;
-    const transferDestination = typeof paymentIntent.transfer_data?.destination === 'string'
-      ? paymentIntent.transfer_data.destination
-      : paymentIntent.transfer_data?.destination?.id;
+    const onBehalfOf =
+      typeof paymentIntent.on_behalf_of === 'string'
+        ? paymentIntent.on_behalf_of
+        : paymentIntent.on_behalf_of?.id;
+    const transferDestination =
+      typeof paymentIntent.transfer_data?.destination === 'string'
+        ? paymentIntent.transfer_data.destination
+        : paymentIntent.transfer_data?.destination?.id;
     const stripeAccountId = connectedAccountId || onBehalfOf || transferDestination;
 
     if (!stripeAccountId) return;
@@ -426,25 +427,23 @@ export class WebhooksService {
 
     const lastPaymentError = paymentIntent.last_payment_error;
 
-    const { error } = await this.supabase.adminClient
-      .from('stripe_transactions')
-      .insert({
-        stripe_account_id: account.id,
-        stripe_payment_intent_id: paymentIntent.id,
-        type: 'charge',
-        status: 'failed',
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency,
-        platform_fee: 0,
-        stripe_fee: 0,
-        net_amount: 0,
-        description: lastPaymentError?.message || 'Payment failed',
-        customer_email: paymentIntent.receipt_email,
-        metadata: {
-          error_code: lastPaymentError?.code,
-          error_message: lastPaymentError?.message,
-        },
-      });
+    const { error } = await this.supabase.adminClient.from('stripe_transactions').insert({
+      stripe_account_id: account.id,
+      stripe_payment_intent_id: paymentIntent.id,
+      type: 'charge',
+      status: 'failed',
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      platform_fee: 0,
+      stripe_fee: 0,
+      net_amount: 0,
+      description: lastPaymentError?.message || 'Payment failed',
+      customer_email: paymentIntent.receipt_email,
+      metadata: {
+        error_code: lastPaymentError?.code,
+        error_message: lastPaymentError?.message,
+      },
+    });
 
     if (error) {
       throw new InternalServerErrorException(`Failed to log failed payment: ${error.message}`);
@@ -476,9 +475,8 @@ export class WebhooksService {
     }
 
     // Get payment intent ID if available
-    const paymentIntentId = typeof charge.payment_intent === 'string'
-      ? charge.payment_intent
-      : charge.payment_intent?.id;
+    const paymentIntentId =
+      typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
 
     // Calculate fees
     const amount = charge.amount;
@@ -487,9 +485,8 @@ export class WebhooksService {
     const stripeFee = Math.round(amount * 0.029 + 30); // Estimate if not available
 
     // Use upsert to handle race conditions with payment_intent.succeeded event
-    const { error } = await this.supabase.adminClient
-      .from('stripe_transactions')
-      .upsert({
+    const { error } = await this.supabase.adminClient.from('stripe_transactions').upsert(
+      {
         stripe_account_id: account.id,
         stripe_payment_intent_id: paymentIntentId,
         stripe_charge_id: charge.id,
@@ -503,13 +500,17 @@ export class WebhooksService {
         description: charge.description,
         customer_email: charge.receipt_email || charge.billing_details?.email,
         metadata: charge.metadata,
-      }, { onConflict: 'stripe_charge_id', ignoreDuplicates: true });
+      },
+      { onConflict: 'stripe_charge_id', ignoreDuplicates: true }
+    );
 
     if (error) {
       throw new InternalServerErrorException(`Failed to create transaction: ${error.message}`);
     }
 
-    this.logger.log(`Processed transaction for charge ${charge.id} on account ${connectedAccountId}`);
+    this.logger.log(
+      `Processed transaction for charge ${charge.id} on account ${connectedAccountId}`
+    );
   }
 
   /**

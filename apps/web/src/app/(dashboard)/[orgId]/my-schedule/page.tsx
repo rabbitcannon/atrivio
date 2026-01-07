@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { Calendar } from 'lucide-react';
+import type { Metadata } from 'next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const metadata: Metadata = {
@@ -20,9 +20,7 @@ export default function MySchedulePage() {
             <Calendar className="h-5 w-5" />
             Coming Soon
           </CardTitle>
-          <CardDescription>
-            The scheduling feature is currently under development.
-          </CardDescription>
+          <CardDescription>The scheduling feature is currently under development.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">

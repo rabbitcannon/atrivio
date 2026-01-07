@@ -2,19 +2,19 @@
 
 import { createClient } from '@/lib/supabase/client';
 import type {
+  Attraction,
+  AttractionsResponse,
   Organization,
   OrganizationListItem,
-  OrganizationMembersResponse,
   OrganizationMember,
+  OrganizationMembersResponse,
   OrgRole,
-  AttractionsResponse,
-  Attraction,
-  StaffResponse,
-  StaffMember,
-  StaffSkill,
   StaffCertification,
-  TimeEntry,
+  StaffMember,
+  StaffResponse,
+  StaffSkill,
   TimeEntriesResponse,
+  TimeEntry,
   Zone,
 } from './types';
 
@@ -40,7 +40,9 @@ export async function apiClient<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -100,20 +102,18 @@ export const api = {
 // Used by ticketing pages and other legacy patterns
 // ============================================================================
 
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const supabase = createClient();
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
   if (sessionError) {
-    console.error('[API] Session error:', sessionError);
     throw new Error('Authentication error. Please try logging in again.');
   }
 
   if (!session?.access_token) {
-    console.error('[API] No session found - user may need to log in');
     throw new Error('Not authenticated. Please log in to continue.');
   }
 
@@ -124,16 +124,13 @@ async function apiRequest<T>(
 
   (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
 
-  console.log('[API]', options.method || 'GET', endpoint);
-
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
     });
-  } catch (fetchError) {
-    console.error('[API] Network error:', fetchError);
+  } catch (_fetchError) {
     throw new Error('Network error. Please check your connection and try again.');
   }
 
@@ -209,22 +206,22 @@ export async function resolveOrgId(orgIdentifier: string): Promise<string | null
 
 // Re-export types for convenience
 export type {
-  Organization,
-  OrganizationListItem,
-  OrganizationMembersResponse,
-  AttractionsResponse,
   Attraction,
   AttractionListItem,
-  StaffResponse,
-  StaffMember,
-  StaffSkill,
-  StaffCertification,
-  TimeEntry,
-  TimeEntriesResponse,
-  Zone,
-  OrgRole,
+  AttractionsResponse,
+  Organization,
+  OrganizationListItem,
   OrganizationMember,
+  OrganizationMembersResponse,
+  OrgRole,
+  StaffCertification,
   StaffListItem,
+  StaffMember,
+  StaffResponse,
+  StaffSkill,
+  TimeEntriesResponse,
+  TimeEntry,
+  Zone,
 } from './types';
 
 /**
@@ -253,7 +250,10 @@ export async function createOrganization(data: {
     country: string;
   };
 }) {
-  return api.post<Organization & { membership: { role: string; is_owner: boolean } }>('/organizations', data);
+  return api.post<Organization & { membership: { role: string; is_owner: boolean } }>(
+    '/organizations',
+    data
+  );
 }
 
 /**
@@ -438,7 +438,9 @@ export async function addStaffSkill(
  * Remove a skill from a staff member (client-side)
  */
 export async function removeStaffSkill(orgId: string, staffId: string, skillId: string) {
-  return api.delete<{ message: string }>(`/organizations/${orgId}/staff/${staffId}/skills/${skillId}`);
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/staff/${staffId}/skills/${skillId}`
+  );
 }
 
 // ============================================================================
@@ -449,7 +451,9 @@ export async function removeStaffSkill(orgId: string, staffId: string, skillId: 
  * Get certifications for a staff member (client-side)
  */
 export async function getStaffCertifications(orgId: string, staffId: string) {
-  return api.get<{ data: StaffCertification[] }>(`/organizations/${orgId}/staff/${staffId}/certifications`);
+  return api.get<{ data: StaffCertification[] }>(
+    `/organizations/${orgId}/staff/${staffId}/certifications`
+  );
 }
 
 /**
@@ -465,21 +469,29 @@ export async function addStaffCertification(
     expires_at?: string;
   }
 ) {
-  return api.post<StaffCertification>(`/organizations/${orgId}/staff/${staffId}/certifications`, data);
+  return api.post<StaffCertification>(
+    `/organizations/${orgId}/staff/${staffId}/certifications`,
+    data
+  );
 }
 
 /**
  * Verify a certification (client-side)
  */
 export async function verifyCertification(orgId: string, staffId: string, certId: string) {
-  return api.post<StaffCertification>(`/organizations/${orgId}/staff/${staffId}/certifications/${certId}/verify`, {});
+  return api.post<StaffCertification>(
+    `/organizations/${orgId}/staff/${staffId}/certifications/${certId}/verify`,
+    {}
+  );
 }
 
 /**
  * Remove a certification from a staff member (client-side)
  */
 export async function removeCertification(orgId: string, staffId: string, certId: string) {
-  return api.delete<{ message: string }>(`/organizations/${orgId}/staff/${staffId}/certifications/${certId}`);
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/staff/${staffId}/certifications/${certId}`
+  );
 }
 
 // ============================================================================
@@ -499,7 +511,9 @@ export async function getTimeEntries(
   if (filters?.end_date) params.set('end_date', filters.end_date);
   if (filters?.status) params.set('status', filters.status);
   const query = params.toString();
-  return api.get<TimeEntriesResponse>(`/organizations/${orgId}/staff/${staffId}/time${query ? `?${query}` : ''}`);
+  return api.get<TimeEntriesResponse>(
+    `/organizations/${orgId}/staff/${staffId}/time${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -561,11 +575,7 @@ export interface Invitation {
 /**
  * Create an invitation to add a staff member (client-side)
  */
-export async function createInvitation(
-  orgId: string,
-  email: string,
-  role: string
-) {
+export async function createInvitation(orgId: string, email: string, role: string) {
   return api.post<Invitation>(`/organizations/${orgId}/invitations`, { email, role });
 }
 
@@ -617,21 +627,29 @@ export async function updateZone(
     color?: string;
   }
 ) {
-  return api.patch<Zone>(`/organizations/${orgId}/attractions/${attractionId}/zones/${zoneId}`, data);
+  return api.patch<Zone>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones/${zoneId}`,
+    data
+  );
 }
 
 /**
  * Delete a zone (client-side)
  */
 export async function deleteZone(orgId: string, attractionId: string, zoneId: string) {
-  return api.delete<{ message: string }>(`/organizations/${orgId}/attractions/${attractionId}/zones/${zoneId}`);
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones/${zoneId}`
+  );
 }
 
 /**
  * Reorder zones (client-side)
  */
 export async function reorderZones(orgId: string, attractionId: string, zoneIds: string[]) {
-  return api.put<{ data: Zone[] }>(`/organizations/${orgId}/attractions/${attractionId}/zones/reorder`, { zone_ids: zoneIds });
+  return api.put<{ data: Zone[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones/reorder`,
+    { zone_ids: zoneIds }
+  );
 }
 
 // ============================================================================
@@ -653,12 +671,18 @@ export interface Season {
 /**
  * Get all seasons for an attraction (client-side)
  */
-export async function getSeasons(orgId: string, attractionId: string, filters?: { year?: number; status?: string }) {
+export async function getSeasons(
+  orgId: string,
+  attractionId: string,
+  filters?: { year?: number; status?: string }
+) {
   const params = new URLSearchParams();
   if (filters?.year) params.set('year', filters.year.toString());
   if (filters?.status) params.set('status', filters.status);
   const query = params.toString();
-  return api.get<{ data: Season[] }>(`/organizations/${orgId}/attractions/${attractionId}/seasons${query ? `?${query}` : ''}`);
+  return api.get<{ data: Season[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -692,14 +716,19 @@ export async function updateSeason(
     status?: 'upcoming' | 'active' | 'completed' | 'cancelled';
   }
 ) {
-  return api.patch<Season>(`/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`, data);
+  return api.patch<Season>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`,
+    data
+  );
 }
 
 /**
  * Delete a season (client-side)
  */
 export async function deleteSeason(orgId: string, attractionId: string, seasonId: string) {
-  return api.delete<{ message: string }>(`/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`);
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`
+  );
 }
 
 // ============================================================================
@@ -771,7 +800,9 @@ export async function selfClockOut(
  * Get currently clocked-in staff (manager view)
  */
 export async function getActiveClockedIn(orgId: string) {
-  return api.get<{ data: ActiveStaffEntry[]; count: number }>(`/organizations/${orgId}/time/active`);
+  return api.get<{ data: ActiveStaffEntry[]; count: number }>(
+    `/organizations/${orgId}/time/active`
+  );
 }
 
 // ============================================================================
@@ -779,14 +810,14 @@ export async function getActiveClockedIn(orgId: string) {
 // ============================================================================
 
 import type {
+  AvailabilityType,
   Schedule,
   ScheduleRole,
   ScheduleStatus,
+  ShiftSwapRequest,
   ShiftTemplate,
   StaffAvailability,
-  ShiftSwapRequest,
   SwapStatus,
-  AvailabilityType,
 } from './types';
 
 export type {
@@ -1037,7 +1068,10 @@ export async function setStaffAvailability(
     }>;
   }
 ) {
-  return api.put<StaffAvailability[]>(`/organizations/${orgId}/staff/${staffId}/availability`, data);
+  return api.put<StaffAvailability[]>(
+    `/organizations/${orgId}/staff/${staffId}/availability`,
+    data
+  );
 }
 
 /**
@@ -1159,13 +1193,13 @@ export async function getMySwapRequests(orgId: string, status?: SwapStatus) {
 // ============================================================================
 
 import type {
-  InventoryType,
-  InventoryCategory,
-  InventoryItem,
-  InventoryCheckout,
-  InventoryTransaction,
-  InventorySummary,
   CheckoutCondition,
+  InventoryCategory,
+  InventoryCheckout,
+  InventoryItem,
+  InventorySummary,
+  InventoryTransaction,
+  InventoryType,
 } from './types';
 
 export type {
@@ -1246,7 +1280,9 @@ export async function deleteInventoryType(orgId: string, typeId: string) {
  * Get inventory categories (hierarchical)
  */
 export async function getInventoryCategories(orgId: string) {
-  return api.get<{ categories: InventoryCategory[] }>(`/organizations/${orgId}/inventory/categories`);
+  return api.get<{ categories: InventoryCategory[] }>(
+    `/organizations/${orgId}/inventory/categories`
+  );
 }
 
 /**
@@ -1279,14 +1315,19 @@ export async function updateInventoryCategory(
     isActive?: boolean;
   }
 ) {
-  return api.patch<InventoryCategory>(`/organizations/${orgId}/inventory/categories/${categoryId}`, data);
+  return api.patch<InventoryCategory>(
+    `/organizations/${orgId}/inventory/categories/${categoryId}`,
+    data
+  );
 }
 
 /**
  * Delete an inventory category
  */
 export async function deleteInventoryCategory(orgId: string, categoryId: string) {
-  return api.delete<{ success: boolean }>(`/organizations/${orgId}/inventory/categories/${categoryId}`);
+  return api.delete<{ success: boolean }>(
+    `/organizations/${orgId}/inventory/categories/${categoryId}`
+  );
 }
 
 // ----- Inventory Items -----
@@ -1315,9 +1356,10 @@ export async function getInventoryItems(
   if (filters?.page) params.set('page', filters.page.toString());
   if (filters?.limit) params.set('limit', filters.limit.toString());
   const query = params.toString();
-  return api.get<{ items: InventoryItem[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-    `/organizations/${orgId}/inventory/items${query ? `?${query}` : ''}`
-  );
+  return api.get<{
+    items: InventoryItem[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/items${query ? `?${query}` : ''}`);
 }
 
 /**
@@ -1412,9 +1454,10 @@ export async function getItemTransactions(
   if (filters?.page) params.set('page', filters.page.toString());
   if (filters?.limit) params.set('limit', filters.limit.toString());
   const query = params.toString();
-  return api.get<{ transactions: InventoryTransaction[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-    `/organizations/${orgId}/inventory/items/${itemId}/transactions${query ? `?${query}` : ''}`
-  );
+  return api.get<{
+    transactions: InventoryTransaction[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/items/${itemId}/transactions${query ? `?${query}` : ''}`);
 }
 
 /**
@@ -1424,7 +1467,15 @@ export async function getInventoryTransactions(
   orgId: string,
   filters?: {
     itemId?: string;
-    type?: 'purchase' | 'adjustment' | 'checkout' | 'return' | 'transfer' | 'damaged' | 'lost' | 'disposed';
+    type?:
+      | 'purchase'
+      | 'adjustment'
+      | 'checkout'
+      | 'return'
+      | 'transfer'
+      | 'damaged'
+      | 'lost'
+      | 'disposed';
     from?: string;
     to?: string;
     page?: number;
@@ -1439,9 +1490,10 @@ export async function getInventoryTransactions(
   if (filters?.page) params.set('page', filters.page.toString());
   if (filters?.limit) params.set('limit', filters.limit.toString());
   const query = params.toString();
-  return api.get<{ transactions: InventoryTransaction[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-    `/organizations/${orgId}/inventory/transactions${query ? `?${query}` : ''}`
-  );
+  return api.get<{
+    transactions: InventoryTransaction[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/transactions${query ? `?${query}` : ''}`);
 }
 
 // ----- Inventory Checkouts -----
@@ -1468,9 +1520,10 @@ export async function getInventoryCheckouts(
   if (filters?.page) params.set('page', filters.page.toString());
   if (filters?.limit) params.set('limit', filters.limit.toString());
   const query = params.toString();
-  return api.get<{ checkouts: InventoryCheckout[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-    `/organizations/${orgId}/inventory/checkouts${query ? `?${query}` : ''}`
-  );
+  return api.get<{
+    checkouts: InventoryCheckout[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/checkouts${query ? `?${query}` : ''}`);
 }
 
 /**
@@ -1508,21 +1561,28 @@ export async function returnInventoryCheckout(
     notes?: string;
   }
 ) {
-  return api.post<InventoryCheckout>(`/organizations/${orgId}/inventory/checkouts/${checkoutId}/return`, data || {});
+  return api.post<InventoryCheckout>(
+    `/organizations/${orgId}/inventory/checkouts/${checkoutId}/return`,
+    data || {}
+  );
 }
 
 /**
  * Get overdue checkouts
  */
 export async function getOverdueCheckouts(orgId: string) {
-  return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/inventory/checkouts/overdue`);
+  return api.get<{ checkouts: InventoryCheckout[] }>(
+    `/organizations/${orgId}/inventory/checkouts/overdue`
+  );
 }
 
 /**
  * Get active checkouts for a staff member
  */
 export async function getStaffCheckouts(orgId: string, staffId: string) {
-  return api.get<{ checkouts: InventoryCheckout[] }>(`/organizations/${orgId}/inventory/staff/${staffId}/checkouts`);
+  return api.get<{ checkouts: InventoryCheckout[] }>(
+    `/organizations/${orgId}/inventory/staff/${staffId}/checkouts`
+  );
 }
 
 // ============================================================================
@@ -1530,20 +1590,20 @@ export async function getStaffCheckouts(orgId: string, staffId: string) {
 // ============================================================================
 
 import type {
+  CapacityResponse,
+  CheckInMethod,
+  CheckInRecord,
   CheckInScanRequest,
   CheckInScanResponse,
+  CheckInStation,
+  CheckInStats,
+  CreateStationRequest,
   LookupRequest,
   LookupResponse,
-  RecordWaiverRequest,
-  CapacityResponse,
-  CheckInStats,
   QueueResponse,
-  WalkUpSaleRequest,
-  CheckInStation,
-  CreateStationRequest,
+  RecordWaiverRequest,
   UpdateStationRequest,
-  CheckInRecord,
-  CheckInMethod,
+  WalkUpSaleRequest,
 } from './types';
 
 export type {
@@ -1561,11 +1621,7 @@ export type {
 /**
  * Scan and check in a ticket
  */
-export async function scanCheckIn(
-  orgId: string,
-  attractionId: string,
-  data: CheckInScanRequest
-) {
+export async function scanCheckIn(orgId: string, attractionId: string, data: CheckInScanRequest) {
   return api.post<CheckInScanResponse>(
     `/organizations/${orgId}/attractions/${attractionId}/check-in/scan`,
     data
@@ -1575,11 +1631,7 @@ export async function scanCheckIn(
 /**
  * Look up tickets by email, phone, order number, etc.
  */
-export async function lookupTickets(
-  orgId: string,
-  attractionId: string,
-  data: LookupRequest
-) {
+export async function lookupTickets(orgId: string, attractionId: string, data: LookupRequest) {
   return api.post<LookupResponse>(
     `/organizations/${orgId}/attractions/${attractionId}/check-in/lookup`,
     data
@@ -1589,11 +1641,7 @@ export async function lookupTickets(
 /**
  * Record waiver signature
  */
-export async function recordWaiver(
-  orgId: string,
-  attractionId: string,
-  data: RecordWaiverRequest
-) {
+export async function recordWaiver(orgId: string, attractionId: string, data: RecordWaiverRequest) {
   return api.post<{ success: boolean; waiverId: string }>(
     `/organizations/${orgId}/attractions/${attractionId}/check-in/waiver`,
     data
@@ -1612,11 +1660,7 @@ export async function getCapacity(orgId: string, attractionId: string) {
 /**
  * Get check-in stats
  */
-export async function getCheckInStats(
-  orgId: string,
-  attractionId: string,
-  date?: string
-) {
+export async function getCheckInStats(orgId: string, attractionId: string, date?: string) {
   const params = new URLSearchParams();
   if (date) params.set('date', date);
   const query = params.toString();
@@ -1679,9 +1723,10 @@ export async function listCheckIns(
   if (filters?.page) params.set('page', filters.page.toString());
   if (filters?.limit) params.set('limit', filters.limit.toString());
   const query = params.toString();
-  return api.get<{ checkIns: CheckInRecord[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-    `/organizations/${orgId}/attractions/${attractionId}/check-in${query ? `?${query}` : ''}`
-  );
+  return api.get<{
+    checkIns: CheckInRecord[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/attractions/${attractionId}/check-in${query ? `?${query}` : ''}`);
 }
 
 // ----- Check-In Stations -----

@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import {
-  Users,
-  Phone,
-  Mail,
-  MoreHorizontal,
-  UserCheck,
-  XCircle,
   Bell,
   Loader2,
+  Mail,
+  MoreHorizontal,
+  Phone,
+  UserCheck,
+  Users,
+  XCircle,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { TableCell, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import type { QueueEntry, QueueEntryStatus } from '@/lib/api/types';
 
@@ -32,7 +32,10 @@ interface QueueEntryRowProps {
 }
 
 function getStatusBadge(status: QueueEntryStatus) {
-  const variants: Record<QueueEntryStatus, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+  const variants: Record<
+    QueueEntryStatus,
+    { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
+  > = {
     waiting: { variant: 'secondary', label: 'Waiting' },
     notified: { variant: 'outline', label: 'Notified' },
     called: { variant: 'default', label: 'Called' },
@@ -72,11 +75,14 @@ export function QueueEntryRow({ entry, orgId, attractionId }: QueueEntryRowProps
   const updateStatus = async (newStatus: QueueEntryStatus, actionLabel: string) => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`/api/queue/${orgId}/${attractionId}/entries/${entry.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const response = await fetch(
+        `/api/queue/${orgId}/${attractionId}/entries/${entry.id}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -112,12 +118,8 @@ export function QueueEntryRow({ entry, orgId, attractionId }: QueueEntryRowProps
 
   return (
     <TableRow className={isLoading ? 'opacity-50' : undefined}>
-      <TableCell className="font-mono text-lg font-bold">
-        #{entry.position}
-      </TableCell>
-      <TableCell className="font-mono">
-        {entry.confirmation_code}
-      </TableCell>
+      <TableCell className="font-mono text-lg font-bold">#{entry.position}</TableCell>
+      <TableCell className="font-mono">{entry.confirmation_code}</TableCell>
       <TableCell>
         {entry.guest_name || <span className="text-muted-foreground">Anonymous</span>}
       </TableCell>
@@ -189,7 +191,9 @@ export function QueueEntryRow({ entry, orgId, attractionId }: QueueEntryRowProps
                 </DropdownMenuItem>
               </>
             )}
-            {(entry.status === 'waiting' || entry.status === 'notified' || entry.status === 'called') && (
+            {(entry.status === 'waiting' ||
+              entry.status === 'notified' ||
+              entry.status === 'called') && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleRemove} className="text-destructive">

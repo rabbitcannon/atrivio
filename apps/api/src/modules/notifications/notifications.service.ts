@@ -1,19 +1,19 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
-  NotificationChannel,
-  NotificationCategory,
-  NotificationStatus,
-  SendNotificationDto,
-  SendDirectNotificationDto,
-  UpdateTemplateDto,
-  UpdatePreferencesDto,
-  RegisterDeviceDto,
-  NotificationTemplateResponse,
-  NotificationResponse,
   InAppNotificationResponse,
+  NotificationCategory,
+  NotificationChannel,
+  NotificationResponse,
+  NotificationStatus,
+  NotificationTemplateResponse,
   PreferenceResponse,
+  RegisterDeviceDto,
+  SendDirectNotificationDto,
+  SendNotificationDto,
+  UpdatePreferencesDto,
+  UpdateTemplateDto,
 } from './dto/index.js';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class NotificationsService {
 
   constructor(
     private supabase: SupabaseService,
-    private config: ConfigService,
+    private config: ConfigService
   ) {
     // Check if providers are configured
     this.twilioConfigured = !!(
@@ -51,7 +51,11 @@ export class NotificationsService {
   // SMS (Twilio)
   // ===========================================================================
 
-  async sendSms(to: string, body: string, orgId?: string): Promise<{ success: boolean; messageId?: string }> {
+  async sendSms(
+    to: string,
+    body: string,
+    orgId?: string
+  ): Promise<{ success: boolean; messageId?: string }> {
     if (!this.twilioConfigured) {
       this.logger.log(`[DEV SMS] To: ${to}, Body: ${body}`);
       return { success: true, messageId: `dev_${Date.now()}` };
@@ -62,7 +66,7 @@ export class NotificationsService {
       const twilio = await import('twilio');
       const client = twilio.default(
         this.config.get('TWILIO_ACCOUNT_SID'),
-        this.config.get('TWILIO_AUTH_TOKEN'),
+        this.config.get('TWILIO_AUTH_TOKEN')
       );
 
       const fromNumber = this.config.get<string>('TWILIO_PHONE_NUMBER');
@@ -106,7 +110,7 @@ export class NotificationsService {
     to: string,
     subject: string,
     body: string,
-    orgId?: string,
+    orgId?: string
   ): Promise<{ success: boolean; messageId?: string }> {
     if (!this.sendgridConfigured) {
       this.logger.log(`[DEV EMAIL] To: ${to}, Subject: ${subject}, Body: ${body}`);
@@ -160,7 +164,7 @@ export class NotificationsService {
 
   async sendFromTemplate(
     orgId: string,
-    dto: SendNotificationDto,
+    dto: SendNotificationDto
   ): Promise<{ success: boolean; sentCount: number }> {
     // Get template
     const template = await this.getTemplate(orgId, dto.templateKey, dto.channel);
@@ -223,7 +227,7 @@ export class NotificationsService {
 
   async getInAppNotifications(
     userId: string,
-    options?: { read?: boolean; limit?: number },
+    options?: { read?: boolean; limit?: number }
   ): Promise<{ data: InAppNotificationResponse[]; unreadCount: number }> {
     let query = this.supabase.adminClient
       .from('in_app_notifications')
@@ -255,7 +259,12 @@ export class NotificationsService {
   async createInAppNotification(
     userId: string,
     orgId: string | null,
-    notification: { category: NotificationCategory; title: string; body: string; data?: Record<string, unknown> },
+    notification: {
+      category: NotificationCategory;
+      title: string;
+      body: string;
+      data?: Record<string, unknown>;
+    }
   ): Promise<void> {
     const { error } = await this.supabase.adminClient.from('in_app_notifications').insert({
       user_id: userId,
@@ -293,7 +302,10 @@ export class NotificationsService {
   // Templates
   // ===========================================================================
 
-  async getTemplates(orgId: string, channel?: NotificationChannel): Promise<NotificationTemplateResponse[]> {
+  async getTemplates(
+    orgId: string,
+    channel?: NotificationChannel
+  ): Promise<NotificationTemplateResponse[]> {
     let query = this.supabase.adminClient
       .from('notification_templates')
       .select('*')
@@ -313,7 +325,7 @@ export class NotificationsService {
   async getTemplate(
     orgId: string,
     key: string,
-    channel: NotificationChannel,
+    channel: NotificationChannel
   ): Promise<NotificationTemplateResponse | null> {
     // First try org-specific template, then fall back to system template
     const { data, error } = await this.supabase.adminClient
@@ -376,24 +388,35 @@ export class NotificationsService {
     if (error) throw error;
 
     // Build complete preferences list with defaults
-    const categories: NotificationCategory[] = ['tickets', 'queue', 'schedule', 'announcements', 'marketing', 'system'];
+    const categories: NotificationCategory[] = [
+      'tickets',
+      'queue',
+      'schedule',
+      'announcements',
+      'marketing',
+      'system',
+    ];
     const existingPrefs = new Map(
       (data || []).map((p: Record<string, unknown>) => [p['category'] as string, p])
     );
 
-    return categories.map(category => {
+    return categories.map((category) => {
       const pref = existingPrefs.get(category) as Record<string, unknown> | undefined;
       return {
         category,
         categoryName: categoryNames[category],
-        emailEnabled: (pref?.['email_enabled'] as boolean) ?? (category !== 'marketing'),
+        emailEnabled: (pref?.['email_enabled'] as boolean) ?? category !== 'marketing',
         smsEnabled: (pref?.['sms_enabled'] as boolean) ?? false,
-        pushEnabled: (pref?.['push_enabled'] as boolean) ?? (category !== 'marketing'),
+        pushEnabled: (pref?.['push_enabled'] as boolean) ?? category !== 'marketing',
       };
     });
   }
 
-  async updatePreferences(userId: string, orgId: string | null, dto: UpdatePreferencesDto): Promise<void> {
+  async updatePreferences(
+    userId: string,
+    orgId: string | null,
+    dto: UpdatePreferencesDto
+  ): Promise<void> {
     for (const pref of dto.preferences) {
       const upsertData: Record<string, unknown> = {
         user_id: userId,
@@ -421,18 +444,19 @@ export class NotificationsService {
   // ===========================================================================
 
   async registerDevice(userId: string, dto: RegisterDeviceDto): Promise<void> {
-    const { error } = await this.supabase.adminClient
-      .from('push_devices')
-      .upsert({
+    const { error } = await this.supabase.adminClient.from('push_devices').upsert(
+      {
         user_id: userId,
         device_token: dto.deviceToken,
         platform: dto.platform,
         device_name: dto.deviceName,
         is_active: true,
         last_used_at: new Date().toISOString(),
-      }, {
+      },
+      {
         onConflict: 'device_token',
-      });
+      }
+    );
 
     if (error) throw error;
   }
@@ -453,7 +477,7 @@ export class NotificationsService {
 
   async getNotificationHistory(
     orgId: string,
-    options?: { channel?: NotificationChannel; status?: string; limit?: number; offset?: number },
+    options?: { channel?: NotificationChannel; status?: string; limit?: number; offset?: number }
   ): Promise<{ data: NotificationResponse[]; total: number }> {
     let query = this.supabase.adminClient
       .from('notifications')
@@ -468,10 +492,7 @@ export class NotificationsService {
       query = query.eq('status', options.status);
     }
 
-    query = query.range(
-      options?.offset ?? 0,
-      (options?.offset ?? 0) + (options?.limit ?? 50) - 1,
-    );
+    query = query.range(options?.offset ?? 0, (options?.offset ?? 0) + (options?.limit ?? 50) - 1);
 
     const { data, error, count } = await query;
     if (error) throw error;

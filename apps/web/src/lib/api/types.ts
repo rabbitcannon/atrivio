@@ -499,7 +499,15 @@ export interface InventoryCategory {
 }
 
 export type CheckoutCondition = 'excellent' | 'good' | 'fair' | 'poor' | 'damaged';
-export type InventoryTransactionType = 'purchase' | 'adjustment' | 'checkout' | 'return' | 'transfer' | 'damaged' | 'lost' | 'disposed';
+export type InventoryTransactionType =
+  | 'purchase'
+  | 'adjustment'
+  | 'checkout'
+  | 'return'
+  | 'transfer'
+  | 'damaged'
+  | 'lost'
+  | 'disposed';
 
 export interface InventoryItem {
   id: string;
@@ -685,8 +693,23 @@ export interface QueuePosition {
 // ============================================================================
 
 export type NotificationChannel = 'email' | 'sms' | 'push' | 'in_app';
-export type NotificationStatus = 'pending' | 'queued' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'failed' | 'bounced' | 'unsubscribed';
-export type NotificationCategory = 'tickets' | 'queue' | 'schedule' | 'announcements' | 'marketing' | 'system';
+export type NotificationStatus =
+  | 'pending'
+  | 'queued'
+  | 'sent'
+  | 'delivered'
+  | 'opened'
+  | 'clicked'
+  | 'failed'
+  | 'bounced'
+  | 'unsubscribed';
+export type NotificationCategory =
+  | 'tickets'
+  | 'queue'
+  | 'schedule'
+  | 'announcements'
+  | 'marketing'
+  | 'system';
 export type RecipientType = 'user' | 'customer' | 'staff' | 'guest';
 export type DevicePlatform = 'ios' | 'android' | 'web';
 
@@ -761,7 +784,15 @@ export interface PreferencesResponse {
 // ============================================================================
 
 export type ContentFormat = 'markdown' | 'html' | 'plain' | 'richtext';
-export type PageType = 'home' | 'about' | 'faq' | 'contact' | 'rules' | 'jobs' | 'gallery' | 'custom';
+export type PageType =
+  | 'home'
+  | 'about'
+  | 'faq'
+  | 'contact'
+  | 'rules'
+  | 'jobs'
+  | 'gallery'
+  | 'custom';
 export type PageStatus = 'draft' | 'published' | 'archived';
 export type DomainType = 'subdomain' | 'custom';
 export type DomainStatus = 'pending' | 'verifying' | 'active' | 'failed' | 'expired';
@@ -916,7 +947,12 @@ export interface PublicStorefront {
 // Check-In Types (F9)
 // ============================================================================
 
-export type CheckInMethod = 'barcode_scan' | 'qr_scan' | 'manual_lookup' | 'order_number' | 'walk_up';
+export type CheckInMethod =
+  | 'barcode_scan'
+  | 'qr_scan'
+  | 'manual_lookup'
+  | 'order_number'
+  | 'walk_up';
 export type LookupType = 'email' | 'phone' | 'order_number' | 'ticket_number' | 'name';
 export type QueueStatus = 'pending' | 'late' | 'no_show';
 export type CapacityStatus = 'normal' | 'busy' | 'critical' | 'full';

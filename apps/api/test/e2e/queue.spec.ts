@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
-  TEST_ORGS,
   TEST_ATTRACTIONS,
+  TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch } from '../helpers/request.js';
+import { get, patch, post } from '../helpers/request.js';
 
 // Test IDs from seed data
 const TEST_QUEUE_CONFIG_ID = 'e0000000-0000-0000-0000-000000000001';
@@ -223,7 +223,9 @@ describe('Virtual Queue (F11)', () => {
       );
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.data.every((e: { status: string }) => e.status === 'waiting')).toBe(true);
+      expect(response.body.data.every((e: { status: string }) => e.status === 'waiting')).toBe(
+        true
+      );
     });
 
     it('should paginate entries', async () => {
@@ -553,9 +555,7 @@ describe('Virtual Queue (F11)', () => {
 
   describe('GET /attractions/:attractionSlug/queue/info (Public)', () => {
     it('should get public queue info', async () => {
-      const response = await get(
-        `/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/info`
-      );
+      const response = await get(`/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/info`);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('isOpen');
@@ -602,14 +602,11 @@ describe('Virtual Queue (F11)', () => {
     it('should allow guest to join queue', async () => {
       // Use unique phone to avoid conflicts with existing entries
       const uniqueId = Date.now();
-      const response = await post(
-        `/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/join`,
-        {
-          guestName: `Public Guest ${uniqueId}`,
-          guestPhone: `+1888${String(uniqueId).slice(-7)}`,
-          partySize: 4,
-        }
-      );
+      const response = await post(`/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/join`, {
+        guestName: `Public Guest ${uniqueId}`,
+        guestPhone: `+1888${String(uniqueId).slice(-7)}`,
+        partySize: 4,
+      });
 
       expect(response.statusCode).toBe(201);
       expect(response.body).toHaveProperty('confirmationCode');
@@ -627,10 +624,10 @@ describe('Virtual Queue (F11)', () => {
         { token: owner.accessToken }
       );
 
-      const response = await post(
-        `/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/join`,
-        { guestName: 'Should Fail', partySize: 2 }
-      );
+      const response = await post(`/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/join`, {
+        guestName: 'Should Fail',
+        partySize: 2,
+      });
 
       expect(response.statusCode).toBe(400);
 
@@ -643,10 +640,9 @@ describe('Virtual Queue (F11)', () => {
     });
 
     it('should require guest name', async () => {
-      const response = await post(
-        `/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/join`,
-        { partySize: 2 }
-      );
+      const response = await post(`/attractions/${TEST_ATTRACTIONS.mainHauntSlug}/queue/join`, {
+        partySize: 2,
+      });
 
       expect(response.statusCode).toBe(400);
     });

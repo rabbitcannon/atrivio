@@ -1,32 +1,38 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
-  UpdateStorefrontSettingsDto,
-  CreatePageDto,
-  UpdatePageDto,
   AddDomainDto,
-  CreateFaqDto,
-  UpdateFaqDto,
-  CreateAnnouncementDto,
-  UpdateAnnouncementDto,
-  UpdateNavigationDto,
-  StorefrontSettingsResponse,
-  PageResponse,
-  DomainResponse,
-  FaqResponse,
-  AnnouncementResponse,
-  NavigationResponse,
-  PublicStorefrontResponse,
-  ContentFormat,
-  PageType,
-  PageStatus,
-  DomainType,
-  DomainStatus,
-  SslStatus,
-  VerificationMethod,
-  NavLinkType,
-  AnnouncementType,
   AnnouncementPosition,
+  AnnouncementResponse,
+  AnnouncementType,
+  ContentFormat,
+  CreateAnnouncementDto,
+  CreateFaqDto,
+  CreatePageDto,
+  DomainResponse,
+  DomainStatus,
+  DomainType,
+  FaqResponse,
+  NavigationResponse,
+  NavLinkType,
+  PageResponse,
+  PageStatus,
+  PageType,
+  PublicStorefrontResponse,
+  SslStatus,
+  StorefrontSettingsResponse,
+  UpdateAnnouncementDto,
+  UpdateFaqDto,
+  UpdateNavigationDto,
+  UpdatePageDto,
+  UpdateStorefrontSettingsDto,
+  VerificationMethod,
 } from './dto/index.js';
 
 // Reserved page slugs that cannot be used
@@ -55,7 +61,11 @@ export class StorefrontsService {
     return this.mapSettings(data);
   }
 
-  async updateSettings(orgId: string, attractionId: string, dto: UpdateStorefrontSettingsDto): Promise<StorefrontSettingsResponse> {
+  async updateSettings(
+    orgId: string,
+    attractionId: string,
+    dto: UpdateStorefrontSettingsDto
+  ): Promise<StorefrontSettingsResponse> {
     // First check if settings exist, create if not
     const existing = await this.getSettings(attractionId);
 
@@ -78,10 +88,13 @@ export class StorefrontsService {
     // Map theme fields
     if (dto.theme !== undefined) {
       if (dto.theme.preset !== undefined) updateData['theme_preset'] = dto.theme.preset;
-      if (dto.theme.primaryColor !== undefined) updateData['primary_color'] = dto.theme.primaryColor;
-      if (dto.theme.secondaryColor !== undefined) updateData['secondary_color'] = dto.theme.secondaryColor;
+      if (dto.theme.primaryColor !== undefined)
+        updateData['primary_color'] = dto.theme.primaryColor;
+      if (dto.theme.secondaryColor !== undefined)
+        updateData['secondary_color'] = dto.theme.secondaryColor;
       if (dto.theme.accentColor !== undefined) updateData['accent_color'] = dto.theme.accentColor;
-      if (dto.theme.backgroundColor !== undefined) updateData['background_color'] = dto.theme.backgroundColor;
+      if (dto.theme.backgroundColor !== undefined)
+        updateData['background_color'] = dto.theme.backgroundColor;
       if (dto.theme.textColor !== undefined) updateData['text_color'] = dto.theme.textColor;
       if (dto.theme.fontHeading !== undefined) updateData['font_heading'] = dto.theme.fontHeading;
       if (dto.theme.fontBody !== undefined) updateData['font_body'] = dto.theme.fontBody;
@@ -107,18 +120,25 @@ export class StorefrontsService {
 
     // Map analytics fields
     if (dto.analytics !== undefined) {
-      if (dto.analytics.googleAnalyticsId !== undefined) updateData['google_analytics_id'] = dto.analytics.googleAnalyticsId;
-      if (dto.analytics.facebookPixelId !== undefined) updateData['facebook_pixel_id'] = dto.analytics.facebookPixelId;
-      if (dto.analytics.customHeadScripts !== undefined) updateData['custom_head_scripts'] = dto.analytics.customHeadScripts;
+      if (dto.analytics.googleAnalyticsId !== undefined)
+        updateData['google_analytics_id'] = dto.analytics.googleAnalyticsId;
+      if (dto.analytics.facebookPixelId !== undefined)
+        updateData['facebook_pixel_id'] = dto.analytics.facebookPixelId;
+      if (dto.analytics.customHeadScripts !== undefined)
+        updateData['custom_head_scripts'] = dto.analytics.customHeadScripts;
     }
 
     // Map features fields
     if (dto.features !== undefined) {
-      if (dto.features.showAttractions !== undefined) updateData['show_attractions'] = dto.features.showAttractions;
-      if (dto.features.showCalendar !== undefined) updateData['show_calendar'] = dto.features.showCalendar;
+      if (dto.features.showAttractions !== undefined)
+        updateData['show_attractions'] = dto.features.showAttractions;
+      if (dto.features.showCalendar !== undefined)
+        updateData['show_calendar'] = dto.features.showCalendar;
       if (dto.features.showFaq !== undefined) updateData['show_faq'] = dto.features.showFaq;
-      if (dto.features.showReviews !== undefined) updateData['show_reviews'] = dto.features.showReviews;
-      if (dto.features.featuredAttractionIds !== undefined) updateData['featured_attraction_ids'] = dto.features.featuredAttractionIds;
+      if (dto.features.showReviews !== undefined)
+        updateData['show_reviews'] = dto.features.showReviews;
+      if (dto.features.featuredAttractionIds !== undefined)
+        updateData['featured_attraction_ids'] = dto.features.featuredAttractionIds;
     }
 
     // Map contact visibility
@@ -154,7 +174,9 @@ export class StorefrontsService {
     return this.mapSettings(data);
   }
 
-  async publish(attractionId: string): Promise<{ isPublished: boolean; publishedAt: string; url: string }> {
+  async publish(
+    attractionId: string
+  ): Promise<{ isPublished: boolean; publishedAt: string; url: string }> {
     const settings = await this.getSettings(attractionId);
     if (!settings) {
       throw new NotFoundException('Storefront settings not found');
@@ -242,7 +264,12 @@ export class StorefrontsService {
     return data ? this.mapPage(data) : null;
   }
 
-  async createPage(orgId: string, attractionId: string, userId: string, dto: CreatePageDto): Promise<PageResponse> {
+  async createPage(
+    orgId: string,
+    attractionId: string,
+    userId: string,
+    dto: CreatePageDto
+  ): Promise<PageResponse> {
     // Check reserved slugs
     if (RESERVED_SLUGS.includes(dto.slug.toLowerCase())) {
       throw new BadRequestException(`Slug "${dto.slug}" is reserved`);
@@ -290,7 +317,12 @@ export class StorefrontsService {
     return this.mapPage(data);
   }
 
-  async updatePage(attractionId: string, pageId: string, userId: string, dto: UpdatePageDto): Promise<PageResponse> {
+  async updatePage(
+    attractionId: string,
+    pageId: string,
+    userId: string,
+    dto: UpdatePageDto
+  ): Promise<PageResponse> {
     // Check if page exists
     const page = await this.getPage(attractionId, pageId);
     if (!page) {
@@ -419,7 +451,8 @@ export class StorefrontsService {
 
   async addDomain(orgId: string, attractionId: string, dto: AddDomainDto): Promise<DomainResponse> {
     // Validate domain format - allow single-char subdomains and full domains
-    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+    const domainRegex =
+      /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
     if (!domainRegex.test(dto.domain)) {
       throw new BadRequestException('Invalid domain format');
     }
@@ -482,7 +515,7 @@ export class StorefrontsService {
     const dnsVerified = await this.checkDnsRecord(
       domain.domain,
       domain.verification_method,
-      domain.verification_token,
+      domain.verification_token
     );
 
     if (!dnsVerified) {
@@ -511,11 +544,7 @@ export class StorefrontsService {
     return this.mapDomain(data);
   }
 
-  private async checkDnsRecord(
-    domain: string,
-    method: string,
-    token: string,
-  ): Promise<boolean> {
+  private async checkDnsRecord(domain: string, method: string, token: string): Promise<boolean> {
     this.logger.log(`Checking DNS for ${domain} with method ${method}, token ${token}`);
 
     // In development, auto-verify for test domains
@@ -636,7 +665,9 @@ export class StorefrontsService {
         .neq('id', domainId);
 
       if (otherDomains && otherDomains.length > 0) {
-        throw new BadRequestException('Cannot delete primary domain while other domains exist. Set another domain as primary first.');
+        throw new BadRequestException(
+          'Cannot delete primary domain while other domains exist. Set another domain as primary first.'
+        );
       }
     }
 
@@ -757,7 +788,12 @@ export class StorefrontsService {
     return (data || []).map((row) => this.mapAnnouncement(row));
   }
 
-  async createAnnouncement(orgId: string, attractionId: string, userId: string, dto: CreateAnnouncementDto): Promise<AnnouncementResponse> {
+  async createAnnouncement(
+    orgId: string,
+    attractionId: string,
+    userId: string,
+    dto: CreateAnnouncementDto
+  ): Promise<AnnouncementResponse> {
     const { data, error } = await this.supabase.adminClient
       .from('storefront_announcements')
       .insert({
@@ -785,7 +821,7 @@ export class StorefrontsService {
   async updateAnnouncement(
     attractionId: string,
     announcementId: string,
-    dto: UpdateAnnouncementDto,
+    dto: UpdateAnnouncementDto
   ): Promise<AnnouncementResponse> {
     const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -848,7 +884,11 @@ export class StorefrontsService {
     return { header, footer };
   }
 
-  async updateNavigation(orgId: string, attractionId: string, dto: UpdateNavigationDto): Promise<NavigationResponse> {
+  async updateNavigation(
+    orgId: string,
+    attractionId: string,
+    dto: UpdateNavigationDto
+  ): Promise<NavigationResponse> {
     // Delete existing navigation
     await this.supabase.adminClient
       .from('storefront_navigation')
@@ -968,7 +1008,11 @@ export class StorefrontsService {
     const primaryDomain = await this.getPrimaryDomain(attractionId);
 
     // Build nav URLs
-    const buildNavUrl = async (item: { linkType: NavLinkType; pageId: string | null; externalUrl: string | null }) => {
+    const buildNavUrl = async (item: {
+      linkType: NavLinkType;
+      pageId: string | null;
+      externalUrl: string | null;
+    }) => {
       switch (item.linkType) {
         case 'home':
           return '/';
@@ -998,7 +1042,7 @@ export class StorefrontsService {
         label: item.label,
         type: item.linkType,
         url: await buildNavUrl(item),
-      })),
+      }))
     );
 
     const footerNav = await Promise.all(
@@ -1006,7 +1050,7 @@ export class StorefrontsService {
         label: item.label,
         type: item.linkType,
         url: await buildNavUrl(item),
-      })),
+      }))
     );
 
     return {
@@ -1073,7 +1117,10 @@ export class StorefrontsService {
     return data ? this.mapPage(data) : null;
   }
 
-  async getPublicFaqs(identifier: string, category?: string): Promise<{ faqs: FaqResponse[]; categories: string[] }> {
+  async getPublicFaqs(
+    identifier: string,
+    category?: string
+  ): Promise<{ faqs: FaqResponse[]; categories: string[] }> {
     // Resolve attraction
     const storefront = await this.getPublicStorefront(identifier);
     if (!storefront || !storefront.attraction) {
@@ -1270,7 +1317,8 @@ export class StorefrontsService {
       const method = row['verification_method'] as VerificationMethod;
       response.verification = {
         method,
-        recordName: method === 'dns_txt' ? `_haunt-verify.${row['domain']}` : row['domain'] as string,
+        recordName:
+          method === 'dns_txt' ? `_haunt-verify.${row['domain']}` : (row['domain'] as string),
         recordValue: row['verification_token'] as string,
         instructions:
           method === 'dns_txt'

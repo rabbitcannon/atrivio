@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-} from '@nestjs/common';
+import type { Permission } from '@haunt/shared';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator.js';
 import { RbacService } from '../rbac.service.js';
-import type { Permission } from '@haunt/shared';
 
 /**
  * Guard that checks if the user has required permissions
@@ -23,14 +20,14 @@ import type { Permission } from '@haunt/shared';
 export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private rbacService: RbacService,
+    private rbacService: RbacService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(PERMISSIONS_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
@@ -52,10 +49,7 @@ export class PermissionsGuard implements CanActivate {
     }
 
     // Check if user has any of the required permissions
-    const hasPermission = this.rbacService.hasAnyPermission(
-      tenant.role,
-      requiredPermissions,
-    );
+    const hasPermission = this.rbacService.hasAnyPermission(tenant.role, requiredPermissions);
 
     if (!hasPermission) {
       throw new ForbiddenException({

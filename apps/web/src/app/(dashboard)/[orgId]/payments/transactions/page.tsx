@@ -1,21 +1,21 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
-  ArrowLeft,
   AlertCircle,
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw,
-  Clock,
-  CheckCircle2,
-  XCircle,
   AlertTriangle,
+  ArrowDownRight,
+  ArrowLeft,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  XCircle,
 } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -24,8 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { resolveOrgId, getTransactions, getPaymentStatus } from '@/lib/api';
 import type { TransactionStatus, TransactionType } from '@/lib/api';
+import { getPaymentStatus, getTransactions, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Transactions',
@@ -83,7 +83,9 @@ function getStatusIcon(status: TransactionStatus) {
   }
 }
 
-function getStatusBadgeVariant(status: TransactionStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getStatusBadgeVariant(
+  status: TransactionStatus
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'succeeded':
       return 'default';
@@ -127,9 +129,7 @@ export default async function TransactionsPage({ params }: TransactionsPageProps
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Stripe not connected</AlertTitle>
-          <AlertDescription>
-            Connect your Stripe account to view transactions.
-          </AlertDescription>
+          <AlertDescription>Connect your Stripe account to view transactions.</AlertDescription>
         </Alert>
       </div>
     );
@@ -181,9 +181,7 @@ export default async function TransactionsPage({ params }: TransactionsPageProps
       <Card>
         <CardHeader>
           <CardTitle>Transaction History</CardTitle>
-          <CardDescription>
-            {total} total transactions
-          </CardDescription>
+          <CardDescription>{total} total transactions</CardDescription>
         </CardHeader>
         <CardContent>
           {transactions.length === 0 ? (

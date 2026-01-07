@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from '../../src/app.module.js';
 import { ValidationPipe } from '@nestjs/common';
+import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { AppModule } from '../../src/app.module.js';
 
 let app: NestFastifyApplication | null = null;
 

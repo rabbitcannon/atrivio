@@ -1,11 +1,11 @@
+import { AlertCircle, Calendar, MapPin, Settings, Store } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Settings, MapPin, Calendar, AlertCircle, Store } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getAttraction, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -96,9 +96,7 @@ export default async function AttractionDetailPage({ params }: AttractionDetailP
                 <CardTitle className="text-sm font-medium">Type</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold capitalize">
-                  {typeName}
-                </div>
+                <div className="text-2xl font-bold capitalize">{typeName}</div>
               </CardContent>
             </Card>
           </div>

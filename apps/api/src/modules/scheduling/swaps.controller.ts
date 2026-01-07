@@ -1,31 +1,31 @@
+import type { UserId } from '@haunt/shared';
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
   Param,
+  Post,
   Query,
-  UseInterceptors,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { SwapsService } from './swaps.service.js';
-import {
-  CreateSwapRequestDto,
-  ApproveSwapDto,
-  RejectSwapDto,
-  ListSwapRequestsQueryDto,
-} from './dto/swap.dto.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../../core/auth/auth.service.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
 import { Feature } from '../../core/features/decorators/feature.decorator.js';
-import type { UserId } from '@haunt/shared';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
+  ApproveSwapDto,
+  CreateSwapRequestDto,
+  ListSwapRequestsQueryDto,
+  RejectSwapDto,
+} from './dto/swap.dto.js';
+import { SwapsService } from './swaps.service.js';
 
 @ApiTags('Scheduling - Shift Swaps')
 @Controller('organizations/:orgId')
@@ -42,10 +42,7 @@ export class SwapsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'List swap requests' })
-  async listSwapRequests(
-    @Tenant() ctx: TenantContext,
-    @Query() query: ListSwapRequestsQueryDto,
-  ) {
+  async listSwapRequests(@Tenant() ctx: TenantContext, @Query() query: ListSwapRequestsQueryDto) {
     return this.swapsService.listSwapRequests(ctx.orgId, query);
   }
 
@@ -53,10 +50,7 @@ export class SwapsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Get a single swap request' })
-  async getSwapRequest(
-    @Tenant() ctx: TenantContext,
-    @Param('swapId') swapId: string,
-  ) {
+  async getSwapRequest(@Tenant() ctx: TenantContext, @Param('swapId') swapId: string) {
     return this.swapsService.getSwapRequest(ctx.orgId, swapId);
   }
 
@@ -68,14 +62,9 @@ export class SwapsController {
     @Tenant() ctx: TenantContext,
     @Param('swapId') swapId: string,
     @Body() dto: ApproveSwapDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
-    return this.swapsService.approveSwapRequest(
-      ctx.orgId,
-      swapId,
-      dto,
-      user.id as UserId,
-    );
+    return this.swapsService.approveSwapRequest(ctx.orgId, swapId, dto, user.id as UserId);
   }
 
   @Post('swap-requests/:swapId/reject')
@@ -86,14 +75,9 @@ export class SwapsController {
     @Tenant() ctx: TenantContext,
     @Param('swapId') swapId: string,
     @Body() dto: RejectSwapDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
-    return this.swapsService.rejectSwapRequest(
-      ctx.orgId,
-      swapId,
-      dto,
-      user.id as UserId,
-    );
+    return this.swapsService.rejectSwapRequest(ctx.orgId, swapId, dto, user.id as UserId);
   }
 
   // ============== Staff Self-Service ==============
@@ -104,14 +88,9 @@ export class SwapsController {
     @Tenant() ctx: TenantContext,
     @Param('scheduleId') scheduleId: string,
     @Body() dto: CreateSwapRequestDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
-    return this.swapsService.createSwapRequest(
-      ctx.orgId,
-      scheduleId,
-      dto,
-      user.id as UserId,
-    );
+    return this.swapsService.createSwapRequest(ctx.orgId, scheduleId, dto, user.id as UserId);
   }
 
   @Post('swap-requests/:swapId/cancel')
@@ -119,7 +98,7 @@ export class SwapsController {
   async cancelSwapRequest(
     @Tenant() ctx: TenantContext,
     @Param('swapId') swapId: string,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
     return this.swapsService.cancelSwapRequest(ctx.orgId, swapId, user.id as UserId);
   }
@@ -129,7 +108,7 @@ export class SwapsController {
   async getMySwapRequests(
     @Tenant() ctx: TenantContext,
     @CurrentUser() user: AuthUser,
-    @Query('status') status?: string,
+    @Query('status') status?: string
   ) {
     const query: ListSwapRequestsQueryDto = {
       requestingUserId: user.id, // Service will resolve to staff_id

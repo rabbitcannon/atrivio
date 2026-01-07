@@ -1,7 +1,16 @@
+import {
+  Clock,
+  DollarSign,
+  Package,
+  Percent,
+  ShoppingCart,
+  Tag,
+  Ticket,
+  TrendingUp,
+} from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Ticket, Clock, Tag, ShoppingCart, DollarSign, TrendingUp, Package, Percent } from 'lucide-react';
+import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { resolveOrgId } from '@/lib/api';
 

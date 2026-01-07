@@ -1,17 +1,18 @@
 'use client';
 
-import * as React from 'react';
-
 import { formatCodeBlock, isLangSupported } from '@platejs/code-block';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
-import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
+import { NodeApi, type TCodeBlockElement, type TCodeSyntaxLeaf } from 'platejs';
 import {
-  type PlateElementProps,
-  type PlateLeafProps,
   PlateElement,
+  type PlateElementProps,
   PlateLeaf,
+  type PlateLeafProps,
+  useEditorRef,
+  useElement,
+  useReadOnly,
 } from 'platejs/react';
-import { useEditorRef, useElement, useReadOnly } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,11 +23,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils/cn';
 
 export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
@@ -84,8 +81,7 @@ function CodeBlockCombobox() {
     () =>
       languages.filter(
         (language) =>
-          !searchValue ||
-          language.label.toLowerCase().includes(searchValue.toLowerCase())
+          !searchValue || language.label.toLowerCase().includes(searchValue.toLowerCase())
       ),
     [searchValue]
   );
@@ -102,14 +98,10 @@ function CodeBlockCombobox() {
           aria-expanded={open}
           role="combobox"
         >
-          {languages.find((language) => language.value === value)?.label ??
-            'Plain Text'}
+          {languages.find((language) => language.value === value)?.label ?? 'Plain Text'}
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-[200px] p-0"
-        onCloseAutoFocus={() => setSearchValue('')}
-      >
+      <PopoverContent className="w-[200px] p-0" onCloseAutoFocus={() => setSearchValue('')}>
         <Command shouldFilter={false}>
           <CommandInput
             className="h-9"
@@ -127,19 +119,12 @@ function CodeBlockCombobox() {
                   className="cursor-pointer"
                   value={language.value}
                   onSelect={(value) => {
-                    editor.tf.setNodes<TCodeBlockElement>(
-                      { lang: value },
-                      { at: element }
-                    );
+                    editor.tf.setNodes<TCodeBlockElement>({ lang: value }, { at: element });
                     setSearchValue(value);
                     setOpen(false);
                   }}
                 >
-                  <Check
-                    className={cn(
-                      value === language.value ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
+                  <Check className={cn(value === language.value ? 'opacity-100' : 'opacity-0')} />
                   {language.label}
                 </CommandItem>
               ))}
@@ -154,34 +139,25 @@ function CodeBlockCombobox() {
 function CopyButton({
   value,
   ...props
-}: { value: (() => string) | string } & Omit<
-  React.ComponentProps<typeof Button>,
-  'value'
->) {
+}: { value: (() => string) | string } & Omit<React.ComponentProps<typeof Button>, 'value'>) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
     setTimeout(() => {
       setHasCopied(false);
     }, 2000);
-  }, [hasCopied]);
+  }, []);
 
   return (
     <Button
       onClick={() => {
-        void navigator.clipboard.writeText(
-          typeof value === 'function' ? value() : value
-        );
+        void navigator.clipboard.writeText(typeof value === 'function' ? value() : value);
         setHasCopied(true);
       }}
       {...props}
     >
       <span className="sr-only">Copy</span>
-      {hasCopied ? (
-        <CheckIcon className="!size-3" />
-      ) : (
-        <CopyIcon className="!size-3" />
-      )}
+      {hasCopied ? <CheckIcon className="!size-3" /> : <CopyIcon className="!size-3" />}
     </Button>
   );
 }

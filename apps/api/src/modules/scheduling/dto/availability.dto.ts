@@ -1,5 +1,5 @@
-import { IsUUID, IsEnum, IsOptional, IsDateString, IsString, IsInt, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export type AvailabilityType =
   | 'available'
@@ -25,7 +25,7 @@ export class CreateAvailabilityDto {
 
   @ApiProperty({
     description: 'Availability type',
-    enum: ['available', 'unavailable', 'preferred', 'time_off_approved', 'time_off_pending']
+    enum: ['available', 'unavailable', 'preferred', 'time_off_approved', 'time_off_pending'],
   })
   @IsEnum(['available', 'unavailable', 'preferred', 'time_off_approved', 'time_off_pending'])
   availabilityType!: AvailabilityType;
@@ -66,7 +66,7 @@ export class UpdateAvailabilityDto {
 
   @ApiPropertyOptional({
     description: 'Availability type',
-    enum: ['available', 'unavailable', 'preferred', 'time_off_approved', 'time_off_pending']
+    enum: ['available', 'unavailable', 'preferred', 'time_off_approved', 'time_off_pending'],
   })
   @IsEnum(['available', 'unavailable', 'preferred', 'time_off_approved', 'time_off_pending'])
   @IsOptional()

@@ -1,12 +1,18 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -14,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { createAttraction, updateAttraction } from '@/lib/api/client';
+import { Textarea } from '@/components/ui/textarea';
 import type { AttractionType } from '@/lib/api';
+import { createAttraction, updateAttraction } from '@/lib/api/client';
 
 interface AttractionFormProps {
   orgId: string;
@@ -147,8 +154,20 @@ export function AttractionForm({ orgId, attractionTypes, attraction }: Attractio
 
   // Fallback types if none provided
   const fallbackTypes: AttractionType[] = [
-    { id: 'haunted_house', key: 'haunted_house', name: 'Haunted House', category: 'indoor', icon: 'ghost' },
-    { id: 'haunted_trail', key: 'haunted_trail', name: 'Haunted Trail', category: 'outdoor', icon: 'tree' },
+    {
+      id: 'haunted_house',
+      key: 'haunted_house',
+      name: 'Haunted House',
+      category: 'indoor',
+      icon: 'ghost',
+    },
+    {
+      id: 'haunted_trail',
+      key: 'haunted_trail',
+      name: 'Haunted Trail',
+      category: 'outdoor',
+      icon: 'tree',
+    },
     { id: 'escape_room', key: 'escape_room', name: 'Escape Room', category: 'indoor', icon: 'key' },
     { id: 'other', key: 'other', name: 'Other', category: 'hybrid', icon: 'help-circle' },
   ];

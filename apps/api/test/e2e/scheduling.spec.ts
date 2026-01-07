@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
-  TEST_ORGS,
   TEST_ATTRACTIONS,
+  TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch, del } from '../helpers/request.js';
+import { get } from '../helpers/request.js';
 
 describe('Scheduling (F7b)', () => {
   beforeAll(async () => {
@@ -96,7 +96,7 @@ describe('Scheduling (F7b)', () => {
       const manager = await loginTestUser(TEST_USERS.manager.email, TEST_USERS.manager.password);
 
       const response = await get(
-        '/organizations/nightmare-manor/attractions/' + TEST_ATTRACTIONS.mainHaunt + '/shift-templates',
+        `/organizations/nightmare-manor/attractions/${TEST_ATTRACTIONS.mainHaunt}/shift-templates`,
         { token: manager.accessToken }
       );
 
@@ -138,10 +138,9 @@ describe('Scheduling (F7b)', () => {
       const staffId = statusResponse.body.staff_id;
 
       if (staffId) {
-        const response = await get(
-          `/organizations/nightmare-manor/staff/${staffId}/availability`,
-          { token: manager.accessToken }
-        );
+        const response = await get(`/organizations/nightmare-manor/staff/${staffId}/availability`, {
+          token: manager.accessToken,
+        });
 
         expect(response.statusCode).toBe(200);
       }
@@ -172,10 +171,9 @@ describe('Scheduling (F7b)', () => {
     it('should allow managers to view swap requests', async () => {
       const manager = await loginTestUser(TEST_USERS.manager.email, TEST_USERS.manager.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/swap-requests`,
-        { token: manager.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/swap-requests`, {
+        token: manager.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       // API returns array directly
@@ -196,10 +194,9 @@ describe('Scheduling (F7b)', () => {
     it('should reject actors from viewing all swap requests', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/swap-requests`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/swap-requests`, {
+        token: actor.accessToken,
+      });
 
       // Actors should get 403 since they can only view their own
       expect(response.statusCode).toBe(403);
@@ -210,10 +207,9 @@ describe('Scheduling (F7b)', () => {
     it('should list schedule roles', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/schedule-roles`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/schedule-roles`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       // API returns array directly
@@ -225,10 +221,9 @@ describe('Scheduling (F7b)', () => {
     it('should allow staff to view their own schedules', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/my-schedules`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/my-schedules`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       // API returns array directly
@@ -250,10 +245,9 @@ describe('Scheduling (F7b)', () => {
     it('should allow staff to view their own swap requests', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/my-swap-requests`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/my-swap-requests`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       // API returns array directly

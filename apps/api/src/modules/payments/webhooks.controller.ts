@@ -1,14 +1,8 @@
-import {
-  Controller,
-  Post,
-  Headers,
-  Req,
-  BadRequestException,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiExcludeEndpoint } from '@nestjs/swagger';
+import { BadRequestException, Controller, Headers, Post, Req } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
-import { WebhooksService } from './webhooks.service.js';
 import { Public } from '../../core/auth/decorators/public.decorator.js';
+import { WebhooksService } from './webhooks.service.js';
 
 @ApiTags('Webhooks')
 @Controller('webhooks')
@@ -25,7 +19,7 @@ export class WebhooksController {
   @ApiExcludeEndpoint() // Don't expose in public docs
   async handleStripeWebhook(
     @Req() request: FastifyRequest,
-    @Headers('stripe-signature') signature: string,
+    @Headers('stripe-signature') signature: string
   ) {
     // Get raw body from request (enabled via rawBody: true in main.ts)
     const rawBody = (request as FastifyRequest & { rawBody?: Buffer }).rawBody;

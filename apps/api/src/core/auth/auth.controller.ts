@@ -1,22 +1,15 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Headers,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
-import {
-  RegisterDto,
+import { Public } from './decorators/public.decorator.js';
+import type {
+  ForgotPasswordDto,
   LoginDto,
   MagicLinkDto,
   RefreshTokenDto,
-  ForgotPasswordDto,
+  RegisterDto,
   ResetPasswordDto,
 } from './dto/auth.dto.js';
-import { Public } from './decorators/public.decorator.js';
 
 @ApiTags('Auth')
 @Controller('auth')

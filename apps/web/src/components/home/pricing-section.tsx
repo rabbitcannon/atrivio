@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { useRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface PricingTier {
@@ -78,7 +78,10 @@ export function PricingSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section id="pricing" className="bg-[hsl(var(--landing-bg-dark))] px-5 py-[var(--landing-section-spacing)]">
+    <section
+      id="pricing"
+      className="bg-[hsl(var(--landing-bg-dark))] px-5 py-[var(--landing-section-spacing)]"
+    >
       <div ref={ref} className="mx-auto max-w-[var(--landing-container-max)]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -90,8 +93,7 @@ export function PricingSection() {
             Simple, Transparent Pricing
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-[hsl(var(--landing-text-muted))]">
-            No hidden fees. No long-term contracts. Scale your plan as your
-            operation grows.
+            No hidden fees. No long-term contracts. Scale your plan as your operation grows.
           </p>
         </motion.div>
 
@@ -154,7 +156,10 @@ export function PricingSection() {
                     }}
                     className="flex items-start gap-3 text-sm text-[hsl(var(--landing-text-muted))]"
                   >
-                    <span className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]" aria-hidden="true">
+                    <span
+                      className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]"
+                      aria-hidden="true"
+                    >
                       ✓
                     </span>
                     <span>{feature}</span>

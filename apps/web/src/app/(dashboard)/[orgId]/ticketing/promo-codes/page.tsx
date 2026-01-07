@@ -1,31 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Copy, MoreHorizontal, Pencil, Percent, Plus, Trash2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { Plus, Pencil, Trash2, MoreHorizontal, Percent, Copy } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -34,9 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -44,6 +29,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
@@ -98,7 +92,7 @@ export default function PromoCodesPage() {
       setIsLoading(false);
     }
     init();
-  }, [orgIdentifier]);
+  }, [orgIdentifier, loadPromoCodes]);
 
   async function loadPromoCodes(orgId: string) {
     try {
@@ -106,9 +100,7 @@ export default function PromoCodesPage() {
         `/organizations/${orgId}/promo-codes?includeInactive=true`
       );
       setPromoCodes(response?.data || []);
-    } catch (error) {
-      console.error('Failed to load promo codes:', error);
-    }
+    } catch (_error) {}
   }
 
   function formatDiscount(code: PromoCode): string {
@@ -164,16 +156,12 @@ export default function PromoCodesPage() {
         code.discount_type === 'percentage'
           ? String(code.discount_value)
           : String(code.discount_value / 100),
-      minOrderAmount: code.min_order_amount
-        ? String(code.min_order_amount / 100)
-        : '',
+      minOrderAmount: code.min_order_amount ? String(code.min_order_amount / 100) : '',
       maxDiscount: code.max_discount ? String(code.max_discount / 100) : '',
       maxUses: code.max_uses ? String(code.max_uses) : '',
-      maxUsesPerCustomer: code.max_uses_per_customer
-        ? String(code.max_uses_per_customer)
-        : '',
-      validFrom: code.valid_from ? code.valid_from.split('T')[0] ?? '' : '',
-      validUntil: code.valid_until ? code.valid_until.split('T')[0] ?? '' : '',
+      maxUsesPerCustomer: code.max_uses_per_customer ? String(code.max_uses_per_customer) : '',
+      validFrom: code.valid_from ? (code.valid_from.split('T')[0] ?? '') : '',
+      validUntil: code.valid_until ? (code.valid_until.split('T')[0] ?? '') : '',
     });
     setIsDialogOpen(true);
   }
@@ -196,7 +184,7 @@ export default function PromoCodesPage() {
       discountType: formData.discountType,
       discountValue:
         formData.discountType === 'percentage'
-          ? parseInt(formData.discountValue)
+          ? parseInt(formData.discountValue, 10)
           : Math.round(parseFloat(formData.discountValue) * 100),
       minOrderAmount: formData.minOrderAmount
         ? Math.round(parseFloat(formData.minOrderAmount) * 100)
@@ -204,9 +192,9 @@ export default function PromoCodesPage() {
       maxDiscount: formData.maxDiscount
         ? Math.round(parseFloat(formData.maxDiscount) * 100)
         : undefined,
-      maxUses: formData.maxUses ? parseInt(formData.maxUses) : undefined,
+      maxUses: formData.maxUses ? parseInt(formData.maxUses, 10) : undefined,
       maxUsesPerCustomer: formData.maxUsesPerCustomer
-        ? parseInt(formData.maxUsesPerCustomer)
+        ? parseInt(formData.maxUsesPerCustomer, 10)
         : undefined,
       validFrom: formData.validFrom || undefined,
       validUntil: formData.validUntil || undefined,
@@ -225,7 +213,7 @@ export default function PromoCodesPage() {
       }
       setIsDialogOpen(false);
       await loadPromoCodes(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to save promo code',
@@ -238,15 +226,14 @@ export default function PromoCodesPage() {
     if (!resolvedOrgId) return;
 
     try {
-      await apiClient.patch(
-        `/organizations/${resolvedOrgId}/promo-codes/${code.id}`,
-        { isActive: !code.is_active }
-      );
+      await apiClient.patch(`/organizations/${resolvedOrgId}/promo-codes/${code.id}`, {
+        isActive: !code.is_active,
+      });
       toast({
         title: code.is_active ? 'Promo code deactivated' : 'Promo code activated',
       });
       await loadPromoCodes(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to update promo code',
@@ -260,12 +247,10 @@ export default function PromoCodesPage() {
     if (!confirm(`Delete promo code "${code.code}"?`)) return;
 
     try {
-      await apiClient.delete(
-        `/organizations/${resolvedOrgId}/promo-codes/${code.id}`
-      );
+      await apiClient.delete(`/organizations/${resolvedOrgId}/promo-codes/${code.id}`);
       toast({ title: 'Promo code deleted' });
       await loadPromoCodes(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Cannot delete promo code that has been used',
@@ -292,9 +277,7 @@ export default function PromoCodesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Promo Codes</h1>
-          <p className="text-muted-foreground">
-            Create and manage promotional discount codes.
-          </p>
+          <p className="text-muted-foreground">Create and manage promotional discount codes.</p>
         </div>
         <Button onClick={openCreateDialog}>
           <Plus className="h-4 w-4 mr-2" />
@@ -346,9 +329,7 @@ export default function PromoCodesPage() {
                         </Button>
                       </div>
                       {code.description && (
-                        <div className="text-sm text-muted-foreground">
-                          {code.description}
-                        </div>
+                        <div className="text-sm text-muted-foreground">{code.description}</div>
                       )}
                     </TableCell>
                     <TableCell>
@@ -362,9 +343,7 @@ export default function PromoCodesPage() {
                     <TableCell className="text-right">
                       {code.max_uses ? (
                         <span
-                          className={
-                            code.times_used >= code.max_uses ? 'text-destructive' : ''
-                          }
+                          className={code.times_used >= code.max_uses ? 'text-destructive' : ''}
                         >
                           {code.times_used} / {code.max_uses}
                         </span>
@@ -430,12 +409,8 @@ export default function PromoCodesPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {editingCode ? 'Edit Promo Code' : 'Create Promo Code'}
-            </DialogTitle>
-            <DialogDescription>
-              Configure the promo code details and discount.
-            </DialogDescription>
+            <DialogTitle>{editingCode ? 'Edit Promo Code' : 'Create Promo Code'}</DialogTitle>
+            <DialogDescription>Configure the promo code details and discount.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
@@ -445,9 +420,7 @@ export default function PromoCodesPage() {
                 <Input
                   id="code"
                   value={formData.code}
-                  onChange={(e) =>
-                    setFormData({ ...formData, code: e.target.value.toUpperCase() })
-                  }
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   placeholder="SUMMER2024"
                   className="font-mono"
                   disabled={!!editingCode}
@@ -456,9 +429,7 @@ export default function PromoCodesPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() =>
-                      setFormData({ ...formData, code: generateRandomCode() })
-                    }
+                    onClick={() => setFormData({ ...formData, code: generateRandomCode() })}
                   >
                     Generate
                   </Button>
@@ -471,9 +442,7 @@ export default function PromoCodesPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Summer sale discount..."
               />
             </div>
@@ -508,9 +477,7 @@ export default function PromoCodesPage() {
                   max={formData.discountType === 'percentage' ? '100' : undefined}
                   step={formData.discountType === 'percentage' ? '1' : '0.01'}
                   value={formData.discountValue}
-                  onChange={(e) =>
-                    setFormData({ ...formData, discountValue: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
                   placeholder={formData.discountType === 'percentage' ? '20' : '10.00'}
                 />
               </div>
@@ -525,9 +492,7 @@ export default function PromoCodesPage() {
                   min="0"
                   step="0.01"
                   value={formData.minOrderAmount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, minOrderAmount: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })}
                   placeholder="No minimum"
                 />
               </div>
@@ -540,9 +505,7 @@ export default function PromoCodesPage() {
                   min="0"
                   step="0.01"
                   value={formData.maxDiscount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maxDiscount: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
                   placeholder="No limit"
                 />
               </div>
@@ -556,9 +519,7 @@ export default function PromoCodesPage() {
                   type="number"
                   min="1"
                   value={formData.maxUses}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maxUses: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
                   placeholder="Unlimited"
                 />
               </div>
@@ -570,9 +531,7 @@ export default function PromoCodesPage() {
                   type="number"
                   min="1"
                   value={formData.maxUsesPerCustomer}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maxUsesPerCustomer: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, maxUsesPerCustomer: e.target.value })}
                   placeholder="Unlimited"
                 />
               </div>
@@ -585,9 +544,7 @@ export default function PromoCodesPage() {
                   id="validFrom"
                   type="date"
                   value={formData.validFrom}
-                  onChange={(e) =>
-                    setFormData({ ...formData, validFrom: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
                 />
               </div>
 
@@ -597,9 +554,7 @@ export default function PromoCodesPage() {
                   id="validUntil"
                   type="date"
                   value={formData.validUntil}
-                  onChange={(e) =>
-                    setFormData({ ...formData, validUntil: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
                 />
               </div>
             </div>
@@ -609,10 +564,7 @@ export default function PromoCodesPage() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!formData.code || !formData.discountValue}
-            >
+            <Button onClick={handleSubmit} disabled={!formData.code || !formData.discountValue}>
               {editingCode ? 'Save Changes' : 'Create'}
             </Button>
           </DialogFooter>

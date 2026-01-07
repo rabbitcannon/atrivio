@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
-  CreateSwapRequestDto,
   ApproveSwapDto,
-  RejectSwapDto,
+  CreateSwapRequestDto,
   ListSwapRequestsQueryDto,
+  RejectSwapDto,
 } from './dto/swap.dto.js';
 
 @Injectable()
@@ -122,7 +127,7 @@ export class SwapsService {
     orgId: OrgId,
     scheduleId: string,
     dto: CreateSwapRequestDto,
-    requesterId: UserId,
+    requesterId: UserId
   ) {
     // Get the schedule and verify requester is the assigned staff
     const { data: schedule } = await this.supabase.adminClient

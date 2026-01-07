@@ -1,14 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsOptional,
-  IsUrl,
-  IsUUID,
-  IsInt,
-  Min,
-  IsDateString,
-  IsEnum,
-} from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsString, IsUrl, IsUUID, Min } from 'class-validator';
 
 export class CreateOnboardingLinkDto {
   @ApiPropertyOptional({

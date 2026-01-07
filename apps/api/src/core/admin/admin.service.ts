@@ -1,31 +1,31 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-import { HealthService } from './health.service.js';
 import type {
-  ListUsersDto,
-  UpdateUserDto,
-  DeleteUserDto,
-  ListOrganizationsDto,
-  UpdateOrganizationDto,
-  SuspendOrganizationDto,
-  DeleteOrganizationDto,
-  SetOrgPlatformFeeDto,
-  CreateFeatureFlagDto,
-  UpdateFeatureFlagDto,
-  UpdateSettingDto,
-  MaintenanceModeDto,
   CreateAnnouncementDto,
-  UpdateAnnouncementDto,
-  ListAuditLogsDto,
-  HealthHistoryDto,
+  CreateFeatureFlagDto,
   CreateRateLimitDto,
+  DeleteOrganizationDto,
+  DeleteUserDto,
+  HealthHistoryDto,
+  ListAuditLogsDto,
+  ListOrganizationsDto,
+  ListUsersDto,
+  MaintenanceModeDto,
+  SetOrgPlatformFeeDto,
+  SuspendOrganizationDto,
+  UpdateAnnouncementDto,
+  UpdateFeatureFlagDto,
+  UpdateOrganizationDto,
   UpdateRateLimitDto,
+  UpdateSettingDto,
+  UpdateUserDto,
 } from './dto/admin.dto.js';
+import { HealthService } from './health.service.js';
 
 // Type helpers for Supabase query results
 type AnyRecord = Record<string, unknown>;
@@ -34,7 +34,7 @@ type AnyRecord = Record<string, unknown>;
 export class AdminService {
   constructor(
     private supabase: SupabaseService,
-    private healthService: HealthService,
+    private healthService: HealthService
   ) {}
 
   // ============================================================================
@@ -84,41 +84,41 @@ export class AdminService {
     ]);
 
     // Calculate today's revenue
-    const revenueToday = ((todayOrders.data || []) as AnyRecord[])
-      .reduce((sum, order) => sum + (Number(order['total']) || 0), 0);
+    const revenueToday = ((todayOrders.data || []) as AnyRecord[]).reduce(
+      (sum, order) => sum + (Number(order['total']) || 0),
+      0
+    );
 
     // Calculate today's ticket count
-    const ticketsSoldToday = ((todayTickets.data || []) as AnyRecord[])
-      .reduce((sum, item) => sum + (Number(item['quantity']) || 0), 0);
+    const ticketsSoldToday = ((todayTickets.data || []) as AnyRecord[]).reduce(
+      (sum, item) => sum + (Number(item['quantity']) || 0),
+      0
+    );
 
     // Get growth stats (7d and 30d)
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [
-      { count: users7d },
-      { count: users30d },
-      { count: orgs7d },
-      { count: orgs30d },
-    ] = await Promise.all([
-      client
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', sevenDaysAgo),
-      client
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', thirtyDaysAgo),
-      client
-        .from('organizations')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', sevenDaysAgo),
-      client
-        .from('organizations')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', thirtyDaysAgo),
-    ]);
+    const [{ count: users7d }, { count: users30d }, { count: orgs7d }, { count: orgs30d }] =
+      await Promise.all([
+        client
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', sevenDaysAgo),
+        client
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', thirtyDaysAgo),
+        client
+          .from('organizations')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', sevenDaysAgo),
+        client
+          .from('organizations')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', thirtyDaysAgo),
+      ]);
 
     // Build health status from recent logs
     const healthStatus: Record<string, string> = {};
@@ -170,11 +170,18 @@ export class AdminService {
 
   async listUsers(dto: ListUsersDto) {
     const client = this.supabase.adminClient;
-    const { page = 1, limit = 20, search, is_super_admin, created_after, created_before, has_orgs } = dto;
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      is_super_admin,
+      created_after,
+      created_before,
+      has_orgs,
+    } = dto;
 
-    let query = client
-      .from('profiles')
-      .select(`
+    let query = client.from('profiles').select(
+      `
         id,
         email,
         first_name,
@@ -183,10 +190,14 @@ export class AdminService {
         is_super_admin,
         created_at,
         updated_at
-      `, { count: 'exact' });
+      `,
+      { count: 'exact' }
+    );
 
     if (search) {
-      query = query.or(`email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+      query = query.or(
+        `email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`
+      );
     }
 
     if (is_super_admin !== undefined) {
@@ -495,11 +506,17 @@ export class AdminService {
 
   async listOrganizations(dto: ListOrganizationsDto) {
     const client = this.supabase.adminClient;
-    const { page = 1, limit = 20, search, status, stripe_connected, created_after, created_before } = dto;
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status,
+      stripe_connected,
+      created_after,
+      created_before,
+    } = dto;
 
-    let query = client
-      .from('organizations')
-      .select('*', { count: 'exact' });
+    let query = client.from('organizations').select('*', { count: 'exact' });
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,slug.ilike.%${search}%`);
@@ -542,10 +559,7 @@ export class AdminService {
         .select('org_id, user_id, role, is_owner, profiles(id, email, first_name, last_name)')
         .in('org_id', orgIds)
         .eq('status', 'active'),
-      client
-        .from('attractions')
-        .select('org_id')
-        .in('org_id', orgIds),
+      client.from('attractions').select('org_id').in('org_id', orgIds),
       client
         .from('orders')
         .select('org_id, total')
@@ -633,10 +647,7 @@ export class AdminService {
         `)
         .eq('org_id', orgId)
         .eq('status', 'active'),
-      client
-        .from('attractions')
-        .select('id, name, status')
-        .eq('org_id', orgId),
+      client.from('attractions').select('id, name, status').eq('org_id', orgId),
       // Total revenue from completed orders
       client
         .from('orders')
@@ -655,10 +666,14 @@ export class AdminService {
     const attractions = attractionsResult.data || [];
 
     // Calculate totals
-    const totalRevenue = ((ordersResult.data || []) as AnyRecord[])
-      .reduce((sum, order) => sum + (Number(order['total']) || 0), 0);
-    const totalTicketsSold = ((orderItemsResult.data || []) as AnyRecord[])
-      .reduce((sum, item) => sum + (Number(item['quantity']) || 0), 0);
+    const totalRevenue = ((ordersResult.data || []) as AnyRecord[]).reduce(
+      (sum, order) => sum + (Number(order['total']) || 0),
+      0
+    );
+    const totalTicketsSold = ((orderItemsResult.data || []) as AnyRecord[]).reduce(
+      (sum, item) => sum + (Number(item['quantity']) || 0),
+      0
+    );
 
     return {
       ...org,
@@ -684,7 +699,11 @@ export class AdminService {
   async updateOrganization(orgId: string, dto: UpdateOrganizationDto, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: current } = await client.from('organizations').select('status').eq('id', orgId).single();
+    const { data: current } = await client
+      .from('organizations')
+      .select('status')
+      .eq('id', orgId)
+      .single();
 
     if (!current) {
       throw new NotFoundException({
@@ -789,7 +808,11 @@ export class AdminService {
   async reactivateOrganization(orgId: string, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: org } = await client.from('organizations').select('status').eq('id', orgId).single();
+    const { data: org } = await client
+      .from('organizations')
+      .select('status')
+      .eq('id', orgId)
+      .single();
 
     if (!org) {
       throw new NotFoundException({
@@ -839,7 +862,11 @@ export class AdminService {
   async deleteOrganization(orgId: string, dto: DeleteOrganizationDto, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: org } = await client.from('organizations').select('slug, name').eq('id', orgId).single();
+    const { data: org } = await client
+      .from('organizations')
+      .select('slug, name')
+      .eq('id', orgId)
+      .single();
 
     if (!org) {
       throw new NotFoundException({
@@ -1173,7 +1200,11 @@ export class AdminService {
     const client = this.supabase.adminClient;
 
     // Check key uniqueness
-    const { data: existing } = await client.from('feature_flags').select('id').eq('key', dto.key).single();
+    const { data: existing } = await client
+      .from('feature_flags')
+      .select('id')
+      .eq('key', dto.key)
+      .single();
 
     if (existing) {
       throw new BadRequestException({
@@ -1214,7 +1245,11 @@ export class AdminService {
   async updateFeatureFlag(flagId: string, dto: UpdateFeatureFlagDto, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: current } = await client.from('feature_flags').select('*').eq('id', flagId).single();
+    const { data: current } = await client
+      .from('feature_flags')
+      .select('*')
+      .eq('id', flagId)
+      .single();
 
     if (!current) {
       throw new NotFoundException({
@@ -1242,7 +1277,10 @@ export class AdminService {
     }
     if (dto.rollout_percentage !== undefined) {
       updateData['rollout_percentage'] = dto.rollout_percentage;
-      changes['rollout_percentage'] = { from: current.rollout_percentage, to: dto.rollout_percentage };
+      changes['rollout_percentage'] = {
+        from: current.rollout_percentage,
+        to: dto.rollout_percentage,
+      };
     }
     if (dto.org_ids !== undefined) {
       updateData['org_ids'] = dto.org_ids;
@@ -1283,7 +1321,11 @@ export class AdminService {
   async deleteFeatureFlag(flagId: string, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: flag } = await client.from('feature_flags').select('key').eq('id', flagId).single();
+    const { data: flag } = await client
+      .from('feature_flags')
+      .select('key')
+      .eq('id', flagId)
+      .single();
 
     if (!flag) {
       throw new NotFoundException({
@@ -1414,7 +1456,11 @@ export class AdminService {
   async updateSetting(key: string, dto: UpdateSettingDto, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: current } = await client.from('platform_settings').select('value').eq('key', key).single();
+    const { data: current } = await client
+      .from('platform_settings')
+      .select('value')
+      .eq('key', key)
+      .single();
 
     if (!current) {
       throw new NotFoundException({
@@ -1660,7 +1706,7 @@ export class AdminService {
       .select('*')
       .eq('active', true)
       .lte('starts_at', new Date().toISOString())
-      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -1724,7 +1770,7 @@ export class AdminService {
         user_id: userId,
         dismissed_at: new Date().toISOString(),
       },
-      { onConflict: 'announcement_id,user_id' },
+      { onConflict: 'announcement_id,user_id' }
     );
 
     if (error) {
@@ -1764,11 +1810,19 @@ export class AdminService {
 
   async listAuditLogs(dto: ListAuditLogsDto) {
     const client = this.supabase.adminClient;
-    const { page = 1, limit = 20, actor_id, org_id, action, resource_type, start_date, end_date } = dto;
+    const {
+      page = 1,
+      limit = 20,
+      actor_id,
+      org_id,
+      action,
+      resource_type,
+      start_date,
+      end_date,
+    } = dto;
 
-    let query = client
-      .from('audit_logs')
-      .select(`
+    let query = client.from('audit_logs').select(
+      `
         id,
         actor_id,
         actor_type,
@@ -1780,7 +1834,9 @@ export class AdminService {
         ip_address,
         created_at,
         actor:profiles!actor_id(id, email, first_name, last_name)
-      `, { count: 'exact' });
+      `,
+      { count: 'exact' }
+    );
 
     if (actor_id) query = query.eq('actor_id', actor_id);
     if (org_id) query = query.eq('org_id', org_id);
@@ -1836,7 +1892,16 @@ export class AdminService {
     const allLogs = await this.listAuditLogs({ ...dto, limit: 10000 });
 
     if (dto.format === 'csv') {
-      const headers = ['id', 'actor_email', 'actor_type', 'action', 'resource_type', 'resource_id', 'org_id', 'created_at'];
+      const headers = [
+        'id',
+        'actor_email',
+        'actor_type',
+        'action',
+        'resource_type',
+        'resource_id',
+        'org_id',
+        'created_at',
+      ];
       const rows = allLogs.data.map((log) => [
         log.id,
         log.actor?.email || 'system',
@@ -1964,7 +2029,11 @@ export class AdminService {
   async updateRateLimit(ruleId: string, dto: UpdateRateLimitDto, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: current } = await client.from('rate_limit_rules').select('name').eq('id', ruleId).single();
+    const { data: current } = await client
+      .from('rate_limit_rules')
+      .select('name')
+      .eq('id', ruleId)
+      .single();
 
     if (!current) {
       throw new NotFoundException({
@@ -1978,8 +2047,10 @@ export class AdminService {
     };
 
     if (dto.name !== undefined) updateData['name'] = dto.name;
-    if (dto.requests_per_minute !== undefined) updateData['requests_per_minute'] = dto.requests_per_minute;
-    if (dto.requests_per_hour !== undefined) updateData['requests_per_hour'] = dto.requests_per_hour;
+    if (dto.requests_per_minute !== undefined)
+      updateData['requests_per_minute'] = dto.requests_per_minute;
+    if (dto.requests_per_hour !== undefined)
+      updateData['requests_per_hour'] = dto.requests_per_hour;
     if (dto.burst_limit !== undefined) updateData['burst_limit'] = dto.burst_limit;
     if (dto.enabled !== undefined) updateData['enabled'] = dto.enabled;
 
@@ -2010,7 +2081,11 @@ export class AdminService {
   async deleteRateLimit(ruleId: string, adminId: string) {
     const client = this.supabase.adminClient;
 
-    const { data: rule } = await client.from('rate_limit_rules').select('name').eq('id', ruleId).single();
+    const { data: rule } = await client
+      .from('rate_limit_rules')
+      .select('name')
+      .eq('id', ruleId)
+      .single();
 
     if (!rule) {
       throw new NotFoundException({
@@ -2072,10 +2147,7 @@ export class AdminService {
         ip_address: params.ipAddress || null,
         user_agent: params.userAgent || null,
       });
-    } catch (error) {
-      // Don't fail the main operation if audit logging fails
-      console.error('Failed to log audit event:', error);
-    }
+    } catch (_error) {}
   }
 
   // ============================================================================
@@ -2133,7 +2205,12 @@ export class AdminService {
     };
   }
 
-  async getRevenueByOrg(dto: { page?: number; limit?: number; start_date?: string; end_date?: string }) {
+  async getRevenueByOrg(dto: {
+    page?: number;
+    limit?: number;
+    start_date?: string;
+    end_date?: string;
+  }) {
     const client = this.supabase.adminClient;
     const page = dto.page || 1;
     const limit = dto.limit || 20;
@@ -2240,47 +2317,49 @@ export class AdminService {
         }
 
         // Get the original charge to get more details
-        let chargeDetails: { description?: string; customer_email?: string; payment_intent?: string } = {};
+        const chargeDetails: {
+          description?: string;
+          customer_email?: string;
+          payment_intent?: string;
+        } = {};
         if (fee.charge) {
           try {
-            const charge = await stripe.charges.retrieve(
-              fee.charge as string,
-              { stripeAccount: connectedAccountId }
-            );
+            const charge = await stripe.charges.retrieve(fee.charge as string, {
+              stripeAccount: connectedAccountId,
+            });
             if (charge.description) chargeDetails.description = charge.description;
             const email = charge.billing_details?.email || charge.receipt_email;
             if (email) chargeDetails.customer_email = email;
-            if (charge.payment_intent) chargeDetails.payment_intent = charge.payment_intent as string;
+            if (charge.payment_intent)
+              chargeDetails.payment_intent = charge.payment_intent as string;
           } catch {
             // Charge lookup failed, continue without details
           }
         }
 
         // Upsert the transaction with the actual platform fee from Stripe
-        const { error: upsertError } = await client
-          .from('stripe_transactions')
-          .upsert(
-            {
-              stripe_account_id: accountInfo.id,
-              stripe_payment_intent_id: chargeDetails.payment_intent || null,
-              stripe_charge_id: fee.charge as string || fee.id,
-              type: 'charge',
-              status: 'succeeded',
-              amount: fee.amount, // Original charge amount
-              currency: fee.currency,
-              platform_fee: fee.amount, // The application fee IS the platform fee
-              stripe_fee: 0,
-              net_amount: 0, // Org's net is handled separately
-              description: chargeDetails.description || `Application fee ${fee.id}`,
-              customer_email: chargeDetails.customer_email || null,
-              metadata: {},
-              created_at: new Date(fee.created * 1000).toISOString(),
-            },
-            {
-              onConflict: 'stripe_charge_id',
-              ignoreDuplicates: true,
-            }
-          );
+        const { error: upsertError } = await client.from('stripe_transactions').upsert(
+          {
+            stripe_account_id: accountInfo.id,
+            stripe_payment_intent_id: chargeDetails.payment_intent || null,
+            stripe_charge_id: (fee.charge as string) || fee.id,
+            type: 'charge',
+            status: 'succeeded',
+            amount: fee.amount, // Original charge amount
+            currency: fee.currency,
+            platform_fee: fee.amount, // The application fee IS the platform fee
+            stripe_fee: 0,
+            net_amount: 0, // Org's net is handled separately
+            description: chargeDetails.description || `Application fee ${fee.id}`,
+            customer_email: chargeDetails.customer_email || null,
+            metadata: {},
+            created_at: new Date(fee.created * 1000).toISOString(),
+          },
+          {
+            onConflict: 'stripe_charge_id',
+            ignoreDuplicates: true,
+          }
+        );
 
         if (!upsertError) {
           totalSynced++;

@@ -1,12 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
-import type { UpdateStaffDto, TerminateStaffDto, StaffQueryDto, UpdateAssignmentsDto } from './dto/staff.dto.js';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
+import type {
+  StaffQueryDto,
+  TerminateStaffDto,
+  UpdateAssignmentsDto,
+  UpdateStaffDto,
+} from './dto/staff.dto.js';
 
 @Injectable()
 export class StaffService {
@@ -140,7 +140,10 @@ export class StaffService {
     // Build certifications map with status
     const now = new Date();
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const certsMap = new Map<string, { valid: string[]; expiring_soon: string[]; expired: string[] }>();
+    const certsMap = new Map<
+      string,
+      { valid: string[]; expiring_soon: string[]; expired: string[] }
+    >();
 
     certifications?.forEach((c: any) => {
       const certs = certsMap.get(c.staff_id) || { valid: [], expiring_soon: [], expired: [] };
@@ -231,7 +234,7 @@ export class StaffService {
   /**
    * Get staff member by ID
    */
-  async findById(orgId: OrgId, staffId: string, requesterId?: UserId) {
+  async findById(orgId: OrgId, staffId: string, _requesterId?: UserId) {
     // Query staff_profiles with org_memberships and profiles
     const { data: member, error } = await this.supabase.adminClient
       .from('staff_profiles')
@@ -296,15 +299,16 @@ export class StaffService {
     }
 
     // Build attractions with zones
-    const attractionsWithZones = attractions?.map((a: any) => ({
-      id: a.attraction_id,
-      name: a.attractions?.name,
-      is_primary: a.is_primary,
-      zones: (a.zones || []).map((zoneId: string) => {
-        const zone = zonesData.find((z: any) => z.id === zoneId);
-        return zone ? { id: zone.id, name: zone.name } : { id: zoneId, name: 'Unknown' };
-      }),
-    })) || [];
+    const attractionsWithZones =
+      attractions?.map((a: any) => ({
+        id: a.attraction_id,
+        name: a.attractions?.name,
+        is_primary: a.is_primary,
+        zones: (a.zones || []).map((zoneId: string) => {
+          const zone = zonesData.find((z: any) => z.id === zoneId);
+          return zone ? { id: zone.id, name: zone.name } : { id: zoneId, name: 'Unknown' };
+        }),
+      })) || [];
 
     // Get skills with skill_types and endorsers
     const { data: skills } = await this.supabase.adminClient
@@ -396,7 +400,8 @@ export class StaffService {
         const clockIn = new Date(e.clock_in);
         const clockOut = new Date(e.clock_out);
         const breakMinutes = e.break_minutes || 0;
-        const hours = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60) - breakMinutes / 60;
+        const hours =
+          (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60) - breakMinutes / 60;
         currentMonthHours += Math.max(0, hours);
         if (clockIn >= startOfWeek) {
           currentWeekHours += Math.max(0, hours);
@@ -431,45 +436,53 @@ export class StaffService {
         relation: member.emergency_contact_relation,
       },
       attractions: attractionsWithZones,
-      skills: skills?.map((s: any) => ({
-        id: s.id,
-        skill: s.skill_types?.key || s.skill_types?.name,
-        name: s.skill_types?.name,
-        level: s.level,
-        endorsed_by: s.endorser ? {
-          id: s.endorser.id,
-          name: `${s.endorser.first_name} ${s.endorser.last_name}`,
-        } : null,
-        created_at: s.created_at,
-      })) || [],
-      certifications: certifications?.map((c: any) => ({
-        id: c.id,
-        type: c.certification_types?.key || c.certification_types?.name,
-        name: c.certification_types?.name,
-        certificate_number: c.certificate_number,
-        issued_at: c.issued_at,
-        expires_at: c.expires_at,
-        verified: !!c.verified_by,
-        verified_by: c.verifier ? {
-          id: c.verifier.id,
-          name: `${c.verifier.first_name} ${c.verifier.last_name}`,
-        } : null,
-        verified_at: c.verified_at,
-      })) || [],
-      documents: documents?.map((d: any) => ({
-        id: d.id,
-        type: d.document_types?.key || d.document_types?.name,
-        name: d.name,
-        file_url: d.file_url,
-        file_size: d.file_size,
-        uploaded_by: d.uploader ? `${d.uploader.first_name} ${d.uploader.last_name}` : null,
-        created_at: d.created_at,
-      })) || [],
-      waivers: waivers?.map((w: any) => ({
-        type: w.waiver_type,
-        signed_at: w.signed_at,
-        version: w.waiver_version,
-      })) || [],
+      skills:
+        skills?.map((s: any) => ({
+          id: s.id,
+          skill: s.skill_types?.key || s.skill_types?.name,
+          name: s.skill_types?.name,
+          level: s.level,
+          endorsed_by: s.endorser
+            ? {
+                id: s.endorser.id,
+                name: `${s.endorser.first_name} ${s.endorser.last_name}`,
+              }
+            : null,
+          created_at: s.created_at,
+        })) || [],
+      certifications:
+        certifications?.map((c: any) => ({
+          id: c.id,
+          type: c.certification_types?.key || c.certification_types?.name,
+          name: c.certification_types?.name,
+          certificate_number: c.certificate_number,
+          issued_at: c.issued_at,
+          expires_at: c.expires_at,
+          verified: !!c.verified_by,
+          verified_by: c.verifier
+            ? {
+                id: c.verifier.id,
+                name: `${c.verifier.first_name} ${c.verifier.last_name}`,
+              }
+            : null,
+          verified_at: c.verified_at,
+        })) || [],
+      documents:
+        documents?.map((d: any) => ({
+          id: d.id,
+          type: d.document_types?.key || d.document_types?.name,
+          name: d.name,
+          file_url: d.file_url,
+          file_size: d.file_size,
+          uploaded_by: d.uploader ? `${d.uploader.first_name} ${d.uploader.last_name}` : null,
+          created_at: d.created_at,
+        })) || [],
+      waivers:
+        waivers?.map((w: any) => ({
+          type: w.waiver_type,
+          signed_at: w.signed_at,
+          version: w.waiver_version,
+        })) || [],
       time_summary: {
         current_week_hours: Math.round(currentWeekHours * 100) / 100,
         current_month_hours: Math.round(currentMonthHours * 100) / 100,
@@ -498,9 +511,12 @@ export class StaffService {
 
     // Handle emergency contact fields (stored as separate columns)
     if (dto.emergency_contact) {
-      if (dto.emergency_contact.name !== undefined) updateData['emergency_contact_name'] = dto.emergency_contact.name;
-      if (dto.emergency_contact.phone !== undefined) updateData['emergency_contact_phone'] = dto.emergency_contact.phone;
-      if (dto.emergency_contact.relation !== undefined) updateData['emergency_contact_relation'] = dto.emergency_contact.relation;
+      if (dto.emergency_contact.name !== undefined)
+        updateData['emergency_contact_name'] = dto.emergency_contact.name;
+      if (dto.emergency_contact.phone !== undefined)
+        updateData['emergency_contact_phone'] = dto.emergency_contact.phone;
+      if (dto.emergency_contact.relation !== undefined)
+        updateData['emergency_contact_relation'] = dto.emergency_contact.relation;
     }
 
     const { data, error } = await this.supabase.adminClient
@@ -562,7 +578,7 @@ export class StaffService {
     await this.verifyStaffAccess(orgId, staffId);
 
     // Validate exactly one primary
-    const primaries = dto.assignments.filter(a => a.is_primary);
+    const primaries = dto.assignments.filter((a) => a.is_primary);
     if (primaries.length !== 1 && dto.assignments.length > 0) {
       throw new BadRequestException({
         code: 'INVALID_ASSIGNMENTS',
@@ -578,7 +594,7 @@ export class StaffService {
 
     // Insert new assignments with zones as UUID array
     if (dto.assignments.length > 0) {
-      const attractionInserts = dto.assignments.map(a => ({
+      const attractionInserts = dto.assignments.map((a) => ({
         staff_id: staffId,
         attraction_id: a.attraction_id,
         is_primary: a.is_primary,
@@ -629,15 +645,16 @@ export class StaffService {
     }
 
     return {
-      assignments: attractions?.map((a: any) => ({
-        attraction_id: a.attraction_id,
-        attraction_name: a.attractions?.name,
-        is_primary: a.is_primary,
-        zones: (a.zones || []).map((zoneId: string) => {
-          const zone = zonesData.find((z: any) => z.id === zoneId);
-          return zone ? { id: zone.id, name: zone.name } : { id: zoneId, name: 'Unknown' };
-        }),
-      })) || [],
+      assignments:
+        attractions?.map((a: any) => ({
+          attraction_id: a.attraction_id,
+          attraction_name: a.attractions?.name,
+          is_primary: a.is_primary,
+          zones: (a.zones || []).map((zoneId: string) => {
+            const zone = zonesData.find((z: any) => z.id === zoneId);
+            return zone ? { id: zone.id, name: zone.name } : { id: zoneId, name: 'Unknown' };
+          }),
+        })) || [],
     };
   }
 

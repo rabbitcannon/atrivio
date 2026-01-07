@@ -1,11 +1,11 @@
+import type { OrgId, UserId } from '@haunt/shared';
 import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
   BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-import type { UserId, OrgId } from '@haunt/shared';
 import type { CreateOrgDto, UpdateOrgDto } from './dto/organizations.dto.js';
 
 @Injectable()
@@ -104,22 +104,17 @@ export class OrganizationsService {
     }
 
     // Create owner membership
-    const { error: memberError } = await this.supabase.adminClient
-      .from('org_memberships')
-      .insert({
-        org_id: org.id,
-        user_id: userId,
-        role: 'owner',
-        is_owner: true,
-        status: 'active',
-      });
+    const { error: memberError } = await this.supabase.adminClient.from('org_memberships').insert({
+      org_id: org.id,
+      user_id: userId,
+      role: 'owner',
+      is_owner: true,
+      status: 'active',
+    });
 
     if (memberError) {
       // Rollback org creation
-      await this.supabase.adminClient
-        .from('organizations')
-        .delete()
-        .eq('id', org.id);
+      await this.supabase.adminClient.from('organizations').delete().eq('id', org.id);
 
       throw new BadRequestException({
         code: 'ORG_CREATE_FAILED',
@@ -153,7 +148,7 @@ export class OrganizationsService {
           status,
           stripe_onboarding_complete
         )
-      `,
+      `
       )
       .eq('user_id', userId)
       .eq('status', 'active');
@@ -298,10 +293,7 @@ export class OrganizationsService {
    * Check slug availability
    */
   async isSlugAvailable(slug: string, excludeOrgId?: OrgId): Promise<boolean> {
-    let query = this.supabase.adminClient
-      .from('organizations')
-      .select('id')
-      .eq('slug', slug);
+    let query = this.supabase.adminClient.from('organizations').select('id').eq('slug', slug);
 
     if (excludeOrgId) {
       query = query.neq('id', excludeOrgId);

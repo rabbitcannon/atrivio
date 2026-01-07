@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { resolveOrgId } from '@/lib/api';
 import { InventoryDashboard } from '@/components/features/inventory';
+import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Inventory',

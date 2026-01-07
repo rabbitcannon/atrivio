@@ -1,18 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, AlertTriangle, CheckCircle2, ExternalLink, Package } from 'lucide-react';
 import Link from 'next/link';
-import { Package, ExternalLink, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  getMyTimeStatus,
-  getStaffCheckouts,
-  type InventoryCheckout,
-} from '@/lib/api/client';
+import { getMyTimeStatus, getStaffCheckouts, type InventoryCheckout } from '@/lib/api/client';
 
 interface MyCheckoutsWidgetProps {
   orgId: string;
@@ -36,7 +32,7 @@ function isOverdue(dueDate: string | null): boolean {
 function isDueSoon(dueDate: string | null): boolean {
   if (!dueDate) return false;
   const today = new Date();
-  const due = new Date(dueDate + 'T00:00:00');
+  const due = new Date(`${dueDate}T00:00:00`);
   const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   return diffDays >= 0 && diffDays <= 3;
 }
@@ -67,8 +63,10 @@ export function MyCheckoutsWidget({ orgId, orgSlug }: MyCheckoutsWidgetProps) {
         const checkoutResponse = await getStaffCheckouts(orgId, staffId);
         if (checkoutResponse.error) {
           // Check if it's a feature flag error (inventory not enabled)
-          if (checkoutResponse.error.message?.includes('feature') ||
-              checkoutResponse.error.statusCode === 403) {
+          if (
+            checkoutResponse.error.message?.includes('feature') ||
+            checkoutResponse.error.statusCode === 403
+          ) {
             // Inventory feature not enabled, don't show error
             setCheckouts([]);
             setIsLoading(false);
@@ -179,14 +177,10 @@ export function MyCheckoutsWidget({ orgId, orgSlug }: MyCheckoutsWidgetProps) {
                     {checkout.item?.name || 'Unknown Item'}
                   </p>
                   {checkout.item?.sku && (
-                    <p className="text-xs text-muted-foreground">
-                      SKU: {checkout.item.sku}
-                    </p>
+                    <p className="text-xs text-muted-foreground">SKU: {checkout.item.sku}</p>
                   )}
                   {checkout.quantity > 1 && (
-                    <p className="text-xs text-muted-foreground">
-                      Qty: {checkout.quantity}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Qty: {checkout.quantity}</p>
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-1">

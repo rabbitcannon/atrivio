@@ -1,12 +1,18 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -14,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { updateStaffMember } from '@/lib/api/client';
 import type { StaffMember } from '@/lib/api/types';
 
@@ -54,10 +61,10 @@ export function StaffEditForm({ orgId, staff }: StaffEditFormProps) {
     const employeeId = formData.get('employee_id') as string;
     if (employeeId) data.employee_id = employeeId;
 
-    const status = formData.get('status') as typeof statusOptions[number];
+    const status = formData.get('status') as (typeof statusOptions)[number];
     if (status) data.status = status;
 
-    const employmentType = formData.get('employment_type') as typeof employmentTypes[number];
+    const employmentType = formData.get('employment_type') as (typeof employmentTypes)[number];
     if (employmentType) data.employment_type = employmentType;
 
     if (hourlyRate !== undefined) data.hourly_rate = hourlyRate;
@@ -110,9 +117,7 @@ export function StaffEditForm({ orgId, staff }: StaffEditFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Edit Staff Profile</CardTitle>
-          <CardDescription>
-            Update profile information for {staffName}.
-          </CardDescription>
+          <CardDescription>Update profile information for {staffName}.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {error && (

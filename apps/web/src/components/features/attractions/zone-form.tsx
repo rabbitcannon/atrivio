@@ -1,12 +1,19 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { createZone, updateZone } from '@/lib/api/client';
 
 interface ZoneFormProps {
@@ -112,9 +119,7 @@ export function ZoneForm({ orgId, attractionId, zone, onSuccess }: ZoneFormProps
         <CardHeader>
           <CardTitle>{isEditing ? 'Edit Zone' : 'Add Zone'}</CardTitle>
           <CardDescription>
-            {isEditing
-              ? 'Update zone details.'
-              : 'Create a new zone for this attraction.'}
+            {isEditing ? 'Update zone details.' : 'Create a new zone for this attraction.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

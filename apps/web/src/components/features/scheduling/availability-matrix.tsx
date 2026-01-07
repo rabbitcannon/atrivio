@@ -1,6 +1,11 @@
 'use client';
 
+import { AlertCircle, CheckCircle, Clock, MinusCircle, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -9,17 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, CheckCircle, XCircle, Clock, MinusCircle } from 'lucide-react';
 import {
+  type AvailabilityType,
   getStaff,
   getStaffAvailability,
-  type StaffListItem,
   type StaffAvailability,
-  type AvailabilityType,
+  type StaffListItem,
 } from '@/lib/api/client';
 
 interface AvailabilityMatrixProps {
@@ -202,7 +202,8 @@ export function AvailabilityMatrix({ orgId }: AvailabilityMatrixProps) {
                       );
                     }
 
-                    const config = AVAILABILITY_ICONS[avail.availability_type] ?? AVAILABILITY_ICONS.available;
+                    const config =
+                      AVAILABILITY_ICONS[avail.availability_type] ?? AVAILABILITY_ICONS.available;
                     const Icon = config.icon;
 
                     return (

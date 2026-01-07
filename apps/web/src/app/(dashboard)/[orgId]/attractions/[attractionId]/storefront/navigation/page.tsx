@@ -1,24 +1,24 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
   ArrowLeft,
-  Navigation,
-  Plus,
+  ChevronDown,
   Edit,
-  Trash2,
-  GripVertical,
   ExternalLink,
   FileText,
-  ChevronDown,
-  PanelTop,
+  GripVertical,
+  Navigation,
   PanelBottom,
+  PanelTop,
+  Plus,
+  Trash2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId, getStorefrontNavigation, getStorefrontPages } from '@/lib/api';
-import type { StorefrontNavigation, StorefrontPage, StorefrontNavItem } from '@/lib/api/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getStorefrontNavigation, getStorefrontPages, resolveOrgId } from '@/lib/api';
+import type { StorefrontNavItem, StorefrontNavigation, StorefrontPage } from '@/lib/api/types';
 
 export const metadata: Metadata = {
   title: 'Storefront Navigation',
@@ -109,9 +109,7 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Navigation</h1>
-          <p className="text-muted-foreground">
-            Configure header and footer navigation menus.
-          </p>
+          <p className="text-muted-foreground">Configure header and footer navigation menus.</p>
         </div>
         <Button disabled>
           <Plus className="mr-2 h-4 w-4" />
@@ -194,9 +192,7 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
             <PanelBottom className="h-5 w-5" />
             Footer Navigation
           </CardTitle>
-          <CardDescription>
-            Links shown in the footer of your storefront
-          </CardDescription>
+          <CardDescription>Links shown in the footer of your storefront</CardDescription>
         </CardHeader>
         <CardContent>
           {footerItems.length === 0 ? (
@@ -237,7 +233,8 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
             <strong>Page Links:</strong> Link directly to pages you've created in your storefront.
           </p>
           <p>
-            <strong>External Links:</strong> Add links to external websites like social media or ticket sales.
+            <strong>External Links:</strong> Add links to external websites like social media or
+            ticket sales.
           </p>
           <p>
             <strong>Dropdowns:</strong> Group related links under a parent menu item.

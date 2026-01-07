@@ -1,46 +1,42 @@
 // Server-side API exports (for Server Components, Server Actions, Route Handlers)
-export { serverApi, apiServer, type ApiError, type ApiResponse } from './server';
+export { type ApiError, type ApiResponse, apiServer, serverApi } from './server';
 
 // Re-export types
 export * from './types';
 
-import { serverApi } from './server';
+import type { OrgRole } from '@haunt/shared';
 import { createClient } from '@/lib/supabase/server';
+import { serverApi } from './server';
 import type {
+  Attraction,
+  AttractionsResponse,
+  InAppNotificationsResponse,
+  NotificationCategory,
+  NotificationChannel,
+  NotificationStatus,
+  NotificationsResponse,
+  NotificationTemplate,
   Organization,
   OrganizationListItem,
   OrganizationMembersResponse,
-  AttractionsResponse,
-  Attraction,
-  StaffResponse,
-  StaffMember,
-  Zone,
+  PageStatus,
+  PreferencesResponse,
+  PublicStorefront,
   QueueConfig,
   QueueEntriesResponse,
-  QueueStats,
   QueueEntryStatus,
-  NotificationTemplate,
-  Notification,
-  NotificationChannel,
-  NotificationStatus,
-  NotificationCategory,
-  InAppNotification,
-  NotificationPreference,
-  TemplatesResponse,
-  NotificationsResponse,
-  InAppNotificationsResponse,
-  PreferencesResponse,
-  StorefrontSettings,
-  StorefrontPage,
+  QueueStats,
+  StaffMember,
+  StaffResponse,
+  StorefrontAnnouncement,
   StorefrontDomain,
   StorefrontFaq,
-  StorefrontAnnouncement,
   StorefrontNavigation,
-  PageStatus,
-  PublicStorefront,
+  StorefrontPage,
+  StorefrontSettings,
+  TemplatesResponse,
+  Zone,
 } from './types';
-
-import type { OrgRole } from '@haunt/shared';
 
 // ============================================================================
 // Org ID Resolution
@@ -85,7 +81,9 @@ export async function getCurrentUserRole(orgId: string): Promise<OrgRole | null>
   const supabase = await createClient();
 
   // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
   // Get their membership in this org
@@ -147,7 +145,9 @@ export async function getAttraction(orgId: string, attractionId: string) {
  * Get zones for an attraction
  */
 export async function getAttractionZones(orgId: string, attractionId: string) {
-  return serverApi.get<{ data: Zone[] }>(`/organizations/${orgId}/attractions/${attractionId}/zones`);
+  return serverApi.get<{ data: Zone[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones`
+  );
 }
 
 // ============================================================================
@@ -174,7 +174,6 @@ export async function getAttractionTypes(): Promise<AttractionType[]> {
     .order('sort_order');
 
   if (error) {
-    console.error('Failed to fetch attraction types:', error);
     return [];
   }
 
@@ -222,12 +221,18 @@ export interface Season {
 /**
  * Get all seasons for an attraction
  */
-export async function getAttractionSeasons(orgId: string, attractionId: string, filters?: { year?: number; status?: string }) {
+export async function getAttractionSeasons(
+  orgId: string,
+  attractionId: string,
+  filters?: { year?: number; status?: string }
+) {
   const params = new URLSearchParams();
   if (filters?.year) params.set('year', filters.year.toString());
   if (filters?.status) params.set('status', filters.status);
   const query = params.toString();
-  return serverApi.get<{ data: Season[] }>(`/organizations/${orgId}/attractions/${attractionId}/seasons${query ? `?${query}` : ''}`);
+  return serverApi.get<{ data: Season[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons${query ? `?${query}` : ''}`
+  );
 }
 
 // ============================================================================
@@ -236,7 +241,13 @@ export async function getAttractionSeasons(orgId: string, attractionId: string, 
 
 export type StripeAccountStatus = 'pending' | 'onboarding' | 'active' | 'restricted' | 'disabled';
 export type TransactionType = 'charge' | 'refund' | 'transfer' | 'payout' | 'fee' | 'adjustment';
-export type TransactionStatus = 'pending' | 'succeeded' | 'failed' | 'refunded' | 'partially_refunded' | 'disputed';
+export type TransactionStatus =
+  | 'pending'
+  | 'succeeded'
+  | 'failed'
+  | 'refunded'
+  | 'partially_refunded'
+  | 'disputed';
 export type PayoutStatus = 'pending' | 'in_transit' | 'paid' | 'failed' | 'canceled';
 
 export interface StripeAccountStatusResponse {
@@ -320,12 +331,17 @@ export async function getPaymentStatus(orgId: string) {
 /**
  * Get transaction summary for an organization
  */
-export async function getTransactionSummary(orgId: string, filters?: { start_date?: string; end_date?: string }) {
+export async function getTransactionSummary(
+  orgId: string,
+  filters?: { start_date?: string; end_date?: string }
+) {
   const params = new URLSearchParams();
   if (filters?.start_date) params.set('start_date', filters.start_date);
   if (filters?.end_date) params.set('end_date', filters.end_date);
   const query = params.toString();
-  return serverApi.get<TransactionSummary>(`/organizations/${orgId}/payments/transactions/summary${query ? `?${query}` : ''}`);
+  return serverApi.get<TransactionSummary>(
+    `/organizations/${orgId}/payments/transactions/summary${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -350,7 +366,9 @@ export async function getTransactions(
   if (filters?.limit) params.set('limit', filters.limit.toString());
   if (filters?.offset) params.set('offset', filters.offset.toString());
   const query = params.toString();
-  return serverApi.get<TransactionsResponse>(`/organizations/${orgId}/payments/transactions${query ? `?${query}` : ''}`);
+  return serverApi.get<TransactionsResponse>(
+    `/organizations/${orgId}/payments/transactions${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -369,7 +387,9 @@ export async function getPayouts(
   if (filters?.limit) params.set('limit', filters.limit.toString());
   if (filters?.offset) params.set('offset', filters.offset.toString());
   const query = params.toString();
-  return serverApi.get<PayoutsResponse>(`/organizations/${orgId}/payments/payouts${query ? `?${query}` : ''}`);
+  return serverApi.get<PayoutsResponse>(
+    `/organizations/${orgId}/payments/payouts${query ? `?${query}` : ''}`
+  );
 }
 
 // ============================================================================
@@ -380,7 +400,9 @@ export async function getPayouts(
  * Get queue config for an attraction
  */
 export async function getQueueConfig(orgId: string, attractionId: string) {
-  return serverApi.get<QueueConfig>(`/organizations/${orgId}/attractions/${attractionId}/queue/config`);
+  return serverApi.get<QueueConfig>(
+    `/organizations/${orgId}/attractions/${attractionId}/queue/config`
+  );
 }
 
 /**
@@ -402,7 +424,10 @@ export async function createQueueConfig(
     expiryMinutes?: number;
   }
 ) {
-  return serverApi.post<QueueConfig>(`/organizations/${orgId}/attractions/${attractionId}/queue/config`, data);
+  return serverApi.post<QueueConfig>(
+    `/organizations/${orgId}/attractions/${attractionId}/queue/config`,
+    data
+  );
 }
 
 /**
@@ -425,7 +450,10 @@ export async function updateQueueConfig(
     expiryMinutes: number;
   }>
 ) {
-  return serverApi.patch<QueueConfig>(`/organizations/${orgId}/attractions/${attractionId}/queue/config`, data);
+  return serverApi.patch<QueueConfig>(
+    `/organizations/${orgId}/attractions/${attractionId}/queue/config`,
+    data
+  );
 }
 
 /**
@@ -462,17 +490,22 @@ export async function updateQueueEntryStatus(
   status: QueueEntryStatus,
   notes?: string
 ) {
-  return serverApi.patch(`/organizations/${orgId}/attractions/${attractionId}/queue/entries/${entryId}/status`, {
-    status,
-    notes,
-  });
+  return serverApi.patch(
+    `/organizations/${orgId}/attractions/${attractionId}/queue/entries/${entryId}/status`,
+    {
+      status,
+      notes,
+    }
+  );
 }
 
 /**
  * Call the next batch from the queue
  */
 export async function callNextBatch(orgId: string, attractionId: string, count?: number) {
-  return serverApi.post(`/organizations/${orgId}/attractions/${attractionId}/queue/call-next`, { count });
+  return serverApi.post(`/organizations/${orgId}/attractions/${attractionId}/queue/call-next`, {
+    count,
+  });
 }
 
 /**
@@ -498,14 +531,22 @@ export async function getNotificationTemplates(orgId: string, channel?: Notifica
   const params = new URLSearchParams();
   if (channel) params.set('channel', channel);
   const query = params.toString();
-  return serverApi.get<TemplatesResponse>(`/organizations/${orgId}/notifications/templates${query ? `?${query}` : ''}`);
+  return serverApi.get<TemplatesResponse>(
+    `/organizations/${orgId}/notifications/templates${query ? `?${query}` : ''}`
+  );
 }
 
 /**
  * Get a specific notification template
  */
-export async function getNotificationTemplate(orgId: string, templateKey: string, channel: NotificationChannel) {
-  return serverApi.get<NotificationTemplate>(`/organizations/${orgId}/notifications/templates/${templateKey}/${channel}`);
+export async function getNotificationTemplate(
+  orgId: string,
+  templateKey: string,
+  channel: NotificationChannel
+) {
+  return serverApi.get<NotificationTemplate>(
+    `/organizations/${orgId}/notifications/templates/${templateKey}/${channel}`
+  );
 }
 
 /**
@@ -541,7 +582,9 @@ export async function getNotificationHistory(
   if (filters?.limit) params.set('limit', filters.limit.toString());
   if (filters?.offset) params.set('offset', filters.offset.toString());
   const query = params.toString();
-  return serverApi.get<NotificationsResponse>(`/organizations/${orgId}/notifications/history${query ? `?${query}` : ''}`);
+  return serverApi.get<NotificationsResponse>(
+    `/organizations/${orgId}/notifications/history${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -587,7 +630,9 @@ export async function getInAppNotifications(filters?: { read?: boolean; limit?: 
   if (filters?.read !== undefined) params.set('read', filters.read.toString());
   if (filters?.limit) params.set('limit', filters.limit.toString());
   const query = params.toString();
-  return serverApi.get<InAppNotificationsResponse>(`/notifications/inbox${query ? `?${query}` : ''}`);
+  return serverApi.get<InAppNotificationsResponse>(
+    `/notifications/inbox${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -611,7 +656,9 @@ export async function getNotificationPreferences(orgId?: string) {
   const params = new URLSearchParams();
   if (orgId) params.set('orgId', orgId);
   const query = params.toString();
-  return serverApi.get<PreferencesResponse>(`/notifications/preferences${query ? `?${query}` : ''}`);
+  return serverApi.get<PreferencesResponse>(
+    `/notifications/preferences${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -640,7 +687,9 @@ export async function updateNotificationPreferences(
  * Get storefront settings for an attraction
  */
 export async function getStorefrontSettings(orgId: string, attractionId: string) {
-  return serverApi.get<{ settings: StorefrontSettings }>(`/organizations/${orgId}/attractions/${attractionId}/storefront`);
+  return serverApi.get<{ settings: StorefrontSettings }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront`
+  );
 }
 
 /**
@@ -699,28 +748,39 @@ export async function updateStorefrontSettings(
     showEmail?: boolean;
   }
 ) {
-  return serverApi.patch<{ settings: StorefrontSettings }>(`/organizations/${orgId}/attractions/${attractionId}/storefront`, data);
+  return serverApi.patch<{ settings: StorefrontSettings }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront`,
+    data
+  );
 }
 
 /**
  * Publish storefront
  */
 export async function publishStorefront(orgId: string, attractionId: string) {
-  return serverApi.post<{ published: boolean; publishedAt: string }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/publish`, {});
+  return serverApi.post<{ published: boolean; publishedAt: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/publish`,
+    {}
+  );
 }
 
 /**
  * Unpublish storefront
  */
 export async function unpublishStorefront(orgId: string, attractionId: string) {
-  return serverApi.post<{ published: boolean }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/unpublish`, {});
+  return serverApi.post<{ published: boolean }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/unpublish`,
+    {}
+  );
 }
 
 /**
  * Get storefront preview URL
  */
 export async function getStorefrontPreviewUrl(orgId: string, attractionId: string) {
-  return serverApi.get<{ previewUrl: string }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/preview`);
+  return serverApi.get<{ previewUrl: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/preview`
+  );
 }
 
 // ===================== Storefront Pages =====================
@@ -732,14 +792,18 @@ export async function getStorefrontPages(orgId: string, attractionId: string, st
   const params = new URLSearchParams();
   if (status) params.set('status', status);
   const query = params.toString();
-  return serverApi.get<{ pages: StorefrontPage[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages${query ? `?${query}` : ''}`);
+  return serverApi.get<{ pages: StorefrontPage[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/pages${query ? `?${query}` : ''}`
+  );
 }
 
 /**
  * Get a single storefront page
  */
 export async function getStorefrontPage(orgId: string, attractionId: string, pageId: string) {
-  return serverApi.get<{ page: StorefrontPage }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`);
+  return serverApi.get<{ page: StorefrontPage }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`
+  );
 }
 
 /**
@@ -762,7 +826,10 @@ export async function createStorefrontPage(
     showInNav?: boolean;
   }
 ) {
-  return serverApi.post<{ page: StorefrontPage }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages`, data);
+  return serverApi.post<{ page: StorefrontPage }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/pages`,
+    data
+  );
 }
 
 /**
@@ -785,14 +852,19 @@ export async function updateStorefrontPage(
     showInNav: boolean;
   }>
 ) {
-  return serverApi.patch<{ page: StorefrontPage }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`, data);
+  return serverApi.patch<{ page: StorefrontPage }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`,
+    data
+  );
 }
 
 /**
  * Delete a storefront page
  */
 export async function deleteStorefrontPage(orgId: string, attractionId: string, pageId: string) {
-  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`);
+  return serverApi.delete(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`
+  );
 }
 
 // ===================== Storefront Domains =====================
@@ -801,35 +873,60 @@ export async function deleteStorefrontPage(orgId: string, attractionId: string, 
  * Get storefront domains
  */
 export async function getStorefrontDomains(orgId: string, attractionId: string) {
-  return serverApi.get<{ domains: StorefrontDomain[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains`);
+  return serverApi.get<{ domains: StorefrontDomain[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/domains`
+  );
 }
 
 /**
  * Add a custom domain
  */
 export async function addStorefrontDomain(orgId: string, attractionId: string, domain: string) {
-  return serverApi.post<{ domain: StorefrontDomain }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains`, { domain });
+  return serverApi.post<{ domain: StorefrontDomain }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/domains`,
+    { domain }
+  );
 }
 
 /**
  * Verify a domain
  */
-export async function verifyStorefrontDomain(orgId: string, attractionId: string, domainId: string) {
-  return serverApi.post<{ domain: StorefrontDomain }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}/verify`, {});
+export async function verifyStorefrontDomain(
+  orgId: string,
+  attractionId: string,
+  domainId: string
+) {
+  return serverApi.post<{ domain: StorefrontDomain }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}/verify`,
+    {}
+  );
 }
 
 /**
  * Set primary domain
  */
-export async function setStorefrontPrimaryDomain(orgId: string, attractionId: string, domainId: string) {
-  return serverApi.post<{ success: boolean }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}/set-primary`, {});
+export async function setStorefrontPrimaryDomain(
+  orgId: string,
+  attractionId: string,
+  domainId: string
+) {
+  return serverApi.post<{ success: boolean }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}/set-primary`,
+    {}
+  );
 }
 
 /**
  * Delete a domain
  */
-export async function deleteStorefrontDomain(orgId: string, attractionId: string, domainId: string) {
-  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}`);
+export async function deleteStorefrontDomain(
+  orgId: string,
+  attractionId: string,
+  domainId: string
+) {
+  return serverApi.delete(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/domains/${domainId}`
+  );
 }
 
 // ===================== Storefront FAQs =====================
@@ -837,15 +934,13 @@ export async function deleteStorefrontDomain(orgId: string, attractionId: string
 /**
  * Get storefront FAQs
  */
-export async function getStorefrontFaqs(
-  orgId: string,
-  attractionId: string,
-  category?: string
-) {
+export async function getStorefrontFaqs(orgId: string, attractionId: string, category?: string) {
   const params = new URLSearchParams();
   if (category) params.set('category', category);
   const query = params.toString();
-  return serverApi.get<{ faqs: StorefrontFaq[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs${query ? `?${query}` : ''}`);
+  return serverApi.get<{ faqs: StorefrontFaq[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -861,7 +956,10 @@ export async function createStorefrontFaq(
     isFeatured?: boolean;
   }
 ) {
-  return serverApi.post<{ faq: StorefrontFaq }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs`, data);
+  return serverApi.post<{ faq: StorefrontFaq }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs`,
+    data
+  );
 }
 
 /**
@@ -879,21 +977,33 @@ export async function updateStorefrontFaq(
     isActive: boolean;
   }>
 ) {
-  return serverApi.patch<{ faq: StorefrontFaq }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`, data);
+  return serverApi.patch<{ faq: StorefrontFaq }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`,
+    data
+  );
 }
 
 /**
  * Delete a FAQ
  */
 export async function deleteStorefrontFaq(orgId: string, attractionId: string, faqId: string) {
-  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`);
+  return serverApi.delete(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`
+  );
 }
 
 /**
  * Reorder FAQs
  */
-export async function reorderStorefrontFaqs(orgId: string, attractionId: string, order: Array<{ id: string; sortOrder: number }>) {
-  return serverApi.post<{ success: boolean }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/reorder`, { order });
+export async function reorderStorefrontFaqs(
+  orgId: string,
+  attractionId: string,
+  order: Array<{ id: string; sortOrder: number }>
+) {
+  return serverApi.post<{ success: boolean }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/reorder`,
+    { order }
+  );
 }
 
 // ===================== Storefront Announcements =====================
@@ -902,7 +1012,9 @@ export async function reorderStorefrontFaqs(orgId: string, attractionId: string,
  * Get storefront announcements
  */
 export async function getStorefrontAnnouncements(orgId: string, attractionId: string) {
-  return serverApi.get<{ announcements: StorefrontAnnouncement[] }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`);
+  return serverApi.get<{ announcements: StorefrontAnnouncement[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`
+  );
 }
 
 /**
@@ -920,7 +1032,10 @@ export async function createStorefrontAnnouncement(
     showOnHome?: boolean;
   }
 ) {
-  return serverApi.post<{ announcement: StorefrontAnnouncement }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`, data);
+  return serverApi.post<{ announcement: StorefrontAnnouncement }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`,
+    data
+  );
 }
 
 /**
@@ -940,14 +1055,23 @@ export async function updateStorefrontAnnouncement(
     showOnHome: boolean;
   }>
 ) {
-  return serverApi.patch<{ announcement: StorefrontAnnouncement }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements/${announcementId}`, data);
+  return serverApi.patch<{ announcement: StorefrontAnnouncement }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/announcements/${announcementId}`,
+    data
+  );
 }
 
 /**
  * Delete an announcement
  */
-export async function deleteStorefrontAnnouncement(orgId: string, attractionId: string, announcementId: string) {
-  return serverApi.delete(`/organizations/${orgId}/attractions/${attractionId}/storefront/announcements/${announcementId}`);
+export async function deleteStorefrontAnnouncement(
+  orgId: string,
+  attractionId: string,
+  announcementId: string
+) {
+  return serverApi.delete(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/announcements/${announcementId}`
+  );
 }
 
 // ===================== Storefront Navigation =====================
@@ -956,7 +1080,9 @@ export async function deleteStorefrontAnnouncement(orgId: string, attractionId: 
  * Get storefront navigation
  */
 export async function getStorefrontNavigation(orgId: string, attractionId: string) {
-  return serverApi.get<{ navigation: StorefrontNavigation }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`);
+  return serverApi.get<{ navigation: StorefrontNavigation }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`
+  );
 }
 
 /**
@@ -1000,7 +1126,10 @@ export async function updateStorefrontNavigation(
     }>;
   }
 ) {
-  return serverApi.put<{ navigation: StorefrontNavigation }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`, navigation);
+  return serverApi.put<{ navigation: StorefrontNavigation }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`,
+    navigation
+  );
 }
 
 // ===================== Public Storefront =====================
@@ -1022,12 +1151,11 @@ export async function getPublicStorefrontPage(identifier: string, slug: string) 
 /**
  * Get public FAQs by identifier (attraction slug or domain)
  */
-export async function getPublicStorefrontFaqs(
-  identifier: string,
-  category?: string
-) {
+export async function getPublicStorefrontFaqs(identifier: string, category?: string) {
   const params = new URLSearchParams();
   if (category) params.set('category', category);
   const query = params.toString();
-  return serverApi.get<{ faqs: StorefrontFaq[] }>(`/storefronts/${identifier}/faqs${query ? `?${query}` : ''}`);
+  return serverApi.get<{ faqs: StorefrontFaq[] }>(
+    `/storefronts/${identifier}/faqs${query ? `?${query}` : ''}`
+  );
 }

@@ -1,28 +1,28 @@
+import type { OrgId } from '@haunt/shared';
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-import type { OrgId } from '@haunt/shared';
-import type {
-  CreateTicketTypeDto,
-  UpdateTicketTypeDto,
-  ListTicketTypesQueryDto,
-} from './dto/ticket-type.dto.js';
-import type {
-  CreateTimeSlotDto,
-  UpdateTimeSlotDto,
-  ListTimeSlotsQueryDto,
-  BulkCreateTimeSlotsDto,
-} from './dto/time-slot.dto.js';
 import type {
   CreatePromoCodeDto,
-  UpdatePromoCodeDto,
   ListPromoCodesQueryDto,
+  UpdatePromoCodeDto,
   ValidatePromoCodeDto,
 } from './dto/promo-code.dto.js';
+import type {
+  CreateTicketTypeDto,
+  ListTicketTypesQueryDto,
+  UpdateTicketTypeDto,
+} from './dto/ticket-type.dto.js';
+import type {
+  BulkCreateTimeSlotsDto,
+  CreateTimeSlotDto,
+  ListTimeSlotsQueryDto,
+  UpdateTimeSlotDto,
+} from './dto/time-slot.dto.js';
 
 @Injectable()
 export class TicketingService {
@@ -637,11 +637,14 @@ export class TicketingService {
     if (dto.minOrderAmount !== undefined) updateData['min_order_amount'] = dto.minOrderAmount;
     if (dto.maxDiscount !== undefined) updateData['max_discount'] = dto.maxDiscount;
     if (dto.maxUses !== undefined) updateData['usage_limit'] = dto.maxUses;
-    if (dto.maxUsesPerCustomer !== undefined) updateData['per_customer_limit'] = dto.maxUsesPerCustomer;
+    if (dto.maxUsesPerCustomer !== undefined)
+      updateData['per_customer_limit'] = dto.maxUsesPerCustomer;
     if (dto.validFrom !== undefined) updateData['valid_from'] = dto.validFrom;
     if (dto.validUntil !== undefined) updateData['valid_until'] = dto.validUntil;
-    if (dto.applicableTicketTypes !== undefined) updateData['applies_to'] = dto.applicableTicketTypes;
-    if (dto.applicableAttractions !== undefined) updateData['attraction_id'] = dto.applicableAttractions?.[0];
+    if (dto.applicableTicketTypes !== undefined)
+      updateData['applies_to'] = dto.applicableTicketTypes;
+    if (dto.applicableAttractions !== undefined)
+      updateData['attraction_id'] = dto.applicableAttractions?.[0];
     if (dto.isActive !== undefined) updateData['is_active'] = dto.isActive;
     updateData['updated_at'] = new Date().toISOString();
 

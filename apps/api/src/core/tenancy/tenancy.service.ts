@@ -1,6 +1,6 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { type OrgId, type OrgRole, ROLE_PERMISSIONS, type UserId } from '@haunt/shared';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-import { ROLE_PERMISSIONS, type OrgId, type UserId, type OrgRole } from '@haunt/shared';
 
 export interface TenantContext {
   orgId: OrgId;
@@ -26,10 +26,7 @@ export class TenancyService {
   /**
    * Get user's membership for a specific organization
    */
-  async getMembership(
-    userId: UserId,
-    orgId: OrgId,
-  ): Promise<Membership | null> {
+  async getMembership(userId: UserId, orgId: OrgId): Promise<Membership | null> {
     const { data, error } = await this.supabase.adminClient
       .from('org_memberships')
       .select('org_id, role, is_owner, status')
@@ -74,7 +71,7 @@ export class TenancyService {
           name,
           slug
         )
-      `,
+      `
       )
       .eq('user_id', userId)
       .eq('status', 'active');
@@ -96,10 +93,7 @@ export class TenancyService {
    * Resolve tenant context from org ID parameter
    * Validates that the user has access to the organization
    */
-  async resolveTenantContext(
-    userId: UserId,
-    orgId: OrgId,
-  ): Promise<TenantContext> {
+  async resolveTenantContext(userId: UserId, orgId: OrgId): Promise<TenantContext> {
     // Get membership
     const membership = await this.getMembership(userId, orgId);
 
@@ -156,7 +150,9 @@ export class TenancyService {
    */
   async resolveOrg(identifier: string): Promise<{ id: OrgId; name: string; slug: string } | null> {
     // Check if it's a UUID
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      identifier
+    );
 
     const { data } = await this.supabase.adminClient
       .from('organizations')
@@ -178,10 +174,12 @@ export class TenancyService {
    */
   async resolveAttraction(
     orgId: OrgId,
-    identifier: string,
+    identifier: string
   ): Promise<{ id: string; name: string; slug: string } | null> {
     // Check if it's a UUID
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      identifier
+    );
 
     const { data } = await this.supabase.adminClient
       .from('attractions')

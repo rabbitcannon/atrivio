@@ -20,15 +20,13 @@ export const Tenant = createParamDecorator(
     }
 
     return tenant;
-  },
+  }
 );
 
 /**
  * Decorator to extract just the org ID from the request
  */
-export const OrgContext = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.tenant?.orgId;
-  },
-);
+export const OrgContext = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest();
+  return request.tenant?.orgId;
+});

@@ -1,14 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
 import { ListStyleType, someList, toggleList } from '@platejs/list';
-import {
-  useIndentTodoToolBarButton,
-  useIndentTodoToolBarButtonState,
-} from '@platejs/list/react';
+import { useIndentTodoToolBarButton, useIndentTodoToolBarButtonState } from '@platejs/list/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -30,12 +26,7 @@ export function BulletedListToolbarButton() {
   const [open, setOpen] = React.useState(false);
 
   const pressed = useEditorSelector(
-    (editor) =>
-      someList(editor, [
-        ListStyleType.Disc,
-        ListStyleType.Circle,
-        ListStyleType.Square,
-      ]),
+    (editor) => someList(editor, [ListStyleType.Disc, ListStyleType.Circle, ListStyleType.Square]),
     []
   );
 
@@ -192,9 +183,7 @@ export function NumberedListToolbarButton() {
   );
 }
 
-export function TodoListToolbarButton(
-  props: React.ComponentProps<typeof ToolbarButton>
-) {
+export function TodoListToolbarButton(props: React.ComponentProps<typeof ToolbarButton>) {
   const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });
   const { props: buttonProps } = useIndentTodoToolBarButton(state);
 

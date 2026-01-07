@@ -1,11 +1,10 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import type { OrgRole } from '@haunt/shared';
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -23,14 +24,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { createInvitation } from '@/lib/api/client';
-import type { OrgRole } from '@haunt/shared';
 
 interface InviteMemberDialogProps {
   orgId: string;
 }
 
 // Roles that can be assigned via invitation
-const invitableRoles: OrgRole[] = ['admin', 'manager', 'hr', 'box_office', 'finance', 'actor', 'scanner'];
+const invitableRoles: OrgRole[] = [
+  'admin',
+  'manager',
+  'hr',
+  'box_office',
+  'finance',
+  'actor',
+  'scanner',
+];
 
 export function InviteMemberDialog({ orgId }: InviteMemberDialogProps) {
   const router = useRouter();
@@ -89,9 +97,7 @@ export function InviteMemberDialog({ orgId }: InviteMemberDialogProps) {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Invite Member</DialogTitle>
-            <DialogDescription>
-              Send an invitation to join your organization.
-            </DialogDescription>
+            <DialogDescription>Send an invitation to join your organization.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {error && (

@@ -1,20 +1,20 @@
+import { AlertCircle, Calendar, DollarSign, Ghost, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Ghost, Users, Calendar, DollarSign, AlertCircle } from 'lucide-react';
-import { getOrganization, getStaff, resolveOrgId, getCurrentUserRole } from '@/lib/api';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { TimeClockWidget } from '@/components/features/time-clock';
 import {
-  MyScheduleWidget,
+  AnimatedCardGrid,
+  AnimatedContainer,
+  AnimatedDashboardHeader,
+  AnimatedQuickLink,
+  AnimatedStatsGrid,
   MyCheckoutsWidget,
   MyHoursWidget,
-  AnimatedDashboardHeader,
-  AnimatedStatsGrid,
-  AnimatedCardGrid,
-  AnimatedQuickLink,
-  AnimatedContainer,
+  MyScheduleWidget,
 } from '@/components/features/dashboard';
+import { TimeClockWidget } from '@/components/features/time-clock';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getCurrentUserRole, getOrganization, getStaff, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -133,13 +133,22 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
               <CardDescription>Common tasks and shortcuts</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <AnimatedQuickLink href={`/${orgSlug}/attractions/new`} icon={<Ghost className="h-4 w-4" />}>
+              <AnimatedQuickLink
+                href={`/${orgSlug}/attractions/new`}
+                icon={<Ghost className="h-4 w-4" />}
+              >
                 Add New Attraction
               </AnimatedQuickLink>
-              <AnimatedQuickLink href={`/${orgSlug}/staff/new`} icon={<Users className="h-4 w-4" />}>
+              <AnimatedQuickLink
+                href={`/${orgSlug}/staff/new`}
+                icon={<Users className="h-4 w-4" />}
+              >
                 Add Staff Member
               </AnimatedQuickLink>
-              <AnimatedQuickLink href={`/${orgSlug}/invitations`} icon={<Calendar className="h-4 w-4" />}>
+              <AnimatedQuickLink
+                href={`/${orgSlug}/invitations`}
+                icon={<Calendar className="h-4 w-4" />}
+              >
                 Send Invitation
               </AnimatedQuickLink>
             </CardContent>
@@ -180,10 +189,16 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
             <CardDescription>Common tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-            <AnimatedQuickLink href={`/${orgSlug}/time/schedule`} icon={<Calendar className="h-4 w-4" />}>
+            <AnimatedQuickLink
+              href={`/${orgSlug}/time/schedule`}
+              icon={<Calendar className="h-4 w-4" />}
+            >
               View Full Schedule
             </AnimatedQuickLink>
-            <AnimatedQuickLink href={`/${orgSlug}/time/availability`} icon={<Calendar className="h-4 w-4" />}>
+            <AnimatedQuickLink
+              href={`/${orgSlug}/time/availability`}
+              icon={<Calendar className="h-4 w-4" />}
+            >
               Set Availability
             </AnimatedQuickLink>
             <AnimatedQuickLink href={`/${orgSlug}/time/swaps`} icon={<Users className="h-4 w-4" />}>

@@ -1,7 +1,7 @@
+import { ArrowLeftRight, Calendar, Clock, Copy, List, Tag, Users } from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, List, Copy, Users, Clock, ArrowLeftRight, Tag } from 'lucide-react';
+import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { resolveOrgId } from '@/lib/api';
 
@@ -64,9 +64,7 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Schedule</h1>
-        <p className="text-muted-foreground">
-          Manage staff schedules, shifts, and availability.
-        </p>
+        <p className="text-muted-foreground">Manage staff schedules, shifts, and availability.</p>
       </div>
 
       {/* Quick Stats */}

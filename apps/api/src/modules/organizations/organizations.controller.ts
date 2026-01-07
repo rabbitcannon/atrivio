@@ -1,26 +1,26 @@
+import type { UserId } from '@haunt/shared';
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
-  UseInterceptors,
+  Patch,
+  Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { OrganizationsService } from './organizations.service.js';
-import { CreateOrgDto, UpdateOrgDto } from './dto/organizations.dto.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../../core/auth/auth.service.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
 import { Public } from '../../core/auth/decorators/public.decorator.js';
-import type { OrgId, UserId } from '@haunt/shared';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type { CreateOrgDto, UpdateOrgDto } from './dto/organizations.dto.js';
+import { OrganizationsService } from './organizations.service.js';
 
 @ApiTags('Organizations')
 @Controller('organizations')

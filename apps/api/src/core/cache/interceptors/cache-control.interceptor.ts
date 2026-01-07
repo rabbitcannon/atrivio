@@ -1,14 +1,14 @@
 import {
-  Injectable,
-  SetMetadata,
-  type NestInterceptor,
-  type ExecutionContext,
   type CallHandler,
+  type ExecutionContext,
+  Injectable,
+  type NestInterceptor,
+  SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { FastifyReply } from 'fastify';
 import type { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import type { FastifyReply } from 'fastify';
 
 /**
  * Metadata key for cache control configuration
@@ -59,7 +59,7 @@ export class CacheControlInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const options = this.reflector.get<CacheControlOptions>(
       CACHE_CONTROL_KEY,
-      context.getHandler(),
+      context.getHandler()
     );
 
     // If no cache control decorator, don't set headers
@@ -75,7 +75,7 @@ export class CacheControlInterceptor implements NestInterceptor {
         if (headerValue) {
           response.header('Cache-Control', headerValue);
         }
-      }),
+      })
     );
   }
 

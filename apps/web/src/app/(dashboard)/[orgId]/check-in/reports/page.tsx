@@ -1,30 +1,26 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import {
   Activity,
+  ArrowLeft,
+  BarChart3,
   Calendar,
+  CheckCircle2,
   Clock,
   Download,
+  Loader2,
+  Timer,
   TrendingUp,
   Users,
-  CheckCircle2,
   XCircle,
-  Timer,
-  BarChart3,
-  ArrowLeft,
-  Loader2,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -32,8 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { getAttractions, getCheckInStats, listCheckIns } from '@/lib/api/client';
 import type { AttractionListItem, CheckInStats } from '@/lib/api/types';
 
@@ -62,14 +56,13 @@ function ReportsPageContent() {
           setAttractions(res.data.data);
           if (!attractionIdFromUrl) {
             const saved = localStorage.getItem(`check-in-attraction-${orgId}`);
-            const defaultAttraction = res.data.data.find(a => a.id === saved) || res.data.data[0];
+            const defaultAttraction = res.data.data.find((a) => a.id === saved) || res.data.data[0];
             if (defaultAttraction) {
               setAttractionId(defaultAttraction.id);
             }
           }
         }
-      } catch (error) {
-        console.error('Failed to load attractions:', error);
+      } catch (_error) {
       } finally {
         setIsLoadingAttractions(false);
       }
@@ -89,12 +82,12 @@ function ReportsPageContent() {
         let dateStr: string;
 
         switch (dateRange) {
-          case 'yesterday':
+          case 'yesterday': {
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
             dateStr = yesterday.toISOString().split('T')[0];
             break;
-          case 'today':
+          }
           default:
             dateStr = today.toISOString().split('T')[0];
             break;
@@ -116,8 +109,7 @@ function ReportsPageContent() {
           // Note: We don't have failed scans in check-ins table, only successful ones
           setCheckInCounts({ success: successCount, failed: 0 });
         }
-      } catch (error) {
-        console.error('Failed to load stats:', error);
+      } catch (_error) {
       } finally {
         setIsLoadingStats(false);
       }
@@ -140,18 +132,18 @@ function ReportsPageContent() {
       [],
       ['By Hour'],
       ['Hour', 'Count'],
-      ...stats.byHour.map(h => [h.hour, h.count]),
+      ...stats.byHour.map((h) => [h.hour, h.count]),
       [],
       ['By Station'],
       ['Station', 'Count'],
-      ...stats.byStation.map(s => [s.station, s.count]),
+      ...stats.byStation.map((s) => [s.station, s.count]),
       [],
       ['By Method'],
       ['Method', 'Count'],
-      ...stats.byMethod.map(m => [m.method, m.count]),
+      ...stats.byMethod.map((m) => [m.method, m.count]),
     ];
 
-    const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    const csvContent = csvRows.map((row) => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -162,9 +154,9 @@ function ReportsPageContent() {
   };
 
   // Find peak hour
-  const peakHour = stats?.byHour.reduce((max, h) =>
-    h.count > (max?.count || 0) ? h : max
-  , stats?.byHour[0])?.hour || '--';
+  const peakHour =
+    stats?.byHour.reduce((max, h) => (h.count > (max?.count || 0) ? h : max), stats?.byHour[0])
+      ?.hour || '--';
 
   if (isLoadingAttractions) {
     return (
@@ -184,9 +176,7 @@ function ReportsPageContent() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">Check-In Reports</h1>
-          <p className="text-muted-foreground">
-            Analytics and statistics for guest check-ins.
-          </p>
+          <p className="text-muted-foreground">Analytics and statistics for guest check-ins.</p>
         </div>
       </div>
 
@@ -344,7 +334,7 @@ function ReportsPageContent() {
                       const percentage = total > 0 ? Math.round((method.count / total) * 100) : 0;
                       const methodLabel = method.method
                         .replace('_', ' ')
-                        .replace(/\b\w/g, c => c.toUpperCase());
+                        .replace(/\b\w/g, (c) => c.toUpperCase());
                       return (
                         <div key={method.method} className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
@@ -370,9 +360,7 @@ function ReportsPageContent() {
                 <BarChart3 className="h-5 w-5" />
                 Hourly Check-In Distribution
               </CardTitle>
-              <CardDescription>
-                Check-ins throughout the day. Peak hour: {peakHour}
-              </CardDescription>
+              <CardDescription>Check-ins throughout the day. Peak hour: {peakHour}</CardDescription>
             </CardHeader>
             <CardContent>
               {!stats?.byHour || stats.byHour.length === 0 ? (
@@ -389,18 +377,13 @@ function ReportsPageContent() {
                     const maxCount = Math.max(...stats.byHour.map((h) => h.count), 1);
                     const height = maxCount > 0 ? (hour.count / maxCount) * 100 : 0;
                     return (
-                      <div
-                        key={hour.hour}
-                        className="flex-1 flex flex-col items-center gap-1"
-                      >
+                      <div key={hour.hour} className="flex-1 flex flex-col items-center gap-1">
                         <span className="text-xs text-muted-foreground">{hour.count}</span>
                         <div
                           className="w-full bg-primary rounded-t transition-all"
                           style={{ height: `${height}%`, minHeight: hour.count > 0 ? '4px' : '0' }}
                         />
-                        <span className="text-xs text-muted-foreground">
-                          {hour.hour}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{hour.hour}</span>
                       </div>
                     );
                   })}
@@ -458,11 +441,13 @@ function ReportsPageContent() {
 
 export default function ReportsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
       <ReportsPageContent />
     </Suspense>
   );

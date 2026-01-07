@@ -1,15 +1,14 @@
 'use client';
 
-import * as React from 'react';
+import { MarkdownPlugin } from '@platejs/markdown';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
-import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createSlateEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
-
+import * as React from 'react';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -36,9 +34,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
     const canvas = await html2canvas(editor.api.toDOMNode(editor)!, {
       onclone: (document: Document) => {
-        const editorElement = document.querySelector(
-          '[contenteditable="true"]'
-        );
+        const editorElement = document.querySelector('[contenteditable="true"]');
         if (editorElement) {
           Array.from(editorElement.querySelectorAll('*')).forEach((element) => {
             const existingStyle = element.getAttribute('style') || '';
@@ -157,18 +153,10 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
       <DropdownMenuContent align="start">
         <DropdownMenuGroup>
-          <DropdownMenuItem onSelect={exportToHtml}>
-            Export as HTML
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToPdf}>
-            Export as PDF
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToImage}>
-            Export as Image
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToMarkdown}>
-            Export as Markdown
-          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={exportToHtml}>Export as HTML</DropdownMenuItem>
+          <DropdownMenuItem onSelect={exportToPdf}>Export as PDF</DropdownMenuItem>
+          <DropdownMenuItem onSelect={exportToImage}>Export as Image</DropdownMenuItem>
+          <DropdownMenuItem onSelect={exportToMarkdown}>Export as Markdown</DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

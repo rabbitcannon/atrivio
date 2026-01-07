@@ -1,13 +1,20 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { updateOrganization } from '@/lib/api/client';
-import type { Organization, Address } from '@/lib/api/types';
+import type { Address, Organization } from '@/lib/api/types';
 
 interface OrgSettingsFormProps {
   orgId: string;
@@ -131,12 +138,7 @@ export function OrgSettingsForm({ orgId, organization }: OrgSettingsFormProps) {
                 <Label htmlFor="slug">URL Slug</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">hauntplatform.com/</span>
-                  <Input
-                    id="slug"
-                    value={organization.slug}
-                    disabled
-                    className="flex-1 bg-muted"
-                  />
+                  <Input id="slug" value={organization.slug} disabled className="flex-1 bg-muted" />
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Slug cannot be changed after creation.

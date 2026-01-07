@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
-  TEST_ORGS,
   TEST_ATTRACTIONS,
+  TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
 import { get, post } from '../helpers/request.js';
 
@@ -52,7 +52,10 @@ describe('Time Tracking (F7a)', () => {
 
     it('should allow super admin to access', async () => {
       // Super admin bypasses org membership check
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/time/my-status`, {
         token: admin.accessToken,
@@ -76,9 +79,13 @@ describe('Time Tracking (F7a)', () => {
 
       // If already clocked in, clock out first
       if (statusResponse.body.is_clocked_in) {
-        await post(`/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`, {}, {
-          token: actor.accessToken,
-        });
+        await post(
+          `/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`,
+          {},
+          {
+            token: actor.accessToken,
+          }
+        );
       }
 
       const response = await post(
@@ -102,9 +109,13 @@ describe('Time Tracking (F7a)', () => {
       );
 
       if (statusResponse.body.is_clocked_in) {
-        await post('/organizations/nightmare-manor/time/clock-out', {}, {
-          token: manager.accessToken,
-        });
+        await post(
+          '/organizations/nightmare-manor/time/clock-out',
+          {},
+          {
+            token: manager.accessToken,
+          }
+        );
       }
 
       const response = await post(
@@ -147,10 +158,9 @@ describe('Time Tracking (F7a)', () => {
     });
 
     it('should reject unauthenticated request', async () => {
-      const response = await post(
-        `/organizations/${TEST_ORGS.nightmareManor}/time/clock-in`,
-        { attraction_id: TEST_ATTRACTIONS.mainHaunt }
-      );
+      const response = await post(`/organizations/${TEST_ORGS.nightmareManor}/time/clock-in`, {
+        attraction_id: TEST_ATTRACTIONS.mainHaunt,
+      });
 
       expect(response.statusCode).toBe(401);
     });
@@ -174,9 +184,13 @@ describe('Time Tracking (F7a)', () => {
         );
       }
 
-      const response = await post(`/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`, {}, {
-        token: actor.accessToken,
-      });
+      const response = await post(
+        `/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`,
+        {},
+        {
+          token: actor.accessToken,
+        }
+      );
 
       // POST returns 201 by default in NestJS, but update operations often return 200
       expect([200, 201]).toContain(response.statusCode);
@@ -194,15 +208,23 @@ describe('Time Tracking (F7a)', () => {
       );
 
       if (statusResponse.body.is_clocked_in) {
-        await post(`/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`, {}, {
-          token: actor.accessToken,
-        });
+        await post(
+          `/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`,
+          {},
+          {
+            token: actor.accessToken,
+          }
+        );
       }
 
       // Try to clock out again
-      const response = await post(`/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`, {}, {
-        token: actor.accessToken,
-      });
+      const response = await post(
+        `/organizations/${TEST_ORGS.nightmareManor}/time/clock-out`,
+        {},
+        {
+          token: actor.accessToken,
+        }
+      );
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty('code');

@@ -1,10 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
-  loginTestUser,
+  createTestApp,
   deleteTestUser,
-  adminClient,
+  loginTestUser,
   TEST_USERS,
 } from '../helpers/index.js';
 import { get, post } from '../helpers/request.js';

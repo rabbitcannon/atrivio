@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import {
+  AlertTriangle,
+  ArrowRightLeft,
+  Download,
+  Filter,
   History,
   Package,
-  ArrowRightLeft,
   Plus,
-  Minus,
-  AlertTriangle,
-  Trash2,
-  Filter,
-  Download,
   Search,
+  Trash2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -32,18 +33,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  getInventoryTransactions,
-  type InventoryTransaction,
-} from '@/lib/api/client';
-import { formatDistanceToNow, parseISO, format } from 'date-fns';
+import { getInventoryTransactions, type InventoryTransaction } from '@/lib/api/client';
 
 interface TransactionsListProps {
   orgId: string;
 }
 
-type TransactionType = 'purchase' | 'adjustment' | 'checkout' | 'return' | 'transfer' | 'damaged' | 'lost' | 'disposed';
+type TransactionType =
+  | 'purchase'
+  | 'adjustment'
+  | 'checkout'
+  | 'return'
+  | 'transfer'
+  | 'damaged'
+  | 'lost'
+  | 'disposed';
 
 const TRANSACTION_TYPES: { value: TransactionType; label: string; icon: typeof History }[] = [
   { value: 'purchase', label: 'Purchase', icon: Plus },
@@ -130,7 +134,7 @@ export function TransactionsList({ orgId }: TransactionsListProps) {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [typeFilter]);
+  }, []);
 
   // Filter by search query (client-side for now)
   const filteredTransactions = transactions.filter((tx) => {
@@ -155,7 +159,10 @@ export function TransactionsList({ orgId }: TransactionsListProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TransactionType | 'all')}>
+        <Select
+          value={typeFilter}
+          onValueChange={(v) => setTypeFilter(v as TransactionType | 'all')}
+        >
           <SelectTrigger className="w-[180px]">
             <Filter className="mr-2 h-4 w-4" />
             <SelectValue placeholder="Filter by type" />
@@ -235,12 +242,8 @@ export function TransactionsList({ orgId }: TransactionsListProps) {
                         <div className="font-medium">{tx.item?.name || 'Unknown Item'}</div>
                         <div className="text-xs text-muted-foreground">{tx.item?.sku}</div>
                       </TableCell>
-                      <TableCell className="font-mono">
-                        {getQuantityDisplay(tx)}
-                      </TableCell>
-                      <TableCell className="font-mono">
-                        {tx.new_qty ?? '—'}
-                      </TableCell>
+                      <TableCell className="font-mono">{getQuantityDisplay(tx)}</TableCell>
+                      <TableCell className="font-mono">{tx.new_qty ?? '—'}</TableCell>
                       <TableCell className="max-w-[200px] truncate text-muted-foreground">
                         {tx.reason || '—'}
                       </TableCell>

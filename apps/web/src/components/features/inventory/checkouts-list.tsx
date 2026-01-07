@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, ArrowRightLeft, Clock, AlertTriangle, CheckCircle2, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
+import { AlertTriangle, ArrowRightLeft, CheckCircle2, Clock, Plus, RotateCcw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -14,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getInventoryCheckouts,
   getOverdueCheckouts,
@@ -22,7 +23,6 @@ import {
 } from '@/lib/api/client';
 import { CheckoutFormDialog } from './checkout-form-dialog';
 import { ReturnDialog } from './return-dialog';
-import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 
 interface CheckoutsListProps {
   orgId: string;
@@ -66,9 +66,8 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
 
     // Calculate stats
     const today = new Date().toISOString().split('T')[0];
-    const returnedToday = returned.filter((c) =>
-      c.returned_at?.startsWith(today || '')
-    ).length || 0;
+    const returnedToday =
+      returned.filter((c) => c.returned_at?.startsWith(today || '')).length || 0;
 
     setStats({
       active: activeRes.data?.checkouts?.length || 0,
@@ -111,7 +110,9 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
           <ArrowRightLeft className="mb-4 h-12 w-12" />
           <p className="text-lg font-medium">No checkouts found</p>
           <p className="text-sm">
-            {showReturnButton ? 'Check out items to staff members.' : 'Returned items will appear here.'}
+            {showReturnButton
+              ? 'Check out items to staff members.'
+              : 'Returned items will appear here.'}
           </p>
         </div>
       );
@@ -165,11 +166,7 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
               </TableCell>
               {showReturnButton && (
                 <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleReturn(checkout)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleReturn(checkout)}>
                     <RotateCcw className="mr-2 h-3 w-3" />
                     Return
                   </Button>
@@ -202,7 +199,9 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{loading ? '—' : stats.overdue}</div>
+            <div className="text-2xl font-bold text-destructive">
+              {loading ? '—' : stats.overdue}
+            </div>
             <p className="text-xs text-muted-foreground">Past due date</p>
           </CardContent>
         </Card>
@@ -255,9 +254,7 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
                 <ArrowRightLeft className="h-5 w-5" />
                 Active Checkouts
               </CardTitle>
-              <CardDescription>
-                Items currently checked out to staff members.
-              </CardDescription>
+              <CardDescription>Items currently checked out to staff members.</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -280,9 +277,7 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
                 <AlertTriangle className="h-5 w-5 text-destructive" />
                 Overdue Checkouts
               </CardTitle>
-              <CardDescription>
-                Items that are past their due date for return.
-              </CardDescription>
+              <CardDescription>Items that are past their due date for return.</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -305,9 +300,7 @@ export function CheckoutsList({ orgId }: CheckoutsListProps) {
                 <CheckCircle2 className="h-5 w-5" />
                 Returned Items
               </CardTitle>
-              <CardDescription>
-                History of returned checkouts.
-              </CardDescription>
+              <CardDescription>History of returned checkouts.</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (

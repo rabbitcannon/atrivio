@@ -1,25 +1,25 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
+  AlertCircle,
   ArrowLeft,
-  Link2,
-  Plus,
   CheckCircle2,
   Clock,
-  AlertCircle,
-  XCircle,
   Globe,
+  Link2,
+  Plus,
+  RefreshCw,
   Shield,
   Star,
-  RefreshCw,
   Trash2,
+  XCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId, getStorefrontDomains, getStorefrontSettings } from '@/lib/api';
-import type { StorefrontDomain, DomainStatus, StorefrontSettings } from '@/lib/api/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getStorefrontDomains, getStorefrontSettings, resolveOrgId } from '@/lib/api';
+import type { DomainStatus, StorefrontDomain, StorefrontSettings } from '@/lib/api/types';
 
 export const metadata: Metadata = {
   title: 'Storefront Domains',
@@ -29,7 +29,14 @@ interface DomainsPageProps {
   params: Promise<{ orgId: string; attractionId: string }>;
 }
 
-const STATUS_CONFIG: Record<DomainStatus, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive'; icon: typeof CheckCircle2 }> = {
+const STATUS_CONFIG: Record<
+  DomainStatus,
+  {
+    label: string;
+    variant: 'default' | 'secondary' | 'outline' | 'destructive';
+    icon: typeof CheckCircle2;
+  }
+> = {
   active: { label: 'Active', variant: 'default', icon: CheckCircle2 },
   verifying: { label: 'Verifying', variant: 'secondary', icon: Clock },
   pending: { label: 'Pending', variant: 'outline', icon: AlertCircle },
@@ -48,7 +55,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
   const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
 
   let domains: StorefrontDomain[] = [];
-  let settings: StorefrontSettings | null = null;
+  let _settings: StorefrontSettings | null = null;
 
   try {
     const [domainsResult, settingsResult] = await Promise.all([
@@ -56,7 +63,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
       getStorefrontSettings(orgId, attractionId),
     ]);
     domains = domainsResult.data?.domains ?? [];
-    settings = settingsResult.data?.settings ?? null;
+    _settings = settingsResult.data?.settings ?? null;
   } catch {
     // Feature might not be enabled
   }
@@ -79,9 +86,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Domains</h1>
-          <p className="text-muted-foreground">
-            Manage custom domains for your storefront.
-          </p>
+          <p className="text-muted-foreground">Manage custom domains for your storefront.</p>
         </div>
         <Button disabled>
           <Plus className="mr-2 h-4 w-4" />
@@ -97,9 +102,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
               <Globe className="h-5 w-5" />
               Default Subdomain
             </CardTitle>
-            <CardDescription>
-              Your free subdomain on hauntplatform.com
-            </CardDescription>
+            <CardDescription>Your free subdomain on hauntplatform.com</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -107,9 +110,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 <div>
                   <p className="font-medium">{defaultSubdomain.domain}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Always available • SSL included
-                  </p>
+                  <p className="text-sm text-muted-foreground">Always available • SSL included</p>
                 </div>
               </div>
               <Badge>Active</Badge>
@@ -125,9 +126,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
             <Link2 className="h-5 w-5" />
             Custom Domains
           </CardTitle>
-          <CardDescription>
-            Connect your own domain to your storefront
-          </CardDescription>
+          <CardDescription>Connect your own domain to your storefront</CardDescription>
         </CardHeader>
         <CardContent>
           {domains.length === 0 ? (
@@ -180,9 +179,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
                             </span>
                           )}
                           {domain.verifiedAt && (
-                            <span>
-                              Verified {new Date(domain.verifiedAt).toLocaleDateString()}
-                            </span>
+                            <span>Verified {new Date(domain.verifiedAt).toLocaleDateString()}</span>
                           )}
                         </div>
                       </div>
@@ -233,14 +230,16 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
               </p>
             </li>
             <li>
-              <strong>Verify your domain</strong> - we&apos;ll check the DNS records and provision SSL automatically
+              <strong>Verify your domain</strong> - we&apos;ll check the DNS records and provision
+              SSL automatically
             </li>
             <li>
               <strong>Set as primary</strong> (optional) - make this your main storefront URL
             </li>
           </ol>
           <p className="text-sm text-muted-foreground">
-            DNS changes can take up to 48 hours to propagate, though most complete within a few minutes.
+            DNS changes can take up to 48 hours to propagate, though most complete within a few
+            minutes.
           </p>
         </CardContent>
       </Card>

@@ -1,18 +1,16 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
-  IsUUID,
-  IsString,
-  IsInt,
-  IsOptional,
   IsBoolean,
   IsDateString,
   IsEnum,
-  Min,
-  Max,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
   MaxLength,
-  Matches,
+  Min,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 
 export enum DiscountType {
   PERCENTAGE = 'percentage',

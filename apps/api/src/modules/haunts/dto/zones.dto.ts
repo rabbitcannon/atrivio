@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsArray, Matches, Min } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
 
 export class CreateZoneDto {
   @ApiProperty({ example: 'Zombie Woods' })

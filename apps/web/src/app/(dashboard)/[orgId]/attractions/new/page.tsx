@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { AttractionForm } from '@/components/features/attractions/attraction-form';
-import { resolveOrgId, getAttractionTypes } from '@/lib/api';
+import { getAttractionTypes, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'New Attraction',

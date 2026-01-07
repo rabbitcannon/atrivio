@@ -1,29 +1,29 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import {
+  Bell,
   Building2,
-  Ghost,
-  Users,
   Calendar,
-  LayoutDashboard,
-  UserCog,
-  Mail,
   Clock,
   CreditCard,
-  Ticket,
-  ScanLine,
-  Package,
+  Ghost,
+  LayoutDashboard,
   ListOrdered,
-  Bell,
   type LucideIcon,
+  Mail,
+  Package,
+  ScanLine,
+  Ticket,
+  UserCog,
+  Users,
 } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
-import { useOrg } from '@/hooks/use-org';
-import { OrgSwitcher } from './org-switcher';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useOrg } from '@/hooks/use-org';
+import { cn } from '@/lib/utils/cn';
+import { OrgSwitcher } from './org-switcher';
 
 interface NavItem {
   label: string;
@@ -34,12 +34,27 @@ interface NavItem {
 
 // Admin/manager navigation - full dashboard access
 const adminNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '', icon: LayoutDashboard, roles: ['owner', 'admin', 'manager', 'hr'] },
+  {
+    label: 'Dashboard',
+    href: '',
+    icon: LayoutDashboard,
+    roles: ['owner', 'admin', 'manager', 'hr'],
+  },
   { label: 'Attractions', href: '/attractions', icon: Ghost, roles: ['owner', 'admin', 'manager'] },
   { label: 'Staff', href: '/staff', icon: Users, roles: ['owner', 'admin', 'manager', 'hr'] },
   { label: 'Schedule', href: '/schedule', icon: Calendar, roles: ['owner', 'admin', 'manager'] },
-  { label: 'Ticketing', href: '/ticketing', icon: Ticket, roles: ['owner', 'admin', 'manager', 'box_office'] },
-  { label: 'Check-In', href: '/check-in', icon: ScanLine, roles: ['owner', 'admin', 'manager', 'scanner'] },
+  {
+    label: 'Ticketing',
+    href: '/ticketing',
+    icon: Ticket,
+    roles: ['owner', 'admin', 'manager', 'box_office'],
+  },
+  {
+    label: 'Check-In',
+    href: '/check-in',
+    icon: ScanLine,
+    roles: ['owner', 'admin', 'manager', 'scanner'],
+  },
   { label: 'Queue', href: '/queue', icon: ListOrdered, roles: ['owner', 'admin', 'manager'] },
   { label: 'Inventory', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager'] },
 ];
@@ -53,11 +68,15 @@ const staffNavItems: NavItem[] = [
 const settingsNavItems: NavItem[] = [
   { label: 'Organization', href: '/settings', icon: Building2, roles: ['owner', 'admin'] },
   { label: 'Payments', href: '/payments', icon: CreditCard, roles: ['owner', 'admin', 'finance'] },
-  { label: 'Notifications', href: '/notifications', icon: Bell, roles: ['owner', 'admin', 'manager'] },
+  {
+    label: 'Notifications',
+    href: '/notifications',
+    icon: Bell,
+    roles: ['owner', 'admin', 'manager'],
+  },
   { label: 'Members', href: '/members', icon: UserCog, roles: ['owner', 'admin', 'hr'] },
   { label: 'Invitations', href: '/invitations', icon: Mail, roles: ['owner', 'admin', 'hr'] },
 ];
-
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -148,9 +167,7 @@ export function DashboardSidebar() {
 
       {/* Settings Navigation */}
       <nav className="space-y-1 p-4" aria-label="Settings navigation">
-        <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">
-          Settings
-        </p>
+        <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">Settings</p>
         {settingsNavItems
           .filter((item) => !item.roles || item.roles.includes(currentOrg.role))
           .map((item) => {

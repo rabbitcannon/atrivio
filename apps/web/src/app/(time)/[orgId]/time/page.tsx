@@ -1,16 +1,16 @@
 'use client';
 
+import { AlertCircle, CheckCircle2, Clock, LogIn, MapPin, Timer } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { Clock, MapPin, CheckCircle2, Timer, AlertCircle, LogIn } from 'lucide-react';
-import { useUser } from '@/hooks/use-user';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useUser } from '@/hooks/use-user';
 import {
-  getOrgBySlug,
   getMyTimeStatus,
+  getOrgBySlug,
   selfClockIn,
   selfClockOut,
   type TimeClockStatus,
@@ -37,7 +37,12 @@ export default function QuickTimePage() {
   const router = useRouter();
   const { user, isLoading: userLoading } = useUser();
 
-  const [org, setOrg] = useState<{ id: string; name: string; slug: string; logo_url: string | null } | null>(null);
+  const [org, setOrg] = useState<{
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+  } | null>(null);
   const [status, setStatus] = useState<TimeClockStatus | null>(null);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
@@ -203,9 +208,7 @@ export default function QuickTimePage() {
             <CardDescription>Time Clock</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-center text-muted-foreground">
-              Sign in to clock in or out
-            </p>
+            <p className="text-center text-muted-foreground">Sign in to clock in or out</p>
             <Button
               className="w-full"
               size="lg"
@@ -239,9 +242,10 @@ export default function QuickTimePage() {
   }
 
   // Get user's first name for greeting
-  const firstName = (user?.user_metadata?.['first_name'] as string) ||
-                   (user?.user_metadata?.['full_name'] as string)?.split(' ')[0] ||
-                   'there';
+  const firstName =
+    (user?.user_metadata?.['first_name'] as string) ||
+    (user?.user_metadata?.['full_name'] as string)?.split(' ')[0] ||
+    'there';
 
   return (
     <div className="flex flex-1 items-center justify-center p-4">
@@ -268,7 +272,9 @@ export default function QuickTimePage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <span className="font-medium text-green-700 dark:text-green-300">Clocked In</span>
+                    <span className="font-medium text-green-700 dark:text-green-300">
+                      Clocked In
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
                     <Timer className="h-4 w-4" />

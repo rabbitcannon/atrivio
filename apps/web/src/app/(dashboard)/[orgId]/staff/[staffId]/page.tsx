@@ -1,14 +1,14 @@
+import { Award, Clock, FileText, Settings } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Settings, Award, Clock, FileText } from 'lucide-react';
-import { SkillBadges } from '@/components/features/staff/skill-badges';
 import { CertificationList } from '@/components/features/staff/certification-list';
-import { resolveOrgId, getStaffMember } from '@/lib/api';
+import { SkillBadges } from '@/components/features/staff/skill-badges';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getStaffMember, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Staff Profile',
@@ -42,13 +42,16 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
     certifications: [],
   };
 
-  const staffName = staff.user ? `${staff.user.first_name || ''} ${staff.user.last_name || ''}`.trim() || 'Unknown' : 'Unknown';
+  const staffName = staff.user
+    ? `${staff.user.first_name || ''} ${staff.user.last_name || ''}`.trim() || 'Unknown'
+    : 'Unknown';
   const staffEmail = staff.user?.email || 'No email';
   const skills = staff.skills?.map((s: any) => s.name || s.skill) || [];
-  const certifications = staff.certifications?.map((c: any) => ({
-    name: c.type || c.name,
-    expiresAt: c.expires_at || c.expiresAt,
-  })) || [];
+  const certifications =
+    staff.certifications?.map((c: any) => ({
+      name: c.type || c.name,
+      expiresAt: c.expires_at || c.expiresAt,
+    })) || [];
 
   return (
     <div className="space-y-6">
@@ -113,7 +116,9 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
                 <CardTitle className="text-sm font-medium">Employment</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-lg font-bold capitalize">{staff.employment_type?.replace('_', ' ') || 'Not set'}</div>
+                <div className="text-lg font-bold capitalize">
+                  {staff.employment_type?.replace('_', ' ') || 'Not set'}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -200,9 +205,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                No recent time entries.
-              </p>
+              <p className="text-sm text-muted-foreground">No recent time entries.</p>
             </CardContent>
           </Card>
         </TabsContent>

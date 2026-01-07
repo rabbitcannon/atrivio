@@ -1,9 +1,9 @@
+import { AlertCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { OrgSettingsForm } from '@/components/features/organizations/org-settings-form';
-import { resolveOrgId, getOrganization } from '@/lib/api';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getOrganization, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Organization Settings',
@@ -32,7 +32,8 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error loading organization</AlertTitle>
           <AlertDescription>
-            {result.error?.message || 'Failed to load organization. Please try refreshing the page.'}
+            {result.error?.message ||
+              'Failed to load organization. Please try refreshing the page.'}
           </AlertDescription>
         </Alert>
       </div>

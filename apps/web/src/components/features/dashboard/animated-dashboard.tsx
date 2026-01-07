@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import { motion, useReducedMotion } from 'motion/react';
+import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils/cn';
 
@@ -136,11 +136,7 @@ interface AnimatedCardGridProps {
 /**
  * Animated grid that staggers its children
  */
-export function AnimatedCardGrid({
-  children,
-  className,
-  baseDelay = 0.4,
-}: AnimatedCardGridProps) {
+export function AnimatedCardGrid({ children, className, baseDelay = 0.4 }: AnimatedCardGridProps) {
   const shouldReduceMotion = useReducedMotion();
   const childArray = React.Children.toArray(children);
 

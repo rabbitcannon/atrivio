@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
   CreateScheduleDto,
-  UpdateScheduleDto,
   ListSchedulesQueryDto,
   PublishSchedulesDto,
+  UpdateScheduleDto,
 } from './dto/schedule.dto.js';
 
 @Injectable()
@@ -15,11 +20,7 @@ export class SchedulingService {
   /**
    * List schedules with filters
    */
-  async listSchedules(
-    orgId: OrgId,
-    attractionId: string,
-    query: ListSchedulesQueryDto,
-  ) {
+  async listSchedules(orgId: OrgId, attractionId: string, query: ListSchedulesQueryDto) {
     let qb = this.supabase.adminClient
       .from('schedules')
       .select(`
@@ -257,11 +258,7 @@ export class SchedulingService {
   /**
    * Publish schedules within a date range
    */
-  async publishSchedules(
-    orgId: OrgId,
-    attractionId: string,
-    dto: PublishSchedulesDto,
-  ) {
+  async publishSchedules(orgId: OrgId, attractionId: string, dto: PublishSchedulesDto) {
     const { data, error } = await this.supabase.adminClient
       .from('schedules')
       .update({
@@ -371,7 +368,7 @@ export class SchedulingService {
     orgId: OrgId,
     attractionId: string,
     startDate?: string,
-    endDate?: string,
+    endDate?: string
   ) {
     let qb = this.supabase.adminClient
       .from('schedules')
@@ -411,12 +408,7 @@ export class SchedulingService {
   /**
    * Detect conflicts for schedules within a date range
    */
-  async detectConflicts(
-    orgId: OrgId,
-    attractionId: string,
-    startDate: string,
-    endDate: string,
-  ) {
+  async detectConflicts(orgId: OrgId, attractionId: string, startDate: string, endDate: string) {
     // Get all schedules in the date range that have staff assigned
     const { data: schedules, error } = await this.supabase.adminClient
       .from('schedules')
@@ -479,9 +471,7 @@ export class SchedulingService {
       const staff = Array.isArray(schedule.staff) ? schedule.staff[0] : schedule.staff;
       const membership = staff?.org_memberships?.[0];
       const profile = membership?.profiles?.[0];
-      const staffName = profile
-        ? `${profile.first_name} ${profile.last_name}`
-        : 'Unknown';
+      const staffName = profile ? `${profile.first_name} ${profile.last_name}` : 'Unknown';
 
       // 1. Check for double-booking (same staff, overlapping times on same day)
       const overlapping = (allOrgSchedules || []).filter((other) => {
@@ -515,7 +505,7 @@ export class SchedulingService {
       }
 
       // 2. Check for unavailability conflicts
-      const dayOfWeek = new Date(schedule.date + 'T00:00:00').getDay();
+      const dayOfWeek = new Date(`${schedule.date}T00:00:00`).getDay();
       const unavailable = (availabilityData || []).filter((avail) => {
         if (avail.staff_id !== schedule.staff_id) return false;
         if (avail.day_of_week !== dayOfWeek) return false;
@@ -548,9 +538,11 @@ export class SchedulingService {
 
       for (const other of sameStaffSchedules) {
         // Check if shifts are on consecutive days or same day
-        const schedDate = new Date(schedule.date + 'T00:00:00');
-        const otherDate = new Date(other.date + 'T00:00:00');
-        const dayDiff = Math.abs((schedDate.getTime() - otherDate.getTime()) / (1000 * 60 * 60 * 24));
+        const schedDate = new Date(`${schedule.date}T00:00:00`);
+        const otherDate = new Date(`${other.date}T00:00:00`);
+        const dayDiff = Math.abs(
+          (schedDate.getTime() - otherDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
 
         if (dayDiff <= 1) {
           // Calculate hours between shifts
@@ -565,12 +557,14 @@ export class SchedulingService {
             }
           } else if (schedule.date < other.date) {
             // Schedule is day before other
-            hoursBetween = this.getHoursDiff(schedule.end_time, '24:00:00') +
-                          this.getHoursDiff('00:00:00', other.start_time);
+            hoursBetween =
+              this.getHoursDiff(schedule.end_time, '24:00:00') +
+              this.getHoursDiff('00:00:00', other.start_time);
           } else {
             // Other is day before schedule
-            hoursBetween = this.getHoursDiff(other.end_time, '24:00:00') +
-                          this.getHoursDiff('00:00:00', schedule.start_time);
+            hoursBetween =
+              this.getHoursDiff(other.end_time, '24:00:00') +
+              this.getHoursDiff('00:00:00', schedule.start_time);
           }
 
           if (hoursBetween > 0 && hoursBetween < MIN_BREAK_HOURS && schedule.id < other.id) {
@@ -607,7 +601,7 @@ export class SchedulingService {
   private getHoursDiff(time1: string, time2: string): number {
     const [h1, m1] = time1.split(':').map(Number);
     const [h2, m2] = time2.split(':').map(Number);
-    return (h2! - h1!) + (m2! - m1!) / 60;
+    return h2! - h1! + (m2! - m1!) / 60;
   }
 
   // ============== Private Helpers ==============

@@ -1,17 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, Clock, DollarSign, ExternalLink, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { Clock, ExternalLink, AlertCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  getMyTimeStatus,
-  getStaffMember,
-  getTimeEntries,
-} from '@/lib/api/client';
+import { getMyTimeStatus, getStaffMember, getTimeEntries } from '@/lib/api/client';
 
 interface MyHoursWidgetProps {
   orgId: string;
@@ -122,9 +118,7 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
     );
   }
 
-  const estimatedPay = hourlyRate && totalHours > 0
-    ? Math.round(hourlyRate * totalHours)
-    : null;
+  const estimatedPay = hourlyRate && totalHours > 0 ? Math.round(hourlyRate * totalHours) : null;
 
   return (
     <Card>
@@ -200,9 +194,7 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
 
             {/* No hours this week */}
             {totalHours === 0 && (
-              <p className="text-xs text-muted-foreground text-center">
-                No hours logged this week
-              </p>
+              <p className="text-xs text-muted-foreground text-center">No hours logged this week</p>
             )}
           </>
         )}

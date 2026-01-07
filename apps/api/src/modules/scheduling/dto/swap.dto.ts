@@ -1,5 +1,5 @@
-import { IsUUID, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export type SwapType = 'swap' | 'drop' | 'pickup';
 export type SwapStatus = 'pending' | 'approved' | 'rejected' | 'canceled' | 'expired';
@@ -7,7 +7,7 @@ export type SwapStatus = 'pending' | 'approved' | 'rejected' | 'canceled' | 'exp
 export class CreateSwapRequestDto {
   @ApiProperty({
     description: 'Type of swap request',
-    enum: ['swap', 'drop', 'pickup']
+    enum: ['swap', 'drop', 'pickup'],
   })
   @IsEnum(['swap', 'drop', 'pickup'])
   swapType!: SwapType;

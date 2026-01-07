@@ -1,17 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsEnum,
-  IsDateString,
-  IsObject,
   IsArray,
   IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 const STAFF_STATUS = ['active', 'inactive', 'on_leave', 'terminated'] as const;
 type StaffStatus = (typeof STAFF_STATUS)[number];

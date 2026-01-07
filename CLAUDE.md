@@ -5,8 +5,8 @@ Multi-tenant SaaS for the attractions industry (haunted attractions, escape room
 ## Architecture
 
 - **Monorepo**: pnpm workspaces + Turborepo
-- **Backend**: NestJS 10+ with Fastify adapter
-- **Frontend**: Next.js 14 App Router, Tailwind v4, shadcn/ui
+- **Backend**: NestJS 11+ with Fastify adapter
+- **Frontend**: Next.js 15 App Router, React 19, Tailwind v4, shadcn/ui
 - **Database**: Supabase (PostgreSQL + RLS)
 - **Auth**: Supabase Auth (PKCE flow)
 - **Payments**: Stripe Connect (Express accounts)

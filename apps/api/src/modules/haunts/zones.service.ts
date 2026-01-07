@@ -1,11 +1,11 @@
+import type { OrgId } from '@haunt/shared';
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
-  BadRequestException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-import type { OrgId } from '@haunt/shared';
 import type { CreateZoneDto, UpdateZoneDto } from './dto/zones.dto.js';
 
 @Injectable()
@@ -83,7 +83,7 @@ export class ZonesService {
         capacity,
         color,
         sort_order
-      `,
+      `
       )
       .eq('attraction_id', attractionId)
       .order('sort_order');
@@ -141,12 +141,7 @@ export class ZonesService {
   /**
    * Update zone
    */
-  async update(
-    orgId: OrgId,
-    attractionId: string,
-    zoneId: string,
-    dto: UpdateZoneDto,
-  ) {
+  async update(orgId: OrgId, attractionId: string, zoneId: string, dto: UpdateZoneDto) {
     await this.verifyAttractionAccess(orgId, attractionId);
 
     // Check for duplicate name if changing

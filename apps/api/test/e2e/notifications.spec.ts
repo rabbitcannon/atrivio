@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
   TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch, del } from '../helpers/request.js';
+import { del, get, patch, post } from '../helpers/request.js';
 
 // Template keys from seed data (system templates)
 const TEMPLATE_KEYS = {
@@ -71,10 +71,9 @@ describe('Notifications (F12)', () => {
     it('should work with org slug', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/nightmare-manor/notifications/templates`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/nightmare-manor/notifications/templates`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -271,7 +270,9 @@ describe('Notifications (F12)', () => {
       expect(response.statusCode).toBe(200);
       // If there are results, they should all be email channel
       if (response.body.data.length > 0) {
-        expect(response.body.data.every((n: { channel: string }) => n.channel === 'email')).toBe(true);
+        expect(response.body.data.every((n: { channel: string }) => n.channel === 'email')).toBe(
+          true
+        );
       }
     });
 
@@ -305,10 +306,7 @@ describe('Notifications (F12)', () => {
     it('should get in-app notifications for authenticated user', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/notifications/inbox`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/notifications/inbox`, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       // Returns { data: InAppNotificationResponse[], unreadCount: number }
@@ -320,10 +318,7 @@ describe('Notifications (F12)', () => {
     it('should filter by read status', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/notifications/inbox?read=false`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/notifications/inbox?read=false`, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       // Unread notifications should have read as false
@@ -335,10 +330,7 @@ describe('Notifications (F12)', () => {
     it('should support limit parameter', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/notifications/inbox?limit=10`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/notifications/inbox?limit=10`, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data.length).toBeLessThanOrEqual(10);
@@ -355,11 +347,7 @@ describe('Notifications (F12)', () => {
     it('should mark all notifications as read', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await post(
-        `/notifications/read-all`,
-        {},
-        { token: owner.accessToken }
-      );
+      const response = await post(`/notifications/read-all`, {}, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('success', true);
@@ -372,10 +360,7 @@ describe('Notifications (F12)', () => {
     it('should get notification preferences', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/notifications/preferences`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/notifications/preferences`, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       // Returns PreferenceResponse[] array with all categories
@@ -391,10 +376,9 @@ describe('Notifications (F12)', () => {
     it('should get org-specific preferences', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/notifications/preferences?orgId=${TEST_ORGS.nightmareManor}`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/notifications/preferences?orgId=${TEST_ORGS.nightmareManor}`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -420,10 +404,7 @@ describe('Notifications (F12)', () => {
       expect(response.body).toHaveProperty('success', true);
 
       // Verify the update
-      const getResponse = await get(
-        `/notifications/preferences`,
-        { token: owner.accessToken }
-      );
+      const getResponse = await get(`/notifications/preferences`, { token: owner.accessToken });
 
       expect(getResponse.statusCode).toBe(200);
     });
@@ -457,7 +438,7 @@ describe('Notifications (F12)', () => {
       const response = await post(
         `/notifications/devices`,
         {
-          deviceToken: 'test-device-token-' + Date.now(),
+          deviceToken: `test-device-token-${Date.now()}`,
           platform: 'ios',
           deviceName: 'Test iPhone',
         },
@@ -474,7 +455,7 @@ describe('Notifications (F12)', () => {
       const response = await post(
         `/notifications/devices`,
         {
-          deviceToken: 'android-token-' + Date.now(),
+          deviceToken: `android-token-${Date.now()}`,
           platform: 'android',
           deviceName: 'Test Android',
         },
@@ -506,7 +487,7 @@ describe('Notifications (F12)', () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
       // First register a device
-      const deviceToken = 'to-delete-token-' + Date.now();
+      const deviceToken = `to-delete-token-${Date.now()}`;
       await post(
         `/notifications/devices`,
         {
@@ -517,10 +498,9 @@ describe('Notifications (F12)', () => {
       );
 
       // Then unregister it
-      const response = await del(
-        `/notifications/devices/${deviceToken}`,
-        { token: owner.accessToken }
-      );
+      const response = await del(`/notifications/devices/${deviceToken}`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('success', true);

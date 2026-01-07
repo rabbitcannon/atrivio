@@ -1,10 +1,10 @@
-export { InventoryDashboard } from './inventory-dashboard';
-export { ItemsList } from './items-list';
-export { ItemFormDialog } from './item-form-dialog';
 export { AdjustQuantityDialog } from './adjust-quantity-dialog';
 export { CategoriesList } from './categories-list';
 export { CategoryFormDialog } from './category-form-dialog';
-export { CheckoutsList } from './checkouts-list';
 export { CheckoutFormDialog } from './checkout-form-dialog';
+export { CheckoutsList } from './checkouts-list';
+export { InventoryDashboard } from './inventory-dashboard';
+export { ItemFormDialog } from './item-form-dialog';
+export { ItemsList } from './items-list';
 export { ReturnDialog } from './return-dialog';
 export { TransactionsList } from './transactions-list';

@@ -1,23 +1,23 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  UseInterceptors,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { CertificationsService } from './certifications.service.js';
-import { AddCertificationDto } from './dto/certifications.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
 import type { UserId } from '@haunt/shared';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import { CertificationsService } from './certifications.service.js';
+import type { AddCertificationDto } from './dto/certifications.dto.js';
 
 @ApiTags('Staff Certifications')
 @Controller('organizations/:orgId/staff/:staffId/certifications')
@@ -28,10 +28,7 @@ export class CertificationsController {
 
   @Get()
   @ApiOperation({ summary: 'Get staff certifications' })
-  async list(
-    @Tenant() ctx: TenantContext,
-    @Param('staffId') staffId: string,
-  ) {
+  async list(@Tenant() ctx: TenantContext, @Param('staffId') staffId: string) {
     return this.certificationsService.findAll(ctx.orgId, staffId);
   }
 
@@ -42,7 +39,7 @@ export class CertificationsController {
   async add(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Body() dto: AddCertificationDto,
+    @Body() dto: AddCertificationDto
   ) {
     return this.certificationsService.add(ctx.orgId, staffId, dto);
   }
@@ -55,7 +52,7 @@ export class CertificationsController {
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
     @Param('certId') certId: string,
-    @CurrentUser('id') userId: UserId,
+    @CurrentUser('id') userId: UserId
   ) {
     return this.certificationsService.verify(ctx.orgId, staffId, certId, userId);
   }
@@ -67,7 +64,7 @@ export class CertificationsController {
   async delete(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Param('certId') certId: string,
+    @Param('certId') certId: string
   ) {
     return this.certificationsService.delete(ctx.orgId, staffId, certId);
   }

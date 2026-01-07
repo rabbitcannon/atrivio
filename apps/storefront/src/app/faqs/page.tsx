@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { getPublicStorefront, getPublicFaqs, type StorefrontFaq } from '@/lib/api';
+import { getPublicFaqs, getPublicStorefront, type StorefrontFaq } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'FAQs',
@@ -20,17 +20,14 @@ export default async function FaqsPage() {
   const { faqs } = await getPublicFaqs(identifier);
 
   // Group FAQs by category
-  const categorizedFaqs = faqs.reduce<Record<string, StorefrontFaq[]>>(
-    (acc, faq) => {
-      const category = faq.category || 'General';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(faq);
-      return acc;
-    },
-    {}
-  );
+  const categorizedFaqs = faqs.reduce<Record<string, StorefrontFaq[]>>((acc, faq) => {
+    const category = faq.category || 'General';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(faq);
+    return acc;
+  }, {});
 
   const categories = Object.keys(categorizedFaqs);
 

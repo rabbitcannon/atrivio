@@ -20,15 +20,13 @@ export const CurrentUser = createParamDecorator(
     }
 
     return user;
-  },
+  }
 );
 
 /**
  * Decorator to extract the current access token from the request
  */
-export const AccessToken = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.accessToken;
-  },
-);
+export const AccessToken = createParamDecorator((_data: unknown, ctx: ExecutionContext): string => {
+  const request = ctx.switchToHttp().getRequest();
+  return request.accessToken;
+});

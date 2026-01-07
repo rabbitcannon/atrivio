@@ -1,31 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Loader2, MoreHorizontal, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { Plus, Pencil, Trash2, MoreHorizontal, Package, Loader2 } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -34,9 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -44,6 +29,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
@@ -108,16 +102,12 @@ export default function TicketTypesPage() {
       const orgId = await resolveOrgId(orgIdentifier);
       if (orgId) {
         setResolvedOrgId(orgId);
-        await Promise.all([
-          loadTicketTypes(orgId),
-          loadCategories(orgId),
-          loadAttractions(orgId),
-        ]);
+        await Promise.all([loadTicketTypes(orgId), loadCategories(orgId), loadAttractions(orgId)]);
       }
       setIsLoading(false);
     }
     init();
-  }, [orgIdentifier]);
+  }, [orgIdentifier, loadAttractions, loadCategories, loadTicketTypes]);
 
   async function loadTicketTypes(orgId: string) {
     try {
@@ -125,9 +115,7 @@ export default function TicketTypesPage() {
         `/organizations/${orgId}/ticket-types?includeInactive=true`
       );
       setTicketTypes(response?.data || []);
-    } catch (error) {
-      console.error('Failed to load ticket types:', error);
-    }
+    } catch (_error) {}
   }
 
   async function loadCategories(orgId: string) {
@@ -136,9 +124,7 @@ export default function TicketTypesPage() {
         `/organizations/${orgId}/ticket-categories`
       );
       setCategories(response?.data || []);
-    } catch (error) {
-      console.error('Failed to load categories:', error);
-    }
+    } catch (_error) {}
   }
 
   async function loadAttractions(orgId: string) {
@@ -147,9 +133,7 @@ export default function TicketTypesPage() {
         `/organizations/${orgId}/attractions`
       );
       setAttractions(response?.data || []);
-    } catch (error) {
-      console.error('Failed to load attractions:', error);
-    }
+    } catch (_error) {}
   }
 
   function formatPrice(cents: number): string {
@@ -203,9 +187,9 @@ export default function TicketTypesPage() {
       comparePrice: formData.comparePrice
         ? Math.round(parseFloat(formData.comparePrice) * 100)
         : undefined,
-      minPerOrder: formData.minPerOrder ? parseInt(formData.minPerOrder) : undefined,
-      maxPerOrder: formData.maxPerOrder ? parseInt(formData.maxPerOrder) : undefined,
-      capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
+      minPerOrder: formData.minPerOrder ? parseInt(formData.minPerOrder, 10) : undefined,
+      maxPerOrder: formData.maxPerOrder ? parseInt(formData.maxPerOrder, 10) : undefined,
+      capacity: formData.capacity ? parseInt(formData.capacity, 10) : undefined,
       includes: formData.includes
         ? formData.includes.split('\n').filter((s) => s.trim())
         : undefined,
@@ -219,15 +203,12 @@ export default function TicketTypesPage() {
         );
         toast({ title: 'Ticket type updated' });
       } else {
-        await apiClient.post(
-          `/organizations/${resolvedOrgId}/ticket-types`,
-          payload
-        );
+        await apiClient.post(`/organizations/${resolvedOrgId}/ticket-types`, payload);
         toast({ title: 'Ticket type created' });
       }
       setIsDialogOpen(false);
       await loadTicketTypes(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to save ticket type',
@@ -242,15 +223,14 @@ export default function TicketTypesPage() {
     if (!resolvedOrgId) return;
 
     try {
-      await apiClient.patch(
-        `/organizations/${resolvedOrgId}/ticket-types/${type.id}`,
-        { isActive: !type.is_active }
-      );
+      await apiClient.patch(`/organizations/${resolvedOrgId}/ticket-types/${type.id}`, {
+        isActive: !type.is_active,
+      });
       toast({
         title: type.is_active ? 'Ticket type deactivated' : 'Ticket type activated',
       });
       await loadTicketTypes(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to update ticket type',
@@ -264,12 +244,10 @@ export default function TicketTypesPage() {
     if (!confirm(`Delete "${type.name}"? This cannot be undone.`)) return;
 
     try {
-      await apiClient.delete(
-        `/organizations/${resolvedOrgId}/ticket-types/${type.id}`
-      );
+      await apiClient.delete(`/organizations/${resolvedOrgId}/ticket-types/${type.id}`);
       toast({ title: 'Ticket type deleted' });
       await loadTicketTypes(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Cannot delete ticket type that has been purchased',
@@ -407,12 +385,8 @@ export default function TicketTypesPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {editingType ? 'Edit Ticket Type' : 'Create Ticket Type'}
-            </DialogTitle>
-            <DialogDescription>
-              Configure the ticket type details and pricing.
-            </DialogDescription>
+            <DialogTitle>{editingType ? 'Edit Ticket Type' : 'Create Ticket Type'}</DialogTitle>
+            <DialogDescription>Configure the ticket type details and pricing.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
@@ -431,9 +405,7 @@ export default function TicketTypesPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Standard entry ticket..."
               />
             </div>
@@ -500,9 +472,7 @@ export default function TicketTypesPage() {
                   step="0.01"
                   min="0"
                   value={formData.comparePrice}
-                  onChange={(e) =>
-                    setFormData({ ...formData, comparePrice: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, comparePrice: e.target.value })}
                   placeholder="39.99"
                 />
               </div>
@@ -516,9 +486,7 @@ export default function TicketTypesPage() {
                   type="number"
                   min="1"
                   value={formData.minPerOrder}
-                  onChange={(e) =>
-                    setFormData({ ...formData, minPerOrder: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, minPerOrder: e.target.value })}
                 />
               </div>
 
@@ -529,9 +497,7 @@ export default function TicketTypesPage() {
                   type="number"
                   min="1"
                   value={formData.maxPerOrder}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maxPerOrder: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, maxPerOrder: e.target.value })}
                 />
               </div>
 
@@ -542,9 +508,7 @@ export default function TicketTypesPage() {
                   type="number"
                   min="1"
                   value={formData.capacity}
-                  onChange={(e) =>
-                    setFormData({ ...formData, capacity: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                 />
               </div>
             </div>
@@ -554,9 +518,7 @@ export default function TicketTypesPage() {
               <Textarea
                 id="includes"
                 value={formData.includes}
-                onChange={(e) =>
-                  setFormData({ ...formData, includes: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, includes: e.target.value })}
                 placeholder="Access to all attractions&#10;Photo package&#10;Souvenir"
                 rows={3}
               />

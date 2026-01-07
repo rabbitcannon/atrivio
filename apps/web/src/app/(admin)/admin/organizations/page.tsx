@@ -1,31 +1,11 @@
 'use client';
 
+import { AlertCircle, Building2, MoreHorizontal, Pause, Play, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Search, MoreHorizontal, Building2, AlertCircle, Pause, Play } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -35,17 +15,37 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  getAdminOrganizations,
-  suspendOrganization,
-  reactivateOrganization,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import {
   type AdminOrg,
+  getAdminOrganizations,
+  reactivateOrganization,
+  suspendOrganization,
 } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
@@ -56,7 +56,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getStatusBadgeVariant(
+  status: string
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
       return 'default';
@@ -83,7 +85,12 @@ export default function AdminOrganizationsPage() {
 
   async function fetchOrganizations(search?: string, status?: string) {
     setIsLoading(true);
-    const params: { page: number; limit: number; search?: string; status?: 'active' | 'suspended' | 'deleted' } = {
+    const params: {
+      page: number;
+      limit: number;
+      search?: string;
+      status?: 'active' | 'suspended' | 'deleted';
+    } = {
       page: meta.page,
       limit: meta.limit,
     };
@@ -102,7 +109,6 @@ export default function AdminOrganizationsPage() {
 
   useEffect(() => {
     fetchOrganizations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -343,11 +349,7 @@ export default function AdminOrganizationsPage() {
             <Button variant="outline" onClick={() => setIsSuspendOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleSuspend}
-              disabled={!suspendReason.trim()}
-            >
+            <Button variant="destructive" onClick={handleSuspend} disabled={!suspendReason.trim()}>
               Suspend Organization
             </Button>
           </DialogFooter>
@@ -360,8 +362,8 @@ export default function AdminOrganizationsPage() {
           <DialogHeader>
             <DialogTitle>Reactivate Organization</DialogTitle>
             <DialogDescription>
-              Are you sure you want to reactivate {selectedOrg?.name}? Members will regain access
-              to the platform.
+              Are you sure you want to reactivate {selectedOrg?.name}? Members will regain access to
+              the platform.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

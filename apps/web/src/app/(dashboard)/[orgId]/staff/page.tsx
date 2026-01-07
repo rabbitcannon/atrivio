@@ -1,8 +1,8 @@
+import { Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { StaffTable } from '@/components/features/staff/staff-table';
+import { Button } from '@/components/ui/button';
 import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -27,7 +27,9 @@ export default async function StaffPage({ params }: StaffPageProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Staff</h1>
-          <p className="text-muted-foreground">Manage your staff roster, skills, and certifications.</p>
+          <p className="text-muted-foreground">
+            Manage your staff roster, skills, and certifications.
+          </p>
         </div>
         <Button asChild>
           <a href={`/${orgIdentifier}/staff/new`}>

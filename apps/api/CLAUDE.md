@@ -2,7 +2,7 @@
 
 ## Stack
 
-- NestJS 10+ with **Fastify** adapter (not Express)
+- NestJS 11+ with **Fastify** adapter (not Express)
 - SWC compiler for fast builds
 - Swagger/OpenAPI auto-generated
 

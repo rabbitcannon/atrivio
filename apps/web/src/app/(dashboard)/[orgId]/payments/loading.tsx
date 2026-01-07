@@ -57,7 +57,10 @@ export default function PaymentsLoading() {
         <CardContent>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between py-3 border-b last:border-0">
+              <div
+                key={i}
+                className="flex items-center justify-between py-3 border-b last:border-0"
+              >
                 <div className="space-y-1">
                   <Skeleton shimmer className="h-4 w-48" />
                   <Skeleton shimmer className="h-3 w-32" />

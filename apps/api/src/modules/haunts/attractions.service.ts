@@ -1,11 +1,11 @@
+import type { OrgId } from '@haunt/shared';
 import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
   BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
-import type { OrgId } from '@haunt/shared';
 import type { CreateAttractionDto, UpdateAttractionDto } from './dto/attractions.dto.js';
 
 export type AttractionId = string;
@@ -70,10 +70,7 @@ export class AttractionsService {
   /**
    * List attractions for an organization
    */
-  async findAll(
-    orgId: OrgId,
-    filters?: { status?: string; type?: string },
-  ) {
+  async findAll(orgId: OrgId, filters?: { status?: string; type?: string }) {
     let query = this.supabase.adminClient
       .from('attractions')
       .select(
@@ -98,7 +95,7 @@ export class AttractionsService {
         zones (
           id
         )
-      `,
+      `
       )
       .eq('org_id', orgId);
 
@@ -127,9 +124,7 @@ export class AttractionsService {
       .in('attraction_id', attractionIds)
       .eq('status', 'active');
 
-    const seasonMap = new Map(
-      seasons?.map((s: any) => [s.attraction_id, s]) || [],
-    );
+    const seasonMap = new Map(seasons?.map((s: any) => [s.attraction_id, s]) || []);
 
     return {
       data: data.map((a: any) => ({
@@ -175,7 +170,7 @@ export class AttractionsService {
           color,
           sort_order
         )
-      `,
+      `
       )
       .eq('id', attractionId)
       .eq('org_id', orgId)
@@ -204,12 +199,16 @@ export class AttractionsService {
         amenity_types (
           key
         )
-      `,
+      `
       )
       .eq('attraction_id', attractionId);
 
     // Cast to handle Supabase FK join typing
-    const attractionType = data.attraction_types as unknown as { key: string; name: string; icon: string } | null;
+    const attractionType = data.attraction_types as unknown as {
+      key: string;
+      name: string;
+      icon: string;
+    } | null;
 
     return {
       ...data,
@@ -383,7 +382,7 @@ export class AttractionsService {
           name,
           logo_url
         )
-      `,
+      `
       )
       .eq('slug', slug)
       .in('status', ['published', 'active'])
@@ -404,12 +403,16 @@ export class AttractionsService {
         amenity_types (
           key
         )
-      `,
+      `
       )
       .eq('attraction_id', data.id);
 
     // Cast to handle Supabase FK join typing (single record, not array)
-    const attractionType = data.attraction_types as unknown as { key: string; name: string; icon: string } | null;
+    const attractionType = data.attraction_types as unknown as {
+      key: string;
+      name: string;
+      icon: string;
+    } | null;
 
     return {
       id: data.id,
@@ -458,7 +461,7 @@ export class AttractionsService {
           name,
           icon
         )
-      `,
+      `
       )
       .in('status', ['published', 'active']);
 
@@ -489,17 +492,13 @@ export class AttractionsService {
 
     // Filter by city/state if provided
     if (filters?.city) {
-      results = results.filter(
-        (a: any) =>
-          a.city?.toLowerCase().includes(filters.city!.toLowerCase()),
+      results = results.filter((a: any) =>
+        a.city?.toLowerCase().includes(filters.city?.toLowerCase())
       );
     }
 
     if (filters?.state) {
-      results = results.filter(
-        (a: any) =>
-          a.state?.toLowerCase() === filters.state!.toLowerCase(),
-      );
+      results = results.filter((a: any) => a.state?.toLowerCase() === filters.state?.toLowerCase());
     }
 
     return {

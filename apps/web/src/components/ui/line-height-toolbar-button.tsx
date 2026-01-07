@@ -1,13 +1,12 @@
 'use client';
 
-import * as React from 'react';
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, WrapText } from 'lucide-react';
 import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -43,9 +42,7 @@ export function LineHeightToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(newValue) => {
-            editor
-              .getTransforms(LineHeightPlugin)
-              .lineHeight.setNodes(Number(newValue));
+            editor.getTransforms(LineHeightPlugin).lineHeight.setNodes(Number(newValue));
             editor.tf.focus();
           }}
         >

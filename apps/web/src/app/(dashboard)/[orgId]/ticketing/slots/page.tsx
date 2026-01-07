@@ -1,31 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Calendar, Clock, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { Plus, Clock, Calendar, MoreHorizontal, Trash2 } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -43,6 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
@@ -75,9 +69,7 @@ export default function TimeSlotsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [resolvedOrgId, setResolvedOrgId] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0] ?? ''
-  );
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0] ?? '');
 
   // Single slot form
   const [formData, setFormData] = useState({
@@ -112,7 +104,7 @@ export default function TimeSlotsPage() {
       setIsLoading(false);
     }
     init();
-  }, [orgIdentifier]);
+  }, [orgIdentifier, loadAttractions, loadTimeSlots]);
 
   async function loadTimeSlots(orgId: string, date?: string) {
     try {
@@ -121,9 +113,7 @@ export default function TimeSlotsPage() {
         `/organizations/${orgId}/time-slots?date=${dateFilter}&includeInactive=true`
       );
       setTimeSlots(response?.data || []);
-    } catch (error) {
-      console.error('Failed to load time slots:', error);
-    }
+    } catch (_error) {}
   }
 
   async function loadAttractions(orgId: string) {
@@ -132,14 +122,12 @@ export default function TimeSlotsPage() {
         `/organizations/${orgId}/attractions`
       );
       setAttractions(response?.data || []);
-    } catch (error) {
-      console.error('Failed to load attractions:', error);
-    }
+    } catch (_error) {}
   }
 
   function formatTime(time: string): string {
     const [hours, minutes] = time.split(':');
-    const h = parseInt(hours || '0');
+    const h = parseInt(hours || '0', 10);
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 || 12;
     return `${h12}:${minutes} ${ampm}`;
@@ -184,9 +172,9 @@ export default function TimeSlotsPage() {
     const payload = {
       attractionId: formData.attractionId,
       date: formData.date,
-      startTime: formData.startTime + ':00',
-      endTime: formData.endTime + ':00',
-      capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
+      startTime: `${formData.startTime}:00`,
+      endTime: `${formData.endTime}:00`,
+      capacity: formData.capacity ? parseInt(formData.capacity, 10) : undefined,
       priceModifier: formData.priceModifier
         ? Math.round(parseFloat(formData.priceModifier) * 100)
         : undefined,
@@ -198,7 +186,7 @@ export default function TimeSlotsPage() {
       toast({ title: 'Time slot created' });
       setIsDialogOpen(false);
       await loadTimeSlots(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to create time slot',
@@ -214,10 +202,10 @@ export default function TimeSlotsPage() {
       attractionId: bulkFormData.attractionId,
       startDate: bulkFormData.startDate,
       endDate: bulkFormData.endDate,
-      startTime: bulkFormData.startTime + ':00',
-      endTime: bulkFormData.endTime + ':00',
-      intervalMinutes: parseInt(bulkFormData.intervalMinutes),
-      capacity: bulkFormData.capacity ? parseInt(bulkFormData.capacity) : undefined,
+      startTime: `${bulkFormData.startTime}:00`,
+      endTime: `${bulkFormData.endTime}:00`,
+      intervalMinutes: parseInt(bulkFormData.intervalMinutes, 10),
+      capacity: bulkFormData.capacity ? parseInt(bulkFormData.capacity, 10) : undefined,
       daysOfWeek: bulkFormData.daysOfWeek,
     };
 
@@ -229,7 +217,7 @@ export default function TimeSlotsPage() {
       toast({ title: `Created ${result?.created || 0} time slots` });
       setIsBulkDialogOpen(false);
       await loadTimeSlots(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to create time slots',
@@ -242,15 +230,14 @@ export default function TimeSlotsPage() {
     if (!resolvedOrgId) return;
 
     try {
-      await apiClient.patch(
-        `/organizations/${resolvedOrgId}/time-slots/${slot.id}`,
-        { isActive: !slot.is_active }
-      );
+      await apiClient.patch(`/organizations/${resolvedOrgId}/time-slots/${slot.id}`, {
+        isActive: !slot.is_active,
+      });
       toast({
         title: slot.is_active ? 'Time slot deactivated' : 'Time slot activated',
       });
       await loadTimeSlots(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to update time slot',
@@ -267,7 +254,7 @@ export default function TimeSlotsPage() {
       await apiClient.delete(`/organizations/${resolvedOrgId}/time-slots/${slot.id}`);
       toast({ title: 'Time slot deleted' });
       await loadTimeSlots(resolvedOrgId);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Cannot delete time slot with existing bookings',
@@ -305,9 +292,7 @@ export default function TimeSlotsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Time Slots</h1>
-          <p className="text-muted-foreground">
-            Manage timed entry slots and capacity limits.
-          </p>
+          <p className="text-muted-foreground">Manage timed entry slots and capacity limits.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={openBulkDialog}>
@@ -328,7 +313,7 @@ export default function TimeSlotsPage() {
               <CardTitle>Time Slots</CardTitle>
               <CardDescription>
                 {timeSlots.length} slot{timeSlots.length !== 1 ? 's' : ''} for{' '}
-                {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                {new Date(`${selectedDate}T00:00:00`).toLocaleDateString('en-US', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
@@ -377,18 +362,12 @@ export default function TimeSlotsPage() {
                     </TableCell>
                     <TableCell>{slot.attraction?.name || '—'}</TableCell>
                     <TableCell>
-                      {slot.label || (
-                        <span className="text-muted-foreground">—</span>
-                      )}
+                      {slot.label || <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-right">
                       {slot.capacity ? (
                         <span
-                          className={
-                            slot.booked_count >= slot.capacity
-                              ? 'text-destructive'
-                              : ''
-                          }
+                          className={slot.booked_count >= slot.capacity ? 'text-destructive' : ''}
                         >
                           {slot.booked_count} / {slot.capacity}
                         </span>
@@ -399,11 +378,7 @@ export default function TimeSlotsPage() {
                     <TableCell className="text-right">
                       {slot.price_modifier !== 0 ? (
                         <span
-                          className={
-                            slot.price_modifier > 0
-                              ? 'text-green-600'
-                              : 'text-red-600'
-                          }
+                          className={slot.price_modifier > 0 ? 'text-green-600' : 'text-red-600'}
                         >
                           {formatPrice(slot.price_modifier)}
                         </span>
@@ -488,9 +463,7 @@ export default function TimeSlotsPage() {
                 <Input
                   type="time"
                   value={formData.startTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, startTime: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
@@ -498,9 +471,7 @@ export default function TimeSlotsPage() {
                 <Input
                   type="time"
                   value={formData.endTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endTime: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                 />
               </div>
             </div>
@@ -512,9 +483,7 @@ export default function TimeSlotsPage() {
                   type="number"
                   min="1"
                   value={formData.capacity}
-                  onChange={(e) =>
-                    setFormData({ ...formData, capacity: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                   placeholder="Unlimited"
                 />
               </div>
@@ -524,9 +493,7 @@ export default function TimeSlotsPage() {
                   type="number"
                   step="0.01"
                   value={formData.priceModifier}
-                  onChange={(e) =>
-                    setFormData({ ...formData, priceModifier: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, priceModifier: e.target.value })}
                   placeholder="0.00"
                 />
               </div>
@@ -556,9 +523,7 @@ export default function TimeSlotsPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Bulk Create Time Slots</DialogTitle>
-            <DialogDescription>
-              Generate multiple time slots across a date range.
-            </DialogDescription>
+            <DialogDescription>Generate multiple time slots across a date range.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
@@ -566,9 +531,7 @@ export default function TimeSlotsPage() {
               <Label>Attraction</Label>
               <Select
                 value={bulkFormData.attractionId}
-                onValueChange={(v) =>
-                  setBulkFormData({ ...bulkFormData, attractionId: v })
-                }
+                onValueChange={(v) => setBulkFormData({ ...bulkFormData, attractionId: v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select attraction" />
@@ -589,9 +552,7 @@ export default function TimeSlotsPage() {
                 <Input
                   type="date"
                   value={bulkFormData.startDate}
-                  onChange={(e) =>
-                    setBulkFormData({ ...bulkFormData, startDate: e.target.value })
-                  }
+                  onChange={(e) => setBulkFormData({ ...bulkFormData, startDate: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
@@ -599,9 +560,7 @@ export default function TimeSlotsPage() {
                 <Input
                   type="date"
                   value={bulkFormData.endDate}
-                  onChange={(e) =>
-                    setBulkFormData({ ...bulkFormData, endDate: e.target.value })
-                  }
+                  onChange={(e) => setBulkFormData({ ...bulkFormData, endDate: e.target.value })}
                 />
               </div>
             </div>
@@ -612,9 +571,7 @@ export default function TimeSlotsPage() {
                 <Input
                   type="time"
                   value={bulkFormData.startTime}
-                  onChange={(e) =>
-                    setBulkFormData({ ...bulkFormData, startTime: e.target.value })
-                  }
+                  onChange={(e) => setBulkFormData({ ...bulkFormData, startTime: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
@@ -622,18 +579,14 @@ export default function TimeSlotsPage() {
                 <Input
                   type="time"
                   value={bulkFormData.endTime}
-                  onChange={(e) =>
-                    setBulkFormData({ ...bulkFormData, endTime: e.target.value })
-                  }
+                  onChange={(e) => setBulkFormData({ ...bulkFormData, endTime: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
                 <Label>Interval (min)</Label>
                 <Select
                   value={bulkFormData.intervalMinutes}
-                  onValueChange={(v) =>
-                    setBulkFormData({ ...bulkFormData, intervalMinutes: v })
-                  }
+                  onValueChange={(v) => setBulkFormData({ ...bulkFormData, intervalMinutes: v })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -655,9 +608,7 @@ export default function TimeSlotsPage() {
                   <Button
                     key={day}
                     type="button"
-                    variant={
-                      bulkFormData.daysOfWeek.includes(idx) ? 'default' : 'outline'
-                    }
+                    variant={bulkFormData.daysOfWeek.includes(idx) ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => toggleDayOfWeek(idx)}
                   >
@@ -673,9 +624,7 @@ export default function TimeSlotsPage() {
                 type="number"
                 min="1"
                 value={bulkFormData.capacity}
-                onChange={(e) =>
-                  setBulkFormData({ ...bulkFormData, capacity: e.target.value })
-                }
+                onChange={(e) => setBulkFormData({ ...bulkFormData, capacity: e.target.value })}
                 placeholder="Unlimited"
               />
             </div>

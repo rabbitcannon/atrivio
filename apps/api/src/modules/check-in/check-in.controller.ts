@@ -1,38 +1,38 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseInterceptors,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
   Req,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
 import { CheckInService } from './check-in.service.js';
-import { StationsService } from './stations.service.js';
-import {
-  ScanCheckInDto,
+import type {
+  GetQueueQueryDto,
+  GetStatsQueryDto,
+  ListCheckInsQueryDto,
   LookupDto,
   RecordWaiverDto,
+  ScanCheckInDto,
   WalkUpSaleDto,
-  ListCheckInsQueryDto,
-  GetStatsQueryDto,
-  GetQueueQueryDto,
 } from './dto/check-in.dto.js';
-import { CreateStationDto, UpdateStationDto } from './dto/station.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
-import { Feature } from '../../core/features/decorators/feature.decorator.js';
-import type { FastifyRequest } from 'fastify';
+import type { CreateStationDto, UpdateStationDto } from './dto/station.dto.js';
+import { StationsService } from './stations.service.js';
 
 @ApiTags('Check-In')
 @Controller('organizations/:orgId/attractions/:attractionId/check-in')
@@ -43,7 +43,7 @@ import type { FastifyRequest } from 'fastify';
 export class CheckInController {
   constructor(
     private checkInService: CheckInService,
-    private stationsService: StationsService,
+    private stationsService: StationsService
   ) {}
 
   // ============== Check-In Operations ==============
@@ -56,7 +56,7 @@ export class CheckInController {
   async scanCheckIn(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: ScanCheckInDto,
+    @Body() dto: ScanCheckInDto
   ) {
     return this.checkInService.scanCheckIn(ctx.orgId, attractionId, ctx.userId, dto);
   }
@@ -69,7 +69,7 @@ export class CheckInController {
   async lookup(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: LookupDto,
+    @Body() dto: LookupDto
   ) {
     return this.checkInService.lookup(ctx.orgId, attractionId, dto);
   }
@@ -83,7 +83,7 @@ export class CheckInController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Body() dto: RecordWaiverDto,
-    @Req() req: FastifyRequest,
+    @Req() req: FastifyRequest
   ) {
     const ipAddress = req.ip || req.headers['x-forwarded-for']?.toString();
     const userAgent = req.headers['user-agent'];
@@ -94,10 +94,7 @@ export class CheckInController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Get current capacity' })
-  async getCapacity(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async getCapacity(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.checkInService.getCapacity(ctx.orgId, attractionId);
   }
 
@@ -108,7 +105,7 @@ export class CheckInController {
   async getStats(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Query() query: GetStatsQueryDto,
+    @Query() query: GetStatsQueryDto
   ) {
     return this.checkInService.getStats(ctx.orgId, attractionId, query);
   }
@@ -120,7 +117,7 @@ export class CheckInController {
   async getQueue(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Query() query: GetQueueQueryDto,
+    @Query() query: GetQueueQueryDto
   ) {
     return this.checkInService.getQueue(ctx.orgId, attractionId, query);
   }
@@ -132,7 +129,7 @@ export class CheckInController {
   async walkUpSale(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: WalkUpSaleDto,
+    @Body() dto: WalkUpSaleDto
   ) {
     return this.checkInService.walkUpSale(ctx.orgId, attractionId, ctx.userId, dto);
   }
@@ -144,7 +141,7 @@ export class CheckInController {
   async listCheckIns(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Query() query: ListCheckInsQueryDto,
+    @Query() query: ListCheckInsQueryDto
   ) {
     return this.checkInService.listCheckIns(ctx.orgId, attractionId, query);
   }
@@ -155,10 +152,7 @@ export class CheckInController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'List check-in stations' })
-  async listStations(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async listStations(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.stationsService.listStations(ctx.orgId, attractionId);
   }
 
@@ -169,7 +163,7 @@ export class CheckInController {
   async getStation(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Param('stationId') stationId: string,
+    @Param('stationId') stationId: string
   ) {
     return this.stationsService.getStation(ctx.orgId, attractionId, stationId);
   }
@@ -181,7 +175,7 @@ export class CheckInController {
   async createStation(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: CreateStationDto,
+    @Body() dto: CreateStationDto
   ) {
     return this.stationsService.createStation(ctx.orgId, attractionId, dto);
   }
@@ -194,7 +188,7 @@ export class CheckInController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Param('stationId') stationId: string,
-    @Body() dto: UpdateStationDto,
+    @Body() dto: UpdateStationDto
   ) {
     return this.stationsService.updateStation(ctx.orgId, attractionId, stationId, dto);
   }
@@ -206,7 +200,7 @@ export class CheckInController {
   async deleteStation(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Param('stationId') stationId: string,
+    @Param('stationId') stationId: string
   ) {
     return this.stationsService.deleteStation(ctx.orgId, attractionId, stationId);
   }

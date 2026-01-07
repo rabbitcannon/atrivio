@@ -3,7 +3,15 @@
 // =============================================================================
 
 export type ContentFormat = 'markdown' | 'html' | 'plain';
-export type PageType = 'home' | 'about' | 'faq' | 'contact' | 'rules' | 'jobs' | 'gallery' | 'custom';
+export type PageType =
+  | 'home'
+  | 'about'
+  | 'faq'
+  | 'contact'
+  | 'rules'
+  | 'jobs'
+  | 'gallery'
+  | 'custom';
 export type PageStatus = 'draft' | 'published' | 'archived';
 export type DomainType = 'subdomain' | 'custom';
 export type DomainStatus = 'pending' | 'verifying' | 'active' | 'failed' | 'expired';
@@ -18,9 +26,9 @@ export type AnnouncementType = 'info' | 'warning' | 'critical' | 'success' | 'pr
 // Settings DTOs
 // =============================================================================
 
-import { IsString, IsOptional, IsBoolean, IsObject, ValidateNested, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 
 class HeroConfigDto {
   @ApiPropertyOptional()
@@ -277,7 +285,9 @@ export class CreatePageDto {
   @IsString()
   content_format?: ContentFormat;
 
-  @ApiPropertyOptional({ enum: ['home', 'about', 'faq', 'contact', 'rules', 'jobs', 'gallery', 'custom'] })
+  @ApiPropertyOptional({
+    enum: ['home', 'about', 'faq', 'contact', 'rules', 'jobs', 'gallery', 'custom'],
+  })
   @IsOptional()
   @IsString()
   page_type?: PageType;

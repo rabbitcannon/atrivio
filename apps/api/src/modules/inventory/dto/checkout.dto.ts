@@ -1,14 +1,6 @@
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsInt,
-  IsDateString,
-  Min,
-  Matches,
-} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Matches, Min } from 'class-validator';
 import { ItemCondition } from './inventory.dto.js';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

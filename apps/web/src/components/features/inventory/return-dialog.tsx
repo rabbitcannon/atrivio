@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -19,9 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { returnInventoryCheckout, type InventoryCheckout } from '@/lib/api/client';
+import { Textarea } from '@/components/ui/textarea';
+import { type InventoryCheckout, returnInventoryCheckout } from '@/lib/api/client';
 
 interface ReturnDialogProps {
   orgId: string;
@@ -39,13 +39,7 @@ const CONDITION_OPTIONS = [
   { value: 'damaged', label: 'Damaged' },
 ];
 
-export function ReturnDialog({
-  orgId,
-  checkout,
-  open,
-  onOpenChange,
-  onSaved,
-}: ReturnDialogProps) {
+export function ReturnDialog({ orgId, checkout, open, onOpenChange, onSaved }: ReturnDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -116,7 +110,9 @@ export function ReturnDialog({
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Condition Out:</span>
-                  <span className="font-medium capitalize">{checkout.condition_out || 'Unknown'}</span>
+                  <span className="font-medium capitalize">
+                    {checkout.condition_out || 'Unknown'}
+                  </span>
                 </div>
               </div>
             )}

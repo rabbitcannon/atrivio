@@ -1,12 +1,8 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import type { UserId } from '@haunt/shared';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TenancyService } from '../tenancy.service.js';
-import type { OrgId, UserId } from '@haunt/shared';
 
 export const SKIP_TENANT_CHECK = 'skipTenantCheck';
 
@@ -25,7 +21,7 @@ export const SKIP_TENANT_CHECK = 'skipTenantCheck';
 export class TenantGuard implements CanActivate {
   constructor(
     private tenancyService: TenancyService,
-    private reflector: Reflector,
+    private reflector: Reflector
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -84,10 +80,7 @@ export class TenantGuard implements CanActivate {
     }
 
     // Resolve tenant context for regular users
-    const tenant = await this.tenancyService.resolveTenantContext(
-      user.id as UserId,
-      orgId,
-    );
+    const tenant = await this.tenancyService.resolveTenantContext(user.id as UserId, orgId);
 
     // Attach to request for use in controllers
     request.tenant = tenant;

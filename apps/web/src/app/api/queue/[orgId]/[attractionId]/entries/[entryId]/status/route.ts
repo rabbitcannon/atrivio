@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { updateQueueEntryStatus } from '@/lib/api';
 
 export async function PATCH(
@@ -25,11 +25,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(result.data);
-  } catch (error) {
-    console.error('Update entry status error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

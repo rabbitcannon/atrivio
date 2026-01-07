@@ -1,6 +1,6 @@
+import type { OrgId, OrgRole } from '@haunt/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { OrgId, OrgRole } from '@haunt/shared';
 
 export interface Organization {
   id: OrgId;

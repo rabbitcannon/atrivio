@@ -1,16 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Bell, LogOut, Settings, User } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import atrivioLogo from '@/assets/images/atrivio-logo.png';
-import { createClient } from '@/lib/supabase/client';
-import { useUser } from '@/hooks/use-user';
-import { useAuthStore } from '@/stores/auth-store';
-import { useOrgStore } from '@/stores/org-store';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +17,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useUser } from '@/hooks/use-user';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useOrgStore } from '@/stores/org-store';
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -60,12 +60,7 @@ export function DashboardHeader() {
     <header className="flex h-20 items-center justify-between border-b bg-card px-6">
       {/* Logo */}
       <Link href="/" className="flex items-center">
-        <Image
-          src={atrivioLogo}
-          alt="Atrivio"
-          className="h-15 w-auto object-contain"
-          priority
-        />
+        <Image src={atrivioLogo} alt="Atrivio" className="h-15 w-auto object-contain" priority />
       </Link>
 
       {/* Actions */}

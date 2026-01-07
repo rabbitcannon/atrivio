@@ -19,8 +19,7 @@ export function CertificationList({ certifications }: CertificationListProps) {
       {certifications.map((cert) => {
         const isExpired = new Date(cert.expiresAt) < new Date();
         const isExpiringSoon =
-          !isExpired &&
-          new Date(cert.expiresAt) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          !isExpired && new Date(cert.expiresAt) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
         return (
           <div key={cert.name} className="flex items-center justify-between">

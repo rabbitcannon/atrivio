@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
+  adminClient,
   closeTestApp,
-  loginTestUser,
+  createTestApp,
   createTestUser,
   deleteTestUser,
-  adminClient,
-  TEST_USERS,
+  loginTestUser,
   TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch, del } from '../helpers/request.js';
+import { get, patch, post } from '../helpers/request.js';
 
 describe('Organizations & Membership (E2E)', () => {
   beforeAll(async () => {
@@ -24,10 +24,9 @@ describe('Organizations & Membership (E2E)', () => {
     it('should list organizations user is a member of', async () => {
       const user = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get<{ data: Array<{ id: string; name: string }> }>(
-        '/organizations',
-        { token: user.accessToken }
-      );
+      const response = await get<{ data: Array<{ id: string; name: string }> }>('/organizations', {
+        token: user.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body.data)).toBe(true);
@@ -112,7 +111,7 @@ describe('Organizations & Membership (E2E)', () => {
         .like('slug', 'test-org-%');
 
       if (testOrgs && testOrgs.length > 0) {
-        const testOrgIds = testOrgs.map(o => o.id);
+        const testOrgIds = testOrgs.map((o) => o.id);
 
         // First, clear is_owner flag to bypass the trigger that prevents owner deletion
         await adminClient
@@ -121,10 +120,7 @@ describe('Organizations & Membership (E2E)', () => {
           .in('org_id', testOrgIds);
 
         // Now delete the test organizations (CASCADE will handle memberships)
-        await adminClient
-          .from('organizations')
-          .delete()
-          .in('id', testOrgIds);
+        await adminClient.from('organizations').delete().in('id', testOrgIds);
       }
     });
 

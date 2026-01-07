@@ -1,14 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
-import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-
 import { useDraggable, useDropLine } from '@platejs/dnd';
-import {
-  BlockSelectionPlugin,
-  useBlockSelected,
-} from '@platejs/selection/react';
+import { BlockSelectionPlugin, useBlockSelected } from '@platejs/selection/react';
 import { setCellBackground } from '@platejs/table';
 import {
   TablePlugin,
@@ -19,6 +12,7 @@ import {
   useTableElement,
   useTableMergeState,
 } from '@platejs/table/react';
+import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cva } from 'class-variance-authority';
 import {
@@ -36,21 +30,22 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  KEYS,
+  PathApi,
   type TElement,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  KEYS,
-  PathApi,
 } from 'platejs';
 import {
-  type PlateElementProps,
   PlateElement,
+  type PlateElementProps,
   useComposedRef,
   useEditorPlugin,
   useEditorRef,
   useEditorSelector,
   useElement,
+  useElementSelector,
   useFocusedLast,
   usePluginOption,
   useReadOnly,
@@ -58,7 +53,7 @@ import {
   useSelected,
   withHOC,
 } from 'platejs/react';
-import { useElementSelector } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -74,10 +69,7 @@ import { Popover, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib/utils/cn';
 
 import { blockSelectionVariants } from './block-selection';
-import {
-  ColorDropdownMenuItems,
-  DEFAULT_COLORS,
-} from './font-color-toolbar-button';
+import { ColorDropdownMenuItems, DEFAULT_COLORS } from './font-color-toolbar-button';
 import { ResizeHandle } from './resize-handle';
 import {
   BorderAllIcon,
@@ -87,29 +79,14 @@ import {
   BorderRightIcon,
   BorderTopIcon,
 } from './table-icons';
-import {
-  Toolbar,
-  ToolbarButton,
-  ToolbarGroup,
-  ToolbarMenuGroup,
-} from './toolbar';
+import { Toolbar, ToolbarButton, ToolbarGroup, ToolbarMenuGroup } from './toolbar';
 export const TableElement = withHOC(
   TableProvider,
-  function TableElement({
-    children,
-    ...props
-  }: PlateElementProps<TTableElement>) {
+  function TableElement({ children, ...props }: PlateElementProps<TTableElement>) {
     const readOnly = useReadOnly();
-    const isSelectionAreaVisible = usePluginOption(
-      BlockSelectionPlugin,
-      'isSelectionAreaVisible'
-    );
+    const isSelectionAreaVisible = usePluginOption(BlockSelectionPlugin, 'isSelectionAreaVisible');
     const hasControls = !readOnly && !isSelectionAreaVisible;
-    const {
-      isSelectingCell,
-      marginLeft,
-      props: tableProps,
-    } = useTableElement();
+    const { isSelectingCell, marginLeft, props: tableProps } = useTableElement();
 
     const isSelectingTable = useBlockSelected(props.element.id as string);
 
@@ -133,9 +110,7 @@ export const TableElement = withHOC(
             <tbody className="min-w-full">{children}</tbody>
           </table>
 
-          {isSelectingTable && (
-            <div className={blockSelectionVariants()} contentEditable={false} />
-          )}
+          {isSelectingTable && <div className={blockSelectionVariants()} contentEditable={false} />}
         </div>
       </PlateElement>
     );
@@ -148,10 +123,7 @@ export const TableElement = withHOC(
   }
 );
 
-function TableFloatingToolbar({
-  children,
-  ...props
-}: React.ComponentProps<typeof PopoverContent>) {
+function TableFloatingToolbar({ children, ...props }: React.ComponentProps<typeof PopoverContent>) {
   const { tf } = useEditorPlugin(TablePlugin);
   const selected = useSelected();
   const element = useElement<TTableElement>();
@@ -165,10 +137,7 @@ function TableFloatingToolbar({
   const { canMerge, canSplit } = useTableMergeState();
 
   return (
-    <Popover
-      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
-      modal={false}
-    >
+    <Popover open={isFocusedLast && (canMerge || canSplit || collapsedInside)} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         asChild
@@ -370,13 +339,7 @@ function TableBordersDropdownMenuContent(
   );
 }
 
-function ColorDropdownMenu({
-  children,
-  tooltip,
-}: {
-  children: React.ReactNode;
-  tooltip: string;
-}) {
+function ColorDropdownMenu({ children, tooltip }: { children: React.ReactNode; tooltip: string }) {
   const [open, setOpen] = React.useState(false);
 
   const editor = useEditorRef();
@@ -423,28 +386,19 @@ function ColorDropdownMenu({
   );
 }
 
-export function TableRowElement({
-  children,
-  ...props
-}: PlateElementProps<TTableRowElement>) {
+export function TableRowElement({ children, ...props }: PlateElementProps<TTableRowElement>) {
   const { element } = props;
   const readOnly = useReadOnly();
   const selected = useSelected();
   const editor = useEditorRef();
-  const isSelectionAreaVisible = usePluginOption(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
+  const isSelectionAreaVisible = usePluginOption(BlockSelectionPlugin, 'isSelectionAreaVisible');
   const hasControls = !readOnly && !isSelectionAreaVisible;
 
   const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
     type: element.type,
     canDropNode: ({ dragEntry, dropEntry }) =>
-      PathApi.equals(
-        PathApi.parent(dragEntry[1]),
-        PathApi.parent(dropEntry[1])
-      ),
+      PathApi.equals(PathApi.parent(dragEntry[1]), PathApi.parent(dropEntry[1])),
     onDropHandler: (_, { dragItem }) => {
       const dragElement = (dragItem as { element: TElement }).element;
 
@@ -532,20 +486,16 @@ export function TableCellElement({
   });
   const isSelectingTable = useBlockSelected(tableId);
   const isSelectingRow = useBlockSelected(rowId) || isSelectingTable;
-  const isSelectionAreaVisible = usePluginOption(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
+  const isSelectionAreaVisible = usePluginOption(BlockSelectionPlugin, 'isSelectionAreaVisible');
 
   const { borders, colIndex, colSpan, minHeight, rowIndex, selected, width } =
     useTableCellElement();
 
-  const { bottomProps, hiddenLeft, leftProps, rightProps } =
-    useTableCellElementResizable({
-      colIndex,
-      colSpan,
-      rowIndex,
-    });
+  const { bottomProps, hiddenLeft, leftProps, rightProps } = useTableCellElementResizable({
+    colIndex,
+    colSpan,
+    rowIndex,
+  });
 
   return (
     <PlateElement
@@ -576,10 +526,7 @@ export function TableCellElement({
         rowSpan: api.table.getRowSpan(element),
       }}
     >
-      <div
-        className="relative z-20 box-border h-full px-3 py-2"
-        style={{ minHeight }}
-      >
+      <div className="relative z-20 box-border h-full px-3 py-2" style={{ minHeight }}>
         {props.children}
       </div>
 
@@ -626,16 +573,12 @@ export function TableCellElement({
         </div>
       )}
 
-      {isSelectingRow && (
-        <div className={blockSelectionVariants()} contentEditable={false} />
-      )}
+      {isSelectingRow && <div className={blockSelectionVariants()} contentEditable={false} />}
     </PlateElement>
   );
 }
 
-export function TableCellHeaderElement(
-  props: React.ComponentProps<typeof TableCellElement>
-) {
+export function TableCellHeaderElement(props: React.ComponentProps<typeof TableCellElement>) {
   return <TableCellElement {...props} isHeader />;
 }
 

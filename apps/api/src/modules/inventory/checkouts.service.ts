@@ -1,14 +1,10 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
   CreateCheckoutDto,
-  ReturnCheckoutDto,
   ListCheckoutsQueryDto,
+  ReturnCheckoutDto,
 } from './dto/checkout.dto.js';
 
 @Injectable()
@@ -22,13 +18,16 @@ export class CheckoutsService {
 
     let qb = this.supabase.adminClient
       .from('inventory_checkouts')
-      .select(`
+      .select(
+        `
         *,
         item:inventory_items(id, name, sku),
         staff:staff_profiles(id),
         checked_out_by_user:profiles!inventory_checkouts_checked_out_by_fkey(id, first_name, last_name),
         returned_by_user:profiles!inventory_checkouts_returned_by_fkey(id, first_name, last_name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .eq('org_id', orgId)
       .order('checked_out_at', { ascending: false });
 

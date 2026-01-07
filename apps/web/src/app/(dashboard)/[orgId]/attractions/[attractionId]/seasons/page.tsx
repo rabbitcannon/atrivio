@@ -1,13 +1,12 @@
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { SeasonForm } from '@/components/features/attractions/season-form';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { SeasonForm } from '@/components/features/attractions/season-form';
-import { resolveOrgId, getAttraction, getAttractionSeasons } from '@/lib/api';
+import { getAttraction, getAttractionSeasons, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Seasons',
@@ -74,9 +73,7 @@ export default async function SeasonsPage({ params }: SeasonsPageProps) {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">Seasons</h1>
-          <p className="text-muted-foreground">
-            Manage operating seasons for {attraction.name}.
-          </p>
+          <p className="text-muted-foreground">Manage operating seasons for {attraction.name}.</p>
         </div>
       </div>
 
@@ -96,9 +93,7 @@ export default async function SeasonsPage({ params }: SeasonsPageProps) {
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{season.name}</CardTitle>
-                    <Badge variant={getStatusVariant(season.status)}>
-                      {season.status}
-                    </Badge>
+                    <Badge variant={getStatusVariant(season.status)}>{season.status}</Badge>
                   </div>
                   <CardDescription>
                     {new Date(season.start_date).toLocaleDateString()} -{' '}

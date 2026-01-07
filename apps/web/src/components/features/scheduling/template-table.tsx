@@ -1,14 +1,8 @@
 'use client';
 
+import { AlertCircle, Copy, Edit, MoreHorizontal, Play, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,26 +19,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  MoreHorizontal,
-  Plus,
-  Edit,
-  Trash2,
-  AlertCircle,
-  Copy,
-  Play,
-} from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  getShiftTemplates,
-  getAttractions,
-  deleteShiftTemplate,
-  type ShiftTemplate,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   type AttractionListItem,
+  deleteShiftTemplate,
+  getAttractions,
+  getShiftTemplates,
+  type ShiftTemplate,
 } from '@/lib/api/client';
-import { TemplateFormDialog } from './template-form-dialog';
 import { GenerateSchedulesDialog } from './generate-schedules-dialog';
+import { TemplateFormDialog } from './template-form-dialog';
 
 interface TemplateTableProps {
   orgId: string;
@@ -70,12 +62,24 @@ function TemplateTableSkeleton() {
         <TableBody>
           {[1, 2, 3].map((i) => (
             <TableRow key={i}>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-28" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-8" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-8" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -109,7 +113,7 @@ export function TemplateTable({ orgId, orgSlug }: TemplateTableProps) {
       if (data?.data) {
         setAttractions(data.data);
         if (data.data.length > 0 && !selectedAttraction) {
-          setSelectedAttraction(data.data[0]!.id);
+          setSelectedAttraction(data.data[0]?.id);
         }
       }
       if (apiError) {

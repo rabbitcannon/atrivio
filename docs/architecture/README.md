@@ -19,8 +19,8 @@ The Attraction Platform is a multi-tenant SaaS application for the attractions i
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 14 (App Router), React 18, Tailwind CSS v4 |
-| Backend | NestJS 10+ with Fastify adapter |
+| Frontend | Next.js 15 (App Router), React 19, Tailwind CSS v4 |
+| Backend | NestJS 11+ with Fastify adapter |
 | Database | Supabase (PostgreSQL with RLS) |
 | Auth | Supabase Auth (PKCE flow) |
 | Payments | Stripe Connect (Express accounts) |

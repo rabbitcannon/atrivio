@@ -1,20 +1,20 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
-  Users,
-  Settings,
-  BarChart3,
-  Play,
-  Pause,
-  Clock,
-  CheckCircle2,
   AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Pause,
+  Play,
+  Settings,
   UserCheck,
+  Users,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { resolveOrgId, getAttractions, getQueueConfig, getQueueEntries } from '@/lib/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getAttractions, getQueueConfig, getQueueEntries, resolveOrgId } from '@/lib/api';
 import type { QueueConfig, QueueEntriesResponse } from '@/lib/api/types';
 
 export const metadata: Metadata = {
@@ -80,7 +80,12 @@ export default async function QueuePage({ params }: QueuePageProps) {
   const getStatusBadge = () => {
     if (!queueConfig) return <Badge variant="secondary">Not Configured</Badge>;
     if (!isActive) return <Badge variant="secondary">Inactive</Badge>;
-    if (isPaused) return <Badge variant="outline" className="text-amber-600">Paused</Badge>;
+    if (isPaused)
+      return (
+        <Badge variant="outline" className="text-amber-600">
+          Paused
+        </Badge>
+      );
     return <Badge className="bg-green-500">Active</Badge>;
   };
 
@@ -89,13 +94,9 @@ export default async function QueuePage({ params }: QueuePageProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Virtual Queue</h1>
-          <p className="text-muted-foreground">
-            Manage virtual queues for your attractions.
-          </p>
+          <p className="text-muted-foreground">Manage virtual queues for your attractions.</p>
         </div>
-        <div className="flex items-center gap-2">
-          {getStatusBadge()}
-        </div>
+        <div className="flex items-center gap-2">{getStatusBadge()}</div>
       </div>
 
       {/* Quick Stats */}
@@ -106,12 +107,8 @@ export default async function QueuePage({ params }: QueuePageProps) {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {queueSummary?.totalWaiting ?? '--'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Guests in queue
-            </p>
+            <div className="text-2xl font-bold">{queueSummary?.totalWaiting ?? '--'}</div>
+            <p className="text-xs text-muted-foreground">Guests in queue</p>
           </CardContent>
         </Card>
         <Card>
@@ -125,9 +122,7 @@ export default async function QueuePage({ params }: QueuePageProps) {
                 ? `${Math.round(queueSummary.avgWaitMinutes)} min`
                 : '--'}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Current estimate
-            </p>
+            <p className="text-xs text-muted-foreground">Current estimate</p>
           </CardContent>
         </Card>
         <Card>
@@ -136,12 +131,8 @@ export default async function QueuePage({ params }: QueuePageProps) {
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {queueSummary?.totalServedToday ?? '--'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Guests processed
-            </p>
+            <div className="text-2xl font-bold">{queueSummary?.totalServedToday ?? '--'}</div>
+            <p className="text-xs text-muted-foreground">Guests processed</p>
           </CardContent>
         </Card>
         <Card>
@@ -152,12 +143,13 @@ export default async function QueuePage({ params }: QueuePageProps) {
           <CardContent>
             <div className="text-2xl font-bold">
               {queueSummary?.nextBatchTime
-                ? new Date(queueSummary.nextBatchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                ? new Date(queueSummary.nextBatchTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
                 : '--'}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Estimated time
-            </p>
+            <p className="text-xs text-muted-foreground">Estimated time</p>
           </CardContent>
         </Card>
       </div>
@@ -183,7 +175,8 @@ export default async function QueuePage({ params }: QueuePageProps) {
                   <div>
                     <h3 className="font-semibold">Queue is Active</h3>
                     <p className="text-sm text-muted-foreground">
-                      Accepting new guests. Batch size: {queueConfig.capacity_per_batch} every {queueConfig.batch_interval_minutes} minutes.
+                      Accepting new guests. Batch size: {queueConfig.capacity_per_batch} every{' '}
+                      {queueConfig.batch_interval_minutes} minutes.
                     </p>
                   </div>
                 </>

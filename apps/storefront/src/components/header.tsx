@@ -1,7 +1,7 @@
 'use client';
 
+import { Menu, Ticket, X } from 'lucide-react';
 import { useState } from 'react';
-import { Menu, X, Ticket } from 'lucide-react';
 import { useStorefront } from '@/lib/storefront-context';
 import { cn } from '@/lib/utils';
 import { StorefrontLink } from './storefront-link';

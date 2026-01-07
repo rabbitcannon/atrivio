@@ -1,11 +1,6 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 
-// Dynamic import with SSR disabled to avoid motion library hydration issues
-const LandingContent = dynamic(
-  () => import('@/components/home/landing-content').then((mod) => mod.LandingContent),
-  { ssr: false }
-);
+import { LandingPageClient } from '@/components/home/landing-page-client';
 
 export const metadata: Metadata = {
   title: 'Atrivio | The Complete Attractions Management Platform',
@@ -29,5 +24,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <LandingContent />;
+  return <LandingPageClient />;
 }

@@ -1,28 +1,28 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
-  CreditCard,
-  ArrowRight,
-  CheckCircle2,
   AlertCircle,
-  Clock,
+  ArrowRight,
+  ArrowUpDown,
   Ban,
+  CheckCircle2,
+  Clock,
+  CreditCard,
   DollarSign,
   TrendingUp,
-  ArrowUpDown,
   Wallet,
 } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { AutoSyncStatus } from '@/components/features/payments/auto-sync-status';
+import { RefreshStatusButton } from '@/components/features/payments/refresh-status-button';
+import { StripeConnectButton } from '@/components/features/payments/stripe-connect-button';
+import { SyncTransactionsButton } from '@/components/features/payments/sync-transactions-button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { resolveOrgId, getPaymentStatus, getTransactionSummary } from '@/lib/api';
-import { StripeConnectButton } from '@/components/features/payments/stripe-connect-button';
-import { RefreshStatusButton } from '@/components/features/payments/refresh-status-button';
-import { AutoSyncStatus } from '@/components/features/payments/auto-sync-status';
-import { SyncTransactionsButton } from '@/components/features/payments/sync-transactions-button';
+import { getPaymentStatus, getTransactionSummary, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Payments',
@@ -55,7 +55,9 @@ function getStatusIcon(status: string | null) {
   }
 }
 
-function getStatusBadgeVariant(status: string | null): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getStatusBadgeVariant(
+  status: string | null
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
       return 'default'; // Will be styled green via className
@@ -98,7 +100,8 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error loading payment status</AlertTitle>
           <AlertDescription>
-            {statusResult.error?.message || 'Failed to load payment information. Please try refreshing the page.'}
+            {statusResult.error?.message ||
+              'Failed to load payment information. Please try refreshing the page.'}
           </AlertDescription>
         </Alert>
       </div>
@@ -148,9 +151,7 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
                   {accountStatus.status.charAt(0).toUpperCase() + accountStatus.status.slice(1)}
                 </Badge>
               )}
-              {isConnected && !isActive && (
-                <RefreshStatusButton orgId={orgId} />
-              )}
+              {isConnected && !isActive && <RefreshStatusButton orgId={orgId} />}
             </div>
           </div>
         </CardHeader>
@@ -211,12 +212,8 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(summary.total_charges)}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Gross charges collected
-                </p>
+                <div className="text-2xl font-bold">{formatCurrency(summary.total_charges)}</div>
+                <p className="text-xs text-muted-foreground">Gross charges collected</p>
               </CardContent>
             </Card>
             <Card>
@@ -225,12 +222,8 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(summary.net_revenue)}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  After fees & refunds
-                </p>
+                <div className="text-2xl font-bold">{formatCurrency(summary.net_revenue)}</div>
+                <p className="text-xs text-muted-foreground">After fees & refunds</p>
               </CardContent>
             </Card>
             <Card>
@@ -239,12 +232,8 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
                 <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(summary.total_refunds)}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Refunded to customers
-                </p>
+                <div className="text-2xl font-bold">{formatCurrency(summary.total_refunds)}</div>
+                <p className="text-xs text-muted-foreground">Refunded to customers</p>
               </CardContent>
             </Card>
             <Card>
@@ -254,9 +243,7 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{summary.transaction_count}</div>
-                <p className="text-xs text-muted-foreground">
-                  Total processed
-                </p>
+                <p className="text-xs text-muted-foreground">Total processed</p>
               </CardContent>
             </Card>
           </div>

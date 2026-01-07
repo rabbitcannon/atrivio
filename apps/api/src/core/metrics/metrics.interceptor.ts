@@ -1,13 +1,13 @@
 import {
+  type CallHandler,
+  type ExecutionContext,
   Injectable,
   type NestInterceptor,
-  type ExecutionContext,
-  type CallHandler,
 } from '@nestjs/common';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from './metrics.service.js';
 
 /**
@@ -44,16 +44,11 @@ export class MetricsInterceptor implements NestInterceptor {
         const statusCode = error.status || error.statusCode || 500;
         this.recordMetric(path, method, statusCode, duration);
         return throwError(() => error);
-      }),
+      })
     );
   }
 
-  private recordMetric(
-    path: string,
-    method: string,
-    statusCode: number,
-    duration: number,
-  ): void {
+  private recordMetric(path: string, method: string, statusCode: number, duration: number): void {
     // Fire and forget - don't await
     this.metricsService.recordRequest({
       path,

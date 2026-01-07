@@ -1,45 +1,45 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
+  Post,
   Query,
-  UseGuards,
   Res,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyReply } from 'fastify';
-import { AdminService } from './admin.service.js';
-import { SuperAdminGuard } from './guards/super-admin.guard.js';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthUser } from '../auth/auth.service.js';
-import {
-  ListUsersDto,
-  UpdateUserDto,
-  DeleteUserDto,
-  ListOrganizationsDto,
-  UpdateOrganizationDto,
-  SuspendOrganizationDto,
-  DeleteOrganizationDto,
-  SetOrgPlatformFeeDto,
-  ToggleOrgFeatureDto,
-  CreateFeatureFlagDto,
-  UpdateFeatureFlagDto,
-  UpdateSettingDto,
-  MaintenanceModeDto,
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { AdminService } from './admin.service.js';
+import type {
   CreateAnnouncementDto,
-  UpdateAnnouncementDto,
-  ListAuditLogsDto,
+  CreateFeatureFlagDto,
+  CreateRateLimitDto,
+  DeleteOrganizationDto,
+  DeleteUserDto,
   ExportAuditLogsDto,
   HealthHistoryDto,
-  CreateRateLimitDto,
-  UpdateRateLimitDto,
+  ListAuditLogsDto,
+  ListOrganizationsDto,
+  ListUsersDto,
+  MaintenanceModeDto,
   RevenueByOrgDto,
   RevenueTrendDto,
+  SetOrgPlatformFeeDto,
+  SuspendOrganizationDto,
+  ToggleOrgFeatureDto,
+  UpdateAnnouncementDto,
+  UpdateFeatureFlagDto,
+  UpdateOrganizationDto,
+  UpdateRateLimitDto,
+  UpdateSettingDto,
+  UpdateUserDto,
 } from './dto/admin.dto.js';
+import { SuperAdminGuard } from './guards/super-admin.guard.js';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -86,7 +86,7 @@ export class AdminController {
   async updateUser(
     @Param('userId') userId: string,
     @Body() dto: UpdateUserDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.updateUser(userId, dto, admin.id);
   }
@@ -100,7 +100,7 @@ export class AdminController {
   async deleteUser(
     @Param('userId') userId: string,
     @Body() dto: DeleteUserDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.deleteUser(userId, dto, admin.id);
   }
@@ -109,10 +109,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Generate impersonation token' })
   @ApiResponse({ status: 200, description: 'Impersonation token generated' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async impersonateUser(
-    @Param('userId') userId: string,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async impersonateUser(@Param('userId') userId: string, @CurrentUser() admin: AuthUser) {
     return this.adminService.impersonateUser(userId, admin.id);
   }
 
@@ -142,7 +139,7 @@ export class AdminController {
   async updateOrganization(
     @Param('orgId') orgId: string,
     @Body() dto: UpdateOrganizationDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.updateOrganization(orgId, dto, admin.id);
   }
@@ -155,7 +152,7 @@ export class AdminController {
   async suspendOrganization(
     @Param('orgId') orgId: string,
     @Body() dto: SuspendOrganizationDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.suspendOrganization(orgId, dto, admin.id);
   }
@@ -165,10 +162,7 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Organization reactivated' })
   @ApiResponse({ status: 400, description: 'Organization not suspended' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async reactivateOrganization(
-    @Param('orgId') orgId: string,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async reactivateOrganization(@Param('orgId') orgId: string, @CurrentUser() admin: AuthUser) {
     return this.adminService.reactivateOrganization(orgId, admin.id);
   }
 
@@ -180,7 +174,7 @@ export class AdminController {
   async deleteOrganization(
     @Param('orgId') orgId: string,
     @Body() dto: DeleteOrganizationDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.deleteOrganization(orgId, dto, admin.id);
   }
@@ -192,7 +186,7 @@ export class AdminController {
   async setOrgPlatformFee(
     @Param('orgId') orgId: string,
     @Body() dto: SetOrgPlatformFeeDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.setOrgPlatformFee(orgId, dto, admin.id);
   }
@@ -220,7 +214,7 @@ export class AdminController {
   async toggleOrgFeature(
     @Param('orgId') orgId: string,
     @Body() dto: ToggleOrgFeatureDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.toggleOrgFeature(orgId, dto.flag_key, dto.enabled, admin.id);
   }
@@ -248,10 +242,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Create feature flag' })
   @ApiResponse({ status: 201, description: 'Feature flag created' })
   @ApiResponse({ status: 400, description: 'Flag key already exists' })
-  async createFeatureFlag(
-    @Body() dto: CreateFeatureFlagDto,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async createFeatureFlag(@Body() dto: CreateFeatureFlagDto, @CurrentUser() admin: AuthUser) {
     return this.adminService.createFeatureFlag(dto, admin.id);
   }
 
@@ -262,7 +253,7 @@ export class AdminController {
   async updateFeatureFlag(
     @Param('flagId') flagId: string,
     @Body() dto: UpdateFeatureFlagDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.updateFeatureFlag(flagId, dto, admin.id);
   }
@@ -271,10 +262,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Delete feature flag' })
   @ApiResponse({ status: 200, description: 'Feature flag deleted' })
   @ApiResponse({ status: 404, description: 'Feature flag not found' })
-  async deleteFeatureFlag(
-    @Param('flagId') flagId: string,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async deleteFeatureFlag(@Param('flagId') flagId: string, @CurrentUser() admin: AuthUser) {
     return this.adminService.deleteFeatureFlag(flagId, admin.id);
   }
 
@@ -296,7 +284,7 @@ export class AdminController {
   async updateSetting(
     @Param('key') key: string,
     @Body() dto: UpdateSettingDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.updateSetting(key, dto, admin.id);
   }
@@ -304,10 +292,7 @@ export class AdminController {
   @Post('settings/maintenance')
   @ApiOperation({ summary: 'Toggle maintenance mode' })
   @ApiResponse({ status: 200, description: 'Maintenance mode updated' })
-  async setMaintenanceMode(
-    @Body() dto: MaintenanceModeDto,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async setMaintenanceMode(@Body() dto: MaintenanceModeDto, @CurrentUser() admin: AuthUser) {
     return this.adminService.setMaintenanceMode(dto, admin.id);
   }
 
@@ -325,10 +310,7 @@ export class AdminController {
   @Post('announcements')
   @ApiOperation({ summary: 'Create announcement' })
   @ApiResponse({ status: 201, description: 'Announcement created' })
-  async createAnnouncement(
-    @Body() dto: CreateAnnouncementDto,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async createAnnouncement(@Body() dto: CreateAnnouncementDto, @CurrentUser() admin: AuthUser) {
     return this.adminService.createAnnouncement(dto, admin.id);
   }
 
@@ -339,7 +321,7 @@ export class AdminController {
   async updateAnnouncement(
     @Param('announcementId') announcementId: string,
     @Body() dto: UpdateAnnouncementDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.updateAnnouncement(announcementId, dto, admin.id);
   }
@@ -350,7 +332,7 @@ export class AdminController {
   @ApiResponse({ status: 404, description: 'Announcement not found' })
   async deleteAnnouncement(
     @Param('announcementId') announcementId: string,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.deleteAnnouncement(announcementId, admin.id);
   }
@@ -369,10 +351,7 @@ export class AdminController {
   @Get('audit-logs/export')
   @ApiOperation({ summary: 'Export audit logs' })
   @ApiResponse({ status: 200, description: 'Audit logs exported' })
-  async exportAuditLogs(
-    @Query() dto: ExportAuditLogsDto,
-    @Res() reply: FastifyReply,
-  ) {
+  async exportAuditLogs(@Query() dto: ExportAuditLogsDto, @Res() reply: FastifyReply) {
     const result = await this.adminService.exportAuditLogs(dto);
 
     reply.header('Content-Type', result.contentType);
@@ -412,10 +391,7 @@ export class AdminController {
   @Post('rate-limits')
   @ApiOperation({ summary: 'Create rate limit rule' })
   @ApiResponse({ status: 201, description: 'Rate limit rule created' })
-  async createRateLimit(
-    @Body() dto: CreateRateLimitDto,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async createRateLimit(@Body() dto: CreateRateLimitDto, @CurrentUser() admin: AuthUser) {
     return this.adminService.createRateLimit(dto, admin.id);
   }
 
@@ -426,7 +402,7 @@ export class AdminController {
   async updateRateLimit(
     @Param('ruleId') ruleId: string,
     @Body() dto: UpdateRateLimitDto,
-    @CurrentUser() admin: AuthUser,
+    @CurrentUser() admin: AuthUser
   ) {
     return this.adminService.updateRateLimit(ruleId, dto, admin.id);
   }
@@ -435,10 +411,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Delete rate limit rule' })
   @ApiResponse({ status: 200, description: 'Rate limit rule deleted' })
   @ApiResponse({ status: 404, description: 'Rate limit rule not found' })
-  async deleteRateLimit(
-    @Param('ruleId') ruleId: string,
-    @CurrentUser() admin: AuthUser,
-  ) {
+  async deleteRateLimit(@Param('ruleId') ruleId: string, @CurrentUser() admin: AuthUser) {
     return this.adminService.deleteRateLimit(ruleId, admin.id);
   }
 

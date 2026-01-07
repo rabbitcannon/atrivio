@@ -6,7 +6,7 @@ Public storefronts for attractions. Each attraction gets its own subdomain or cu
 
 ## Stack
 
-- Next.js 14 with App Router
+- Next.js 15 with App Router
 - Server Components by default
 - Tailwind CSS v4
 - No auth required (public pages)

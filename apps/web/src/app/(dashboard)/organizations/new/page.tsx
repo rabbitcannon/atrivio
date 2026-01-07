@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createOrganization } from '@/lib/api/client';
 
 function generateSlug(name: string): string {
@@ -132,7 +132,8 @@ export default function NewOrganizationPage() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Only lowercase letters, numbers, and hyphens. This will be your organization's URL.
+                  Only lowercase letters, numbers, and hyphens. This will be your organization's
+                  URL.
                 </p>
               </div>
 
@@ -195,7 +196,12 @@ export default function NewOrganizationPage() {
             </div>
 
             <div className="flex justify-end gap-4 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={isLoading}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading || !name || !slug}>

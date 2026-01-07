@@ -1,24 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, MoreHorizontal, Shield, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -28,22 +16,34 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { MoreHorizontal, Shield, UserMinus, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   getOrganizationMembers,
-  updateMemberRole,
-  removeMember,
   type OrganizationMember,
   type OrgRole,
+  removeMember,
+  updateMemberRole,
 } from '@/lib/api/client';
 
 interface MembersTableProps {
@@ -62,7 +62,15 @@ const roleBadgeVariants: Record<OrgRole, 'default' | 'secondary' | 'outline'> = 
 };
 
 // Roles that can be assigned (owner cannot be assigned via UI)
-const assignableRoles: OrgRole[] = ['admin', 'manager', 'hr', 'box_office', 'finance', 'actor', 'scanner'];
+const assignableRoles: OrgRole[] = [
+  'admin',
+  'manager',
+  'hr',
+  'box_office',
+  'finance',
+  'actor',
+  'scanner',
+];
 
 function MembersTableSkeleton() {
   return (
@@ -88,9 +96,15 @@ function MembersTableSkeleton() {
                   </div>
                 </div>
               </TableCell>
-              <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-8" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -135,7 +149,7 @@ export function MembersTable({ orgId }: MembersTableProps) {
 
   useEffect(() => {
     fetchMembers();
-  }, [orgId]);
+  }, []);
 
   function openRoleDialog(member: OrganizationMember) {
     setSelectedMember(member);
@@ -242,9 +256,9 @@ export function MembersTable({ orgId }: MembersTableProps) {
           </TableHeader>
           <TableBody>
             {members.map((member) => {
-              const fullName = [member.user.first_name, member.user.last_name]
-                .filter(Boolean)
-                .join(' ') || member.user.email;
+              const fullName =
+                [member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
+                member.user.email;
               const initials = fullName
                 .split(' ')
                 .map((n) => n[0])
@@ -396,11 +410,7 @@ export function MembersTable({ orgId }: MembersTableProps) {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRemoveMember}
-              disabled={removeLoading}
-            >
+            <Button variant="destructive" onClick={handleRemoveMember} disabled={removeLoading}>
               {removeLoading ? 'Removing...' : 'Remove Member'}
             </Button>
           </DialogFooter>

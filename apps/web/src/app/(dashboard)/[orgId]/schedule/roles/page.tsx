@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, Palette, Tag } from 'lucide-react';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -10,11 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Palette, Tag } from 'lucide-react';
 import { getScheduleRoles, type ScheduleRole } from '@/lib/api/client';
 
 function RolesTableSkeleton() {
@@ -32,10 +32,18 @@ function RolesTableSkeleton() {
         <TableBody>
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <TableRow key={i}>
-              <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -79,9 +87,7 @@ export default function ScheduleRolesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Schedule Roles</h1>
-        <p className="text-muted-foreground">
-          View roles used for scheduling staff assignments.
-        </p>
+        <p className="text-muted-foreground">View roles used for scheduling staff assignments.</p>
       </div>
 
       {error && (
@@ -123,7 +129,9 @@ export default function ScheduleRolesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Inactive Roles</CardDescription>
-                <CardTitle className="text-3xl text-muted-foreground">{inactiveRoles.length}</CardTitle>
+                <CardTitle className="text-3xl text-muted-foreground">
+                  {inactiveRoles.length}
+                </CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -171,9 +179,7 @@ export default function ScheduleRolesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-muted-foreground">
-                          {role.description || '—'}
-                        </span>
+                        <span className="text-muted-foreground">{role.description || '—'}</span>
                       </TableCell>
                       <TableCell>
                         <Badge variant={role.is_active ? 'default' : 'secondary'}>

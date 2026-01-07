@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { StaffEditForm } from '@/components/features/staff/staff-edit-form';
-import { resolveOrgId, getStaffMember } from '@/lib/api';
+import { getStaffMember, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Edit Staff',

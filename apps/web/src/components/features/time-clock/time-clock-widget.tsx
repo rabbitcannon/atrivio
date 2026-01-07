@@ -1,18 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, CheckCircle2, Clock, ExternalLink, MapPin, Timer } from 'lucide-react';
 import Link from 'next/link';
-import { Clock, MapPin, CheckCircle2, Timer, AlertCircle, ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  getMyTimeStatus,
-  selfClockIn,
-  selfClockOut,
-  type TimeClockStatus,
-} from '@/lib/api/client';
+import { getMyTimeStatus, selfClockIn, selfClockOut, type TimeClockStatus } from '@/lib/api/client';
 
 interface TimeClockWidgetProps {
   orgId: string;
@@ -69,7 +64,8 @@ export function TimeClockWidget({ orgId, orgSlug }: TimeClockWidgetProps) {
   async function handleClockIn() {
     if (!status) return;
     // Use primary attraction or first available
-    const attractionId = status.attractions.find((a) => a.is_primary)?.id || status.attractions[0]?.id;
+    const attractionId =
+      status.attractions.find((a) => a.is_primary)?.id || status.attractions[0]?.id;
     if (!attractionId) {
       setError('No attractions assigned');
       return;
@@ -225,12 +221,7 @@ export function TimeClockWidget({ orgId, orgSlug }: TimeClockWidgetProps) {
             <div className="rounded-lg border bg-muted/50 p-3 text-center">
               <p className="text-sm text-muted-foreground">Not clocked in</p>
             </div>
-            <Button
-              size="sm"
-              className="w-full"
-              onClick={handleClockIn}
-              disabled={isClocking}
-            >
+            <Button size="sm" className="w-full" onClick={handleClockIn} disabled={isClocking}>
               {isClocking ? 'Clocking in...' : 'Clock In'}
             </Button>
           </>

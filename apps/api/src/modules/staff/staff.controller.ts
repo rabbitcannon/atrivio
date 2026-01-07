@@ -1,31 +1,31 @@
+import type { UserId } from '@haunt/shared';
 import {
+  Body,
   Controller,
+  ForbiddenException,
   Get,
+  Param,
   Patch,
   Post,
   Put,
-  Body,
-  Param,
   Query,
-  UseInterceptors,
   UseGuards,
-  ForbiddenException,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { StaffService } from './staff.service.js';
-import {
-  UpdateStaffDto,
-  TerminateStaffDto,
-  StaffQueryDto,
-  UpdateAssignmentsDto,
-} from './dto/staff.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
-import type { UserId } from '@haunt/shared';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
+  StaffQueryDto,
+  TerminateStaffDto,
+  UpdateAssignmentsDto,
+  UpdateStaffDto,
+} from './dto/staff.dto.js';
+import { StaffService } from './staff.service.js';
 
 @ApiTags('Staff')
 @Controller('organizations/:orgId/staff')
@@ -38,10 +38,7 @@ export class StaffController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'List staff members' })
-  async list(
-    @Tenant() ctx: TenantContext,
-    @Query() query: StaffQueryDto,
-  ) {
+  async list(@Tenant() ctx: TenantContext, @Query() query: StaffQueryDto) {
     return this.staffService.findAll(ctx.orgId, query);
   }
 
@@ -50,7 +47,7 @@ export class StaffController {
   async findOne(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @CurrentUser('id') userId: UserId,
+    @CurrentUser('id') userId: UserId
   ) {
     // Allow self or managers to view
     const isSelf = await this.staffService.isSelf(staffId, userId);
@@ -73,7 +70,7 @@ export class StaffController {
   async update(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Body() dto: UpdateStaffDto,
+    @Body() dto: UpdateStaffDto
   ) {
     return this.staffService.update(ctx.orgId, staffId, dto);
   }
@@ -85,7 +82,7 @@ export class StaffController {
   async terminate(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Body() dto: TerminateStaffDto,
+    @Body() dto: TerminateStaffDto
   ) {
     return this.staffService.terminate(ctx.orgId, staffId, dto);
   }
@@ -97,7 +94,7 @@ export class StaffController {
   async updateAssignments(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Body() dto: UpdateAssignmentsDto,
+    @Body() dto: UpdateAssignmentsDto
   ) {
     return this.staffService.updateAssignments(ctx.orgId, staffId, dto);
   }

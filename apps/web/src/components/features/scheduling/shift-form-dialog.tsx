@@ -1,6 +1,9 @@
 'use client';
 
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,17 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import {
   createSchedule,
-  updateSchedule,
   getScheduleRoles,
   getStaff,
   type Schedule,
   type ScheduleRole,
-  type StaffListItem,
   type ScheduleStatus,
+  type StaffListItem,
+  updateSchedule,
 } from '@/lib/api/client';
 
 interface ShiftFormDialogProps {
@@ -79,10 +79,7 @@ export function ShiftFormDialog({
     if (!open) return;
 
     async function loadData() {
-      const [rolesRes, staffRes] = await Promise.all([
-        getScheduleRoles(orgId),
-        getStaff(orgId),
-      ]);
+      const [rolesRes, staffRes] = await Promise.all([getScheduleRoles(orgId), getStaff(orgId)]);
 
       if (rolesRes.data) {
         setRoles(rolesRes.data);
@@ -114,7 +111,7 @@ export function ShiftFormDialog({
         shiftDate: today!,
         startTime: '18:00',
         endTime: '23:00',
-        roleId: roles.length > 0 ? roles[0]!.id : '',
+        roleId: roles.length > 0 ? roles[0]?.id : '',
         staffId: '',
         status: 'scheduled',
         notes: '',
@@ -190,9 +187,7 @@ export function ShiftFormDialog({
           <DialogHeader>
             <DialogTitle>{schedule ? 'Edit Shift' : 'Create Shift'}</DialogTitle>
             <DialogDescription>
-              {schedule
-                ? 'Update the shift details below.'
-                : 'Add a new shift to the schedule.'}
+              {schedule ? 'Update the shift details below.' : 'Add a new shift to the schedule.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -219,7 +214,9 @@ export function ShiftFormDialog({
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as ScheduleStatus })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, status: value as ScheduleStatus })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -295,9 +292,9 @@ export function ShiftFormDialog({
                 <SelectContent>
                   <SelectItem value="">Unassigned</SelectItem>
                   {staff.map((member) => {
-                    const name = [member.user.first_name, member.user.last_name]
-                      .filter(Boolean)
-                      .join(' ') || member.user.email;
+                    const name =
+                      [member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
+                      member.user.email;
                     return (
                       <SelectItem key={member.id} value={member.id}>
                         {name}

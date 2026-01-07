@@ -1,26 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import {
+  AlertCircle,
   ArrowLeft,
   Building2,
-  Users,
-  Ticket,
-  CreditCard,
-  AlertCircle,
-  Percent,
   CheckCircle2,
-  Loader2,
-  Sparkles,
+  CreditCard,
   Globe,
+  Loader2,
   Lock,
+  Percent,
+  Sparkles,
+  Ticket,
+  Users,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,14 +34,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  getAdminOrganization,
-  getOrgPlatformFee,
-  setOrgPlatformFee,
-  getOrgFeatures,
-  toggleOrgFeature,
   type AdminOrgDetail,
-  type OrgPlatformFee,
+  getAdminOrganization,
+  getOrgFeatures,
+  getOrgPlatformFee,
   type OrgFeature,
+  type OrgPlatformFee,
+  setOrgPlatformFee,
+  toggleOrgFeature,
 } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
@@ -52,7 +52,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getStatusBadgeVariant(
+  status: string
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
       return 'default';
@@ -106,7 +108,9 @@ export default function AdminOrganizationDetailPage() {
       if (feeResult.data) {
         setPlatformFee(feeResult.data);
         setUseDefault(!feeResult.data.is_custom);
-        setFeeValue(feeResult.data.custom_fee?.toString() || feeResult.data.global_default.toString());
+        setFeeValue(
+          feeResult.data.custom_fee?.toString() || feeResult.data.global_default.toString()
+        );
       }
 
       if (featuresResult.data) {
@@ -309,9 +313,7 @@ export default function AdminOrganizationDetailPage() {
                   <Percent className="h-5 w-5" />
                   Platform Fee
                 </CardTitle>
-                <CardDescription>
-                  Fee percentage taken from each transaction
-                </CardDescription>
+                <CardDescription>Fee percentage taken from each transaction</CardDescription>
               </div>
               {!isEditingFee && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditingFee(true)}>
@@ -335,7 +337,8 @@ export default function AdminOrganizationDetailPage() {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  On a $100 transaction, the platform takes ${(100 * platformFee.platform_fee_percent / 100).toFixed(2)}
+                  On a $100 transaction, the platform takes $
+                  {((100 * platformFee.platform_fee_percent) / 100).toFixed(2)}
                 </p>
               </div>
             )}
@@ -381,9 +384,7 @@ export default function AdminOrganizationDetailPage() {
                       />
                       <span className="text-muted-foreground">%</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Enter a value between 0 and 100
-                    </p>
+                    <p className="text-xs text-muted-foreground">Enter a value between 0 and 100</p>
                   </div>
                 )}
 
@@ -483,9 +484,7 @@ export default function AdminOrganizationDetailPage() {
             <Sparkles className="h-5 w-5" />
             Features
           </CardTitle>
-          <CardDescription>
-            Manage which features are enabled for this organization
-          </CardDescription>
+          <CardDescription>Manage which features are enabled for this organization</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

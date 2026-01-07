@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { CreateStationDto, UpdateStationDto } from './dto/station.dto.js';
 
 @Injectable()
@@ -53,7 +49,7 @@ export class StationsService {
           createdAt: station.created_at,
           updatedAt: station.updated_at,
         };
-      }),
+      })
     );
 
     return { stations: stationsWithCounts };
@@ -144,7 +140,7 @@ export class StationsService {
     orgId: OrgId,
     attractionId: string,
     stationId: string,
-    dto: UpdateStationDto,
+    dto: UpdateStationDto
   ) {
     // Verify station exists
     const { data: existing } = await this.supabase.adminClient

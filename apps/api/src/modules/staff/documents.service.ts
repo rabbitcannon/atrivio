@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 
 @Injectable()
 export class DocumentsService {
@@ -66,7 +62,7 @@ export class DocumentsService {
     fileUrl: string,
     fileSize: number,
     uploaderId: UserId,
-    expiresAt?: string,
+    expiresAt?: string
   ) {
     await this.verifyStaffAccess(orgId, staffId);
 
@@ -156,7 +152,7 @@ export class DocumentsService {
   /**
    * Get signed upload URL
    */
-  async getUploadUrl(orgId: OrgId, staffId: string, fileName: string, contentType: string) {
+  async getUploadUrl(orgId: OrgId, staffId: string, fileName: string, _contentType: string) {
     await this.verifyStaffAccess(orgId, staffId);
 
     const filePath = `${orgId}/${staffId}/documents/${Date.now()}-${fileName}`;

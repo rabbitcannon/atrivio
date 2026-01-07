@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-} from '@nestjs/common';
-import type { CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { RbacService } from '../rbac.service.js';
-import { SUPER_ADMIN_KEY } from '../decorators/super-admin.decorator.js';
 import type { UserId } from '@haunt/shared';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { SUPER_ADMIN_KEY } from '../decorators/super-admin.decorator.js';
+import { RbacService } from '../rbac.service.js';
 
 /**
  * Guard that restricts access to super admins only
@@ -21,14 +18,14 @@ import type { UserId } from '@haunt/shared';
 export class SuperAdminGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private rbacService: RbacService,
+    private rbacService: RbacService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requireSuperAdmin = this.reflector.getAllAndOverride<boolean>(
-      SUPER_ADMIN_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requireSuperAdmin = this.reflector.getAllAndOverride<boolean>(SUPER_ADMIN_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (!requireSuperAdmin) {
       return true;

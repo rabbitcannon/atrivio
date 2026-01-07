@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { ItemsList } from '@/components/features/inventory';
 import { Button } from '@/components/ui/button';
 import { resolveOrgId } from '@/lib/api';
-import { ItemsList } from '@/components/features/inventory';
 
 export const metadata: Metadata = {
   title: 'Inventory Items',
@@ -33,9 +33,7 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Inventory Items</h1>
-          <p className="text-muted-foreground">
-            Manage costumes, props, equipment, and supplies.
-          </p>
+          <p className="text-muted-foreground">Manage costumes, props, equipment, and supplies.</p>
         </div>
       </div>
 

@@ -1,11 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { UserId } from '@haunt/shared';
-import type { UpdateProfileDto, ChangePasswordDto } from './dto/users.dto.js';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
+import type { ChangePasswordDto, UpdateProfileDto } from './dto/users.dto.js';
 
 @Injectable()
 export class UsersService {
@@ -41,7 +37,7 @@ export class UsersService {
         organizations (
           name
         )
-      `,
+      `
       )
       .eq('user_id', userId)
       .eq('status', 'active');
@@ -154,7 +150,7 @@ export class UsersService {
 
     if (search) {
       query = query.or(
-        `email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`,
+        `email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`
       );
     }
 
@@ -210,7 +206,7 @@ export class UsersService {
         organizations (
           name
         )
-      `,
+      `
       )
       .eq('user_id', id);
 
@@ -240,15 +236,10 @@ export class UsersService {
     if (dto.is_super_admin !== undefined) {
       if (dto.is_super_admin) {
         // Add to platform_admins
-        await this.supabase.adminClient
-          .from('platform_admins')
-          .upsert({ user_id: id });
+        await this.supabase.adminClient.from('platform_admins').upsert({ user_id: id });
       } else {
         // Remove from platform_admins
-        await this.supabase.adminClient
-          .from('platform_admins')
-          .delete()
-          .eq('user_id', id);
+        await this.supabase.adminClient.from('platform_admins').delete().eq('user_id', id);
       }
     }
 

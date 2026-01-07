@@ -1,12 +1,19 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/client';
 
 export type AuthFormMode = 'login' | 'signup' | 'forgot-password' | 'reset-password';
 
@@ -149,9 +156,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             </div>
           )}
           {success && (
-            <output
-              className="block rounded-md bg-green-500/15 px-4 py-3 text-sm text-green-600 dark:text-green-400"
-            >
+            <output className="block rounded-md bg-green-500/15 px-4 py-3 text-sm text-green-600 dark:text-green-400">
               {success}
             </output>
           )}

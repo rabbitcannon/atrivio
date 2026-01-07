@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, ArrowLeft, Clock, MapPin, RefreshCw, Timer, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Clock, MapPin, Users, Timer, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
-import { useUser } from '@/hooks/use-user';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { getOrgBySlug, getActiveClockedIn, type ActiveStaffEntry } from '@/lib/api/client';
+import { useUser } from '@/hooks/use-user';
+import { type ActiveStaffEntry, getActiveClockedIn, getOrgBySlug } from '@/lib/api/client';
 
 function getStaffName(entry: ActiveStaffEntry): string {
   if (entry.user) {
@@ -39,7 +39,12 @@ export default function TimeStatusPage() {
   const orgSlug = params.orgId;
   const { user, isLoading: userLoading } = useUser();
 
-  const [org, setOrg] = useState<{ id: string; name: string; slug: string; logo_url: string | null } | null>(null);
+  const [org, setOrg] = useState<{
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+  } | null>(null);
   const [activeStaff, setActiveStaff] = useState<ActiveStaffEntry[]>([]);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [isLoadingStaff, setIsLoadingStaff] = useState(false);
@@ -78,7 +83,11 @@ export default function TimeStatusPage() {
         const response = await getActiveClockedIn(org.id);
         if (response.error) {
           const errorMessage = response.error.message ?? 'Failed to load active staff';
-          if (errorMessage.includes('permission') || errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+          if (
+            errorMessage.includes('permission') ||
+            errorMessage.includes('403') ||
+            errorMessage.includes('Forbidden')
+          ) {
             setError('You do not have permission to view this page');
           } else {
             setError(errorMessage);
@@ -129,7 +138,7 @@ export default function TimeStatusPage() {
     if (!user || !org) return;
     const interval = setInterval(handleRefresh, 30000);
     return () => clearInterval(interval);
-  }, [user, org]);
+  }, [user, org, handleRefresh]);
 
   // Loading org
   if (isLoadingOrg) {
@@ -166,9 +175,7 @@ export default function TimeStatusPage() {
           <CardHeader className="text-center">
             <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
             <CardTitle className="mt-4">Sign In Required</CardTitle>
-            <CardDescription>
-              You need to sign in to view the status page.
-            </CardDescription>
+            <CardDescription>You need to sign in to view the status page.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
@@ -206,7 +213,8 @@ export default function TimeStatusPage() {
             <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
             <CardTitle className="mt-4">Access Denied</CardTitle>
             <CardDescription>
-              You do not have permission to view this page. Only managers, admins, and owners can view the status page.
+              You do not have permission to view this page. Only managers, admins, and owners can
+              view the status page.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -232,7 +240,7 @@ export default function TimeStatusPage() {
       if (!byAttraction[attractionName]) {
         byAttraction[attractionName] = [];
       }
-      byAttraction[attractionName]!.push(entry);
+      byAttraction[attractionName]?.push(entry);
     } else {
       unassigned.push(entry);
     }
@@ -257,12 +265,7 @@ export default function TimeStatusPage() {
           <span className="text-xs text-muted-foreground">
             Updated {lastRefresh.toLocaleTimeString()}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>

@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
-  loginTestUser,
+  createTestApp,
   createTestUser,
   deleteTestUser,
+  loginTestUser,
   TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch } from '../helpers/request.js';
+import { get, patch } from '../helpers/request.js';
 
 describe('Admin Access Control (E2E)', () => {
   beforeAll(async () => {
@@ -20,7 +20,10 @@ describe('Admin Access Control (E2E)', () => {
 
   describe('Super Admin Access', () => {
     it('should allow super admin to access admin dashboard', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get('/admin/dashboard', { token: admin.accessToken });
 
@@ -29,7 +32,10 @@ describe('Admin Access Control (E2E)', () => {
     });
 
     it('should allow super admin to list all users', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get<{ data: unknown[]; meta: { total: number } }>('/admin/users', {
         token: admin.accessToken,
@@ -41,11 +47,17 @@ describe('Admin Access Control (E2E)', () => {
     });
 
     it('should allow super admin to list all organizations', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
-      const response = await get<{ data: unknown[]; meta: { total: number } }>('/admin/organizations', {
-        token: admin.accessToken,
-      });
+      const response = await get<{ data: unknown[]; meta: { total: number } }>(
+        '/admin/organizations',
+        {
+          token: admin.accessToken,
+        }
+      );
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body.data)).toBe(true);
@@ -53,7 +65,10 @@ describe('Admin Access Control (E2E)', () => {
     });
 
     it('should allow super admin to access system health', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get('/admin/health', { token: admin.accessToken });
 
@@ -63,7 +78,10 @@ describe('Admin Access Control (E2E)', () => {
     });
 
     it('should allow super admin to view platform settings', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get<{ settings: Record<string, unknown> }>('/admin/settings', {
         token: admin.accessToken,
@@ -75,7 +93,10 @@ describe('Admin Access Control (E2E)', () => {
     });
 
     it('should allow super admin to view revenue', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get('/admin/revenue', { token: admin.accessToken });
 
@@ -157,7 +178,10 @@ describe('Admin Access Control (E2E)', () => {
 
   describe('Admin User Management', () => {
     it('should allow super admin to view user details', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
       const response = await get<{ id: string; email: string }>(`/admin/users/${owner.id}`, {
@@ -170,7 +194,10 @@ describe('Admin Access Control (E2E)', () => {
     });
 
     it('should prevent super admin from removing their own admin status', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await patch(
         `/admin/users/${admin.id}`,
@@ -184,7 +211,10 @@ describe('Admin Access Control (E2E)', () => {
 
   describe('Admin Organization Management', () => {
     it('should allow super admin to view any organization details', async () => {
-      const admin = await loginTestUser(TEST_USERS.superAdmin.email, TEST_USERS.superAdmin.password);
+      const admin = await loginTestUser(
+        TEST_USERS.superAdmin.email,
+        TEST_USERS.superAdmin.password
+      );
 
       const response = await get<{ id: string; name: string }>(
         '/admin/organizations/b0000000-0000-0000-0000-000000000001',

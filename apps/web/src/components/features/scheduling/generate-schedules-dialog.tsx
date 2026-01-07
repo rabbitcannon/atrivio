@@ -1,6 +1,10 @@
 'use client';
 
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -9,12 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { generateSchedulesFromTemplates, type ShiftTemplate } from '@/lib/api/client';
 
 interface GenerateSchedulesDialogProps {
@@ -215,10 +215,7 @@ export function GenerateSchedulesDialog({
                 <Button type="button" variant="outline" onClick={handleClose}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={loading || formData.selectedTemplates.length === 0}
-                >
+                <Button type="submit" disabled={loading || formData.selectedTemplates.length === 0}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Generate Schedules
                 </Button>

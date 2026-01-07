@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,12 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import {
   createInventoryCategory,
-  updateInventoryCategory,
   type InventoryCategory,
+  updateInventoryCategory,
 } from '@/lib/api/client';
 
 interface CategoryFormDialogProps {
@@ -229,7 +229,9 @@ export function CategoryFormDialog({
                 type="number"
                 min={0}
                 value={formData.sortOrder}
-                onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value, 10) || 0 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, sortOrder: parseInt(e.target.value, 10) || 0 })
+                }
               />
               <p className="text-xs text-muted-foreground">Lower numbers appear first.</p>
             </div>

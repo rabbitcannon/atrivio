@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import {
   ArrowUpToLineIcon,
   BaselineIcon,
@@ -24,10 +22,7 @@ import { FontColorToolbarButton } from './font-color-toolbar-button';
 import { FontSizeToolbarButton } from './font-size-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { ImportToolbarButton } from './import-toolbar-button';
-import {
-  IndentToolbarButton,
-  OutdentToolbarButton,
-} from './indent-toolbar-button';
+import { IndentToolbarButton, OutdentToolbarButton } from './indent-toolbar-button';
 import { InsertToolbarButton } from './insert-toolbar-button';
 import { LineHeightToolbarButton } from './line-height-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
@@ -80,17 +75,11 @@ export function FixedToolbarButtons() {
               <ItalicIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              nodeType={KEYS.underline}
-              tooltip="Underline (⌘+U)"
-            >
+            <MarkToolbarButton nodeType={KEYS.underline} tooltip="Underline (⌘+U)">
               <UnderlineIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              nodeType={KEYS.strikethrough}
-              tooltip="Strikethrough (⌘+⇧+M)"
-            >
+            <MarkToolbarButton nodeType={KEYS.strikethrough} tooltip="Strikethrough (⌘+⇧+M)">
               <StrikethroughIcon />
             </MarkToolbarButton>
 
@@ -102,10 +91,7 @@ export function FixedToolbarButtons() {
               <BaselineIcon />
             </FontColorToolbarButton>
 
-            <FontColorToolbarButton
-              nodeType={KEYS.backgroundColor}
-              tooltip="Background color"
-            >
+            <FontColorToolbarButton nodeType={KEYS.backgroundColor} tooltip="Background color">
               <PaintBucketIcon />
             </FontColorToolbarButton>
           </ToolbarGroup>

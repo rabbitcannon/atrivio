@@ -1,4 +1,4 @@
-import { SetMetadata, UseGuards, applyDecorators } from '@nestjs/common';
+import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { SuperAdminGuard } from '../guards/super-admin.guard.js';
 
 export const SUPER_ADMIN_KEY = 'superAdmin';

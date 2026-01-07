@@ -1,7 +1,7 @@
 'use client';
 
-import type * as React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type * as React from 'react';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 
 function makeQueryClient() {
@@ -15,7 +15,7 @@ function makeQueryClient() {
   });
 }
 
-let browserQueryClient: QueryClient | undefined = undefined;
+let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
   if (typeof window === 'undefined') {

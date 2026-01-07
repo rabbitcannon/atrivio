@@ -1,16 +1,12 @@
 'use client';
 
-import Link from 'next/link';
+import { LogOut, Settings, Shield, User } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, Settings, User, Shield } from 'lucide-react';
 import atrivioLogo from '@/assets/images/atrivio-logo.png';
-import { createClient } from '@/lib/supabase/client';
-import { useUser } from '@/hooks/use-user';
-import { useAuthStore } from '@/stores/auth-store';
-import { useOrgStore } from '@/stores/org-store';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +17,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useUser } from '@/hooks/use-user';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useOrgStore } from '@/stores/org-store';
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -60,13 +60,7 @@ export function AdminHeader() {
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
       {/* Logo */}
       <Link href="/admin" className="flex items-center gap-2">
-        <Image
-          src={atrivioLogo}
-          alt="Atrivio"
-          height={32}
-          className="h-8 w-auto"
-          priority
-        />
+        <Image src={atrivioLogo} alt="Atrivio" height={32} className="h-8 w-auto" priority />
         <span className="rounded-md bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground">
           ADMIN
         </span>

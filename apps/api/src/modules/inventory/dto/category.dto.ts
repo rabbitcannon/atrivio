@@ -1,11 +1,5 @@
-import {
-  IsString,
-  IsOptional,
-  IsInt,
-  Matches,
-  MaxLength,
-} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

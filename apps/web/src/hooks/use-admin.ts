@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser } from './use-user';
 import { createClient } from '@/lib/supabase/client';
+import { useUser } from './use-user';
 
 interface AdminData {
   is_super_admin: boolean;
@@ -36,7 +36,6 @@ export function useAdmin() {
         .single();
 
       if (error) {
-        console.error('Error checking admin status:', error);
         setIsAdmin(false);
       } else {
         setIsAdmin((data as AdminData)?.is_super_admin ?? false);

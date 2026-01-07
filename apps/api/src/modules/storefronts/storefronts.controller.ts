@@ -1,42 +1,42 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Put,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseInterceptors,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { CacheControl, CacheControlInterceptor } from '../../core/cache/index.js';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { StorefrontsService } from './storefronts.service.js';
-import {
-  UpdateStorefrontSettingsDto,
-  CreatePageDto,
-  UpdatePageDto,
-  AddDomainDto,
-  CreateFaqDto,
-  UpdateFaqDto,
-  ReorderFaqsDto,
-  CreateAnnouncementDto,
-  UpdateAnnouncementDto,
-  UpdateNavigationDto,
-} from './dto/index.js';
-import type { PageStatus } from './dto/index.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
-import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../core/auth/decorators/public.decorator.js';
+import { CacheControl, CacheControlInterceptor } from '../../core/cache/index.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
+  AddDomainDto,
+  CreateAnnouncementDto,
+  CreateFaqDto,
+  CreatePageDto,
+  PageStatus,
+  ReorderFaqsDto,
+  UpdateAnnouncementDto,
+  UpdateFaqDto,
+  UpdateNavigationDto,
+  UpdatePageDto,
+  UpdateStorefrontSettingsDto,
+} from './dto/index.js';
+import { StorefrontsService } from './storefronts.service.js';
 
 // =============================================================================
 // Admin Storefront Controller (Attraction-Scoped)
@@ -69,7 +69,7 @@ export class StorefrontsController {
   async updateSettings(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: UpdateStorefrontSettingsDto,
+    @Body() dto: UpdateStorefrontSettingsDto
   ) {
     const settings = await this.storefrontsService.updateSettings(ctx.orgId, attractionId, dto);
     return { settings };
@@ -110,7 +110,7 @@ export class StorefrontsController {
   @ApiQuery({ name: 'status', required: false, enum: ['draft', 'published', 'archived'] })
   async listPages(
     @Param('attractionId') attractionId: string,
-    @Query('status') status?: PageStatus,
+    @Query('status') status?: PageStatus
   ) {
     const pages = await this.storefrontsService.getPages(attractionId, status);
     return { pages };
@@ -120,10 +120,7 @@ export class StorefrontsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Get a page' })
-  async getPage(
-    @Param('attractionId') attractionId: string,
-    @Param('pageId') pageId: string,
-  ) {
+  async getPage(@Param('attractionId') attractionId: string, @Param('pageId') pageId: string) {
     const page = await this.storefrontsService.getPage(attractionId, pageId);
     if (!page) {
       throw new NotFoundException('Page not found');
@@ -138,7 +135,7 @@ export class StorefrontsController {
   async createPage(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: CreatePageDto,
+    @Body() dto: CreatePageDto
   ) {
     const page = await this.storefrontsService.createPage(ctx.orgId, attractionId, ctx.userId, dto);
     return { page };
@@ -152,7 +149,7 @@ export class StorefrontsController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Param('pageId') pageId: string,
-    @Body() dto: UpdatePageDto,
+    @Body() dto: UpdatePageDto
   ) {
     const page = await this.storefrontsService.updatePage(attractionId, pageId, ctx.userId, dto);
     return { page };
@@ -163,10 +160,7 @@ export class StorefrontsController {
   @Roles('owner', 'admin', 'manager')
   @HttpCode(204)
   @ApiOperation({ summary: 'Delete a page' })
-  async deletePage(
-    @Param('attractionId') attractionId: string,
-    @Param('pageId') pageId: string,
-  ) {
+  async deletePage(@Param('attractionId') attractionId: string, @Param('pageId') pageId: string) {
     await this.storefrontsService.deletePage(attractionId, pageId);
   }
 
@@ -188,7 +182,7 @@ export class StorefrontsController {
   async addDomain(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: AddDomainDto,
+    @Body() dto: AddDomainDto
   ) {
     const domain = await this.storefrontsService.addDomain(ctx.orgId, attractionId, dto);
     return { domain };
@@ -201,7 +195,7 @@ export class StorefrontsController {
   @ApiOperation({ summary: 'Verify domain' })
   async verifyDomain(
     @Param('attractionId') attractionId: string,
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: string
   ) {
     const domain = await this.storefrontsService.verifyDomain(attractionId, domainId);
     return { domain };
@@ -214,7 +208,7 @@ export class StorefrontsController {
   @ApiOperation({ summary: 'Set primary domain' })
   async setPrimaryDomain(
     @Param('attractionId') attractionId: string,
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: string
   ) {
     await this.storefrontsService.setPrimaryDomain(attractionId, domainId);
     return { success: true };
@@ -227,7 +221,7 @@ export class StorefrontsController {
   @ApiOperation({ summary: 'Delete domain' })
   async deleteDomain(
     @Param('attractionId') attractionId: string,
-    @Param('domainId') domainId: string,
+    @Param('domainId') domainId: string
   ) {
     await this.storefrontsService.deleteDomain(attractionId, domainId);
   }
@@ -241,7 +235,7 @@ export class StorefrontsController {
   @ApiQuery({ name: 'category', required: false })
   async listFaqs(
     @Param('attractionId') attractionId: string,
-    @Query('category') category?: string,
+    @Query('category') category?: string
   ) {
     const faqs = await this.storefrontsService.getFaqs(attractionId, category);
     return { faqs };
@@ -254,7 +248,7 @@ export class StorefrontsController {
   async createFaq(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: CreateFaqDto,
+    @Body() dto: CreateFaqDto
   ) {
     const faq = await this.storefrontsService.createFaq(ctx.orgId, attractionId, dto);
     return { faq };
@@ -267,7 +261,7 @@ export class StorefrontsController {
   async updateFaq(
     @Param('attractionId') attractionId: string,
     @Param('faqId') faqId: string,
-    @Body() dto: UpdateFaqDto,
+    @Body() dto: UpdateFaqDto
   ) {
     const faq = await this.storefrontsService.updateFaq(attractionId, faqId, dto);
     return { faq };
@@ -278,10 +272,7 @@ export class StorefrontsController {
   @Roles('owner', 'admin', 'manager')
   @HttpCode(204)
   @ApiOperation({ summary: 'Delete FAQ' })
-  async deleteFaq(
-    @Param('attractionId') attractionId: string,
-    @Param('faqId') faqId: string,
-  ) {
+  async deleteFaq(@Param('attractionId') attractionId: string, @Param('faqId') faqId: string) {
     await this.storefrontsService.deleteFaq(attractionId, faqId);
   }
 
@@ -290,10 +281,7 @@ export class StorefrontsController {
   @Roles('owner', 'admin', 'manager')
   @HttpCode(200)
   @ApiOperation({ summary: 'Reorder FAQs' })
-  async reorderFaqs(
-    @Param('attractionId') attractionId: string,
-    @Body() dto: ReorderFaqsDto,
-  ) {
+  async reorderFaqs(@Param('attractionId') attractionId: string, @Body() dto: ReorderFaqsDto) {
     await this.storefrontsService.reorderFaqs(attractionId, dto.order);
     return { success: true };
   }
@@ -316,9 +304,14 @@ export class StorefrontsController {
   async createAnnouncement(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: CreateAnnouncementDto,
+    @Body() dto: CreateAnnouncementDto
   ) {
-    const announcement = await this.storefrontsService.createAnnouncement(ctx.orgId, attractionId, ctx.userId, dto);
+    const announcement = await this.storefrontsService.createAnnouncement(
+      ctx.orgId,
+      attractionId,
+      ctx.userId,
+      dto
+    );
     return { announcement };
   }
 
@@ -329,9 +322,13 @@ export class StorefrontsController {
   async updateAnnouncement(
     @Param('attractionId') attractionId: string,
     @Param('announcementId') announcementId: string,
-    @Body() dto: UpdateAnnouncementDto,
+    @Body() dto: UpdateAnnouncementDto
   ) {
-    const announcement = await this.storefrontsService.updateAnnouncement(attractionId, announcementId, dto);
+    const announcement = await this.storefrontsService.updateAnnouncement(
+      attractionId,
+      announcementId,
+      dto
+    );
     return { announcement };
   }
 
@@ -342,7 +339,7 @@ export class StorefrontsController {
   @ApiOperation({ summary: 'Delete announcement' })
   async deleteAnnouncement(
     @Param('attractionId') attractionId: string,
-    @Param('announcementId') announcementId: string,
+    @Param('announcementId') announcementId: string
   ) {
     await this.storefrontsService.deleteAnnouncement(attractionId, announcementId);
   }
@@ -365,7 +362,7 @@ export class StorefrontsController {
   async updateNavigation(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: UpdateNavigationDto,
+    @Body() dto: UpdateNavigationDto
   ) {
     const navigation = await this.storefrontsService.updateNavigation(ctx.orgId, attractionId, dto);
     return { navigation };
@@ -398,10 +395,7 @@ export class PublicStorefrontsController {
   @Public()
   @CacheControl({ type: 'public', maxAge: 300, staleWhileRevalidate: 60 })
   @ApiOperation({ summary: 'Get public page' })
-  async getPage(
-    @Param('identifier') identifier: string,
-    @Param('slug') slug: string,
-  ) {
+  async getPage(@Param('identifier') identifier: string, @Param('slug') slug: string) {
     const page = await this.storefrontsService.getPublicPage(identifier, slug);
     if (!page) {
       throw new NotFoundException('Page not found');
@@ -414,10 +408,7 @@ export class PublicStorefrontsController {
   @CacheControl({ type: 'public', maxAge: 300, staleWhileRevalidate: 60 })
   @ApiOperation({ summary: 'Get public FAQs' })
   @ApiQuery({ name: 'category', required: false })
-  async getFaqs(
-    @Param('identifier') identifier: string,
-    @Query('category') category?: string,
-  ) {
+  async getFaqs(@Param('identifier') identifier: string, @Query('category') category?: string) {
     return this.storefrontsService.getPublicFaqs(identifier, category);
   }
 

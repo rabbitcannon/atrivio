@@ -1,14 +1,8 @@
 'use client';
 
+import { AlertCircle, Calendar, Clock, Edit, MoreHorizontal, Trash2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,15 +19,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MoreHorizontal, Calendar, Clock, User, Edit, Trash2, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  getSchedules,
-  getAttractions,
-  deleteSchedule,
-  type Schedule,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   type AttractionListItem,
+  deleteSchedule,
+  getAttractions,
+  getSchedules,
+  type Schedule,
   type ScheduleStatus,
 } from '@/lib/api/client';
 import { ShiftFormDialog } from './shift-form-dialog';
@@ -71,12 +71,24 @@ function ScheduleTableSkeleton() {
         <TableBody>
           {[1, 2, 3, 4, 5].map((i) => (
             <TableRow key={i}>
-              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-28" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-8" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -86,7 +98,7 @@ function ScheduleTableSkeleton() {
 }
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  const date = new Date(`${dateStr}T00:00:00`);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -118,7 +130,7 @@ export function ScheduleTable({ orgId, orgSlug }: ScheduleTableProps) {
       if (data?.data) {
         setAttractions(data.data);
         if (data.data.length > 0 && !selectedAttraction) {
-          setSelectedAttraction(data.data[0]!.id);
+          setSelectedAttraction(data.data[0]?.id);
         }
       }
       if (apiError) {

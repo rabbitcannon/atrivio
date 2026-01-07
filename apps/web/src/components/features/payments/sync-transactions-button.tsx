@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { syncTransactions } from '@/lib/api/payments';
-import { useRouter } from 'next/navigation';
 
 interface SyncTransactionsButtonProps {
   orgId: string;
@@ -19,24 +19,18 @@ export function SyncTransactionsButton({ orgId }: SyncTransactionsButtonProps) {
     try {
       const result = await syncTransactions(orgId);
       if (result.error) {
-        console.error('Sync failed:', result.error);
       } else {
         // Refresh the page to show updated data
         router.refresh();
       }
-    } catch (error) {
-      console.error('Sync failed:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <Button
-      variant="outline"
-      onClick={handleSync}
-      disabled={isLoading}
-    >
+    <Button variant="outline" onClick={handleSync} disabled={isLoading}>
       <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
       {isLoading ? 'Syncing...' : 'Sync from Stripe'}
     </Button>

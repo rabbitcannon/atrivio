@@ -1,27 +1,34 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import {
+  getDefaultTheme,
+  getThemePreset,
+  THEME_CATEGORIES,
+  THEME_FONT_OPTIONS,
+  THEME_PRESETS,
+  type ThemePreset,
+} from '@haunt/shared/constants';
+import { BarChart3, Image, Loader2, Palette, RotateCcw, Save, Search, Share2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Save, Palette, Image, Search, BarChart3, Share2, Check, RotateCcw } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect } from '@/lib/api/client';
 import type { StorefrontSettings } from '@/lib/api/types';
-import {
-  THEME_PRESETS,
-  THEME_CATEGORIES,
-  THEME_FONT_OPTIONS,
-  getThemePreset,
-  getDefaultTheme,
-  type ThemePreset,
-  type ThemePresetKey,
-} from '@haunt/shared/constants';
 
 interface SettingsFormProps {
   orgId: string;
@@ -95,28 +102,31 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
   /**
    * Apply a theme preset - updates all colors and fonts
    */
-  const applyPreset = useCallback((presetKey: string) => {
-    const preset = getThemePreset(presetKey);
-    if (!preset) return;
+  const applyPreset = useCallback(
+    (presetKey: string) => {
+      const preset = getThemePreset(presetKey);
+      if (!preset) return;
 
-    setTheme({
-      preset: presetKey,
-      primaryColor: preset.colors.primary,
-      secondaryColor: preset.colors.secondary,
-      accentColor: preset.colors.accent,
-      backgroundColor: preset.colors.background,
-      textColor: preset.colors.text,
-      fontHeading: preset.fonts.heading,
-      fontBody: preset.fonts.body,
-      customCss: theme.customCss, // Preserve custom CSS
-    });
-    setIsCustomized(false);
+      setTheme({
+        preset: presetKey,
+        primaryColor: preset.colors.primary,
+        secondaryColor: preset.colors.secondary,
+        accentColor: preset.colors.accent,
+        backgroundColor: preset.colors.background,
+        textColor: preset.colors.text,
+        fontHeading: preset.fonts.heading,
+        fontBody: preset.fonts.body,
+        customCss: theme.customCss, // Preserve custom CSS
+      });
+      setIsCustomized(false);
 
-    toast({
-      title: `Applied "${preset.name}" theme`,
-      description: 'Colors and fonts updated. Remember to save your changes.',
-    });
-  }, [theme.customCss, toast]);
+      toast({
+        title: `Applied "${preset.name}" theme`,
+        description: 'Colors and fonts updated. Remember to save your changes.',
+      });
+    },
+    [theme.customCss, toast]
+  );
 
   /**
    * Reset to current preset's default colors
@@ -129,7 +139,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
    * Handle individual color/font changes - marks as customized
    */
   const updateThemeField = useCallback((field: string, value: string) => {
-    setTheme(prev => ({ ...prev, [field]: value }));
+    setTheme((prev) => ({ ...prev, [field]: value }));
     setIsCustomized(true);
   }, []);
 
@@ -220,7 +230,12 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
       if (seo.title) seoData['title'] = seo.title;
       if (seo.description) seoData['description'] = seo.description;
       if (seo.ogImageUrl) seoData['ogImageUrl'] = seo.ogImageUrl;
-      const keywords = seo.keywords ? seo.keywords.split(',').map((k) => k.trim()).filter(Boolean) : [];
+      const keywords = seo.keywords
+        ? seo.keywords
+            .split(',')
+            .map((k) => k.trim())
+            .filter(Boolean)
+        : [];
       if (keywords.length > 0) seoData['keywords'] = keywords;
       if (Object.keys(seoData).length > 0) payload['seo'] = seoData;
 
@@ -309,9 +324,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
           <Card>
             <CardHeader>
               <CardTitle>Theme & Branding</CardTitle>
-              <CardDescription>
-                Customize the look and feel of your storefront
-              </CardDescription>
+              <CardDescription>Customize the look and feel of your storefront</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* General */}
@@ -361,11 +374,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                             {category.presets.map((presetKey) => {
                               const preset = THEME_PRESETS[presetKey];
                               return (
-                                <SelectItem
-                                  key={presetKey}
-                                  value={presetKey}
-                                  className="py-3"
-                                >
+                                <SelectItem key={presetKey} value={presetKey} className="py-3">
                                   <ThemePresetPreview preset={preset} />
                                 </SelectItem>
                               );
@@ -567,26 +576,40 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel className="text-xs uppercase tracking-wider">Sans-serif</SelectLabel>
-                          {THEME_FONT_OPTIONS.filter(f => f.category === 'sans-serif').map((opt) => (
+                          <SelectLabel className="text-xs uppercase tracking-wider">
+                            Sans-serif
+                          </SelectLabel>
+                          {THEME_FONT_OPTIONS.filter((f) => f.category === 'sans-serif').map(
+                            (opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                <span style={{ fontFamily: `'${opt.value}', system-ui` }}>
+                                  {opt.label}
+                                </span>
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs uppercase tracking-wider">
+                            Serif
+                          </SelectLabel>
+                          {THEME_FONT_OPTIONS.filter((f) => f.category === 'serif').map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
-                              <span style={{ fontFamily: `'${opt.value}', system-ui` }}>{opt.label}</span>
+                              <span style={{ fontFamily: `'${opt.value}', serif` }}>
+                                {opt.label}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel className="text-xs uppercase tracking-wider">Serif</SelectLabel>
-                          {THEME_FONT_OPTIONS.filter(f => f.category === 'serif').map((opt) => (
+                          <SelectLabel className="text-xs uppercase tracking-wider">
+                            Horror / Display
+                          </SelectLabel>
+                          {THEME_FONT_OPTIONS.filter((f) => f.category === 'horror').map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
-                              <span style={{ fontFamily: `'${opt.value}', serif` }}>{opt.label}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                        <SelectGroup>
-                          <SelectLabel className="text-xs uppercase tracking-wider">Horror / Display</SelectLabel>
-                          {THEME_FONT_OPTIONS.filter(f => f.category === 'horror').map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              <span style={{ fontFamily: `'${opt.value}', cursive` }}>{opt.label}</span>
+                              <span style={{ fontFamily: `'${opt.value}', cursive` }}>
+                                {opt.label}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -608,18 +631,28 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel className="text-xs uppercase tracking-wider">Sans-serif</SelectLabel>
-                          {THEME_FONT_OPTIONS.filter(f => f.category === 'sans-serif').map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              <span style={{ fontFamily: `'${opt.value}', system-ui` }}>{opt.label}</span>
-                            </SelectItem>
-                          ))}
+                          <SelectLabel className="text-xs uppercase tracking-wider">
+                            Sans-serif
+                          </SelectLabel>
+                          {THEME_FONT_OPTIONS.filter((f) => f.category === 'sans-serif').map(
+                            (opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                <span style={{ fontFamily: `'${opt.value}', system-ui` }}>
+                                  {opt.label}
+                                </span>
+                              </SelectItem>
+                            )
+                          )}
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel className="text-xs uppercase tracking-wider">Serif</SelectLabel>
-                          {THEME_FONT_OPTIONS.filter(f => f.category === 'serif').map((opt) => (
+                          <SelectLabel className="text-xs uppercase tracking-wider">
+                            Serif
+                          </SelectLabel>
+                          {THEME_FONT_OPTIONS.filter((f) => f.category === 'serif').map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
-                              <span style={{ fontFamily: `'${opt.value}', serif` }}>{opt.label}</span>
+                              <span style={{ fontFamily: `'${opt.value}', serif` }}>
+                                {opt.label}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -656,9 +689,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
           <Card>
             <CardHeader>
               <CardTitle>Hero Section</CardTitle>
-              <CardDescription>
-                Configure your homepage hero section
-              </CardDescription>
+              <CardDescription>Configure your homepage hero section</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -732,9 +763,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
           <Card>
             <CardHeader>
               <CardTitle>SEO Settings</CardTitle>
-              <CardDescription>
-                Optimize your storefront for search engines
-              </CardDescription>
+              <CardDescription>Optimize your storefront for search engines</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -746,9 +775,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   placeholder="The Haunted Mansion | Nightmare Manor"
                   maxLength={100}
                 />
-                <p className="text-xs text-muted-foreground">
-                  {seo.title.length}/100 characters
-                </p>
+                <p className="text-xs text-muted-foreground">{seo.title.length}/100 characters</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="seoDescription">SEO Description</Label>
@@ -772,9 +799,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   onChange={(e) => setSeo({ ...seo, keywords: e.target.value })}
                   placeholder="haunted house, halloween, scary, horror"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Separate keywords with commas
-                </p>
+                <p className="text-xs text-muted-foreground">Separate keywords with commas</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ogImage">Open Graph Image URL</Label>
@@ -797,9 +822,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
           <Card>
             <CardHeader>
               <CardTitle>Social Links</CardTitle>
-              <CardDescription>
-                Connect your social media profiles
-              </CardDescription>
+              <CardDescription>Connect your social media profiles</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -858,9 +881,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
           <Card>
             <CardHeader>
               <CardTitle>Analytics & Tracking</CardTitle>
-              <CardDescription>
-                Connect analytics and tracking services
-              </CardDescription>
+              <CardDescription>Connect analytics and tracking services</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -869,19 +890,21 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   <Input
                     id="googleAnalytics"
                     value={analytics.googleAnalyticsId}
-                    onChange={(e) => setAnalytics({ ...analytics, googleAnalyticsId: e.target.value })}
+                    onChange={(e) =>
+                      setAnalytics({ ...analytics, googleAnalyticsId: e.target.value })
+                    }
                     placeholder="G-XXXXXXXXXX"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Your GA4 measurement ID
-                  </p>
+                  <p className="text-xs text-muted-foreground">Your GA4 measurement ID</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="facebookPixel">Facebook Pixel ID</Label>
                   <Input
                     id="facebookPixel"
                     value={analytics.facebookPixelId}
-                    onChange={(e) => setAnalytics({ ...analytics, facebookPixelId: e.target.value })}
+                    onChange={(e) =>
+                      setAnalytics({ ...analytics, facebookPixelId: e.target.value })
+                    }
                     placeholder="XXXXXXXXXXXXXXX"
                   />
                 </div>
@@ -891,7 +914,9 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                 <Textarea
                   id="customScripts"
                   value={analytics.customHeadScripts}
-                  onChange={(e) => setAnalytics({ ...analytics, customHeadScripts: e.target.value })}
+                  onChange={(e) =>
+                    setAnalytics({ ...analytics, customHeadScripts: e.target.value })
+                  }
                   placeholder="<!-- Add custom tracking scripts here -->"
                   className="font-mono text-sm"
                   rows={6}

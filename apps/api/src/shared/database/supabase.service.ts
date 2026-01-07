@@ -1,6 +1,6 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { type SupabaseClient, createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Supabase service providing database access
@@ -17,15 +17,9 @@ export class SupabaseService implements OnModuleInit {
   constructor(private configService: ConfigService) {}
 
   onModuleInit() {
-    const supabaseUrl = this.configService.getOrThrow<string>(
-      'NEXT_PUBLIC_SUPABASE_URL',
-    );
-    const anonKey = this.configService.getOrThrow<string>(
-      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    );
-    const serviceRoleKey = this.configService.getOrThrow<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
+    const supabaseUrl = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_URL');
+    const anonKey = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    const serviceRoleKey = this.configService.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY');
 
     // Client that respects RLS - used with user's JWT
     this.anonClient = createClient(supabaseUrl, anonKey, {
@@ -49,12 +43,8 @@ export class SupabaseService implements OnModuleInit {
    * This respects RLS policies
    */
   getClientWithToken(accessToken: string): SupabaseClient {
-    const supabaseUrl = this.configService.getOrThrow<string>(
-      'NEXT_PUBLIC_SUPABASE_URL',
-    );
-    const anonKey = this.configService.getOrThrow<string>(
-      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    );
+    const supabaseUrl = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_URL');
+    const anonKey = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 
     return createClient(supabaseUrl, anonKey, {
       auth: {

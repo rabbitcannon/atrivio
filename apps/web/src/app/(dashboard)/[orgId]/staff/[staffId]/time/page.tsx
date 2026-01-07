@@ -1,9 +1,9 @@
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { TimeManager } from '@/components/features/staff/time-manager';
-import { resolveOrgId, getStaffMember } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { getStaffMember, resolveOrgId } from '@/lib/api';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
@@ -32,7 +32,9 @@ export default async function TimePage({ params }: TimePageProps) {
 
   // Get current user's role to determine if they can approve
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   let canApprove = false;
   if (user) {
@@ -62,7 +64,12 @@ export default async function TimePage({ params }: TimePageProps) {
         </div>
       </div>
 
-      <TimeManager orgId={orgId} staffId={staffId} timeSummary={timeSummary} canApprove={canApprove} />
+      <TimeManager
+        orgId={orgId}
+        staffId={staffId}
+        timeSummary={timeSummary}
+        canApprove={canApprove}
+      />
     </div>
   );
 }

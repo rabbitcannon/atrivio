@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
+import type { OrgId, UserId } from '@haunt/shared';
 import {
-  ROLE_PERMISSIONS,
-  ORG_ROLE_HIERARCHY,
   canManageRole,
+  ORG_ROLE_HIERARCHY,
   type OrgRole,
   type Permission,
+  ROLE_PERMISSIONS,
 } from '@haunt/shared';
-import type { UserId, OrgId } from '@haunt/shared';
+import { Injectable } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 
 @Injectable()
 export class RbacService {
@@ -128,7 +128,7 @@ export class RbacService {
     actorRole: OrgRole,
     currentRole: OrgRole,
     newRole: OrgRole,
-    isTargetOwner: boolean,
+    isTargetOwner: boolean
   ): boolean {
     // Cannot modify owner
     if (isTargetOwner) {
@@ -146,9 +146,6 @@ export class RbacService {
     }
 
     // Must have higher rank than both current and new role
-    return (
-      this.canManage(actorRole, currentRole) &&
-      this.canManage(actorRole, newRole)
-    );
+    return this.canManage(actorRole, currentRole) && this.canManage(actorRole, newRole);
   }
 }

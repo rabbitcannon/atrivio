@@ -1,6 +1,18 @@
 'use client';
 
+import { AlertCircle, Award, Clock, MoreHorizontal, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -9,18 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, User, Clock, Award, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
 import { getStaff, type StaffListItem } from '@/lib/api/client';
 
 interface StaffTableProps {
@@ -52,10 +52,18 @@ function StaffTableSkeleton() {
                   </div>
                 </div>
               </TableCell>
-              <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-14" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-14" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-8" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -127,9 +135,9 @@ export function StaffTable({ orgId }: StaffTableProps) {
         </TableHeader>
         <TableBody>
           {staff.map((member) => {
-            const fullName = [member.user.first_name, member.user.last_name]
-              .filter(Boolean)
-              .join(' ') || member.user.email;
+            const fullName =
+              [member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
+              member.user.email;
             const initials = fullName
               .split(' ')
               .map((n) => n[0])

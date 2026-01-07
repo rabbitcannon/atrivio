@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { AlertCircle, Loader2, Minus, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,8 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2, Plus, Minus } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { adjustInventoryQuantity, type InventoryItem } from '@/lib/api/client';
 
 interface AdjustQuantityDialogProps {
@@ -66,7 +66,7 @@ export function AdjustQuantityDialog({
       notes: '',
     });
     setError(null);
-  }, [item]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +121,9 @@ export function AdjustQuantityDialog({
               <div className="rounded-lg bg-muted p-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Current Quantity:</span>
-                  <span className="font-medium">{item.quantity} {item.unit}</span>
+                  <span className="font-medium">
+                    {item.quantity} {item.unit}
+                  </span>
                 </div>
               </div>
             )}
@@ -135,7 +137,9 @@ export function AdjustQuantityDialog({
                   setFormData({
                     ...formData,
                     type: value,
-                    isAdding: type?.direction === 'add' || (type?.direction === 'both' && formData.isAdding),
+                    isAdding:
+                      type?.direction === 'add' ||
+                      (type?.direction === 'both' && formData.isAdding),
                   });
                 }}
               >
@@ -182,7 +186,9 @@ export function AdjustQuantityDialog({
                   type="number"
                   min={1}
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 0 })
+                  }
                   className="flex-1"
                   required
                 />
@@ -216,10 +222,7 @@ export function AdjustQuantityDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || formData.quantity === 0 || newQuantity < 0}
-            >
+            <Button type="submit" disabled={loading || formData.quantity === 0 || newQuantity < 0}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Adjust Quantity
             </Button>

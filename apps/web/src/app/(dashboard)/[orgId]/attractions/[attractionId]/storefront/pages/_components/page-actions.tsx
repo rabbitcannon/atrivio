@@ -1,16 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Archive, Eye, EyeOff, Loader2, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, Eye, EyeOff, Archive, Trash2, RotateCcw, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +13,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { PageStatus } from '@/lib/api/types';
 
 interface PageActionsProps {
@@ -47,8 +47,7 @@ export function PageActions({
     try {
       await onStatusChange(pageId, status);
       router.refresh();
-    } catch (error) {
-      console.error('Failed to update status:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +59,7 @@ export function PageActions({
       await onDelete(pageId);
       setDeleteDialogOpen(false);
       router.refresh();
-    } catch (error) {
-      console.error('Failed to delete page:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }

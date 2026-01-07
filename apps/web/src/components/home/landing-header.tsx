@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { cn } from '@/lib/utils/cn';
+import { useState } from 'react';
 import atrivioLogo from '@/assets/images/atrivio-logo.png';
+import { cn } from '@/lib/utils/cn';
 
 const navLinks = [
   { href: '#platform', label: 'Platform' },
@@ -78,11 +78,7 @@ export function LandingHeader() {
             aria-hidden="true"
           >
             {mobileMenuOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             ) : (
               <path
                 strokeLinecap="round"

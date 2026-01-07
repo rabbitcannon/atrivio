@@ -1,22 +1,22 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Flag,
-  Settings,
-  Megaphone,
-  FileText,
   Activity,
-  Shield,
+  Building2,
   DollarSign,
+  FileText,
+  Flag,
+  LayoutDashboard,
   type LucideIcon,
+  Megaphone,
+  Settings,
+  Shield,
+  Users,
 } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils/cn';
 
 interface NavItem {
   label: string;
@@ -49,8 +49,8 @@ export function AdminSidebar() {
   const renderNavItems = (items: NavItem[]) => (
     <>
       {items.map((item) => {
-        const isActive = pathname === item.href ||
-          (item.href !== '/admin' && pathname.startsWith(item.href));
+        const isActive =
+          pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
 
         return (
           <Link
@@ -92,9 +92,7 @@ export function AdminSidebar() {
 
       {/* System Navigation */}
       <nav className="space-y-1 p-4" aria-label="System navigation">
-        <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">
-          System
-        </p>
+        <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">System</p>
         {renderNavItems(systemNavItems)}
       </nav>
 

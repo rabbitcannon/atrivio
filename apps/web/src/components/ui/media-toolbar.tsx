@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { WithRequiredKey } from 'platejs';
-
 import {
   FloatingMedia as FloatingMediaPrimitive,
   FloatingMediaStore,
@@ -12,6 +8,7 @@ import {
 } from '@platejs/media/react';
 import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
+import type { WithRequiredKey } from 'platejs';
 import {
   useEditorRef,
   useEditorSelector,
@@ -21,13 +18,10 @@ import {
   useRemoveNodeButton,
   useSelected,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 
 import { CaptionButton } from './caption';
@@ -47,17 +41,9 @@ export function MediaToolbar({
   const readOnly = useReadOnly();
   const selected = useSelected();
   const isFocusedLast = useFocusedLast();
-  const selectionCollapsed = useEditorSelector(
-    (editor) => !editor.api.isExpanded(),
-    []
-  );
+  const selectionCollapsed = useEditorSelector((editor) => !editor.api.isExpanded(), []);
   const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);
-  const open =
-    isFocusedLast &&
-    !readOnly &&
-    selected &&
-    selectionCollapsed &&
-    !isImagePreviewOpen;
+  const open = isFocusedLast && !readOnly && selected && selectionCollapsed && !isImagePreviewOpen;
   const isEditing = useFloatingMediaValue('isEditing');
 
   React.useEffect(() => {
@@ -65,7 +51,7 @@ export function MediaToolbar({
       FloatingMediaStore.set('isEditing', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, isEditing]);
 
   const element = useElement();
   const { props: buttonProps } = useRemoveNodeButton({ element });
@@ -74,10 +60,7 @@ export function MediaToolbar({
     <Popover open={open} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
-      <PopoverContent
-        className="w-auto p-1"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
+      <PopoverContent className="w-auto p-1" onOpenAutoFocus={(e) => e.preventDefault()}>
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">

@@ -1,24 +1,24 @@
+import { randomBytes } from 'node:crypto';
+import type { OrgId, UserId } from '@haunt/shared';
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ConflictException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { PaymentsService } from '../payments/payments.service.js';
-import type { OrgId, UserId } from '@haunt/shared';
 import type {
-  CreateOrderDto,
-  UpdateOrderDto,
-  ListOrdersQueryDto,
-  UpdateTicketStatusDto,
-  RefundOrderDto,
   CartSessionDto,
   CheckoutDto,
+  CreateOrderDto,
+  ListOrdersQueryDto,
+  RefundOrderDto,
+  UpdateOrderDto,
+  UpdateTicketStatusDto,
 } from './dto/order.dto.js';
 import { TicketingService } from './ticketing.service.js';
-import { randomBytes } from 'crypto';
 
 @Injectable()
 export class OrdersService {
@@ -27,7 +27,7 @@ export class OrdersService {
   constructor(
     private supabase: SupabaseService,
     private ticketingService: TicketingService,
-    private paymentsService: PaymentsService,
+    private paymentsService: PaymentsService
   ) {}
 
   // ============== Orders ==============
@@ -133,9 +133,6 @@ export class OrdersService {
       .single();
 
     if (error || !data) {
-      console.error('getOrder error:', error);
-      console.error('getOrder data:', data);
-      console.error('Looking for order:', { orgId, orderId });
       throw new NotFoundException({
         code: 'ORDER_NOT_FOUND',
         message: 'Order not found',
@@ -186,7 +183,7 @@ export class OrdersService {
   /**
    * Create a new order (direct creation, typically for box office)
    */
-  async createOrder(orgId: OrgId, dto: CreateOrderDto, createdBy?: UserId) {
+  async createOrder(orgId: OrgId, dto: CreateOrderDto, _createdBy?: UserId) {
     // Verify attraction
     await this.verifyAttraction(orgId, dto.attractionId);
 
@@ -208,7 +205,7 @@ export class OrdersService {
         });
       }
 
-      promoCodeId = validation.promo!.id;
+      promoCodeId = validation.promo?.id;
     }
 
     // Calculate totals and validate items
@@ -403,9 +400,7 @@ export class OrdersService {
     }
 
     // Insert tickets
-    const { error: ticketsError } = await this.supabase.adminClient
-      .from('tickets')
-      .insert(tickets);
+    const { error: ticketsError } = await this.supabase.adminClient.from('tickets').insert(tickets);
 
     if (ticketsError) {
       throw new BadRequestException({
@@ -562,7 +557,9 @@ export class OrdersService {
           });
         }
       } else {
-        this.logger.warn(`No Stripe transaction found for order ${orderId}, proceeding with status update only`);
+        this.logger.warn(
+          `No Stripe transaction found for order ${orderId}, proceeding with status update only`
+        );
       }
     }
 
@@ -946,11 +943,13 @@ export class OrdersService {
     const orderDto: CreateOrderDto = {
       attractionId: cart.attraction_id,
       customerEmail: dto.customerEmail,
-      items: cartItems.map((item: { ticketTypeId: string; timeSlotId?: string; quantity: number }) => ({
-        ticketTypeId: item.ticketTypeId,
-        timeSlotId: item.timeSlotId,
-        quantity: item.quantity,
-      })),
+      items: cartItems.map(
+        (item: { ticketTypeId: string; timeSlotId?: string; quantity: number }) => ({
+          ticketTypeId: item.ticketTypeId,
+          timeSlotId: item.timeSlotId,
+          quantity: item.quantity,
+        })
+      ),
     };
 
     // Add optional fields only if they have values
@@ -969,9 +968,10 @@ export class OrdersService {
         .eq('id', cart.attraction_id)
         .single();
 
-      const waiverText = attraction?.waiver_text ||
+      const waiverText =
+        attraction?.waiver_text ||
         'By purchasing these tickets, I acknowledge and agree to the standard liability waiver and release of claims. ' +
-        'I understand that participation involves inherent risks and I voluntarily assume all risks associated with my visit.';
+          'I understand that participation involves inherent risks and I voluntarily assume all risks associated with my visit.';
 
       await this.supabase.adminClient.from('ticket_waivers').insert({
         org_id: orgId,
@@ -985,10 +985,7 @@ export class OrdersService {
     }
 
     // Delete cart session
-    await this.supabase.adminClient
-      .from('cart_sessions')
-      .delete()
-      .eq('id', dto.cartSessionId);
+    await this.supabase.adminClient.from('cart_sessions').delete().eq('id', dto.cartSessionId);
 
     return order;
   }
@@ -1014,7 +1011,7 @@ export class OrdersService {
   private async generateOrderNumber(orgId: OrgId): Promise<string> {
     // Format: ORG-YYYYMMDD-XXXX
     const date = new Date();
-    const dateStr = date.toISOString().split('T')[0]!.replace(/-/g, '');
+    const dateStr = date.toISOString().split('T')[0]?.replace(/-/g, '');
 
     // Get count for today
     const { count } = await this.supabase.adminClient

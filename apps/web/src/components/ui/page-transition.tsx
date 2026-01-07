@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import type * as React from 'react';
 
 interface PageTransitionProps {
   children: React.ReactNode;

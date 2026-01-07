@@ -1,12 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsArray,
-  IsDateString,
-  Min,
-} from 'class-validator';
+import { IsArray, IsDateString, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class ClockInDto {
   @ApiProperty({ example: 'attraction-uuid' })

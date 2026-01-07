@@ -1,17 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { ArrowLeft, Eye, Loader2, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Save, Eye, ArrowLeft, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { PageContentEditor } from '@/components/editor/page-content-editor';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageContentEditor } from '@/components/editor/page-content-editor';
-import type { StorefrontPage, PageType, PageStatus, ContentFormat } from '@/lib/api/types';
+import { Textarea } from '@/components/ui/textarea';
+import type { ContentFormat, PageStatus, PageType, StorefrontPage } from '@/lib/api/types';
 
 interface PageEditorFormProps {
   orgId: string;
@@ -107,8 +113,7 @@ export function PageEditorForm({
       });
       router.push(basePath);
       router.refresh();
-    } catch (error) {
-      console.error('Failed to save page:', error);
+    } catch (_error) {
     } finally {
       setIsSaving(false);
     }
@@ -176,7 +181,9 @@ export function PageEditorForm({
                   <Input
                     id="slug"
                     value={slug}
-                    onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                    onChange={(e) =>
+                      setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                    }
                     placeholder="page-url"
                     className="font-mono"
                   />
@@ -266,9 +273,7 @@ export function PageEditorForm({
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Show in Navigation</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Add to site header/footer
-                  </p>
+                  <p className="text-xs text-muted-foreground">Add to site header/footer</p>
                 </div>
                 <Switch checked={showInNav} onCheckedChange={setShowInNav} />
               </div>

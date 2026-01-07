@@ -68,17 +68,12 @@ export function MediaPreviewDialog() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to download image:', error);
-    }
+    } catch (_error) {}
   };
 
   return (
     <div
-      className={cn(
-        'fixed top-0 left-0 z-50 h-screen w-screen select-none',
-        !isOpen && 'hidden'
-      )}
+      className={cn('fixed top-0 left-0 z-50 h-screen w-screen select-none', !isOpen && 'hidden')}
       onContextMenu={(e) => e.stopPropagation()}
       {...maskLayerProps}
     >
@@ -163,11 +158,7 @@ export function MediaPreviewDialog() {
             >
               <Download className="size-4" />
             </button>
-            <button
-              {...closeProps}
-              className={cn(buttonVariants())}
-              type="button"
-            >
+            <button {...closeProps} className={cn(buttonVariants())} type="button">
               <X className="size-4" />
             </button>
           </div>

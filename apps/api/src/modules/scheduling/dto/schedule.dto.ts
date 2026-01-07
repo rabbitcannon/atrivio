@@ -1,5 +1,5 @@
-import { IsUUID, IsEnum, IsOptional, IsDateString, IsString, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export type ScheduleStatus =
   | 'draft'
@@ -75,7 +75,16 @@ export class UpdateScheduleDto {
   endTime?: string;
 
   @ApiPropertyOptional({ description: 'Status' })
-  @IsEnum(['draft', 'scheduled', 'published', 'confirmed', 'checked_in', 'completed', 'no_show', 'canceled'])
+  @IsEnum([
+    'draft',
+    'scheduled',
+    'published',
+    'confirmed',
+    'checked_in',
+    'completed',
+    'no_show',
+    'canceled',
+  ])
   @IsOptional()
   status?: ScheduleStatus;
 
@@ -117,7 +126,16 @@ export class ListSchedulesQueryDto {
   roleId?: string;
 
   @ApiPropertyOptional({ description: 'Filter by status' })
-  @IsEnum(['draft', 'scheduled', 'published', 'confirmed', 'checked_in', 'completed', 'no_show', 'canceled'])
+  @IsEnum([
+    'draft',
+    'scheduled',
+    'published',
+    'confirmed',
+    'checked_in',
+    'completed',
+    'no_show',
+    'canceled',
+  ])
   @IsOptional()
   status?: ScheduleStatus;
 

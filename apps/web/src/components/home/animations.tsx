@@ -1,7 +1,7 @@
 'use client';
 
-import { type ReactNode, useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { type ReactNode, useRef } from 'react';
 
 interface FadeInProps {
   children: ReactNode;
@@ -219,16 +219,8 @@ export function CountUp({ value, className, duration = 2 }: CountUpProps) {
 
 function CountNumber({ value, duration }: { value: number; duration: number }) {
   return (
-    <motion.span
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration }}
-    >
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+    <motion.span initial={{ opacity: 1 }} animate={{ opacity: 1 }} transition={{ duration }}>
+      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
         {value}
       </motion.span>
     </motion.span>

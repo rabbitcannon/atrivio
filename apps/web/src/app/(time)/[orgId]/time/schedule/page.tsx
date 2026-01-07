@@ -1,27 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
+  AlertCircle,
+  ArrowDown,
   ArrowLeft,
+  ArrowLeftRight,
   Calendar,
   Clock,
-  MapPin,
-  AlertCircle,
-  ArrowLeftRight,
-  ArrowDown,
-  MoreVertical,
   Loader2,
+  MapPin,
+  MoreVertical,
 } from 'lucide-react';
-import { useUser } from '@/hooks/use-user';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -36,10 +32,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
+import { useUser } from '@/hooks/use-user';
 import {
-  getOrgBySlug,
-  getMySchedules,
   createSwapRequest,
+  getMySchedules,
+  getOrgBySlug,
   type Schedule,
   type ScheduleStatus,
 } from '@/lib/api/client';
@@ -59,7 +59,7 @@ const STATUS_COLORS: Record<ScheduleStatus, 'default' | 'secondary' | 'destructi
 const SWAPPABLE_STATUSES: ScheduleStatus[] = ['published', 'confirmed', 'scheduled'];
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  const date = new Date(`${dateStr}T00:00:00`);
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'short',
@@ -254,7 +254,7 @@ export default function MySchedulePage() {
     if (!schedulesByDate[schedule.date]) {
       schedulesByDate[schedule.date] = [];
     }
-    schedulesByDate[schedule.date]!.push(schedule);
+    schedulesByDate[schedule.date]?.push(schedule);
   }
 
   return (
@@ -269,9 +269,7 @@ export default function MySchedulePage() {
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">My Schedule</h1>
-          <p className="text-muted-foreground text-sm">
-            Upcoming shifts at {org?.name}
-          </p>
+          <p className="text-muted-foreground text-sm">Upcoming shifts at {org?.name}</p>
         </div>
 
         {error && (
@@ -296,12 +294,17 @@ export default function MySchedulePage() {
           <div className="space-y-6">
             {Object.entries(schedulesByDate).map(([date, daySchedules]) => (
               <div key={date}>
-                <h2 className={`text-sm font-medium mb-2 ${isToday(date) ? 'text-primary' : 'text-muted-foreground'}`}>
+                <h2
+                  className={`text-sm font-medium mb-2 ${isToday(date) ? 'text-primary' : 'text-muted-foreground'}`}
+                >
                   {isToday(date) ? 'Today' : formatDate(date)}
                 </h2>
                 <div className="space-y-2">
                   {daySchedules.map((schedule) => (
-                    <Card key={schedule.id} className={isToday(schedule.date) ? 'border-primary' : ''}>
+                    <Card
+                      key={schedule.id}
+                      className={isToday(schedule.date) ? 'border-primary' : ''}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
@@ -340,11 +343,15 @@ export default function MySchedulePage() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => openSwapDialog(schedule, 'swap')}>
+                                  <DropdownMenuItem
+                                    onClick={() => openSwapDialog(schedule, 'swap')}
+                                  >
                                     <ArrowLeftRight className="mr-2 h-4 w-4" />
                                     Request Swap
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openSwapDialog(schedule, 'drop')}>
+                                  <DropdownMenuItem
+                                    onClick={() => openSwapDialog(schedule, 'drop')}
+                                  >
                                     <ArrowDown className="mr-2 h-4 w-4" />
                                     Drop Shift
                                   </DropdownMenuItem>
@@ -401,8 +408,8 @@ export default function MySchedulePage() {
               </div>
               <h3 className="text-lg font-medium mb-2">Request Submitted</h3>
               <p className="text-sm text-muted-foreground">
-                Your {swapType === 'swap' ? 'swap' : 'drop'} request has been submitted.
-                You&apos;ll be notified when a manager reviews it.
+                Your {swapType === 'swap' ? 'swap' : 'drop'} request has been submitted. You&apos;ll
+                be notified when a manager reviews it.
               </p>
               <Button className="mt-4" onClick={closeSwapDialog}>
                 Done
@@ -413,10 +420,19 @@ export default function MySchedulePage() {
               {selectedSchedule && (
                 <div className="rounded-lg border p-4 bg-muted/50">
                   <div className="text-sm space-y-1">
-                    <div><strong>Date:</strong> {formatDate(selectedSchedule.date)}</div>
-                    <div><strong>Time:</strong> {formatTime(selectedSchedule.start_time)} - {formatTime(selectedSchedule.end_time)}</div>
-                    <div><strong>Location:</strong> {selectedSchedule.attraction.name}</div>
-                    <div><strong>Role:</strong> {selectedSchedule.role.name}</div>
+                    <div>
+                      <strong>Date:</strong> {formatDate(selectedSchedule.date)}
+                    </div>
+                    <div>
+                      <strong>Time:</strong> {formatTime(selectedSchedule.start_time)} -{' '}
+                      {formatTime(selectedSchedule.end_time)}
+                    </div>
+                    <div>
+                      <strong>Location:</strong> {selectedSchedule.attraction.name}
+                    </div>
+                    <div>
+                      <strong>Role:</strong> {selectedSchedule.role.name}
+                    </div>
                   </div>
                 </div>
               )}

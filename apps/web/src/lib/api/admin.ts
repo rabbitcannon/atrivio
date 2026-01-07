@@ -259,7 +259,8 @@ export async function getAdminUsers(params?: {
   if (params?.page) searchParams.set('page', params.page.toString());
   if (params?.limit) searchParams.set('limit', params.limit.toString());
   if (params?.search) searchParams.set('search', params.search);
-  if (params?.is_super_admin !== undefined) searchParams.set('is_super_admin', String(params.is_super_admin));
+  if (params?.is_super_admin !== undefined)
+    searchParams.set('is_super_admin', String(params.is_super_admin));
   const query = searchParams.toString();
   return api.get<AdminUserListResponse>(`/admin/users${query ? `?${query}` : ''}`);
 }
@@ -272,7 +273,10 @@ export async function updateAdminUser(userId: string, data: { is_super_admin?: b
   return api.patch<AdminUser>(`/admin/users/${userId}`, data);
 }
 
-export async function deleteAdminUser(userId: string, data: { confirm: boolean; reason?: string }) {
+export async function deleteAdminUser(
+  userId: string,
+  _data: { confirm: boolean; reason?: string }
+) {
   return api.delete<{ message: string; id: string }>(`/admin/users/${userId}`);
 }
 
@@ -296,8 +300,14 @@ export async function getAdminOrganization(orgId: string) {
   return api.get<AdminOrgDetail>(`/admin/organizations/${orgId}`);
 }
 
-export async function suspendOrganization(orgId: string, data: { reason: string; notify_owner?: boolean }) {
-  return api.post<{ message: string; id: string; reason: string }>(`/admin/organizations/${orgId}/suspend`, data);
+export async function suspendOrganization(
+  orgId: string,
+  data: { reason: string; notify_owner?: boolean }
+) {
+  return api.post<{ message: string; id: string; reason: string }>(
+    `/admin/organizations/${orgId}/suspend`,
+    data
+  );
 }
 
 export async function reactivateOrganization(orgId: string) {
@@ -313,7 +323,12 @@ export async function getFeatureFlag(flagId: string) {
   return api.get<FeatureFlagDetail>(`/admin/feature-flags/${flagId}`);
 }
 
-export async function createFeatureFlag(data: { key: string; name: string; description?: string; enabled?: boolean }) {
+export async function createFeatureFlag(data: {
+  key: string;
+  name: string;
+  description?: string;
+  enabled?: boolean;
+}) {
   return api.post<FeatureFlag>('/admin/feature-flags', data);
 }
 
@@ -345,14 +360,24 @@ export async function getPlatformSettings() {
 export const getSettings = getPlatformSettings;
 
 export async function updatePlatformSetting(key: string, data: { value: unknown }) {
-  return api.patch<{ key: string; value: unknown; message: string }>(`/admin/settings/${key}`, data);
+  return api.patch<{ key: string; value: unknown; message: string }>(
+    `/admin/settings/${key}`,
+    data
+  );
 }
 
 // Alias for backwards compatibility
 export const updateSetting = updatePlatformSetting;
 
-export async function setMaintenanceMode(data: { enabled: boolean; message?: string; allow_admins?: boolean }) {
-  return api.post<{ key: string; value: unknown; message: string }>('/admin/settings/maintenance', data);
+export async function setMaintenanceMode(data: {
+  enabled: boolean;
+  message?: string;
+  allow_admins?: boolean;
+}) {
+  return api.post<{ key: string; value: unknown; message: string }>(
+    '/admin/settings/maintenance',
+    data
+  );
 }
 
 // Announcements
@@ -373,7 +398,10 @@ export async function createAnnouncement(data: {
   return api.post<Announcement>('/admin/announcements', data);
 }
 
-export async function updateAnnouncement(announcementId: string, data: { title?: string; content?: string; active?: boolean; expires_at?: string }) {
+export async function updateAnnouncement(
+  announcementId: string,
+  data: { title?: string; content?: string; active?: boolean; expires_at?: string }
+) {
   return api.patch<Announcement>(`/admin/announcements/${announcementId}`, data);
 }
 
@@ -428,7 +456,10 @@ export async function createRateLimit(data: {
   return api.post<RateLimitRule>('/admin/rate-limits', data);
 }
 
-export async function updateRateLimit(ruleId: string, data: { enabled?: boolean; requests_per_minute?: number }) {
+export async function updateRateLimit(
+  ruleId: string,
+  data: { enabled?: boolean; requests_per_minute?: number }
+) {
   return api.patch<RateLimitRule>(`/admin/rate-limits/${ruleId}`, data);
 }
 
@@ -450,7 +481,10 @@ export async function getOrgPlatformFee(orgId: string) {
   return api.get<OrgPlatformFee>(`/admin/organizations/${orgId}/platform-fee`);
 }
 
-export async function setOrgPlatformFee(orgId: string, data: { platform_fee_percent: number | null }) {
+export async function setOrgPlatformFee(
+  orgId: string,
+  data: { platform_fee_percent: number | null }
+) {
   return api.patch<OrgPlatformFee>(`/admin/organizations/${orgId}/platform-fee`, data);
 }
 
@@ -537,7 +571,12 @@ export async function getRevenueSummary() {
   return api.get<RevenueSummary>('/admin/revenue');
 }
 
-export async function getRevenueByOrg(params?: { page?: number; limit?: number; start_date?: string; end_date?: string }) {
+export async function getRevenueByOrg(params?: {
+  page?: number;
+  limit?: number;
+  start_date?: string;
+  end_date?: string;
+}) {
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', params.page.toString());
   if (params?.limit) searchParams.set('limit', params.limit.toString());

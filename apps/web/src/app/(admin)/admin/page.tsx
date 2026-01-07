@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
-  Users,
-  Building2,
-  Ghost,
   Activity,
-  TrendingUp,
   AlertCircle,
+  Building2,
   CheckCircle,
+  Ghost,
+  TrendingUp,
+  Users,
   XCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getAdminDashboard, type AdminDashboardStats } from '@/lib/api/admin';
+import { type AdminDashboardStats, getAdminDashboard } from '@/lib/api/admin';
 
 function formatNumber(num: number): string {
   if (num >= 1000000) {
@@ -54,7 +54,9 @@ function getHealthIcon(status: string) {
   }
 }
 
-function getHealthBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getHealthBadgeVariant(
+  status: string
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'healthy':
       return 'default';

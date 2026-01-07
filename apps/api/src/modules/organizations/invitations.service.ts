@@ -1,17 +1,17 @@
+import { randomBytes } from 'node:crypto';
+import type { OrgId, OrgRole, UserId } from '@haunt/shared';
 import {
-  Injectable,
-  ForbiddenException,
-  ConflictException,
-  NotFoundException,
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { RbacService } from '../../core/rbac/rbac.service.js';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import type { OrgId, UserId, OrgRole } from '@haunt/shared';
-import { randomBytes } from 'crypto';
 
 @Injectable()
 export class InvitationsService {
@@ -21,7 +21,7 @@ export class InvitationsService {
     private supabase: SupabaseService,
     private rbacService: RbacService,
     private notificationsService: NotificationsService,
-    private config: ConfigService,
+    private config: ConfigService
   ) {}
 
   /**
@@ -32,7 +32,7 @@ export class InvitationsService {
     email: string,
     role: OrgRole,
     inviterId: UserId,
-    inviterRole: OrgRole,
+    inviterRole: OrgRole
   ) {
     // Check if inviter can invite to this role
     if (!this.rbacService.canInviteToRole(inviterRole, role)) {
@@ -111,7 +111,7 @@ export class InvitationsService {
           first_name,
           last_name
         )
-      `,
+      `
       )
       .single();
 
@@ -132,7 +132,11 @@ export class InvitationsService {
     const orgName = org?.name || 'your organization';
 
     // Send invitation email
-    const inviter = invite.inviter as unknown as { id: string; first_name: string; last_name: string } | null;
+    const inviter = invite.inviter as unknown as {
+      id: string;
+      first_name: string;
+      last_name: string;
+    } | null;
     const inviterName = inviter ? `${inviter.first_name} ${inviter.last_name}`.trim() : 'Someone';
 
     const appUrl = this.config.get('APP_URL') || 'http://localhost:3000';
@@ -192,7 +196,7 @@ Atrivio Platform`;
           first_name,
           last_name
         )
-      `,
+      `
       )
       .eq('org_id', orgId)
       .eq('status', 'pending')
@@ -262,7 +266,7 @@ Atrivio Platform`;
           first_name,
           last_name
         )
-      `,
+      `
       )
       .eq('token', token)
       .eq('status', 'pending')
@@ -291,9 +295,7 @@ Atrivio Platform`;
         logo_url: org?.logo_url ?? null,
       },
       role: invite.role,
-      invited_by: inviter
-        ? `${inviter.first_name} ${inviter.last_name}`.trim()
-        : null,
+      invited_by: inviter ? `${inviter.first_name} ${inviter.last_name}`.trim() : null,
       expires_at: invite.expires_at,
     };
   }
@@ -318,7 +320,7 @@ Atrivio Platform`;
           name,
           slug
         )
-      `,
+      `
       )
       .eq('token', token)
       .eq('status', 'pending')
@@ -356,16 +358,14 @@ Atrivio Platform`;
     }
 
     // Create membership
-    const { error: memberError } = await this.supabase.adminClient
-      .from('org_memberships')
-      .insert({
-        org_id: invite.org_id,
-        user_id: userId,
-        role: invite.role,
-        is_owner: false,
-        status: 'active',
-        invited_by: invite.invited_by,
-      });
+    const { error: memberError } = await this.supabase.adminClient.from('org_memberships').insert({
+      org_id: invite.org_id,
+      user_id: userId,
+      role: invite.role,
+      is_owner: false,
+      status: 'active',
+      invited_by: invite.invited_by,
+    });
 
     if (memberError) {
       throw new BadRequestException({
@@ -384,7 +384,11 @@ Atrivio Platform`;
       })
       .eq('id', invite.id);
 
-    const org = invite.organizations as unknown as { id: string; name: string; slug: string } | null;
+    const org = invite.organizations as unknown as {
+      id: string;
+      name: string;
+      slug: string;
+    } | null;
     return {
       message: 'Invitation accepted',
       organization: {

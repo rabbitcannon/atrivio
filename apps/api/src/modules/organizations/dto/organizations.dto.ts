@@ -1,16 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsUrl,
-  MinLength,
-  MaxLength,
-  Matches,
-  ValidateNested,
-  IsObject,
-} from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Matches,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 
 export class AddressDto {
   @ApiProperty({ example: '123 Spooky Lane' })

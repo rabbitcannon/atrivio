@@ -1,6 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -8,16 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, ChevronRight, AlertCircle, Calendar } from 'lucide-react';
 import {
-  getSchedules,
-  getAttractions,
-  type Schedule,
   type AttractionListItem,
+  getAttractions,
+  getSchedules,
+  type Schedule,
 } from '@/lib/api/client';
 
 interface ScheduleWeekViewProps {
@@ -94,11 +94,11 @@ export function ScheduleWeekView({ orgId, orgSlug }: ScheduleWeekViewProps) {
       if (!grouped[key]) {
         grouped[key] = [];
       }
-      grouped[key]!.push(schedule);
+      grouped[key]?.push(schedule);
     }
     // Sort each day's schedules by start time
     for (const key of Object.keys(grouped)) {
-      grouped[key]!.sort((a, b) => a.start_time.localeCompare(b.start_time));
+      grouped[key]?.sort((a, b) => a.start_time.localeCompare(b.start_time));
     }
     return grouped;
   }, [schedules]);
@@ -110,7 +110,7 @@ export function ScheduleWeekView({ orgId, orgSlug }: ScheduleWeekViewProps) {
       if (data?.data) {
         setAttractions(data.data);
         if (data.data.length > 0 && !selectedAttraction) {
-          setSelectedAttraction(data.data[0]!.id);
+          setSelectedAttraction(data.data[0]?.id);
         }
       }
       if (apiError) {
@@ -169,10 +169,10 @@ export function ScheduleWeekView({ orgId, orgSlug }: ScheduleWeekViewProps) {
     );
   }
 
-  const weekLabel = `${weekDates[0]!.toLocaleDateString('en-US', {
+  const weekLabel = `${weekDates[0]?.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-  })} - ${weekDates[6]!.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  })} - ${weekDates[6]?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
   return (
     <div className="space-y-4">
@@ -304,7 +304,11 @@ export function ScheduleWeekView({ orgId, orgSlug }: ScheduleWeekViewProps) {
       {!loading && schedules.length > 0 && (
         <div className="flex flex-wrap gap-2 text-sm">
           <span className="text-muted-foreground">Roles:</span>
-          {Array.from(new Set(schedules.map((s) => JSON.stringify({ name: s.role.name, color: s.role.color }))))
+          {Array.from(
+            new Set(
+              schedules.map((s) => JSON.stringify({ name: s.role.name, color: s.role.color }))
+            )
+          )
             .map((json) => JSON.parse(json) as { name: string; color: string })
             .map((role) => (
               <Badge

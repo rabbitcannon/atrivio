@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { CreateSeasonDto, UpdateSeasonDto } from './dto/seasons.dto.js';
 
 @Injectable()
@@ -14,11 +10,7 @@ export class SeasonsService {
   /**
    * Create a new season
    */
-  async create(
-    orgId: OrgId,
-    attractionId: string,
-    dto: CreateSeasonDto,
-  ) {
+  async create(orgId: OrgId, attractionId: string, dto: CreateSeasonDto) {
     // Verify attraction belongs to org
     await this.verifyAttractionAccess(orgId, attractionId);
 
@@ -56,11 +48,7 @@ export class SeasonsService {
   /**
    * List seasons for an attraction
    */
-  async findAll(
-    orgId: OrgId,
-    attractionId: string,
-    filters?: { year?: number; status?: string },
-  ) {
+  async findAll(orgId: OrgId, attractionId: string, filters?: { year?: number; status?: string }) {
     await this.verifyAttractionAccess(orgId, attractionId);
 
     let query = this.supabase.adminClient
@@ -116,12 +104,7 @@ export class SeasonsService {
   /**
    * Update season
    */
-  async update(
-    orgId: OrgId,
-    attractionId: string,
-    seasonId: string,
-    dto: UpdateSeasonDto,
-  ) {
+  async update(orgId: OrgId, attractionId: string, seasonId: string, dto: UpdateSeasonDto) {
     await this.verifyAttractionAccess(orgId, attractionId);
 
     // Validate dates if both provided

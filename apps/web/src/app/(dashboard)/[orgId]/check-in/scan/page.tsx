@@ -1,33 +1,26 @@
 'use client';
 
-import { useState, useRef, useEffect, Suspense } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
-  QrCode,
-  Scan,
+  ArrowLeft,
   CheckCircle2,
-  XCircle,
-  AlertTriangle,
   Clock,
-  User,
-  Ticket,
+  FileWarning,
   Hash,
   Loader2,
-  ArrowLeft,
-  FileWarning,
+  QrCode,
+  Scan,
+  Ticket,
+  User,
+  XCircle,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -35,9 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { getAttractions, listStations, scanCheckIn } from '@/lib/api/client';
+import type { AttractionListItem, CheckInScanResponse, CheckInStation } from '@/lib/api/types';
 import { cn } from '@/lib/utils/cn';
-import { scanCheckIn, getAttractions, listStations } from '@/lib/api/client';
-import type { CheckInScanResponse, AttractionListItem, CheckInStation } from '@/lib/api/types';
 
 type ScanStatus = 'idle' | 'scanning' | 'success' | 'error' | 'warning';
 
@@ -54,7 +47,7 @@ interface RecentScan {
 function ScanPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const _router = useRouter();
   const orgId = params['orgId'] as string;
   const attractionIdFromUrl = searchParams.get('attractionId');
 
@@ -84,14 +77,13 @@ function ScanPageContent() {
           // If no attractionId in URL, use saved or first
           if (!attractionIdFromUrl) {
             const saved = localStorage.getItem(`check-in-attraction-${orgId}`);
-            const defaultAttraction = res.data.data.find(a => a.id === saved) || res.data.data[0];
+            const defaultAttraction = res.data.data.find((a) => a.id === saved) || res.data.data[0];
             if (defaultAttraction) {
               setAttractionId(defaultAttraction.id);
             }
           }
         }
-      } catch (error) {
-        console.error('Failed to load attractions:', error);
+      } catch (_error) {
       } finally {
         setIsLoadingAttractions(false);
       }
@@ -109,14 +101,12 @@ function ScanPageContent() {
         if (res.data?.stations) {
           setStations(res.data.stations);
           // Auto-select first active station
-          const activeStation = res.data.stations.find(s => s.isActive);
+          const activeStation = res.data.stations.find((s) => s.isActive);
           if (activeStation && !stationId) {
             setStationId(activeStation.id);
           }
         }
-      } catch (error) {
-        console.error('Failed to load stations:', error);
-      }
+      } catch (_error) {}
     }
     loadStations();
   }, [orgId, attractionId, stationId]);
@@ -159,58 +149,65 @@ function ScanPageContent() {
           waiverSigned: false,
         });
         setStatus('error');
-        setRecentScans((prev) => [
-          {
-            success: false,
-            errorCode: response.error?.error || 'UNKNOWN_ERROR',
-            errorMessage: response.error?.message,
-            timestamp: new Date(),
-          },
-          ...prev,
-        ].slice(0, 10));
+        setRecentScans((prev) =>
+          [
+            {
+              success: false,
+              errorCode: response.error?.error || 'UNKNOWN_ERROR',
+              errorMessage: response.error?.message,
+              timestamp: new Date(),
+            },
+            ...prev,
+          ].slice(0, 10)
+        );
       } else if (response.data) {
         const data = response.data;
         setResult(data);
 
         if (data.success) {
           setStatus('success');
-          setRecentScans((prev) => [
-            {
-              success: true,
-              ticketNumber: data.ticket?.ticketNumber,
-              customerName: data.ticket?.guestName,
-              ticketType: data.ticket?.ticketType,
-              timestamp: new Date(),
-            },
-            ...prev,
-          ].slice(0, 10));
+          setRecentScans((prev) =>
+            [
+              {
+                success: true,
+                ticketNumber: data.ticket?.ticketNumber,
+                customerName: data.ticket?.guestName,
+                ticketType: data.ticket?.ticketType,
+                timestamp: new Date(),
+              },
+              ...prev,
+            ].slice(0, 10)
+          );
         } else if (data.requiresWaiver) {
           setStatus('warning');
-          setRecentScans((prev) => [
-            {
-              success: false,
-              errorCode: 'WAIVER_REQUIRED',
-              errorMessage: 'Guest must sign waiver',
-              ticketNumber: data.ticket?.ticketNumber,
-              timestamp: new Date(),
-            },
-            ...prev,
-          ].slice(0, 10));
+          setRecentScans((prev) =>
+            [
+              {
+                success: false,
+                errorCode: 'WAIVER_REQUIRED',
+                errorMessage: 'Guest must sign waiver',
+                ticketNumber: data.ticket?.ticketNumber,
+                timestamp: new Date(),
+              },
+              ...prev,
+            ].slice(0, 10)
+          );
         } else {
           setStatus('error');
-          setRecentScans((prev) => [
-            {
-              success: false,
-              errorCode: data.error || 'CHECK_IN_FAILED',
-              errorMessage: data.message,
-              timestamp: new Date(),
-            },
-            ...prev,
-          ].slice(0, 10));
+          setRecentScans((prev) =>
+            [
+              {
+                success: false,
+                errorCode: data.error || 'CHECK_IN_FAILED',
+                errorMessage: data.message,
+                timestamp: new Date(),
+              },
+              ...prev,
+            ].slice(0, 10)
+          );
         }
       }
-    } catch (err) {
-      console.error('Scan error:', err);
+    } catch (_err) {
       setResult({
         success: false,
         error: 'NETWORK_ERROR',
@@ -219,15 +216,17 @@ function ScanPageContent() {
         waiverSigned: false,
       });
       setStatus('error');
-      setRecentScans((prev) => [
-        {
-          success: false,
-          errorCode: 'NETWORK_ERROR',
-          errorMessage: 'Failed to connect to server',
-          timestamp: new Date(),
-        },
-        ...prev,
-      ].slice(0, 10));
+      setRecentScans((prev) =>
+        [
+          {
+            success: false,
+            errorCode: 'NETWORK_ERROR',
+            errorMessage: 'Failed to connect to server',
+            timestamp: new Date(),
+          },
+          ...prev,
+        ].slice(0, 10)
+      );
     } finally {
       setIsProcessing(false);
       setBarcode('');
@@ -300,9 +299,7 @@ function ScanPageContent() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">Scan Tickets</h1>
-          <p className="text-muted-foreground">
-            Scan barcodes or QR codes to check in guests.
-          </p>
+          <p className="text-muted-foreground">Scan barcodes or QR codes to check in guests.</p>
         </div>
       </div>
 
@@ -325,17 +322,22 @@ function ScanPageContent() {
         </div>
         <div className="space-y-2">
           <Label>Station (optional)</Label>
-          <Select value={stationId ?? 'none'} onValueChange={(v) => setStationId(v === 'none' ? null : v)}>
+          <Select
+            value={stationId ?? 'none'}
+            onValueChange={(v) => setStationId(v === 'none' ? null : v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select station" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">No station</SelectItem>
-              {stations.filter(s => s.isActive).map((station) => (
-                <SelectItem key={station.id} value={station.id}>
-                  {station.name}
-                </SelectItem>
-              ))}
+              {stations
+                .filter((s) => s.isActive)
+                .map((station) => (
+                  <SelectItem key={station.id} value={station.id}>
+                    {station.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
@@ -391,10 +393,7 @@ function ScanPageContent() {
 
         {/* Result Display Card */}
         <Card
-          className={cn(
-            'lg:col-span-1 transition-all duration-300 border-2',
-            getStatusColor()
-          )}
+          className={cn('lg:col-span-1 transition-all duration-300 border-2', getStatusColor())}
         >
           <CardHeader>
             <CardTitle>Scan Result</CardTitle>
@@ -446,9 +445,7 @@ function ScanPageContent() {
                 </div>
               ) : result?.requiresWaiver ? (
                 <div className="w-full space-y-4">
-                  <p className="text-yellow-600 font-bold text-xl text-center">
-                    Waiver Required
-                  </p>
+                  <p className="text-yellow-600 font-bold text-xl text-center">Waiver Required</p>
                   <div className="bg-yellow-50 dark:bg-yellow-950/30 rounded-lg p-4">
                     <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                       This guest must sign a waiver before check-in.
@@ -474,9 +471,7 @@ function ScanPageContent() {
                 </div>
               ) : (
                 <div className="w-full space-y-4">
-                  <p className="text-red-600 font-bold text-xl text-center">
-                    Check-In Failed
-                  </p>
+                  <p className="text-red-600 font-bold text-xl text-center">Check-In Failed</p>
                   <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-4">
                     <p className="text-sm font-medium text-red-800 dark:text-red-200">
                       {result?.message || 'Unknown error occurred'}
@@ -535,9 +530,7 @@ function ScanPageContent() {
                     <div>
                       {scan.success ? (
                         <>
-                          <p className="font-medium">
-                            {scan.customerName || 'Guest'}
-                          </p>
+                          <p className="font-medium">{scan.customerName || 'Guest'}</p>
                           <p className="text-sm text-muted-foreground">
                             {scan.ticketType} - #{scan.ticketNumber}
                           </p>
@@ -547,9 +540,7 @@ function ScanPageContent() {
                           <p className="font-medium text-red-700 dark:text-red-300">
                             {scan.errorCode}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {scan.errorMessage}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{scan.errorMessage}</p>
                         </>
                       )}
                     </div>
@@ -574,11 +565,13 @@ function ScanPageContent() {
 
 export default function ScanPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
       <ScanPageContent />
     </Suspense>
   );

@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, FolderTree, Folder, MoreHorizontal, Edit, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  Folder,
+  FolderTree,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,8 +21,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getInventoryCategories, deleteInventoryCategory, type InventoryCategory } from '@/lib/api/client';
+import {
+  deleteInventoryCategory,
+  getInventoryCategories,
+  type InventoryCategory,
+} from '@/lib/api/client';
 import { CategoryFormDialog } from './category-form-dialog';
 
 interface CategoriesListProps {
@@ -62,10 +75,7 @@ function CategoryNode({ category, level, onEdit, onDelete, onAddChild }: Categor
             <span className="w-4" />
           )}
         </button>
-        <Folder
-          className="h-4 w-4"
-          style={{ color: category.color || '#6b7280' }}
-        />
+        <Folder className="h-4 w-4" style={{ color: category.color || '#6b7280' }} />
         <span className="flex-1 font-medium">{category.name}</span>
         {category.item_count !== undefined && (
           <Badge variant="secondary" className="text-xs">
@@ -87,10 +97,7 @@ function CategoryNode({ category, level, onEdit, onDelete, onAddChild }: Categor
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(category)}
-              className="text-destructive"
-            >
+            <DropdownMenuItem onClick={() => onDelete(category)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -99,7 +106,7 @@ function CategoryNode({ category, level, onEdit, onDelete, onAddChild }: Categor
       </div>
       {expanded && hasChildren && (
         <div>
-          {category.children!.map((child) => (
+          {category.children?.map((child) => (
             <CategoryNode
               key={child.id}
               category={child}
@@ -124,7 +131,7 @@ export function CategoriesList({ orgId }: CategoriesListProps) {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<InventoryCategory | null>(null);
-  const [parentCategory, setParentCategory] = useState<InventoryCategory | null>(null);
+  const [_parentCategory, setParentCategory] = useState<InventoryCategory | null>(null);
 
   const loadCategories = useCallback(async () => {
     setLoading(true);
@@ -202,7 +209,13 @@ export function CategoriesList({ orgId }: CategoriesListProps) {
     <div className="space-y-6">
       {/* Header with Add Button */}
       <div className="flex justify-end">
-        <Button onClick={() => { setSelectedCategory(null); setParentCategory(null); setFormDialogOpen(true); }}>
+        <Button
+          onClick={() => {
+            setSelectedCategory(null);
+            setParentCategory(null);
+            setFormDialogOpen(true);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Category
         </Button>
@@ -230,10 +243,14 @@ export function CategoriesList({ orgId }: CategoriesListProps) {
             <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
               <Folder className="mb-4 h-12 w-12" />
               <p className="text-lg font-medium">No categories found</p>
-              <p className="mb-4 text-sm">
-                Create categories to organize your inventory items.
-              </p>
-              <Button onClick={() => { setSelectedCategory(null); setParentCategory(null); setFormDialogOpen(true); }}>
+              <p className="mb-4 text-sm">Create categories to organize your inventory items.</p>
+              <Button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setParentCategory(null);
+                  setFormDialogOpen(true);
+                }}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Category
               </Button>
@@ -246,7 +263,10 @@ export function CategoriesList({ orgId }: CategoriesListProps) {
                   category={category}
                   level={0}
                   onEdit={handleEdit}
-                  onDelete={(cat) => { setSelectedCategory(cat); setDeleteDialogOpen(true); }}
+                  onDelete={(cat) => {
+                    setSelectedCategory(cat);
+                    setDeleteDialogOpen(true);
+                  }}
                   onAddChild={handleAddChild}
                 />
               ))}
@@ -281,7 +301,10 @@ export function CategoriesList({ orgId }: CategoriesListProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

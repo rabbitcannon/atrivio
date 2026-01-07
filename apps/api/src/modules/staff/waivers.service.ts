@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { SignWaiverDto } from './dto/waivers.dto.js';
 
 @Injectable()
@@ -51,12 +47,7 @@ export class WaiversService {
   /**
    * Record signed waiver
    */
-  async sign(
-    orgId: OrgId,
-    staffId: string,
-    dto: SignWaiverDto,
-    ipAddress?: string,
-  ) {
+  async sign(orgId: OrgId, staffId: string, dto: SignWaiverDto, ipAddress?: string) {
     await this.verifyStaffAccess(orgId, staffId);
 
     // Calculate expiry (default 1 year from signing)

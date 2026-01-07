@@ -1,44 +1,19 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
 import {
+  AlertTriangle,
+  Building2,
+  Loader2,
+  MapPin,
   MonitorSmartphone,
-  Plus,
   Pencil,
-  Trash2,
+  Plus,
   Power,
   PowerOff,
-  MapPin,
-  Loader2,
-  Building2,
-  AlertTriangle,
+  Trash2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { useParams, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,10 +24,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -60,13 +45,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import {
+  createStation,
+  deleteStation,
   getAttractions,
   listStations,
-  createStation,
   updateStation,
-  deleteStation,
 } from '@/lib/api/client';
 import type { AttractionListItem, CheckInStation, CreateStationRequest } from '@/lib/api/types';
 
@@ -125,8 +119,7 @@ function StationsPageContent() {
             setSelectedAttractionId(defaultAttraction.id);
           }
         }
-      } catch (error) {
-        console.error('Failed to load attractions:', error);
+      } catch (_error) {
         toast({
           title: 'Error',
           description: 'Failed to load attractions',
@@ -152,8 +145,7 @@ function StationsPageContent() {
         if (result.data?.stations) {
           setStations(result.data.stations);
         }
-      } catch (error) {
-        console.error('Failed to load stations:', error);
+      } catch (_error) {
         toast({
           title: 'Error',
           description: 'Failed to load stations',
@@ -194,8 +186,7 @@ function StationsPageContent() {
         setCreateDialogOpen(false);
         setNewStation({ name: '', location: '', deviceId: '' });
       }
-    } catch (error) {
-      console.error('Failed to create station:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to create station',
@@ -240,8 +231,7 @@ function StationsPageContent() {
         setEditDialogOpen(false);
         setEditingStation(null);
       }
-    } catch (error) {
-      console.error('Failed to update station:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to update station',
@@ -262,17 +252,14 @@ function StationsPageContent() {
 
       // Update local state
       setStations((prev) =>
-        prev.map((s) =>
-          s.id === station.id ? { ...s, isActive: !s.isActive } : s
-        )
+        prev.map((s) => (s.id === station.id ? { ...s, isActive: !s.isActive } : s))
       );
 
       toast({
         title: station.isActive ? 'Station Deactivated' : 'Station Activated',
         description: `${station.name} is now ${station.isActive ? 'inactive' : 'active'}.`,
       });
-    } catch (error) {
-      console.error('Failed to toggle station:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to update station status',
@@ -302,8 +289,7 @@ function StationsPageContent() {
       setStations((prev) => prev.filter((s) => s.id !== stationToDelete.id));
       setDeleteDialogOpen(false);
       setStationToDelete(null);
-    } catch (error) {
-      console.error('Failed to delete station:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to delete station',
@@ -354,10 +340,7 @@ function StationsPageContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select
-            value={selectedAttractionId ?? ''}
-            onValueChange={handleAttractionChange}
-          >
+          <Select value={selectedAttractionId ?? ''} onValueChange={handleAttractionChange}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select attraction" />
             </SelectTrigger>
@@ -390,9 +373,7 @@ function StationsPageContent() {
                     id="name"
                     placeholder="e.g., Main Entrance"
                     value={newStation.name}
-                    onChange={(e) =>
-                      setNewStation({ ...newStation, name: e.target.value })
-                    }
+                    onChange={(e) => setNewStation({ ...newStation, name: e.target.value })}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -401,9 +382,7 @@ function StationsPageContent() {
                     id="location"
                     placeholder="e.g., Front Gate"
                     value={newStation.location}
-                    onChange={(e) =>
-                      setNewStation({ ...newStation, location: e.target.value })
-                    }
+                    onChange={(e) => setNewStation({ ...newStation, location: e.target.value })}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -412,9 +391,7 @@ function StationsPageContent() {
                     id="deviceId"
                     placeholder="e.g., SCANNER-001"
                     value={newStation.deviceId}
-                    onChange={(e) =>
-                      setNewStation({ ...newStation, deviceId: e.target.value })
-                    }
+                    onChange={(e) => setNewStation({ ...newStation, deviceId: e.target.value })}
                   />
                 </div>
               </div>
@@ -426,10 +403,7 @@ function StationsPageContent() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleCreateStation}
-                  disabled={!newStation.name || isCreating}
-                >
+                <Button onClick={handleCreateStation} disabled={!newStation.name || isCreating}>
                   {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create Station
                 </Button>
@@ -459,9 +433,7 @@ function StationsPageContent() {
             <div className="text-center py-8 text-muted-foreground">
               <MonitorSmartphone className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">No stations configured</p>
-              <p className="text-sm">
-                Add a check-in station to start scanning tickets.
-              </p>
+              <p className="text-sm">Add a check-in station to start scanning tickets.</p>
             </div>
           ) : (
             <Table>
@@ -495,10 +467,7 @@ function StationsPageContent() {
                       </code>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={station.isActive ? 'default' : 'secondary'}
-                        className="gap-1"
-                      >
+                      <Badge variant={station.isActive ? 'default' : 'secondary'} className="gap-1">
                         {station.isActive ? (
                           <>
                             <Power className="h-3 w-3" /> Active
@@ -548,9 +517,7 @@ function StationsPageContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Station</DialogTitle>
-            <DialogDescription>
-              Update the station details.
-            </DialogDescription>
+            <DialogDescription>Update the station details.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -559,9 +526,7 @@ function StationsPageContent() {
                 id="edit-name"
                 placeholder="e.g., Main Entrance"
                 value={editForm.name}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, name: e.target.value })
-                }
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
@@ -570,9 +535,7 @@ function StationsPageContent() {
                 id="edit-location"
                 placeholder="e.g., Front Gate"
                 value={editForm.location}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, location: e.target.value })
-                }
+                onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
@@ -581,9 +544,7 @@ function StationsPageContent() {
                 id="edit-deviceId"
                 placeholder="e.g., SCANNER-001"
                 value={editForm.deviceId}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, deviceId: e.target.value })
-                }
+                onChange={(e) => setEditForm({ ...editForm, deviceId: e.target.value })}
               />
             </div>
           </div>
@@ -595,10 +556,7 @@ function StationsPageContent() {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleUpdateStation}
-              disabled={!editForm.name || isUpdating}
-            >
+            <Button onClick={handleUpdateStation} disabled={!editForm.name || isUpdating}>
               {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Changes
             </Button>
@@ -615,8 +573,8 @@ function StationsPageContent() {
               Delete Station
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{stationToDelete?.name}&quot;?
-              This action cannot be undone.
+              Are you sure you want to delete &quot;{stationToDelete?.name}&quot;? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

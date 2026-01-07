@@ -1,32 +1,11 @@
 'use client';
 
+import { AlertCircle, Flag, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Plus, MoreHorizontal, Flag, AlertCircle, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -36,11 +15,32 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  getFeatureFlags,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import {
   createFeatureFlag,
-  updateFeatureFlag,
   deleteFeatureFlag,
   type FeatureFlag,
+  getFeatureFlags,
+  updateFeatureFlag,
 } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
@@ -217,9 +217,7 @@ export default function AdminFeatureFlagsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      {flag.org_count > 0 && (
-                        <Badge variant="outline">{flag.org_count} orgs</Badge>
-                      )}
+                      {flag.org_count > 0 && <Badge variant="outline">{flag.org_count} orgs</Badge>}
                       {flag.user_count > 0 && (
                         <Badge variant="outline">{flag.user_count} users</Badge>
                       )}
@@ -317,10 +315,7 @@ export default function AdminFeatureFlagsPage() {
             <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={!newFlag.key.trim() || !newFlag.name.trim()}
-            >
+            <Button onClick={handleCreate} disabled={!newFlag.key.trim() || !newFlag.name.trim()}>
               Create Flag
             </Button>
           </DialogFooter>
@@ -333,8 +328,8 @@ export default function AdminFeatureFlagsPage() {
           <DialogHeader>
             <DialogTitle>Delete Feature Flag</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the flag &quot;{selectedFlag?.name}&quot;? This
-              action cannot be undone.
+              Are you sure you want to delete the flag &quot;{selectedFlag?.name}&quot;? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

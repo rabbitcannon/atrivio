@@ -1,11 +1,8 @@
-import {
-  Injectable,
-  ForbiddenException,
-} from '@nestjs/common';
+import type { OrgRole } from '@haunt/shared';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator.js';
-import type { OrgRole } from '@haunt/shared';
 
 /**
  * Guard that checks if the user has one of the required roles
@@ -23,10 +20,10 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<OrgRole[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<OrgRole[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;

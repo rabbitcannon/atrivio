@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsDateString, IsEnum } from 'class-validator';
+import { IsDateString, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 const SEASON_STATUS = ['upcoming', 'active', 'completed', 'cancelled'] as const;
 type SeasonStatus = (typeof SEASON_STATUS)[number];

@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { AddCertificationDto } from './dto/certifications.dto.js';
 
 @Injectable()
@@ -60,10 +56,12 @@ export class CertificationsService {
         expires_at: c.expires_at,
         days_until_expiry: daysUntilExpiry,
         verified: c.verified,
-        verified_by: c.verifier ? {
-          id: c.verifier.id,
-          name: `${c.verifier.first_name} ${c.verifier.last_name}`,
-        } : null,
+        verified_by: c.verifier
+          ? {
+              id: c.verifier.id,
+              name: `${c.verifier.first_name} ${c.verifier.last_name}`,
+            }
+          : null,
         verified_at: c.verified_at,
         document_url: c.document_url,
       };
@@ -73,8 +71,8 @@ export class CertificationsService {
     const requiredTypes = ['background_check', 'first_aid'];
     const existingTypes = certifications.map((c: any) => c.type);
     const required = requiredTypes
-      .filter(type => !existingTypes.includes(type))
-      .map(type => ({
+      .filter((type) => !existingTypes.includes(type))
+      .map((type) => ({
         type,
         status: 'missing',
         required_by: 'Before first shift',
@@ -154,14 +152,20 @@ export class CertificationsService {
       });
     }
 
-    const verifier = data.verifier as unknown as { id: string; first_name: string; last_name: string } | null;
+    const verifier = data.verifier as unknown as {
+      id: string;
+      first_name: string;
+      last_name: string;
+    } | null;
     return {
       id: data.id,
       verified: data.verified,
-      verified_by: verifier ? {
-        id: verifier.id,
-        name: `${verifier.first_name} ${verifier.last_name}`,
-      } : null,
+      verified_by: verifier
+        ? {
+            id: verifier.id,
+            name: `${verifier.first_name} ${verifier.last_name}`,
+          }
+        : null,
       verified_at: data.verified_at,
     };
   }

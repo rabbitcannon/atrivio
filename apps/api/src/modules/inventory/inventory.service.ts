@@ -1,17 +1,13 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
-  CreateInventoryItemDto,
-  UpdateInventoryItemDto,
   AdjustQuantityDto,
+  CreateInventoryItemDto,
+  CreateInventoryTypeDto,
   ListInventoryItemsQueryDto,
   ListTransactionsQueryDto,
-  CreateInventoryTypeDto,
+  UpdateInventoryItemDto,
   UpdateInventoryTypeDto,
 } from './dto/inventory.dto.js';
 
@@ -139,12 +135,15 @@ export class InventoryService {
 
     let qb = this.supabase.adminClient
       .from('inventory_items')
-      .select(`
+      .select(
+        `
         *,
         type:inventory_types(id, key, name, icon, color, is_consumable, requires_checkout),
         category:inventory_categories(id, name, parent_id),
         attraction:attractions(id, name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .eq('org_id', orgId)
       .order('name');
 
@@ -401,11 +400,14 @@ export class InventoryService {
 
     let qb = this.supabase.adminClient
       .from('inventory_transactions')
-      .select(`
+      .select(
+        `
         *,
         item:inventory_items(id, name, sku),
         performed_by_user:profiles!inventory_transactions_performed_by_fkey(id, first_name, last_name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .eq('org_id', orgId)
       .order('created_at', { ascending: false });
 
@@ -447,8 +449,9 @@ export class InventoryService {
   // ============== Summary & Alerts ==============
 
   async getSummary(orgId: OrgId) {
-    const { data, error } = await this.supabase.adminClient
-      .rpc('get_inventory_summary', { p_org_id: orgId });
+    const { data, error } = await this.supabase.adminClient.rpc('get_inventory_summary', {
+      p_org_id: orgId,
+    });
 
     if (error) {
       throw new BadRequestException({
@@ -477,8 +480,9 @@ export class InventoryService {
   }
 
   async getLowStockItems(orgId: OrgId) {
-    const { data, error } = await this.supabase.adminClient
-      .rpc('get_low_stock_items', { p_org_id: orgId });
+    const { data, error } = await this.supabase.adminClient.rpc('get_low_stock_items', {
+      p_org_id: orgId,
+    });
 
     if (error) {
       throw new BadRequestException({

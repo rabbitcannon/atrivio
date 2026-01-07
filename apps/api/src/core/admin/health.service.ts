@@ -27,7 +27,7 @@ export class HealthService {
 
   constructor(
     private supabase: SupabaseService,
-    private metricsService: MetricsService,
+    private metricsService: MetricsService
   ) {}
 
   /**
@@ -77,11 +77,7 @@ export class HealthService {
       const client = this.supabase.adminClient;
 
       // Simple query to test connection
-      const { error } = await client
-        .from('profiles')
-        .select('id')
-        .limit(1)
-        .single();
+      const { error } = await client.from('profiles').select('id').limit(1).single();
 
       const latency = Date.now() - start;
 

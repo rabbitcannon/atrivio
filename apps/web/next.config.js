@@ -13,12 +13,7 @@ const nextConfig = {
     // typedRoutes: true,
 
     // Optimize package imports for better tree-shaking
-    optimizePackageImports: [
-      'lucide-react',
-      'date-fns',
-      'lodash',
-      '@radix-ui/react-icons',
-    ],
+    optimizePackageImports: ['lucide-react', 'date-fns', 'lodash', '@radix-ui/react-icons'],
   },
 
   // Image optimization

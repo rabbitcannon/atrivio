@@ -1,8 +1,8 @@
+import { Calendar, HelpCircle, MapPin, Ticket } from 'lucide-react';
 import { headers } from 'next/headers';
-import Link from 'next/link';
 import Image from 'next/image';
-import { Ticket, Calendar, HelpCircle, MapPin } from 'lucide-react';
-import { getPublicStorefront, getPublicFaqs } from '@/lib/api';
+import Link from 'next/link';
+import { getPublicFaqs, getPublicStorefront } from '@/lib/api';
 
 export default async function HomePage() {
   const headersList = await headers();
@@ -68,9 +68,7 @@ export default async function HomePage() {
       {settings.description && (
         <section className="py-16 bg-card">
           <div className="container mx-auto px-4 max-w-3xl text-center">
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              {settings.description}
-            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed">{settings.description}</p>
           </div>
         </section>
       )}
@@ -140,17 +138,12 @@ export default async function HomePage() {
                       +
                     </span>
                   </summary>
-                  <div className="p-4 pt-0 text-muted-foreground">
-                    {faq.answer}
-                  </div>
+                  <div className="p-4 pt-0 text-muted-foreground">{faq.answer}</div>
                 </details>
               ))}
             </div>
             <div className="text-center mt-8">
-              <Link
-                href="/faqs"
-                className="text-storefront-primary hover:underline font-medium"
-              >
+              <Link href="/faqs" className="text-storefront-primary hover:underline font-medium">
                 View all FAQs →
               </Link>
             </div>

@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, Plus, Star, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -22,15 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Plus, X, Star } from 'lucide-react';
-import {
-  getStaffSkills,
-  addStaffSkill,
-  removeStaffSkill,
-  type StaffSkill,
-} from '@/lib/api/client';
+import { addStaffSkill, getStaffSkills, removeStaffSkill, type StaffSkill } from '@/lib/api/client';
 
 interface SkillsManagerProps {
   orgId: string;
@@ -140,7 +135,7 @@ export function SkillsManager({ orgId, staffId }: SkillsManagerProps) {
 
   useEffect(() => {
     fetchSkills();
-  }, [orgId, staffId]);
+  }, []);
 
   function openAddDialog(skillName?: string) {
     setNewSkillName(skillName || '');
@@ -156,7 +151,7 @@ export function SkillsManager({ orgId, staffId }: SkillsManagerProps) {
     }
 
     const level = parseInt(newSkillLevel, 10);
-    if (isNaN(level) || level < 1 || level > 5) {
+    if (Number.isNaN(level) || level < 1 || level > 5) {
       setAddError('Level must be between 1 and 5');
       return;
     }
@@ -245,7 +240,9 @@ export function SkillsManager({ orgId, staffId }: SkillsManagerProps) {
         <Card>
           <CardHeader>
             <CardTitle>Current Skills ({skills.length})</CardTitle>
-            <CardDescription>Skills assigned to this staff member. Click to remove.</CardDescription>
+            <CardDescription>
+              Skills assigned to this staff member. Click to remove.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {skills.length === 0 ? (
@@ -340,11 +337,7 @@ export function SkillsManager({ orgId, staffId }: SkillsManagerProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="skill-level">Proficiency Level</Label>
-              <Select
-                value={newSkillLevel}
-                onValueChange={setNewSkillLevel}
-                disabled={addLoading}
-              >
+              <Select value={newSkillLevel} onValueChange={setNewSkillLevel} disabled={addLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
@@ -359,11 +352,7 @@ export function SkillsManager({ orgId, staffId }: SkillsManagerProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setAddDialogOpen(false)}
-              disabled={addLoading}
-            >
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)} disabled={addLoading}>
               Cancel
             </Button>
             <Button onClick={handleAddSkill} disabled={addLoading || !newSkillName.trim()}>
@@ -401,11 +390,7 @@ export function SkillsManager({ orgId, staffId }: SkillsManagerProps) {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRemoveSkill}
-              disabled={removeLoading}
-            >
+            <Button variant="destructive" onClick={handleRemoveSkill} disabled={removeLoading}>
               {removeLoading ? 'Removing...' : 'Remove Skill'}
             </Button>
           </DialogFooter>

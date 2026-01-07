@@ -1,25 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
+  AlertCircle,
+  ArrowDown,
   ArrowLeft,
   ArrowLeftRight,
-  ArrowDown,
-  Hand,
   Calendar,
   Clock,
-  AlertCircle,
-  X,
+  Hand,
   Loader2,
+  X,
 } from 'lucide-react';
-import { useUser } from '@/hooks/use-user';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
@@ -28,10 +26,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useUser } from '@/hooks/use-user';
 import {
-  getOrgBySlug,
-  getMySwapRequests,
   cancelSwapRequest,
+  getMySwapRequests,
+  getOrgBySlug,
   type ShiftSwapRequest,
   type SwapStatus,
 } from '@/lib/api/client';
@@ -65,7 +65,7 @@ const SWAP_TYPE_LABELS = {
 };
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  const date = new Date(`${dateStr}T00:00:00`);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -157,7 +157,9 @@ export default function MySwapsPage() {
       setError(apiError.message || 'Failed to cancel request');
     } else {
       setSwapRequests((prev) =>
-        prev.map((s) => (s.id === cancelingSwap.id ? { ...s, status: 'canceled' as SwapStatus } : s))
+        prev.map((s) =>
+          s.id === cancelingSwap.id ? { ...s, status: 'canceled' as SwapStatus } : s
+        )
       );
     }
 
@@ -265,9 +267,7 @@ export default function MySwapsPage() {
                 You haven&apos;t made any swap requests yet.
               </p>
               <Button className="mt-4" asChild>
-                <Link href={`/${orgSlug}/time/schedule`}>
-                  View My Schedule
-                </Link>
+                <Link href={`/${orgSlug}/time/schedule`}>View My Schedule</Link>
               </Button>
             </CardContent>
           </Card>
@@ -305,7 +305,8 @@ export default function MySwapsPage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <Clock className="h-3 w-3" />
-                                  {formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}
+                                  {formatTime(schedule.start_time)} -{' '}
+                                  {formatTime(schedule.end_time)}
                                 </div>
                                 <Badge
                                   variant="outline"
@@ -376,7 +377,8 @@ export default function MySwapsPage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Clock className="h-3 w-3" />
-                                  {formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}
+                                  {formatTime(schedule.start_time)} -{' '}
+                                  {formatTime(schedule.end_time)}
                                 </div>
                               </div>
                               {swap.admin_notes && (
@@ -398,7 +400,6 @@ export default function MySwapsPage() {
             )}
           </div>
         )}
-
       </div>
 
       {/* Cancel Confirmation Dialog */}
@@ -414,9 +415,16 @@ export default function MySwapsPage() {
           {cancelingSwap && (
             <div className="rounded-lg border p-4 bg-muted/50">
               <div className="text-sm space-y-1">
-                <div><strong>Type:</strong> {SWAP_TYPE_LABELS[cancelingSwap.swap_type]}</div>
-                <div><strong>Shift:</strong> {formatDate(cancelingSwap.schedule.date)}</div>
-                <div><strong>Time:</strong> {formatTime(cancelingSwap.schedule.start_time)} - {formatTime(cancelingSwap.schedule.end_time)}</div>
+                <div>
+                  <strong>Type:</strong> {SWAP_TYPE_LABELS[cancelingSwap.swap_type]}
+                </div>
+                <div>
+                  <strong>Shift:</strong> {formatDate(cancelingSwap.schedule.date)}
+                </div>
+                <div>
+                  <strong>Time:</strong> {formatTime(cancelingSwap.schedule.start_time)} -{' '}
+                  {formatTime(cancelingSwap.schedule.end_time)}
+                </div>
               </div>
             </div>
           )}

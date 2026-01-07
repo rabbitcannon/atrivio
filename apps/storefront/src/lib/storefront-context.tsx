@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, type ReactNode, useContext } from 'react';
 import type { PublicStorefront } from './api';
 
 const StorefrontContext = createContext<PublicStorefront | null>(null);
@@ -12,11 +12,7 @@ export function StorefrontProvider({
   storefront: PublicStorefront;
   children: ReactNode;
 }) {
-  return (
-    <StorefrontContext.Provider value={storefront}>
-      {children}
-    </StorefrontContext.Provider>
-  );
+  return <StorefrontContext.Provider value={storefront}>{children}</StorefrontContext.Provider>;
 }
 
 export function useStorefront(): PublicStorefront {

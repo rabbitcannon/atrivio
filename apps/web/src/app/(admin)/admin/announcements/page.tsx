@@ -1,31 +1,11 @@
 'use client';
 
+import { AlertCircle, Eye, EyeOff, Megaphone, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Plus, MoreHorizontal, Megaphone, AlertCircle, Trash2, Eye, EyeOff } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -35,18 +15,38 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  getAnnouncements,
-  createAnnouncement,
-  updateAnnouncement,
-  deleteAnnouncement,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import {
   type Announcement,
+  createAnnouncement,
+  deleteAnnouncement,
+  getAnnouncements,
+  updateAnnouncement,
 } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
@@ -301,9 +301,7 @@ export default function AdminAnnouncementsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Announcement</DialogTitle>
-            <DialogDescription>
-              Broadcast a message to all platform users.
-            </DialogDescription>
+            <DialogDescription>Broadcast a message to all platform users.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -312,9 +310,7 @@ export default function AdminAnnouncementsPage() {
                 id="title"
                 placeholder="Announcement title"
                 value={newAnnouncement.title}
-                onChange={(e) =>
-                  setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
-                }
+                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
               />
             </div>
             <div className="space-y-2">

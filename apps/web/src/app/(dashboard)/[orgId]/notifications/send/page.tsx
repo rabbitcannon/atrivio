@@ -1,16 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft, Mail, MessageSquare, Send } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { NotificationCategory } from '@/lib/api/types';
 
@@ -107,9 +113,7 @@ export default function SendNotificationPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Send Notification</h1>
-          <p className="text-muted-foreground">
-            Send a direct email or SMS notification.
-          </p>
+          <p className="text-muted-foreground">Send a direct email or SMS notification.</p>
         </div>
       </div>
 
@@ -148,7 +152,10 @@ export default function SendNotificationPage() {
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={(value: string) => setCategory(value as NotificationCategory)}>
+              <Select
+                value={category}
+                onValueChange={(value: string) => setCategory(value as NotificationCategory)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -201,7 +208,11 @@ export default function SendNotificationPage() {
               <Label htmlFor="body">Message</Label>
               <Textarea
                 id="body"
-                placeholder={channel === 'email' ? 'Email body content...' : 'SMS message (160 chars recommended)...'}
+                placeholder={
+                  channel === 'email'
+                    ? 'Email body content...'
+                    : 'SMS message (160 chars recommended)...'
+                }
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 rows={channel === 'email' ? 8 : 4}
@@ -245,7 +256,8 @@ export default function SendNotificationPage() {
             <strong>SMS:</strong> Requires Twilio credentials configured in environment variables.
           </p>
           <p>
-            <strong>Templates:</strong> For repeated notifications, create a template for consistency.
+            <strong>Templates:</strong> For repeated notifications, create a template for
+            consistency.
           </p>
           <p>
             <strong>Bulk sending:</strong> Use the API directly for sending to multiple recipients.

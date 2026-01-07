@@ -37,24 +37,15 @@ export class FeaturesService {
    * @param orgId - Optional org ID for org-specific flags
    * @param userId - Optional user ID for user-specific flags
    */
-  async isEnabled(
-    featureKey: string,
-    orgId?: string,
-    userId?: string,
-  ): Promise<boolean> {
+  async isEnabled(featureKey: string, orgId?: string, userId?: string): Promise<boolean> {
     // Use the SQL function for complete logic (rollout %, org_ids, user_ids)
-    const { data, error } = await this.supabase.adminClient.rpc(
-      'is_feature_enabled',
-      {
-        p_flag_key: featureKey,
-        p_user_id: userId || null,
-        p_org_id: orgId || null,
-      },
-    );
+    const { data, error } = await this.supabase.adminClient.rpc('is_feature_enabled', {
+      p_flag_key: featureKey,
+      p_user_id: userId || null,
+      p_org_id: orgId || null,
+    });
 
     if (error) {
-      // Log error but default to disabled for safety
-      console.error(`Feature flag check failed for ${featureKey}:`, error);
       return false;
     }
 
@@ -64,28 +55,16 @@ export class FeaturesService {
   /**
    * Check if multiple features are ALL enabled
    */
-  async areAllEnabled(
-    featureKeys: string[],
-    orgId?: string,
-    userId?: string,
-  ): Promise<boolean> {
-    const results = await Promise.all(
-      featureKeys.map((key) => this.isEnabled(key, orgId, userId)),
-    );
+  async areAllEnabled(featureKeys: string[], orgId?: string, userId?: string): Promise<boolean> {
+    const results = await Promise.all(featureKeys.map((key) => this.isEnabled(key, orgId, userId)));
     return results.every((enabled) => enabled);
   }
 
   /**
    * Check if ANY of the features are enabled
    */
-  async isAnyEnabled(
-    featureKeys: string[],
-    orgId?: string,
-    userId?: string,
-  ): Promise<boolean> {
-    const results = await Promise.all(
-      featureKeys.map((key) => this.isEnabled(key, orgId, userId)),
-    );
+  async isAnyEnabled(featureKeys: string[], orgId?: string, userId?: string): Promise<boolean> {
+    const results = await Promise.all(featureKeys.map((key) => this.isEnabled(key, orgId, userId)));
     return results.some((enabled) => enabled);
   }
 
@@ -125,7 +104,6 @@ export class FeaturesService {
       .order('key');
 
     if (error) {
-      console.error('Failed to get feature flags:', error);
       return [];
     }
 

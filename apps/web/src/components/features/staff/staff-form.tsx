@@ -1,11 +1,19 @@
 'use client';
 
-import * as React from 'react';
+import type { OrgRole } from '@haunt/shared';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -14,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { createInvitation } from '@/lib/api/client';
-import type { OrgRole } from '@haunt/shared';
 
 interface StaffFormProps {
   orgId: string;

@@ -1,6 +1,6 @@
+import { ORG_ROLES, type OrgRole } from '@haunt/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsString } from 'class-validator';
-import { ORG_ROLES, type OrgRole } from '@haunt/shared';
 
 export class CreateInvitationDto {
   @ApiProperty({ example: 'newuser@example.com' })

@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 const PLATFORM_DOMAIN = process.env['NEXT_PUBLIC_PLATFORM_DOMAIN'] || 'hauntplatform.com';
 
@@ -15,11 +15,7 @@ export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   // Skip static files and API routes
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.includes('.')
-  ) {
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
     return NextResponse.next();
   }
 

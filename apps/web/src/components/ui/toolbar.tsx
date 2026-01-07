@@ -1,11 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { type VariantProps, cva } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
+import * as React from 'react';
 
 import {
   DropdownMenuLabel,
@@ -115,10 +114,7 @@ const dropdownArrowVariants = cva(
 type ToolbarButtonProps = {
   isDropdown?: boolean;
   pressed?: boolean;
-} & Omit<
-  React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
-  'asChild' | 'value'
-> &
+} & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'asChild' | 'value'> &
   VariantProps<typeof toolbarButtonVariants>;
 
 export const ToolbarButton = withTooltip(function ToolbarButton({
@@ -146,14 +142,9 @@ export const ToolbarButton = withTooltip(function ToolbarButton({
       >
         {isDropdown ? (
           <>
-            <div className="flex flex-1 items-center gap-2 whitespace-nowrap">
-              {children}
-            </div>
+            <div className="flex flex-1 items-center gap-2 whitespace-nowrap">{children}</div>
             <div>
-              <ChevronDown
-                className="size-3.5 text-muted-foreground"
-                data-icon
-              />
+              <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
             </div>
           </>
         ) : (
@@ -226,8 +217,7 @@ export function ToolbarSplitButtonSecondary({
   size,
   variant,
   ...props
-}: React.ComponentPropsWithoutRef<'span'> &
-  VariantProps<typeof dropdownArrowVariants>) {
+}: React.ComponentPropsWithoutRef<'span'> & VariantProps<typeof dropdownArrowVariants>) {
   return (
     <span
       className={cn(
@@ -262,18 +252,9 @@ export function ToolbarToggleItem({
   );
 }
 
-export function ToolbarGroup({
-  children,
-  className,
-}: React.ComponentProps<'div'>) {
+export function ToolbarGroup({ children, className }: React.ComponentProps<'div'>) {
   return (
-    <div
-      className={cn(
-        'group/toolbar-group',
-        'relative hidden has-[button]:flex',
-        className
-      )}
-    >
+    <div className={cn('group/toolbar-group', 'relative hidden has-[button]:flex', className)}>
       <div className="flex items-center">{children}</div>
 
       <div className="group-last/toolbar-group:hidden! mx-1.5 py-0.5">
@@ -285,14 +266,8 @@ export function ToolbarGroup({
 
 type TooltipProps<T extends React.ElementType> = {
   tooltip?: React.ReactNode;
-  tooltipContentProps?: Omit<
-    React.ComponentPropsWithoutRef<typeof TooltipContent>,
-    'children'
-  >;
-  tooltipProps?: Omit<
-    React.ComponentPropsWithoutRef<typeof Tooltip>,
-    'children'
-  >;
+  tooltipContentProps?: Omit<React.ComponentPropsWithoutRef<typeof TooltipContent>, 'children'>;
+  tooltipProps?: Omit<React.ComponentPropsWithoutRef<typeof Tooltip>, 'children'>;
   tooltipTriggerProps?: React.ComponentPropsWithoutRef<typeof TooltipTrigger>;
 } & React.ComponentProps<T>;
 

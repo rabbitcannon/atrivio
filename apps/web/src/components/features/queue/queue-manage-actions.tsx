@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { Bell, Loader2, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Bell, RefreshCw, Loader2 } from 'lucide-react';
+import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 

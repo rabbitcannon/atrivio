@@ -15,21 +15,21 @@
  * - StaggerContainer/StaggerItem: Grid/list animations
  */
 
-import * as React from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import type { HTMLMotionProps, Variants } from 'motion/react';
-import { cn } from '@/lib/utils/cn';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import * as React from 'react';
 import {
-  fadeVariants,
+  cardHover,
   fadeUpVariants,
-  scaleVariants,
-  staggerItemVariants,
+  fadeVariants,
   pageTransitionVariants,
+  scaleVariants,
   slideLeftVariants,
   slideRightVariants,
-  cardHover,
+  staggerItemVariants,
   transitions,
 } from '@/lib/motion';
+import { cn } from '@/lib/utils/cn';
 
 // ============================================================================
 // MOTION DIV (General Purpose)
@@ -185,12 +185,7 @@ export const MotionListItem = React.forwardRef<HTMLLIElement, MotionListItemProp
     }
 
     return (
-      <motion.li
-        ref={ref}
-        variants={staggerItemVariants}
-        className={className}
-        {...props}
-      >
+      <motion.li ref={ref} variants={staggerItemVariants} className={className} {...props}>
         {children}
       </motion.li>
     );
@@ -252,17 +247,7 @@ export interface FadeInProps {
 }
 
 export const FadeIn = React.forwardRef<HTMLDivElement, FadeInProps>(
-  (
-    {
-      children,
-      delay = 0,
-      duration = 0.3,
-      direction = 'up',
-      distance = 20,
-      className,
-    },
-    ref
-  ) => {
+  ({ children, delay = 0, duration = 0.3, direction = 'up', distance = 20, className }, ref) => {
     const shouldReduceMotion = useReducedMotion();
 
     if (shouldReduceMotion) {
@@ -366,12 +351,7 @@ export const StaggerItem = React.forwardRef<HTMLDivElement, StaggerItemProps>(
     }
 
     return (
-      <motion.div
-        ref={ref}
-        variants={staggerItemVariants}
-        className={className}
-        {...props}
-      >
+      <motion.div ref={ref} variants={staggerItemVariants} className={className} {...props}>
         {children}
       </motion.div>
     );

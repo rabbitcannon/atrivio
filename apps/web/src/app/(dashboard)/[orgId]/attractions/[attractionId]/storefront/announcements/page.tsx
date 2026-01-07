@@ -1,60 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import {
-  ArrowLeft,
-  Megaphone,
-  Plus,
-  Edit,
-  Trash2,
-  MoreHorizontal,
-  Calendar,
   AlertTriangle,
-  Info,
-  CheckCircle,
-  Tag,
+  ArrowLeft,
   Bell,
+  Calendar,
+  CheckCircle,
+  Edit,
   ExternalLink,
+  Info,
+  Megaphone,
+  MoreHorizontal,
+  Plus,
   Power,
   PowerOff,
+  Tag,
+  Trash2,
 } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -65,9 +30,38 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
-import type { StorefrontAnnouncement, AnnouncementType } from '@/lib/api/types';
+import type { AnnouncementType, StorefrontAnnouncement } from '@/lib/api/types';
 
 const TYPE_CONFIG: Record<
   AnnouncementType,
@@ -114,7 +108,9 @@ export default function StorefrontAnnouncementsPage() {
 
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAnnouncement, setEditingAnnouncement] = useState<StorefrontAnnouncement | null>(null);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<StorefrontAnnouncement | null>(
+    null
+  );
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -133,7 +129,7 @@ export default function StorefrontAnnouncementsPage() {
       setIsLoading(false);
     }
     init();
-  }, [orgIdentifier, attractionId]);
+  }, [orgIdentifier, loadAnnouncements]);
 
   async function loadAnnouncements(orgId: string) {
     try {
@@ -141,8 +137,7 @@ export default function StorefrontAnnouncementsPage() {
         `/organizations/${orgId}/attractions/${attractionId}/storefront/announcements`
       );
       setAnnouncements(response?.announcements || []);
-    } catch (error) {
-      console.error('Failed to load announcements:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load announcements',
@@ -173,8 +168,8 @@ export default function StorefrontAnnouncementsPage() {
       type: announcement.type,
       linkUrl: announcement.linkUrl || '',
       linkText: announcement.linkText || '',
-      startsAt: announcement.startsAt ? announcement.startsAt.split('T')[0] ?? '' : '',
-      endsAt: announcement.endsAt ? announcement.endsAt.split('T')[0] ?? '' : '',
+      startsAt: announcement.startsAt ? (announcement.startsAt.split('T')[0] ?? '') : '',
+      endsAt: announcement.endsAt ? (announcement.endsAt.split('T')[0] ?? '') : '',
       isDismissible: announcement.isDismissible,
     });
     setIsDialogOpen(true);
@@ -220,8 +215,7 @@ export default function StorefrontAnnouncementsPage() {
       }
       setIsDialogOpen(false);
       await loadAnnouncements(resolvedOrgId);
-    } catch (error) {
-      console.error('Failed to save announcement:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to save announcement',
@@ -244,8 +238,7 @@ export default function StorefrontAnnouncementsPage() {
         title: announcement.isActive ? 'Announcement deactivated' : 'Announcement activated',
       });
       await loadAnnouncements(resolvedOrgId);
-    } catch (error) {
-      console.error('Failed to toggle announcement:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to update announcement',
@@ -264,8 +257,7 @@ export default function StorefrontAnnouncementsPage() {
       toast({ title: 'Announcement deleted' });
       setDeleteTarget(null);
       await loadAnnouncements(resolvedOrgId);
-    } catch (error) {
-      console.error('Failed to delete announcement:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to delete announcement',
@@ -392,9 +384,7 @@ export default function StorefrontAnnouncementsPage() {
                                 Has Link
                               </Badge>
                             )}
-                            {!announcement.isActive && (
-                              <Badge variant="secondary">Inactive</Badge>
-                            )}
+                            {!announcement.isActive && <Badge variant="secondary">Inactive</Badge>}
                           </div>
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {announcement.content}
@@ -579,9 +569,7 @@ export default function StorefrontAnnouncementsPage() {
               <Switch
                 id="dismissible"
                 checked={formData.isDismissible}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isDismissible: checked })
-                }
+                onCheckedChange={(checked) => setFormData({ ...formData, isDismissible: checked })}
               />
             </div>
           </div>

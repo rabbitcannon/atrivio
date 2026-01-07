@@ -3,7 +3,7 @@
  * Use data-theme="landing" on a parent element to apply
  */
 
-[data-theme='landing'] {
+[data-theme="landing"] {
   /* Background layers */
   --landing-bg-darkest: 240 40% 4%;
   --landing-bg-dark: 240 29% 11%;
@@ -96,9 +96,9 @@
 
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  [data-theme='landing'] * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  [data-theme="landing"] * {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }

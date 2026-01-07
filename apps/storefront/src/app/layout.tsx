@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { AnnouncementBanner } from '@/components/announcement-banner';
+import { Footer } from '@/components/footer';
+import { Header } from '@/components/header';
 import { getPublicStorefront } from '@/lib/api';
 import { StorefrontProvider } from '@/lib/storefront-context';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
-import { AnnouncementBanner } from '@/components/announcement-banner';
 import '@/styles/globals.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,11 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const identifier = headersList.get('x-storefront-identifier');
 
@@ -62,10 +58,13 @@ export default async function RootLayout({
             <div className="max-w-md text-center">
               <h1 className="text-2xl font-bold mb-4">Storefront Not Configured</h1>
               <p className="text-gray-400 mb-4">
-                In development, add <code className="bg-gray-800 px-2 py-1 rounded">?storefront=domain</code> to the URL.
+                In development, add{' '}
+                <code className="bg-gray-800 px-2 py-1 rounded">?storefront=domain</code> to the
+                URL.
               </p>
               <p className="text-gray-400 text-sm">
-                Example: <code className="bg-gray-800 px-2 py-1 rounded text-xs">
+                Example:{' '}
+                <code className="bg-gray-800 px-2 py-1 rounded text-xs">
                   localhost:3002?storefront=haunted-mansion
                 </code>
               </p>
@@ -88,7 +87,8 @@ export default async function RootLayout({
               <h1 className="text-4xl font-bold mb-4">404</h1>
               <h2 className="text-xl font-semibold mb-4">Storefront Not Found</h2>
               <p className="text-gray-400 mb-4">
-                The storefront you&apos;re looking for doesn&apos;t exist or isn&apos;t published yet.
+                The storefront you&apos;re looking for doesn&apos;t exist or isn&apos;t published
+                yet.
               </p>
               <p className="text-gray-500 text-sm">
                 If you believe this is an error, please contact the attraction owner.
@@ -114,16 +114,23 @@ export default async function RootLayout({
 
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    let h = 0, s = 0;
+    let h = 0,
+      s = 0;
     const l = (max + min) / 2;
 
     if (max !== min) {
       const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch (max) {
-        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-        case g: h = ((b - r) / d + 2) / 6; break;
-        case b: h = ((r - g) / d + 4) / 6; break;
+        case r:
+          h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+          break;
+        case g:
+          h = ((b - r) / d + 2) / 6;
+          break;
+        case b:
+          h = ((r - g) / d + 4) / 6;
+          break;
       }
     }
 

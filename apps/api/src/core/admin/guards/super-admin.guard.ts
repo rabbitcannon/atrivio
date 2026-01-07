@@ -1,8 +1,5 @@
-import {
-  Injectable,
-  ForbiddenException,
-} from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { SupabaseService } from '../../../shared/database/supabase.service.js';
 
 /**

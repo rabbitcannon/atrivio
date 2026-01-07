@@ -1,6 +1,9 @@
 'use client';
 
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,14 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import {
   createShiftTemplate,
-  updateShiftTemplate,
   getScheduleRoles,
-  type ShiftTemplate,
   type ScheduleRole,
+  type ShiftTemplate,
+  updateShiftTemplate,
 } from '@/lib/api/client';
 
 interface TemplateFormDialogProps {
@@ -81,7 +81,7 @@ export function TemplateFormDialog({
       if (data) {
         setRoles(data);
         if (data.length > 0 && !formData.roleId) {
-          setFormData((prev) => ({ ...prev, roleId: data[0]!.id }));
+          setFormData((prev) => ({ ...prev, roleId: data[0]?.id }));
         }
       }
     }
@@ -107,7 +107,7 @@ export function TemplateFormDialog({
         dayOfWeek: '5',
         startTime: '18:00',
         endTime: '23:00',
-        roleId: roles.length > 0 ? roles[0]!.id : '',
+        roleId: roles.length > 0 ? roles[0]?.id : '',
         staffCount: 1,
         notes: '',
       });

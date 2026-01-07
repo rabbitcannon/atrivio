@@ -89,19 +89,35 @@ export function DashboardViz() {
             <div className="h-3 w-24 rounded bg-[hsl(var(--landing-text-muted)/0.3)]" />
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 animate-[landing-pulse_2s_ease-in-out_infinite] rounded-full bg-[hsl(var(--landing-accent-secondary))]" />
-              <span className="text-xs text-[hsl(var(--landing-accent-secondary))]">
-                LIVE
-              </span>
+              <span className="text-xs text-[hsl(var(--landing-accent-secondary))]">LIVE</span>
             </div>
           </div>
           <div className="flex h-16 items-end gap-1">
             {[
-              { id: 'h-0', height: 35 }, { id: 'h-1', height: 42 }, { id: 'h-2', height: 55 }, { id: 'h-3', height: 48 },
-              { id: 'h-4', height: 62 }, { id: 'h-5', height: 58 }, { id: 'h-6', height: 70 }, { id: 'h-7', height: 65 },
-              { id: 'h-8', height: 78 }, { id: 'h-9', height: 72 }, { id: 'h-10', height: 85 }, { id: 'h-11', height: 80 },
-              { id: 'h-12', height: 75 }, { id: 'h-13', height: 68 }, { id: 'h-14', height: 60 }, { id: 'h-15', height: 52 },
-              { id: 'h-16', height: 45 }, { id: 'h-17', height: 38 }, { id: 'h-18', height: 42 }, { id: 'h-19', height: 48 },
-              { id: 'h-20', height: 55 }, { id: 'h-21', height: 50 }, { id: 'h-22', height: 45 }, { id: 'h-23', height: 40 },
+              { id: 'h-0', height: 35 },
+              { id: 'h-1', height: 42 },
+              { id: 'h-2', height: 55 },
+              { id: 'h-3', height: 48 },
+              { id: 'h-4', height: 62 },
+              { id: 'h-5', height: 58 },
+              { id: 'h-6', height: 70 },
+              { id: 'h-7', height: 65 },
+              { id: 'h-8', height: 78 },
+              { id: 'h-9', height: 72 },
+              { id: 'h-10', height: 85 },
+              { id: 'h-11', height: 80 },
+              { id: 'h-12', height: 75 },
+              { id: 'h-13', height: 68 },
+              { id: 'h-14', height: 60 },
+              { id: 'h-15', height: 52 },
+              { id: 'h-16', height: 45 },
+              { id: 'h-17', height: 38 },
+              { id: 'h-18', height: 42 },
+              { id: 'h-19', height: 48 },
+              { id: 'h-20', height: 55 },
+              { id: 'h-21', height: 50 },
+              { id: 'h-22', height: 45 },
+              { id: 'h-23', height: 40 },
             ].map((bar) => (
               <div
                 key={bar.id}

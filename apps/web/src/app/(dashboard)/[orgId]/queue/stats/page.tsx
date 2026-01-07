@@ -1,19 +1,19 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
+  AlertCircle,
   ArrowLeft,
+  BarChart3,
   Calendar,
   Clock,
-  Users,
-  UserCheck,
-  UserX,
-  AlertCircle,
   TrendingUp,
-  BarChart3,
+  UserCheck,
+  Users,
+  UserX,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { resolveOrgId, getAttractions, getQueueStats } from '@/lib/api';
+import { getAttractions, getQueueStats, resolveOrgId } from '@/lib/api';
 import type { QueueStats } from '@/lib/api/types';
 
 export const metadata: Metadata = {
@@ -61,7 +61,9 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
         </div>
         <Card className="border-dashed">
           <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">No attractions found. Create an attraction first.</p>
+            <p className="text-muted-foreground">
+              No attractions found. Create an attraction first.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -217,9 +219,7 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
         <CardContent>
           <div className="flex items-center gap-4">
             <div className="text-4xl font-bold">{currentInQueue}</div>
-            <div className="text-sm text-muted-foreground">
-              guests currently in queue
-            </div>
+            <div className="text-sm text-muted-foreground">guests currently in queue</div>
           </div>
         </CardContent>
       </Card>
@@ -228,9 +228,7 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
       <Card>
         <CardHeader>
           <CardTitle>Hourly Breakdown</CardTitle>
-          <CardDescription>
-            Queue activity by hour
-          </CardDescription>
+          <CardDescription>Queue activity by hour</CardDescription>
         </CardHeader>
         <CardContent>
           {byHour.length === 0 ? (
@@ -252,17 +250,23 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
               <TableBody>
                 {byHour.map((hourData) => {
                   const hourNum = parseInt(hourData.hour, 10);
-                  const hourLabel = hourNum === 0 ? '12 AM' :
-                    hourNum < 12 ? `${hourNum} AM` :
-                    hourNum === 12 ? '12 PM' :
-                    `${hourNum - 12} PM`;
+                  const hourLabel =
+                    hourNum === 0
+                      ? '12 AM'
+                      : hourNum < 12
+                        ? `${hourNum} AM`
+                        : hourNum === 12
+                          ? '12 PM'
+                          : `${hourNum - 12} PM`;
 
                   return (
                     <TableRow key={hourData.hour}>
                       <TableCell className="font-medium">{hourLabel}</TableCell>
                       <TableCell className="text-right">{hourData.joined}</TableCell>
                       <TableCell className="text-right text-green-600">{hourData.served}</TableCell>
-                      <TableCell className="text-right text-amber-600">{hourData.expired}</TableCell>
+                      <TableCell className="text-right text-amber-600">
+                        {hourData.expired}
+                      </TableCell>
                       <TableCell className="text-right">
                         {hourData.avgWait != null ? `${Math.round(hourData.avgWait)} min` : '--'}
                       </TableCell>
@@ -280,9 +284,7 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
       <Card>
         <CardHeader>
           <CardTitle>Key Insights</CardTitle>
-          <CardDescription>
-            Performance summary and recommendations
-          </CardDescription>
+          <CardDescription>Performance summary and recommendations</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-3">
@@ -307,7 +309,8 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
               <div>
                 <h4 className="font-medium">Expired Entries</h4>
                 <p className="text-sm text-muted-foreground">
-                  {totalExpired} entries expired. Consider adjusting max wait time or notification timing.
+                  {totalExpired} entries expired. Consider adjusting max wait time or notification
+                  timing.
                 </p>
               </div>
             </div>
@@ -321,7 +324,8 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
               <div>
                 <h4 className="font-medium">No Shows</h4>
                 <p className="text-sm text-muted-foreground">
-                  {totalNoShow} guests were called but didn&apos;t arrive. Consider sending reminder notifications.
+                  {totalNoShow} guests were called but didn&apos;t arrive. Consider sending reminder
+                  notifications.
                 </p>
               </div>
             </div>
@@ -335,7 +339,8 @@ export default async function QueueStatsPage({ params, searchParams }: QueueStat
               <div>
                 <h4 className="font-medium">Wait Time</h4>
                 <p className="text-sm text-muted-foreground">
-                  Average wait time is {Math.round(avgWait)} minutes. Consider increasing batch size or frequency.
+                  Average wait time is {Math.round(avgWait)} minutes. Consider increasing batch size
+                  or frequency.
                 </p>
               </div>
             </div>

@@ -1,6 +1,9 @@
 'use client';
 
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,17 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import {
   createInventoryItem,
-  updateInventoryItem,
-  getInventoryTypes,
-  getInventoryCategories,
   getAttractions,
+  getInventoryCategories,
+  getInventoryTypes,
+  type InventoryCategory,
   type InventoryItem,
   type InventoryType,
-  type InventoryCategory,
+  updateInventoryItem,
 } from '@/lib/api/client';
 
 interface ItemFormDialogProps {
@@ -41,13 +41,7 @@ interface ItemFormDialogProps {
   onSaved: () => void;
 }
 
-export function ItemFormDialog({
-  orgId,
-  item,
-  open,
-  onOpenChange,
-  onSaved,
-}: ItemFormDialogProps) {
+export function ItemFormDialog({ orgId, item, open, onOpenChange, onSaved }: ItemFormDialogProps) {
   const [types, setTypes] = useState<InventoryType[]>([]);
   const [categories, setCategories] = useState<InventoryCategory[]>([]);
   const [attractions, setAttractions] = useState<{ id: string; name: string }[]>([]);
@@ -85,7 +79,8 @@ export function ItemFormDialog({
 
       if (typesRes.data?.types) setTypes(typesRes.data.types);
       if (categoriesRes.data?.categories) setCategories(categoriesRes.data.categories);
-      if (attractionsRes.data?.data) setAttractions(attractionsRes.data.data.map((a) => ({ id: a.id, name: a.name })));
+      if (attractionsRes.data?.data)
+        setAttractions(attractionsRes.data.data.map((a) => ({ id: a.id, name: a.name })));
       setLoadingData(false);
     }
 
@@ -115,7 +110,7 @@ export function ItemFormDialog({
         sku: '',
         name: '',
         description: '',
-        typeId: types.length > 0 ? types[0]!.id : '',
+        typeId: types.length > 0 ? types[0]?.id : '',
         categoryId: '__none__',
         attractionId: '__none__',
         quantity: 0,
@@ -135,8 +130,12 @@ export function ItemFormDialog({
     setLoading(true);
     setError(null);
 
-    const categoryId = formData.categoryId && formData.categoryId !== '__none__' ? formData.categoryId : undefined;
-    const attractionId = formData.attractionId && formData.attractionId !== '__none__' ? formData.attractionId : undefined;
+    const categoryId =
+      formData.categoryId && formData.categoryId !== '__none__' ? formData.categoryId : undefined;
+    const attractionId =
+      formData.attractionId && formData.attractionId !== '__none__'
+        ? formData.attractionId
+        : undefined;
 
     const payload = {
       sku: formData.sku,
@@ -181,9 +180,7 @@ export function ItemFormDialog({
           <DialogHeader>
             <DialogTitle>{item ? 'Edit Item' : 'Add Item'}</DialogTitle>
             <DialogDescription>
-              {item
-                ? 'Update the inventory item details.'
-                : 'Add a new item to your inventory.'}
+              {item ? 'Update the inventory item details.' : 'Add a new item to your inventory.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -397,7 +394,12 @@ export function ItemFormDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || loadingData || !formData.typeId || !formData.name || !formData.sku}>
+            <Button
+              type="submit"
+              disabled={
+                loading || loadingData || !formData.typeId || !formData.name || !formData.sku
+              }
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {item ? 'Save Changes' : 'Add Item'}
             </Button>

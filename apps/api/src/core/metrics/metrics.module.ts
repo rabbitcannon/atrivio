@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { MetricsService } from './metrics.service.js';
 import { MetricsInterceptor } from './metrics.interceptor.js';
+import { MetricsService } from './metrics.service.js';
 
 /**
  * Global metrics module for request tracking

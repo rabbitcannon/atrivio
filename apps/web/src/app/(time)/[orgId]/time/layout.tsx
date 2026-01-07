@@ -1,13 +1,10 @@
 'use client';
 
+import { ArrowLeftRight, Calendar, Clock, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useParams, usePathname } from 'next/navigation';
-import { LogOut, Clock, Calendar, User, ArrowLeftRight } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { useUser } from '@/hooks/use-user';
-import { useAuthStore } from '@/stores/auth-store';
-import { Button } from '@/components/ui/button';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUser } from '@/hooks/use-user';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/auth-store';
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -107,7 +107,10 @@ export default function TimeLayout({ children }: TimeLayoutProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-destructive"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>

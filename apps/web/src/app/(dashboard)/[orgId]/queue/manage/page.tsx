@@ -1,26 +1,19 @@
+import { ArrowLeft, Bell, Clock, UserCheck, Users } from 'lucide-react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  Users,
-  Clock,
-  UserCheck,
-  Bell,
-} from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { resolveOrgId, getAttractions, getQueueConfig, getQueueEntries } from '@/lib/api';
-import { QueueManageActions } from '@/components/features/queue/queue-manage-actions';
+import { notFound } from 'next/navigation';
 import { QueueEntryRow } from '@/components/features/queue/queue-entry-row';
-import type { QueueEntry, QueueEntryStatus, QueueConfig, QueueEntriesResponse } from '@/lib/api/types';
+import { QueueManageActions } from '@/components/features/queue/queue-manage-actions';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { getAttractions, getQueueConfig, getQueueEntries, resolveOrgId } from '@/lib/api';
+import type {
+  QueueConfig,
+  QueueEntriesResponse,
+  QueueEntry,
+  QueueEntryStatus,
+} from '@/lib/api/types';
 
 export const metadata: Metadata = {
   title: 'Manage Queue',
@@ -58,7 +51,9 @@ export default async function ManageQueuePage({ params, searchParams }: ManageQu
         </div>
         <Card className="border-dashed">
           <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">No attractions found. Create an attraction first.</p>
+            <p className="text-muted-foreground">
+              No attractions found. Create an attraction first.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -74,10 +69,19 @@ export default async function ManageQueuePage({ params, searchParams }: ManageQu
     queueConfig = configResult.data;
 
     // Only pass status if it's a valid QueueEntryStatus
-    const validStatuses: QueueEntryStatus[] = ['waiting', 'notified', 'called', 'checked_in', 'expired', 'left', 'no_show'];
-    const status = statusFilter && validStatuses.includes(statusFilter as QueueEntryStatus)
-      ? (statusFilter as QueueEntryStatus)
-      : undefined;
+    const validStatuses: QueueEntryStatus[] = [
+      'waiting',
+      'notified',
+      'called',
+      'checked_in',
+      'expired',
+      'left',
+      'no_show',
+    ];
+    const status =
+      statusFilter && validStatuses.includes(statusFilter as QueueEntryStatus)
+        ? (statusFilter as QueueEntryStatus)
+        : undefined;
 
     const entriesResult = await getQueueEntries(orgId, primaryAttraction.id, {
       ...(status ? { status } : {}),
@@ -89,8 +93,10 @@ export default async function ManageQueuePage({ params, searchParams }: ManageQu
     // Queue not configured
   }
 
-  const waitingCount = entries.filter(e => e.status === 'waiting').length;
-  const calledCount = entries.filter(e => e.status === 'called' || e.status === 'notified').length;
+  const waitingCount = entries.filter((e) => e.status === 'waiting').length;
+  const calledCount = entries.filter(
+    (e) => e.status === 'called' || e.status === 'notified'
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -197,9 +203,7 @@ export default async function ManageQueuePage({ params, searchParams }: ManageQu
         </CardHeader>
         <CardContent>
           {entries.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No queue entries found.
-            </div>
+            <div className="text-center py-8 text-muted-foreground">No queue entries found.</div>
           ) : (
             <Table>
               <TableHeader>

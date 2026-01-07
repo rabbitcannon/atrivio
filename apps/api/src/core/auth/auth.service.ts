@@ -1,19 +1,19 @@
+import type { UserId } from '@haunt/shared';
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   UnauthorizedException,
-  ConflictException,
-  BadRequestException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
-  RegisterDto,
+  ForgotPasswordDto,
   LoginDto,
   MagicLinkDto,
   RefreshTokenDto,
-  ForgotPasswordDto,
+  RegisterDto,
   ResetPasswordDto,
 } from './dto/auth.dto.js';
-import type { UserId } from '@haunt/shared';
 
 export interface AuthUser {
   id: UserId;
@@ -186,13 +186,9 @@ export class AuthService {
    * Initiate password reset
    */
   async forgotPassword(dto: ForgotPasswordDto) {
-    const { error } = await this.supabase.client.auth.resetPasswordForEmail(
-      dto.email,
-    );
+    const { error } = await this.supabase.client.auth.resetPasswordForEmail(dto.email);
 
     if (error) {
-      // Don't reveal if email exists
-      console.error('Password reset error:', error);
     }
 
     // Always return success to prevent email enumeration

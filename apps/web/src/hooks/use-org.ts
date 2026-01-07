@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { useOrgStore, type Organization } from '@/stores/org-store';
-import { useUser } from './use-user';
-import { createClient } from '@/lib/supabase/client';
 import { createOrgId, type OrgRole } from '@haunt/shared';
+import { useParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { type Organization, useOrgStore } from '@/stores/org-store';
+import { useUser } from './use-user';
 
 interface OrgData {
   id: string;
@@ -26,14 +26,8 @@ interface MembershipData {
 export function useOrg() {
   const { user } = useUser();
   const params = useParams();
-  const {
-    currentOrg,
-    organizations,
-    isLoading,
-    setCurrentOrg,
-    setOrganizations,
-    setLoading,
-  } = useOrgStore();
+  const { currentOrg, organizations, isLoading, setCurrentOrg, setOrganizations, setLoading } =
+    useOrgStore();
 
   const orgIdParam = (params as { orgId?: string } | null)?.orgId;
 
@@ -48,7 +42,7 @@ export function useOrg() {
 
     async function fetchOrganizations() {
       const supabase = createClient();
-      
+
       // Fetch memberships with org data
       const { data: memberships, error } = await supabase
         .from('org_memberships')
@@ -65,7 +59,6 @@ export function useOrg() {
         .eq('status', 'active');
 
       if (error) {
-        console.error('Error fetching organizations:', error);
         setLoading(false);
         return;
       }

@@ -1,17 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { QueueService } from './queue.service.js';
-import { PublicJoinQueueDto } from './dto/queue.dto.js';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../core/auth/decorators/public.decorator.js';
+import type { PublicJoinQueueDto } from './dto/queue.dto.js';
+import { QueueService } from './queue.service.js';
 
 @ApiTags('Virtual Queue (Public)')
 @Controller('attractions/:attractionSlug/queue')
@@ -30,7 +21,7 @@ export class QueuePublicController {
   @ApiOperation({ summary: 'Join the virtual queue' })
   async joinQueue(
     @Param('attractionSlug') attractionSlug: string,
-    @Body() dto: PublicJoinQueueDto,
+    @Body() dto: PublicJoinQueueDto
   ) {
     return this.queueService.publicJoinQueue(attractionSlug, dto);
   }

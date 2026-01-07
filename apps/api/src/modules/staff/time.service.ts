@@ -1,11 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
-import type { ClockInDto, ClockOutDto, UpdateTimeEntryDto, TimeQueryDto } from './dto/time.dto.js';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
+import type { ClockInDto, ClockOutDto, TimeQueryDto, UpdateTimeEntryDto } from './dto/time.dto.js';
 
 @Injectable()
 export class TimeService {
@@ -115,8 +111,9 @@ export class TimeService {
 
     // Calculate total hours
     const clockInTime = new Date(active.clock_in);
-    const totalMinutes = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60) - breakMinutes;
-    const totalHours = Math.round(totalMinutes / 60 * 100) / 100;
+    const totalMinutes =
+      (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60) - breakMinutes;
+    const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
 
     if (error) {
       throw new BadRequestException({
@@ -190,7 +187,7 @@ export class TimeService {
         const clockOut = new Date(e.clock_out);
         const breakMins = e.break_minutes || 0;
         const totalMinutes = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60) - breakMins;
-        totalHours = Math.round(totalMinutes / 60 * 100) / 100;
+        totalHours = Math.round((totalMinutes / 60) * 100) / 100;
       }
 
       return {
@@ -200,10 +197,12 @@ export class TimeService {
         clock_out: e.clock_out,
         break_minutes: e.break_minutes,
         total_hours: totalHours,
-        attraction: e.attractions ? {
-          id: e.attractions.id,
-          name: e.attractions.name,
-        } : null,
+        attraction: e.attractions
+          ? {
+              id: e.attractions.id,
+              name: e.attractions.name,
+            }
+          : null,
         status: e.status,
         approved_by: e.approver ? `${e.approver.first_name} ${e.approver.last_name}` : null,
         notes: e.notes,
@@ -270,8 +269,9 @@ export class TimeService {
       const clockInTime = new Date(clockIn);
       const clockOutTime = new Date(clockOut);
       const breakMinutes = dto.break_minutes ?? entry.break_minutes ?? 0;
-      const totalMinutes = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60) - breakMinutes;
-      totalHours = Math.round(totalMinutes / 60 * 100) / 100;
+      const totalMinutes =
+        (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60) - breakMinutes;
+      totalHours = Math.round((totalMinutes / 60) * 100) / 100;
     }
 
     return {
@@ -325,14 +325,20 @@ export class TimeService {
       });
     }
 
-    const approver = data.approver as unknown as { id: string; first_name: string; last_name: string } | null;
+    const approver = data.approver as unknown as {
+      id: string;
+      first_name: string;
+      last_name: string;
+    } | null;
     return {
       id: data.id,
       status: data.status,
-      approved_by: approver ? {
-        id: approver.id,
-        name: `${approver.first_name} ${approver.last_name}`,
-      } : null,
+      approved_by: approver
+        ? {
+            id: approver.id,
+            name: `${approver.first_name} ${approver.last_name}`,
+          }
+        : null,
       approved_at: data.approved_at,
     };
   }
@@ -459,15 +465,19 @@ export class TimeService {
 
     return {
       is_clocked_in: !!activeEntry,
-      current_entry: activeEntry ? {
-        id: activeEntry.id,
-        clock_in: activeEntry.clock_in,
-        attraction: activeEntry.attractions ? {
-          id: (activeEntry.attractions as any).id,
-          name: (activeEntry.attractions as any).name,
-        } : null,
-        duration_minutes: durationMinutes,
-      } : null,
+      current_entry: activeEntry
+        ? {
+            id: activeEntry.id,
+            clock_in: activeEntry.clock_in,
+            attraction: activeEntry.attractions
+              ? {
+                  id: (activeEntry.attractions as any).id,
+                  name: (activeEntry.attractions as any).name,
+                }
+              : null,
+            duration_minutes: durationMinutes,
+          }
+        : null,
       staff_id: staffId,
       attractions,
     };
@@ -565,16 +575,20 @@ export class TimeService {
       return {
         entry_id: entry.id,
         staff_id: entry.staff_id,
-        user: profile ? {
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          avatar_url: profile.avatar_url,
-        } : null,
+        user: profile
+          ? {
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              avatar_url: profile.avatar_url,
+            }
+          : null,
         clock_in: entry.clock_in,
-        attraction: entry.attractions ? {
-          id: entry.attractions.id,
-          name: entry.attractions.name,
-        } : null,
+        attraction: entry.attractions
+          ? {
+              id: entry.attractions.id,
+              name: entry.attractions.name,
+            }
+          : null,
         duration_minutes: durationMinutes,
       };
     });

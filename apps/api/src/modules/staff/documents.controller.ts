@@ -1,20 +1,20 @@
 import {
   Controller,
-  Get,
-  Post,
   Delete,
+  Get,
   Param,
+  Post,
   Query,
-  UseInterceptors,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { DocumentsService } from './documents.service.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import { DocumentsService } from './documents.service.js';
 
 @ApiTags('Staff Documents')
 @Controller('organizations/:orgId/staff/:staffId/documents')
@@ -25,10 +25,7 @@ export class DocumentsController {
 
   @Get()
   @ApiOperation({ summary: 'List staff documents' })
-  async list(
-    @Tenant() ctx: TenantContext,
-    @Param('staffId') staffId: string,
-  ) {
+  async list(@Tenant() ctx: TenantContext, @Param('staffId') staffId: string) {
     return this.documentsService.findAll(ctx.orgId, staffId);
   }
 
@@ -42,7 +39,7 @@ export class DocumentsController {
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
     @Query('fileName') fileName: string,
-    @Query('contentType') contentType: string,
+    @Query('contentType') contentType: string
   ) {
     return this.documentsService.getUploadUrl(ctx.orgId, staffId, fileName, contentType);
   }
@@ -54,7 +51,7 @@ export class DocumentsController {
   async delete(
     @Tenant() ctx: TenantContext,
     @Param('staffId') staffId: string,
-    @Param('docId') docId: string,
+    @Param('docId') docId: string
   ) {
     return this.documentsService.delete(ctx.orgId, staffId, docId);
   }

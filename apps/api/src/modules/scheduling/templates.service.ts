@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
   CreateShiftTemplateDto,
-  UpdateShiftTemplateDto,
   GenerateFromTemplatesDto,
+  UpdateShiftTemplateDto,
 } from './dto/template.dto.js';
 
 @Injectable()
@@ -176,7 +176,7 @@ export class TemplatesService {
     orgId: OrgId,
     attractionId: string,
     dto: GenerateFromTemplatesDto,
-    createdBy: UserId,
+    createdBy: UserId
   ) {
     // Get templates to use
     let templatesQuery = this.supabase.adminClient

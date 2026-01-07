@@ -1,21 +1,21 @@
+import type { OrgId } from '@haunt/shared';
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ConflictException,
+  Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
-import type { OrgId } from '@haunt/shared';
-import type {
-  CreateOnboardingLinkDto,
-  CreateDashboardLinkDto,
-  ListTransactionsDto,
-  ListPayoutsDto,
-  CreateRefundDto,
-} from './dto/payments.dto.js';
 import Stripe from 'stripe';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
+import type {
+  CreateDashboardLinkDto,
+  CreateOnboardingLinkDto,
+  CreateRefundDto,
+  ListPayoutsDto,
+  ListTransactionsDto,
+} from './dto/payments.dto.js';
 
 // Default platform fee if not configured
 const DEFAULT_PLATFORM_FEE_PERCENT = 3.0;
@@ -237,7 +237,9 @@ export class PaymentsService {
     // Create Stripe account link for onboarding
     let accountLink: Stripe.AccountLink;
     try {
-      const appUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']?.replace(':54321', ':3000') || 'http://localhost:3000';
+      const appUrl =
+        process.env['NEXT_PUBLIC_SUPABASE_URL']?.replace(':54321', ':3000') ||
+        'http://localhost:3000';
       accountLink = await this.stripe.accountLinks.create({
         account: account.stripe_account_id,
         refresh_url: dto.refresh_url || `${appUrl}/stripe/refresh`,
@@ -293,7 +295,9 @@ export class PaymentsService {
     let stripeAccount: Stripe.Account;
     try {
       stripeAccount = await this.stripe.accounts.retrieve(account.stripe_account_id);
-      this.logger.log(`Synced account ${account.stripe_account_id}: charges_enabled=${stripeAccount.charges_enabled}, details_submitted=${stripeAccount.details_submitted}`);
+      this.logger.log(
+        `Synced account ${account.stripe_account_id}: charges_enabled=${stripeAccount.charges_enabled}, details_submitted=${stripeAccount.details_submitted}`
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown Stripe error';
       this.logger.error(`Failed to retrieve Stripe account: ${message}`);
@@ -342,7 +346,7 @@ export class PaymentsService {
   /**
    * Create a dashboard login link for the Express account
    */
-  async createDashboardLink(orgId: OrgId, dto: CreateDashboardLinkDto) {
+  async createDashboardLink(orgId: OrgId, _dto: CreateDashboardLinkDto) {
     this.ensureStripeConfigured();
 
     const { data: account, error } = await this.supabase.adminClient
@@ -367,9 +371,7 @@ export class PaymentsService {
 
     // Create Stripe login link for Express dashboard
     try {
-      const loginLink = await this.stripe.accounts.createLoginLink(
-        account.stripe_account_id
-      );
+      const loginLink = await this.stripe.accounts.createLoginLink(account.stripe_account_id);
       this.logger.log(`Created dashboard link for account ${account.stripe_account_id}`);
       return {
         url: loginLink.url,
@@ -473,13 +475,15 @@ export class PaymentsService {
       });
     }
 
-    return data?.[0] || {
-      total_charges: 0,
-      total_refunds: 0,
-      total_fees: 0,
-      net_revenue: 0,
-      transaction_count: 0,
-    };
+    return (
+      data?.[0] || {
+        total_charges: 0,
+        total_refunds: 0,
+        total_fees: 0,
+        net_revenue: 0,
+        transaction_count: 0,
+      }
+    );
   }
 
   /**
@@ -597,7 +601,9 @@ export class PaymentsService {
         { stripeAccount: account.stripe_account_id }
       );
       charges = response.data;
-      this.logger.log(`Fetched ${charges.length} charges from Stripe for account ${account.stripe_account_id}`);
+      this.logger.log(
+        `Fetched ${charges.length} charges from Stripe for account ${account.stripe_account_id}`
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown Stripe error';
       this.logger.error(`Failed to fetch charges from Stripe: ${message}`);
@@ -633,7 +639,7 @@ export class PaymentsService {
         .upsert(
           {
             stripe_account_id: account.id,
-            stripe_payment_intent_id: charge.payment_intent as string || null,
+            stripe_payment_intent_id: (charge.payment_intent as string) || null,
             stripe_charge_id: charge.id,
             type: 'charge',
             status: 'succeeded',
@@ -716,7 +722,7 @@ export class PaymentsService {
         {
           payment_intent: transaction.stripe_payment_intent_id,
           amount: refundAmount,
-          reason: dto.reason as Stripe.RefundCreateParams.Reason || 'requested_by_customer',
+          reason: (dto.reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
         },
         {
           stripeAccount: stripeAccountData?.stripe_account_id,

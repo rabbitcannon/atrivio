@@ -1,18 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
-import type { TLinkElement } from 'platejs';
-
-import {
-  type UseVirtualFloatingOptions,
-  flip,
-  offset,
-} from '@platejs/floating';
+import { flip, offset, type UseVirtualFloatingOptions } from '@platejs/floating';
 import { getLinkAttributes } from '@platejs/link';
 import {
-  type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
+  type LinkFloatingToolbarState,
   useFloatingLinkEdit,
   useFloatingLinkEditState,
   useFloatingLinkInsert,
@@ -20,6 +12,7 @@ import {
 } from '@platejs/link/react';
 import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+import type { TLinkElement } from 'platejs';
 import { KEYS } from 'platejs';
 import {
   useEditorRef,
@@ -27,6 +20,7 @@ import {
   useFormInputProps,
   usePluginOption,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -39,16 +33,9 @@ const inputVariants = cva(
   'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-transparent md:text-sm'
 );
 
-export function LinkFloatingToolbar({
-  state,
-}: {
-  state?: LinkFloatingToolbarState;
-}) {
+export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarState }) {
   const activeCommentId = usePluginOption({ key: KEYS.comment }, 'activeId');
-  const activeSuggestionId = usePluginOption(
-    { key: KEYS.suggestion },
-    'activeId'
-  );
+  const activeSuggestionId = usePluginOption({ key: KEYS.suggestion }, 'activeId');
 
   const floatingOptions: UseVirtualFloatingOptions = React.useMemo(
     () => ({
@@ -59,8 +46,7 @@ export function LinkFloatingToolbar({
           padding: 12,
         }),
       ],
-      placement:
-        activeSuggestionId || activeCommentId ? 'top-start' : 'bottom-start',
+      placement: activeSuggestionId || activeCommentId ? 'top-start' : 'bottom-start',
     }),
     [activeCommentId, activeSuggestionId]
   );
@@ -172,7 +158,7 @@ export function LinkFloatingToolbar({
 
 function LinkOpenButton() {
   const editor = useEditorRef();
-  const selection = useEditorSelection();
+  const _selection = useEditorSelection();
 
   const attributes = React.useMemo(
     () => {
@@ -186,7 +172,7 @@ function LinkOpenButton() {
       return getLinkAttributes(editor, element);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor, selection]
+    [editor]
   );
 
   return (

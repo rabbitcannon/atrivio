@@ -1,33 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Eye, MoreHorizontal, RefreshCw, Search, ShoppingCart, XCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { Search, Eye, MoreHorizontal, XCircle, RefreshCw, ShoppingCart } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -36,12 +14,28 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
@@ -122,7 +116,7 @@ export default function OrdersPage() {
       setIsLoading(false);
     }
     init();
-  }, [orgIdentifier]);
+  }, [orgIdentifier, loadOrders]);
 
   async function loadOrders(orgId: string, page = 1) {
     try {
@@ -142,9 +136,7 @@ export default function OrdersPage() {
       if (response?.pagination) {
         setPagination(response.pagination);
       }
-    } catch (error) {
-      console.error('Failed to load orders:', error);
-    }
+    } catch (_error) {}
   }
 
   async function handleSearch() {
@@ -162,7 +154,7 @@ export default function OrdersPage() {
       );
       setSelectedOrder(fullOrder);
       setIsDetailsOpen(true);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load order details',
@@ -175,13 +167,10 @@ export default function OrdersPage() {
     if (!resolvedOrgId) return;
 
     try {
-      await apiClient.post(
-        `/organizations/${resolvedOrgId}/orders/${order.id}/complete`,
-        {}
-      );
+      await apiClient.post(`/organizations/${resolvedOrgId}/orders/${order.id}/complete`, {});
       toast({ title: 'Order completed and tickets generated' });
       await loadOrders(resolvedOrgId, pagination.page);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to complete order',
@@ -198,7 +187,7 @@ export default function OrdersPage() {
       await apiClient.post(`/organizations/${resolvedOrgId}/orders/${order.id}/cancel`, {});
       toast({ title: 'Order canceled' });
       await loadOrders(resolvedOrgId, pagination.page);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to cancel order',
@@ -209,8 +198,7 @@ export default function OrdersPage() {
 
   async function handleRefundOrder(order: Order) {
     if (!resolvedOrgId) return;
-    if (!confirm(`Refund order ${order.order_number}? This will void all tickets.`))
-      return;
+    if (!confirm(`Refund order ${order.order_number}? This will void all tickets.`)) return;
 
     try {
       await apiClient.post(`/organizations/${resolvedOrgId}/orders/${order.id}/refund`, {
@@ -218,7 +206,7 @@ export default function OrdersPage() {
       });
       toast({ title: 'Order refunded' });
       await loadOrders(resolvedOrgId, pagination.page);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to refund order',
@@ -243,7 +231,7 @@ export default function OrdersPage() {
 
   function formatTime(time: string): string {
     const [hours, minutes] = time.split(':');
-    const h = parseInt(hours || '0');
+    const h = parseInt(hours || '0', 10);
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 || 12;
     return `${h12}:${minutes} ${ampm}`;
@@ -339,9 +327,7 @@ export default function OrdersPage() {
                       <TableCell>
                         <div>{order.customer_email}</div>
                         {order.customer_name && (
-                          <div className="text-sm text-muted-foreground">
-                            {order.customer_name}
-                          </div>
+                          <div className="text-sm text-muted-foreground">{order.customer_name}</div>
                         )}
                       </TableCell>
                       <TableCell>{order.attraction?.name || '—'}</TableCell>
@@ -358,9 +344,7 @@ export default function OrdersPage() {
                           {order.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {formatDate(order.created_at)}
-                      </TableCell>
+                      <TableCell className="text-sm">{formatDate(order.created_at)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -374,9 +358,7 @@ export default function OrdersPage() {
                               View Details
                             </DropdownMenuItem>
                             {order.status === 'pending' && (
-                              <DropdownMenuItem
-                                onClick={() => handleCompleteOrder(order)}
-                              >
+                              <DropdownMenuItem onClick={() => handleCompleteOrder(order)}>
                                 Complete Order
                               </DropdownMenuItem>
                             )}
@@ -457,9 +439,7 @@ export default function OrdersPage() {
               {/* Customer Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Customer
-                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">Customer</div>
                   <div>{selectedOrder.customer_email}</div>
                   {selectedOrder.customer_name && (
                     <div className="text-sm">{selectedOrder.customer_name}</div>
@@ -469,9 +449,7 @@ export default function OrdersPage() {
                   )}
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Status
-                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">Status</div>
                   <Badge variant={STATUS_COLORS[selectedOrder.status]}>
                     {selectedOrder.status}
                   </Badge>
@@ -480,9 +458,7 @@ export default function OrdersPage() {
 
               {/* Order Items */}
               <div>
-                <div className="text-sm font-medium text-muted-foreground mb-2">
-                  Items
-                </div>
+                <div className="text-sm font-medium text-muted-foreground mb-2">Items</div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -506,9 +482,7 @@ export default function OrdersPage() {
                         <TableRow key={item.id}>
                           <TableCell>{ticketType?.name || '—'}</TableCell>
                           <TableCell>
-                            {timeSlot
-                              ? `${timeSlot.date} ${formatTime(timeSlot.start_time)}`
-                              : '—'}
+                            {timeSlot ? `${timeSlot.date} ${formatTime(timeSlot.start_time)}` : '—'}
                           </TableCell>
                           <TableCell className="text-right">{item.quantity}</TableCell>
                           <TableCell className="text-right">
@@ -532,9 +506,7 @@ export default function OrdersPage() {
                 </div>
                 {selectedOrder.discount_amount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
-                    <span>
-                      Discount {selectedOrder.promo && `(${selectedOrder.promo.code})`}
-                    </span>
+                    <span>Discount {selectedOrder.promo && `(${selectedOrder.promo.code})`}</span>
                     <span>-{formatPrice(selectedOrder.discount_amount)}</span>
                   </div>
                 )}
@@ -547,9 +519,7 @@ export default function OrdersPage() {
               {/* Tickets */}
               {selectedOrder.tickets && selectedOrder.tickets.length > 0 && (
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-2">
-                    Tickets
-                  </div>
+                  <div className="text-sm font-medium text-muted-foreground mb-2">Tickets</div>
                   <div className="grid gap-2">
                     {selectedOrder.tickets.map((ticket) => {
                       const ticketType = Array.isArray(ticket.ticket_type)

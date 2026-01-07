@@ -8,7 +8,13 @@ import { api } from './client';
 
 export type StripeAccountStatus = 'pending' | 'onboarding' | 'active' | 'restricted' | 'disabled';
 export type TransactionType = 'charge' | 'refund' | 'transfer' | 'payout' | 'fee' | 'adjustment';
-export type TransactionStatus = 'pending' | 'succeeded' | 'failed' | 'refunded' | 'partially_refunded' | 'disputed';
+export type TransactionStatus =
+  | 'pending'
+  | 'succeeded'
+  | 'failed'
+  | 'refunded'
+  | 'partially_refunded'
+  | 'disputed';
 export type PayoutStatus = 'pending' | 'in_transit' | 'paid' | 'failed' | 'canceled';
 
 export interface StripeAccountStatusResponse {
@@ -140,7 +146,10 @@ export async function createOnboardingLink(
     refresh_url?: string;
   }
 ) {
-  return api.post<OnboardingLinkResponse>(`/organizations/${orgId}/payments/onboarding-link`, data || {});
+  return api.post<OnboardingLinkResponse>(
+    `/organizations/${orgId}/payments/onboarding-link`,
+    data || {}
+  );
 }
 
 /**
@@ -152,7 +161,10 @@ export async function createDashboardLink(
     return_url?: string;
   }
 ) {
-  return api.post<DashboardLinkResponse>(`/organizations/${orgId}/payments/dashboard-link`, data || {});
+  return api.post<DashboardLinkResponse>(
+    `/organizations/${orgId}/payments/dashboard-link`,
+    data || {}
+  );
 }
 
 /**
@@ -174,7 +186,10 @@ export interface SyncTransactionsResponse {
  * Pulls historical charges and stores them in the database
  */
 export async function syncTransactions(orgId: string) {
-  return api.post<SyncTransactionsResponse>(`/organizations/${orgId}/payments/transactions/sync`, {});
+  return api.post<SyncTransactionsResponse>(
+    `/organizations/${orgId}/payments/transactions/sync`,
+    {}
+  );
 }
 
 /**
@@ -189,7 +204,9 @@ export async function getTransactions(orgId: string, filters?: TransactionFilter
   if (filters?.limit) params.set('limit', filters.limit.toString());
   if (filters?.offset) params.set('offset', filters.offset.toString());
   const query = params.toString();
-  return api.get<TransactionsResponse>(`/organizations/${orgId}/payments/transactions${query ? `?${query}` : ''}`);
+  return api.get<TransactionsResponse>(
+    `/organizations/${orgId}/payments/transactions${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -203,7 +220,9 @@ export async function getTransactionSummary(
   if (filters?.start_date) params.set('start_date', filters.start_date);
   if (filters?.end_date) params.set('end_date', filters.end_date);
   const query = params.toString();
-  return api.get<TransactionSummary>(`/organizations/${orgId}/payments/transactions/summary${query ? `?${query}` : ''}`);
+  return api.get<TransactionSummary>(
+    `/organizations/${orgId}/payments/transactions/summary${query ? `?${query}` : ''}`
+  );
 }
 
 /**
@@ -236,7 +255,9 @@ export async function getPayouts(orgId: string, filters?: PayoutFilters) {
   if (filters?.limit) params.set('limit', filters.limit.toString());
   if (filters?.offset) params.set('offset', filters.offset.toString());
   const query = params.toString();
-  return api.get<PayoutsResponse>(`/organizations/${orgId}/payments/payouts${query ? `?${query}` : ''}`);
+  return api.get<PayoutsResponse>(
+    `/organizations/${orgId}/payments/payouts${query ? `?${query}` : ''}`
+  );
 }
 
 // ============================================================================
@@ -256,7 +277,9 @@ export function formatCurrency(cents: number, currency = 'USD'): string {
 /**
  * Get status badge variant for account status
  */
-export function getAccountStatusVariant(status: StripeAccountStatus | null): 'default' | 'secondary' | 'destructive' | 'outline' {
+export function getAccountStatusVariant(
+  status: StripeAccountStatus | null
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
       return 'default';
@@ -275,7 +298,9 @@ export function getAccountStatusVariant(status: StripeAccountStatus | null): 'de
 /**
  * Get status badge variant for transaction status
  */
-export function getTransactionStatusVariant(status: TransactionStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+export function getTransactionStatusVariant(
+  status: TransactionStatus
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'succeeded':
       return 'default';
@@ -295,7 +320,9 @@ export function getTransactionStatusVariant(status: TransactionStatus): 'default
 /**
  * Get status badge variant for payout status
  */
-export function getPayoutStatusVariant(status: PayoutStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+export function getPayoutStatusVariant(
+  status: PayoutStatus
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'paid':
       return 'default';

@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
 import {
-  RefreshCw,
   AlertCircle,
   CheckCircle2,
-  XCircle,
   Clock,
   Database,
+  HardDrive,
+  RefreshCw,
   Server,
   Wifi,
-  HardDrive,
+  XCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getSystemHealth, type SystemHealth, type ServiceStatus } from '@/lib/api/admin';
+import { getSystemHealth, type ServiceStatus, type SystemHealth } from '@/lib/api/admin';
 
 function getStatusIcon(status: string) {
   switch (status) {
@@ -48,7 +48,9 @@ function getStatusBadgeVariant(
 }
 
 // Convert services object to array format
-function normalizeServices(services: SystemHealth['services']): Array<ServiceStatus & { name: string }> {
+function normalizeServices(
+  services: SystemHealth['services']
+): Array<ServiceStatus & { name: string }> {
   if (Array.isArray(services)) {
     return services;
   }
@@ -233,9 +235,7 @@ export default function AdminHealthPage() {
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Requests/min</p>
-                  <p className="text-2xl font-bold">
-                    {health.metrics.requests_per_minute ?? 0}
-                  </p>
+                  <p className="text-2xl font-bold">{health.metrics.requests_per_minute ?? 0}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Error Rate</p>

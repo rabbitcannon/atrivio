@@ -20,9 +20,7 @@ export function SkillBadges({ skills, max }: SkillBadgesProps) {
           {skill}
         </Badge>
       ))}
-      {remaining > 0 && (
-        <Badge variant="outline">+{remaining} more</Badge>
-      )}
+      {remaining > 0 && <Badge variant="outline">+{remaining} more</Badge>}
     </div>
   );
 }

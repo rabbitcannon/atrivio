@@ -1,14 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException, Logger } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
-import { FeaturesService } from '../../core/features/features.service.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
 import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { FeaturesService } from '../../core/features/features.service.js';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import type {
   CreateQueueConfigDto,
-  UpdateQueueConfigDto,
   JoinQueueDto,
   ListQueueEntriesQueryDto,
-  UpdateEntryStatusDto,
   QueueStatus,
+  UpdateEntryStatusDto,
+  UpdateQueueConfigDto,
 } from './dto/queue.dto.js';
 
 @Injectable()
@@ -18,7 +25,7 @@ export class QueueService {
   constructor(
     private supabase: SupabaseService,
     private featuresService: FeaturesService,
-    private notificationsService: NotificationsService,
+    private notificationsService: NotificationsService
   ) {}
 
   /**
@@ -90,12 +97,14 @@ export class QueueService {
     if (dto.isActive !== undefined) updateData['is_active'] = dto.isActive;
     if (dto.isPaused !== undefined) updateData['is_paused'] = dto.isPaused;
     if (dto.capacityPerBatch !== undefined) updateData['capacity_per_batch'] = dto.capacityPerBatch;
-    if (dto.batchIntervalMinutes !== undefined) updateData['batch_interval_minutes'] = dto.batchIntervalMinutes;
+    if (dto.batchIntervalMinutes !== undefined)
+      updateData['batch_interval_minutes'] = dto.batchIntervalMinutes;
     if (dto.maxWaitMinutes !== undefined) updateData['max_wait_minutes'] = dto.maxWaitMinutes;
     if (dto.maxQueueSize !== undefined) updateData['max_queue_size'] = dto.maxQueueSize;
     if (dto.allowRejoin !== undefined) updateData['allow_rejoin'] = dto.allowRejoin;
     if (dto.requireCheckIn !== undefined) updateData['require_check_in'] = dto.requireCheckIn;
-    if (dto.notificationLeadMinutes !== undefined) updateData['notification_lead_minutes'] = dto.notificationLeadMinutes;
+    if (dto.notificationLeadMinutes !== undefined)
+      updateData['notification_lead_minutes'] = dto.notificationLeadMinutes;
     if (dto.expiryMinutes !== undefined) updateData['expiry_minutes'] = dto.expiryMinutes;
 
     const { data, error } = await this.supabase.adminClient
@@ -144,7 +153,9 @@ export class QueueService {
     }
 
     if (query.search) {
-      queryBuilder = queryBuilder.or(`guest_name.ilike.%${query.search}%,confirmation_code.ilike.%${query.search}%`);
+      queryBuilder = queryBuilder.or(
+        `guest_name.ilike.%${query.search}%,confirmation_code.ilike.%${query.search}%`
+      );
     }
 
     if (query.limit) {
@@ -288,8 +299,12 @@ export class QueueService {
 
     if (guestPhone) {
       try {
-        const attractionName = (data['queue_configs'] as Record<string, unknown>)?.['attractions'] as Record<string, unknown>;
-        const expiryMinutes = (data['queue_configs'] as Record<string, unknown>)?.['expiry_minutes'] as number;
+        const attractionName = (data['queue_configs'] as Record<string, unknown>)?.[
+          'attractions'
+        ] as Record<string, unknown>;
+        const expiryMinutes = (data['queue_configs'] as Record<string, unknown>)?.[
+          'expiry_minutes'
+        ] as number;
 
         await this.notificationsService.sendFromTemplate(orgId, {
           templateKey: 'queue_ready',
@@ -413,7 +428,9 @@ export class QueueService {
     }
 
     // Recalculate positions
-    await this.supabase.adminClient.rpc('recalculate_queue_positions', { p_queue_id: data.queue_id });
+    await this.supabase.adminClient.rpc('recalculate_queue_positions', {
+      p_queue_id: data.queue_id,
+    });
 
     return { message: 'Entry removed from queue', confirmationCode: data.confirmation_code };
   }
@@ -462,7 +479,8 @@ export class QueueService {
       .eq('status', 'waiting');
 
     const queueSize = count || 0;
-    const waitMinutes = Math.ceil(queueSize / config.capacity_per_batch) * config.batch_interval_minutes;
+    const waitMinutes =
+      Math.ceil(queueSize / config.capacity_per_batch) * config.batch_interval_minutes;
 
     let status: 'accepting' | 'paused' | 'full' | 'closed' = 'accepting';
     let message = `Queue is open! Current wait ~${waitMinutes} minutes.`;
@@ -528,12 +546,23 @@ export class QueueService {
     }
 
     // Recalculate positions
-    await this.supabase.adminClient.rpc('recalculate_queue_positions', { p_queue_id: data.queue_id });
+    await this.supabase.adminClient.rpc('recalculate_queue_positions', {
+      p_queue_id: data.queue_id,
+    });
 
     return { message: 'You have left the queue', confirmationCode: data.confirmation_code };
   }
 
-  async publicJoinQueue(attractionSlug: string, dto: { guestName: string; guestPhone?: string; guestEmail?: string; partySize?: number; ticketId?: string }) {
+  async publicJoinQueue(
+    attractionSlug: string,
+    dto: {
+      guestName: string;
+      guestPhone?: string;
+      guestEmail?: string;
+      partySize?: number;
+      ticketId?: string;
+    }
+  ) {
     // Get attraction by slug
     const { data: attraction, error: attrError } = await this.supabase.adminClient
       .from('attractions')
@@ -631,7 +660,8 @@ export class QueueService {
       .gte('checked_in_at', `${today}T00:00:00`);
 
     // Calculate current avg wait
-    const avgWait = Math.ceil((waiting || 0) / config.capacityPerBatch) * config.batchIntervalMinutes;
+    const avgWait =
+      Math.ceil((waiting || 0) / config.capacityPerBatch) * config.batchIntervalMinutes;
 
     return {
       totalWaiting: waiting || 0,
@@ -643,7 +673,7 @@ export class QueueService {
   private async calculateWaitTime(
     queueId: string,
     position: number,
-    config: { capacityPerBatch: number; batchIntervalMinutes: number },
+    config: { capacityPerBatch: number; batchIntervalMinutes: number }
   ) {
     // Get people ahead
     const { data } = await this.supabase.adminClient
@@ -653,7 +683,8 @@ export class QueueService {
       .eq('status', 'waiting')
       .lt('position', position);
 
-    const peopleAhead = data?.reduce((sum: number, e: { party_size?: number }) => sum + (e.party_size || 1), 0) || 0;
+    const peopleAhead =
+      data?.reduce((sum: number, e: { party_size?: number }) => sum + (e.party_size || 1), 0) || 0;
     return Math.ceil(peopleAhead / config.capacityPerBatch) * config.batchIntervalMinutes;
   }
 

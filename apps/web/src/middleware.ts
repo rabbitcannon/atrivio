@@ -1,6 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
 import type { CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from 'next/server';
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -13,7 +13,6 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('[Middleware] Missing Supabase env vars');
     return supabaseResponse;
   }
 
@@ -23,9 +22,7 @@ export async function middleware(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet: CookieToSet[]) {
-        cookiesToSet.forEach(({ name, value }: CookieToSet) =>
-          request.cookies.set(name, value)
-        );
+        cookiesToSet.forEach(({ name, value }: CookieToSet) => request.cookies.set(name, value));
         supabaseResponse = NextResponse.next({
           request,
         });
@@ -53,7 +50,7 @@ export async function middleware(request: NextRequest) {
 
   // Auth pages that logged-in users shouldn't see
   const authPaths = ['/login', '/signup', '/forgot-password'];
-  const isAuthPath = authPaths.some(path => request.nextUrl.pathname.startsWith(path));
+  const isAuthPath = authPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (!user && isProtectedPath) {
     // Redirect unauthenticated users to login

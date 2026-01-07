@@ -1,7 +1,7 @@
 'use client';
 
+import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Clock, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getMyTimeStatus, type TimeClockStatus } from '@/lib/api/client';
 

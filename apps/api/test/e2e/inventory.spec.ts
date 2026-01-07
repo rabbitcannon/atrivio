@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
   TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch, del } from '../helpers/request.js';
+import { del, get, patch, post } from '../helpers/request.js';
 
 // Test IDs from seed data (supabase/seed.sql)
 const TEST_CATEGORIES = {
@@ -50,10 +50,9 @@ describe('Inventory (F10)', () => {
     it('should get inventory summary as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/summary`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/summary`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('totalItems');
@@ -65,10 +64,9 @@ describe('Inventory (F10)', () => {
     it('should work with org slug', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/nightmare-manor/inventory/summary`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/nightmare-manor/inventory/summary`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('totalItems');
@@ -77,18 +75,15 @@ describe('Inventory (F10)', () => {
     it('should reject actors from viewing summary', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/summary`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/summary`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(403);
     });
 
     it('should reject unauthenticated requests', async () => {
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/summary`
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/summary`);
 
       expect(response.statusCode).toBe(401);
     });
@@ -98,10 +93,9 @@ describe('Inventory (F10)', () => {
     it('should get low stock items', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/low-stock`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/low-stock`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('items');
@@ -115,10 +109,9 @@ describe('Inventory (F10)', () => {
     it('should list inventory types', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/types`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/types`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('types');
@@ -129,10 +122,9 @@ describe('Inventory (F10)', () => {
     it('should allow actors to view types', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/types`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/types`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('types');
@@ -379,10 +371,9 @@ describe('Inventory (F10)', () => {
     it('should list items as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/items`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/items`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('items');
@@ -419,10 +410,9 @@ describe('Inventory (F10)', () => {
     it('should allow actors to view items', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/items`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/items`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
     });
@@ -637,10 +627,9 @@ describe('Inventory (F10)', () => {
     it('should list checkouts as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/checkouts`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/checkouts`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('checkouts');
@@ -666,10 +655,9 @@ describe('Inventory (F10)', () => {
     it('should allow actors to view checkouts', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/inventory/checkouts`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/inventory/checkouts`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
     });

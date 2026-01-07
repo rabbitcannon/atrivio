@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { useRef } from 'react';
 
 interface Testimonial {
   id: string;
@@ -16,7 +16,7 @@ const testimonials: Testimonial[] = [
   {
     id: '1',
     quote:
-      "Atrivio transformed how we run our haunted attraction. Scheduling that used to take hours now takes minutes, and our guests love the seamless check-in experience.",
+      'Atrivio transformed how we run our haunted attraction. Scheduling that used to take hours now takes minutes, and our guests love the seamless check-in experience.',
     author: 'Sarah Mitchell',
     role: 'Owner',
     company: 'Nightmare Manor',
@@ -25,7 +25,7 @@ const testimonials: Testimonial[] = [
   {
     id: '2',
     quote:
-      "We switched from three different systems to Atrivio. Having ticketing, staffing, and payments in one place has been a game-changer for our escape room business.",
+      'We switched from three different systems to Atrivio. Having ticketing, staffing, and payments in one place has been a game-changer for our escape room business.',
     author: 'Marcus Chen',
     role: 'Operations Director',
     company: 'Escape Factory',
@@ -68,7 +68,9 @@ export function TestimonialsSection() {
             <motion.article
               key={testimonial.id}
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.95 }}
+              animate={
+                isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.95 }
+              }
               transition={{
                 duration: 0.5,
                 delay: 0.1 + index * 0.15,

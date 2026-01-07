@@ -1,18 +1,18 @@
+import type { OrgId, OrgRole } from '@haunt/shared';
 import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
   BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { RbacService } from '../../core/rbac/rbac.service.js';
-import type { OrgId, UserId, OrgRole } from '@haunt/shared';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 
 @Injectable()
 export class MembersService {
   constructor(
     private supabase: SupabaseService,
-    private rbacService: RbacService,
+    private rbacService: RbacService
   ) {}
 
   /**
@@ -24,7 +24,7 @@ export class MembersService {
       role?: OrgRole;
       status?: string;
       search?: string;
-    },
+    }
   ) {
     let query = this.supabase.adminClient
       .from('org_memberships')
@@ -48,7 +48,7 @@ export class MembersService {
           first_name,
           last_name
         )
-      `,
+      `
       )
       .eq('org_id', orgId);
 
@@ -110,12 +110,7 @@ export class MembersService {
   /**
    * Update member role
    */
-  async updateRole(
-    orgId: OrgId,
-    memberId: string,
-    newRole: OrgRole,
-    actorRole: OrgRole,
-  ) {
+  async updateRole(orgId: OrgId, memberId: string, newRole: OrgRole, actorRole: OrgRole) {
     // Get current membership
     const { data: member, error } = await this.supabase.adminClient
       .from('org_memberships')
@@ -136,7 +131,7 @@ export class MembersService {
       actorRole,
       member.role as OrgRole,
       newRole,
-      member.is_owner,
+      member.is_owner
     );
 
     if (!canModify) {
@@ -179,11 +174,7 @@ export class MembersService {
   /**
    * Remove member from organization
    */
-  async remove(
-    orgId: OrgId,
-    memberId: string,
-    actorRole: OrgRole,
-  ) {
+  async remove(orgId: OrgId, memberId: string, actorRole: OrgRole) {
     // Get membership
     const { data: member, error } = await this.supabase.adminClient
       .from('org_memberships')

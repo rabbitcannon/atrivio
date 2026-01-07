@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { getPublicStorefront, getPublicPage } from '@/lib/api';
+import { getPublicPage } from '@/lib/api';
 
 interface PageProps {
   params: Promise<{ slug: string }>;

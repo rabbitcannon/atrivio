@@ -1,15 +1,14 @@
 import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/supabase/server';
+import { AnnouncementBanner } from '@/components/features/platform/announcement-banner';
 import { DashboardHeader } from '@/components/layouts/dashboard-header';
 import { DashboardSidebar } from '@/components/layouts/dashboard-sidebar';
 import { PageTransition } from '@/components/ui/page-transition';
-import { AnnouncementBanner } from '@/components/features/platform/announcement-banner';
+import { getUser } from '@/lib/supabase/server';
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Force dynamic rendering - dashboard requires authentication
+export const dynamic = 'force-dynamic';
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
 
   if (!user) {

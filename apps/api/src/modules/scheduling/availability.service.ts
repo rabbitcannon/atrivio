@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId, UserId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
   CreateAvailabilityDto,
-  UpdateAvailabilityDto,
-  SetRecurringAvailabilityDto,
   RequestTimeOffDto,
+  SetRecurringAvailabilityDto,
+  UpdateAvailabilityDto,
 } from './dto/availability.dto.js';
 
 @Injectable()
@@ -43,7 +43,7 @@ export class AvailabilityService {
     orgId: OrgId,
     staffId: string,
     dto: CreateAvailabilityDto,
-    createdBy: UserId,
+    createdBy: UserId
   ) {
     await this.verifyStaffAccess(orgId, staffId);
 
@@ -77,11 +77,7 @@ export class AvailabilityService {
   /**
    * Update an availability entry
    */
-  async updateAvailability(
-    orgId: OrgId,
-    availabilityId: string,
-    dto: UpdateAvailabilityDto,
-  ) {
+  async updateAvailability(orgId: OrgId, availabilityId: string, dto: UpdateAvailabilityDto) {
     // Verify existence
     const { data: existing } = await this.supabase.adminClient
       .from('staff_availability')
@@ -152,7 +148,7 @@ export class AvailabilityService {
     orgId: OrgId,
     staffId: string,
     dto: SetRecurringAvailabilityDto,
-    createdBy: UserId,
+    createdBy: UserId
   ) {
     await this.verifyStaffAccess(orgId, staffId);
 
@@ -180,9 +176,7 @@ export class AvailabilityService {
         created_by: createdBy,
       }));
 
-      const { error } = await this.supabase.adminClient
-        .from('staff_availability')
-        .insert(records);
+      const { error } = await this.supabase.adminClient.from('staff_availability').insert(records);
 
       if (error) {
         throw new BadRequestException({
@@ -198,12 +192,7 @@ export class AvailabilityService {
   /**
    * Request time off
    */
-  async requestTimeOff(
-    orgId: OrgId,
-    staffId: string,
-    dto: RequestTimeOffDto,
-    requestedBy: UserId,
-  ) {
+  async requestTimeOff(orgId: OrgId, staffId: string, dto: RequestTimeOffDto, requestedBy: UserId) {
     await this.verifyStaffAccess(orgId, staffId);
 
     // Create unavailable entries for the date range
@@ -314,7 +303,7 @@ export class AvailabilityService {
     staffId: string,
     date: string,
     startTime: string,
-    endTime: string,
+    endTime: string
   ) {
     const dayOfWeek = new Date(date).getDay();
 
@@ -336,17 +325,18 @@ export class AvailabilityService {
     const blockers = availability.filter(
       (a) =>
         ['unavailable', 'time_off_approved', 'time_off_pending'].includes(a.availability_type) &&
-        this.timeOverlaps(a.start_time, a.end_time, startTime, endTime),
+        this.timeOverlaps(a.start_time, a.end_time, startTime, endTime)
     );
 
     if (blockers.length > 0) {
       return {
         available: false,
-        reason: blockers[0].availability_type === 'time_off_approved'
-          ? 'Staff has approved time off'
-          : blockers[0].availability_type === 'time_off_pending'
-            ? 'Staff has pending time off request'
-            : 'Staff marked as unavailable',
+        reason:
+          blockers[0].availability_type === 'time_off_approved'
+            ? 'Staff has approved time off'
+            : blockers[0].availability_type === 'time_off_pending'
+              ? 'Staff has pending time off request'
+              : 'Staff marked as unavailable',
         blockers,
       };
     }
@@ -355,7 +345,7 @@ export class AvailabilityService {
     const available = availability.filter(
       (a) =>
         ['available', 'preferred'].includes(a.availability_type) &&
-        this.timeOverlaps(a.start_time, a.end_time, startTime, endTime),
+        this.timeOverlaps(a.start_time, a.end_time, startTime, endTime)
     );
 
     if (available.length > 0) {
@@ -389,12 +379,7 @@ export class AvailabilityService {
     }
   }
 
-  private timeOverlaps(
-    start1: string,
-    end1: string,
-    start2: string,
-    end2: string,
-  ): boolean {
+  private timeOverlaps(start1: string, end1: string, start2: string, end2: string): boolean {
     // Simple time overlap check (assumes same day)
     return start1 < end2 && start2 < end1;
   }

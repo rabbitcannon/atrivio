@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import {
-  Package,
-  FolderTree,
-  ArrowRightLeft,
-  History,
   AlertTriangle,
+  ArrowRightLeft,
   Box,
   ClipboardList,
+  FolderTree,
+  History,
+  Package,
   TrendingDown,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getInventorySummary, type InventorySummary } from '@/lib/api/client';
@@ -83,7 +83,7 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? <Skeleton className="h-8 w-16" /> : summary?.totalItems ?? 0}
+              {loading ? <Skeleton className="h-8 w-16" /> : (summary?.totalItems ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Unique items tracked</p>
           </CardContent>
@@ -95,7 +95,7 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? <Skeleton className="h-8 w-16" /> : summary?.activeCheckouts ?? 0}
+              {loading ? <Skeleton className="h-8 w-16" /> : (summary?.activeCheckouts ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Active checkouts</p>
           </CardContent>
@@ -107,7 +107,7 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? <Skeleton className="h-8 w-16" /> : summary?.lowStockItems ?? 0}
+              {loading ? <Skeleton className="h-8 w-16" /> : (summary?.lowStockItems ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Items need reorder</p>
           </CardContent>
@@ -118,8 +118,10 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${(summary?.overdueCheckouts ?? 0) > 0 ? 'text-destructive' : ''}`}>
-              {loading ? <Skeleton className="h-8 w-16" /> : summary?.overdueCheckouts ?? 0}
+            <div
+              className={`text-2xl font-bold ${(summary?.overdueCheckouts ?? 0) > 0 ? 'text-destructive' : ''}`}
+            >
+              {loading ? <Skeleton className="h-8 w-16" /> : (summary?.overdueCheckouts ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Past due checkouts</p>
           </CardContent>
@@ -141,7 +143,10 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
           <CardContent>
             <div className="space-y-2">
               {summary.lowStockAlerts.slice(0, 5).map((item) => (
-                <div key={item.id} className="flex items-center justify-between rounded-md bg-white/50 dark:bg-black/20 px-3 py-2">
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between rounded-md bg-white/50 dark:bg-black/20 px-3 py-2"
+                >
                   <div>
                     <span className="font-medium">{item.name}</span>
                     <span className="ml-2 text-sm text-muted-foreground">{item.sku}</span>

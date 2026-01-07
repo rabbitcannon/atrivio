@@ -1,49 +1,38 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-
-// Shared modules
-import { DatabaseModule } from './shared/database/database.module.js';
-
-// Metrics module (global)
-import { MetricsModule } from './core/metrics/metrics.module.js';
-import { MetricsInterceptor } from './core/metrics/metrics.interceptor.js';
-
+import { AdminModule } from './core/admin/admin.module.js';
 // Core modules
 import { AuthModule } from './core/auth/auth.module.js';
 import { JwtAuthGuard } from './core/auth/guards/jwt-auth.guard.js';
-import { TenancyModule } from './core/tenancy/tenancy.module.js';
-import { TenantGuard } from './core/tenancy/guards/tenant.guard.js';
-import { RbacModule } from './core/rbac/rbac.module.js';
-import { AdminModule } from './core/admin/admin.module.js';
 import { FeaturesModule } from './core/features/features.module.js';
-
-// Business modules
-import { OrganizationsModule } from './modules/organizations/organizations.module.js';
-import { HauntsModule } from './modules/haunts/haunts.module.js';
-import { StaffModule } from './modules/staff/staff.module.js';
-import { PaymentsModule } from './modules/payments/payments.module.js';
-
-// Scheduling (F7 Scheduling)
-import { SchedulingModule } from './modules/scheduling/scheduling.module.js';
-
-// Ticketing (F8 Ticketing)
-import { TicketingModule } from './modules/ticketing/ticketing.module.js';
-
+import { MetricsInterceptor } from './core/metrics/metrics.interceptor.js';
+// Metrics module (global)
+import { MetricsModule } from './core/metrics/metrics.module.js';
+import { RbacModule } from './core/rbac/rbac.module.js';
+import { TenantGuard } from './core/tenancy/guards/tenant.guard.js';
+import { TenancyModule } from './core/tenancy/tenancy.module.js';
 // Check-In (F9 Check-In)
 import { CheckInModule } from './modules/check-in/check-in.module.js';
-
+import { HauntsModule } from './modules/haunts/haunts.module.js';
 // Inventory (F10 Inventory)
 import { InventoryModule } from './modules/inventory/inventory.module.js';
-
-// Virtual Queue (F11 Virtual Queue)
-import { QueueModule } from './modules/queue/queue.module.js';
-
 // Notifications (F12 Notifications)
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
-
+// Business modules
+import { OrganizationsModule } from './modules/organizations/organizations.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
+// Virtual Queue (F11 Virtual Queue)
+import { QueueModule } from './modules/queue/queue.module.js';
+// Scheduling (F7 Scheduling)
+import { SchedulingModule } from './modules/scheduling/scheduling.module.js';
+import { StaffModule } from './modules/staff/staff.module.js';
 // Storefronts (F14 Storefronts)
 import { StorefrontsModule } from './modules/storefronts/storefronts.module.js';
+// Ticketing (F8 Ticketing)
+import { TicketingModule } from './modules/ticketing/ticketing.module.js';
+// Shared modules
+import { DatabaseModule } from './shared/database/database.module.js';
 
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';

@@ -1,12 +1,7 @@
 'use client';
 
+import { type BaseCommentConfig, BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
 import type { ExtendConfig, Path } from 'platejs';
-
-import {
-  type BaseCommentConfig,
-  BaseCommentPlugin,
-  getDraftCommentKey,
-} from '@platejs/comment';
 import { isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
@@ -37,7 +32,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
 
       while (leaf.parentElement) {
         if (leaf.classList.contains(`slate-${type}`)) {
-          const commentsEntry = api.comment!.node();
+          const commentsEntry = api.comment?.node();
 
           if (!commentsEntry) {
             unsetActiveSuggestion();
@@ -45,7 +40,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
             break;
           }
 
-          const id = api.comment!.nodeId(commentsEntry[0]);
+          const id = api.comment?.nodeId(commentsEntry[0]);
 
           setOption('activeId', id ?? null);
           isSet = true;
@@ -76,14 +71,14 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
     }) => ({
       setDraft: () => {
         if (editor.api.isCollapsed()) {
-          editor.tf.select(editor.api.block()![1]);
+          editor.tf.select(editor.api.block()?.[1]);
         }
 
         setDraft();
 
         editor.tf.collapse();
         setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));
+        setOption('commentingBlock', editor.selection?.focus.path.slice(0, 1) ?? null);
       },
     })
   )

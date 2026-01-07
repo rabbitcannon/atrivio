@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, CheckCircle, MoreHorizontal, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,27 +16,27 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Plus, MoreHorizontal, CheckCircle, Trash2, ShieldCheck } from 'lucide-react';
 import {
-  getStaffCertifications,
   addStaffCertification,
-  verifyCertification,
+  getStaffCertifications,
   removeCertification,
   type StaffCertification,
+  verifyCertification,
 } from '@/lib/api/client';
 
 interface CertificationsManagerProps {
@@ -162,7 +162,7 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
 
   useEffect(() => {
     fetchCertifications();
-  }, [orgId, staffId]);
+  }, []);
 
   function openAddDialog() {
     setCertType('');
@@ -258,12 +258,8 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
     const { data: result, error: apiError } = await verifyCertification(orgId, staffId, cert.id);
 
     if (apiError) {
-      // Show error briefly - in a real app you'd use a toast
-      console.error('Failed to verify:', apiError.message);
     } else if (result) {
-      setCertifications((prev) =>
-        prev.map((c) => (c.id === cert.id ? result : c))
-      );
+      setCertifications((prev) => prev.map((c) => (c.id === cert.id ? result : c)));
     }
 
     setVerifyingId(null);
@@ -289,7 +285,9 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Current Certifications */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Current Certifications ({certifications.length})</h2>
+          <h2 className="text-lg font-semibold">
+            Current Certifications ({certifications.length})
+          </h2>
           {certifications.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center">
@@ -306,10 +304,10 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-base">{getCertificationLabel(cert.type)}</CardTitle>
-                        {cert.verified && (
-                          <ShieldCheck className="h-4 w-4 text-green-600" />
-                        )}
+                        <CardTitle className="text-base">
+                          {getCertificationLabel(cert.type)}
+                        </CardTitle>
+                        {cert.verified && <ShieldCheck className="h-4 w-4 text-green-600" />}
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={variant}>{label}</Badge>
@@ -343,9 +341,7 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
                     </div>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground space-y-1">
-                    {cert.certificate_number && (
-                      <p>Certificate #: {cert.certificate_number}</p>
-                    )}
+                    {cert.certificate_number && <p>Certificate #: {cert.certificate_number}</p>}
                     {cert.issued_at && (
                       <p>Issued: {new Date(cert.issued_at).toLocaleDateString()}</p>
                     )}
@@ -459,16 +455,14 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setAddDialogOpen(false)}
-              disabled={addLoading}
-            >
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)} disabled={addLoading}>
               Cancel
             </Button>
             <Button
               onClick={handleAddCertification}
-              disabled={addLoading || !certType || (certType === 'other' && !customType.trim()) || !issuedAt}
+              disabled={
+                addLoading || !certType || (certType === 'other' && !customType.trim()) || !issuedAt
+              }
             >
               {addLoading ? 'Adding...' : 'Add Certification'}
             </Button>
@@ -483,7 +477,9 @@ export function CertificationsManager({ orgId, staffId }: CertificationsManagerP
             <DialogTitle>Remove Certification</DialogTitle>
             <DialogDescription>
               Are you sure you want to remove the{' '}
-              <span className="font-medium">{certToRemove ? getCertificationLabel(certToRemove.type) : ''}</span>{' '}
+              <span className="font-medium">
+                {certToRemove ? getCertificationLabel(certToRemove.type) : ''}
+              </span>{' '}
               certification? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>

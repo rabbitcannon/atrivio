@@ -1,24 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
+  AlertCircle,
   ArrowLeft,
   Calendar,
-  AlertCircle,
-  Save,
-  Loader2,
   CheckCircle2,
+  Loader2,
+  Save,
   XCircle,
 } from 'lucide-react';
-import { useUser } from '@/hooks/use-user';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -26,12 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useUser } from '@/hooks/use-user';
 import {
-  getOrgBySlug,
-  getMyAvailability,
-  setMyAvailability,
-  type StaffAvailability,
   type AvailabilityType,
+  getMyAvailability,
+  getOrgBySlug,
+  type StaffAvailability,
+  setMyAvailability,
 } from '@/lib/api/client';
 
 const DAYS = [
@@ -44,7 +44,11 @@ const DAYS = [
   { value: 6, label: 'Saturday', short: 'Sat' },
 ];
 
-const AVAILABILITY_OPTIONS: { value: AvailabilityType; label: string; icon: typeof CheckCircle2 }[] = [
+const AVAILABILITY_OPTIONS: {
+  value: AvailabilityType;
+  label: string;
+  icon: typeof CheckCircle2;
+}[] = [
   { value: 'available', label: 'Available', icon: CheckCircle2 },
   { value: 'preferred', label: 'Preferred', icon: CheckCircle2 },
   { value: 'unavailable', label: 'Unavailable', icon: XCircle },
@@ -109,7 +113,7 @@ export default function MyAvailabilityPage() {
       // Map existing availability to form state
       if (response.data && response.data.length > 0) {
         const newAvailability = DAYS.map((d) => {
-          const existing = response.data!.find((a: StaffAvailability) => a.day_of_week === d.value);
+          const existing = response.data?.find((a: StaffAvailability) => a.day_of_week === d.value);
           if (existing) {
             return {
               dayOfWeek: d.value,
@@ -309,9 +313,7 @@ export default function MyAvailabilityPage() {
                           <Input
                             type="time"
                             value={dayAvail.endTime}
-                            onChange={(e) =>
-                              handleDayChange(day.value, 'endTime', e.target.value)
-                            }
+                            onChange={(e) => handleDayChange(day.value, 'endTime', e.target.value)}
                           />
                         </div>
                       </div>

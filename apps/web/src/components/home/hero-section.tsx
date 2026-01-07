@@ -46,9 +46,8 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mx-auto mb-10 max-w-2xl text-lg text-[hsl(var(--landing-text-muted))] sm:text-xl"
         >
-          Ticketing, staff scheduling, check-in, and payments — everything you need
-          to run haunted attractions, escape rooms, theme parks, and entertainment
-          venues. All in one place.
+          Ticketing, staff scheduling, check-in, and payments — everything you need to run haunted
+          attractions, escape rooms, theme parks, and entertainment venues. All in one place.
         </motion.p>
 
         <motion.div

@@ -1,10 +1,14 @@
 'use client';
 
+import { AlertCircle, AlertTriangle, ExternalLink, Info, Sparkles, Wrench, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { X, Info, AlertTriangle, AlertCircle, Wrench, Sparkles, ExternalLink } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
-import { getActiveAnnouncements, dismissAnnouncement, type PlatformAnnouncement } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
+import {
+  dismissAnnouncement,
+  getActiveAnnouncements,
+  type PlatformAnnouncement,
+} from '@/lib/api/client';
+import { cn } from '@/lib/utils/cn';
 
 const typeConfig = {
   info: {
@@ -55,9 +59,7 @@ export function AnnouncementBanner() {
         if (response.data?.announcements) {
           setAnnouncements(response.data.announcements);
         }
-      } catch (error) {
-        // Silently fail - announcements are non-critical
-        console.error('Failed to fetch announcements:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -70,9 +72,7 @@ export function AnnouncementBanner() {
     try {
       await dismissAnnouncement(announcementId);
       setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
-    } catch (error) {
-      console.error('Failed to dismiss announcement:', error);
-    }
+    } catch (_error) {}
   };
 
   if (loading || announcements.length === 0) {
@@ -89,19 +89,12 @@ export function AnnouncementBanner() {
           <div
             key={announcement.id}
             role="alert"
-            className={cn(
-              'relative flex items-start gap-3 rounded-lg border p-4',
-              config.bgClass
-            )}
+            className={cn('relative flex items-start gap-3 rounded-lg border p-4', config.bgClass)}
           >
             <Icon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconClass)} />
             <div className="flex-1 min-w-0">
-              <h4 className={cn('font-medium text-sm', config.titleClass)}>
-                {announcement.title}
-              </h4>
-              <p className={cn('text-sm mt-1', config.textClass)}>
-                {announcement.content}
-              </p>
+              <h4 className={cn('font-medium text-sm', config.titleClass)}>{announcement.title}</h4>
+              <p className={cn('text-sm mt-1', config.textClass)}>{announcement.content}</p>
               {announcement.link_url && (
                 <a
                   href={announcement.link_url}

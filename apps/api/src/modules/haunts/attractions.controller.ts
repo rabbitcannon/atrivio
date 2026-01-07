@@ -1,24 +1,24 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
+  Post,
   Query,
-  UseInterceptors,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { AttractionsService } from './attractions.service.js';
-import { CreateAttractionDto, UpdateAttractionDto } from './dto/attractions.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../core/auth/decorators/public.decorator.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import { AttractionsService } from './attractions.service.js';
+import type { CreateAttractionDto, UpdateAttractionDto } from './dto/attractions.dto.js';
 
 @ApiTags('Attractions')
 @Controller()
@@ -43,7 +43,7 @@ export class AttractionsController {
   async list(
     @Tenant() ctx: TenantContext,
     @Query('status') status?: string,
-    @Query('type') type?: string,
+    @Query('type') type?: string
   ) {
     return this.attractionsService.findAll(ctx.orgId, {
       ...(status !== undefined && { status }),
@@ -54,10 +54,7 @@ export class AttractionsController {
   @Get('organizations/:orgId/attractions/:attractionId')
   @UseInterceptors(TenantInterceptor)
   @ApiOperation({ summary: 'Get attraction details' })
-  async findOne(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async findOne(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.attractionsService.findById(ctx.orgId, attractionId);
   }
 
@@ -69,7 +66,7 @@ export class AttractionsController {
   async update(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: UpdateAttractionDto,
+    @Body() dto: UpdateAttractionDto
   ) {
     return this.attractionsService.update(ctx.orgId, attractionId, dto);
   }
@@ -79,10 +76,7 @@ export class AttractionsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Archive attraction' })
-  async archive(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async archive(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.attractionsService.archive(ctx.orgId, attractionId);
   }
 
@@ -91,10 +85,7 @@ export class AttractionsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Publish attraction' })
-  async publish(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async publish(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.attractionsService.publish(ctx.orgId, attractionId);
   }
 
@@ -103,10 +94,7 @@ export class AttractionsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Activate attraction (enable ticket sales)' })
-  async activate(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async activate(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.attractionsService.activate(ctx.orgId, attractionId);
   }
 
@@ -121,7 +109,7 @@ export class AttractionsController {
     @Query('state') state?: string,
     @Query('lat') lat?: number,
     @Query('lng') lng?: number,
-    @Query('radius') radius?: number,
+    @Query('radius') radius?: number
   ) {
     return this.attractionsService.searchPublic({
       ...(type !== undefined && { type }),

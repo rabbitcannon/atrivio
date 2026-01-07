@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   AlertTriangle,
   Check,
@@ -9,23 +8,21 @@ import {
   Globe,
   Loader2,
   Lock,
-  Mail,
-  RefreshCw,
   Server,
   Shield,
   Sliders,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { getSettings, updateSetting, type PlatformSetting } from '@/lib/api/admin';
+import { getSettings, type PlatformSetting, updateSetting } from '@/lib/api/admin';
 import { cn } from '@/lib/utils/cn';
 
 // Category metadata
@@ -119,7 +116,9 @@ function SettingRow({
   onUpdate: (key: string, value: unknown) => Promise<void>;
 }) {
   const [localValue, setLocalValue] = useState<string | number | boolean>(
-    typeof setting.value === 'object' ? JSON.stringify(setting.value) : (setting.value as string | number | boolean)
+    typeof setting.value === 'object'
+      ? JSON.stringify(setting.value)
+      : (setting.value as string | number | boolean)
   );
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -130,7 +129,8 @@ function SettingRow({
     JSON.stringify(setting.value) !== JSON.stringify(setting.default_value);
 
   useEffect(() => {
-    const currentVal = typeof setting.value === 'object' ? JSON.stringify(setting.value) : setting.value;
+    const currentVal =
+      typeof setting.value === 'object' ? JSON.stringify(setting.value) : setting.value;
     setHasChanges(localValue !== currentVal);
   }, [localValue, setting.value]);
 
@@ -175,9 +175,7 @@ function SettingRow({
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            {meta.description || setting.description}
-          </p>
+          <p className="text-sm text-muted-foreground">{meta.description || setting.description}</p>
         </div>
         <div className="flex items-center gap-3">
           {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
@@ -228,7 +226,11 @@ function SettingRow({
             </div>
             {hasChanges && (
               <Button size="sm" onClick={handleSave} disabled={isSaving}>
-                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
               </Button>
             )}
           </div>
@@ -269,7 +271,11 @@ function SettingRow({
           />
           {hasChanges && (
             <Button size="sm" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
             </Button>
           )}
         </div>
@@ -290,7 +296,11 @@ function MaintenanceModeCard({
   setting: PlatformSetting;
   onUpdate: (key: string, value: unknown) => Promise<void>;
 }) {
-  const value = setting.value as { enabled: boolean; message: string | null; allow_admins: boolean };
+  const value = setting.value as {
+    enabled: boolean;
+    message: string | null;
+    allow_admins: boolean;
+  };
   const [enabled, setEnabled] = useState(value.enabled);
   const [message, setMessage] = useState(value.message || '');
   const [allowAdmins, setAllowAdmins] = useState(value.allow_admins);
@@ -362,11 +372,7 @@ function MaintenanceModeCard({
           </div>
           <div className="flex items-center gap-3">
             {isSaving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            <Switch
-              checked={enabled}
-              onCheckedChange={handleToggle}
-              disabled={isSaving}
-            />
+            <Switch checked={enabled} onCheckedChange={handleToggle} disabled={isSaving} />
           </div>
         </div>
       </CardHeader>
@@ -383,11 +389,7 @@ function MaintenanceModeCard({
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Switch
-              id="allow-admins"
-              checked={allowAdmins}
-              onCheckedChange={setAllowAdmins}
-            />
+            <Switch id="allow-admins" checked={allowAdmins} onCheckedChange={setAllowAdmins} />
             <Label htmlFor="allow-admins" className="cursor-pointer">
               <Lock className="mr-1 inline h-4 w-4" />
               Allow admins to bypass maintenance
@@ -490,9 +492,7 @@ export default function AdminSettingsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Platform Settings</h1>
-        <p className="text-muted-foreground">
-          Configure global platform settings and defaults
-        </p>
+        <p className="text-muted-foreground">Configure global platform settings and defaults</p>
       </div>
 
       {error && (
@@ -535,11 +535,7 @@ export default function AdminSettingsPage() {
               </CardHeader>
               <CardContent className="flex-1 space-y-3">
                 {categorySettings.map((setting) => (
-                  <SettingRow
-                    key={setting.key}
-                    setting={setting}
-                    onUpdate={handleUpdate}
-                  />
+                  <SettingRow key={setting.key} setting={setting} onUpdate={handleUpdate} />
                 ))}
               </CardContent>
             </Card>
@@ -552,9 +548,7 @@ export default function AdminSettingsPage() {
           <CardContent className="py-12 text-center">
             <Server className="mx-auto h-12 w-12 text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-medium">No settings configured</h3>
-            <p className="mt-2 text-muted-foreground">
-              Settings will appear here once created.
-            </p>
+            <p className="mt-2 text-muted-foreground">Settings will appear here once created.</p>
           </CardContent>
         </Card>
       )}

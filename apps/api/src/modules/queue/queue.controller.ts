@@ -1,32 +1,32 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseInterceptors,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { QueueService } from './queue.service.js';
-import {
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
   CreateQueueConfigDto,
-  UpdateQueueConfigDto,
   JoinQueueDto,
   ListQueueEntriesQueryDto,
   UpdateEntryStatusDto,
+  UpdateQueueConfigDto,
 } from './dto/queue.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
-import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { QueueService } from './queue.service.js';
 
 @ApiTags('Virtual Queue')
 @Controller('organizations/:orgId/attractions/:attractionId/queue')
@@ -43,10 +43,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Get queue configuration' })
-  async getConfig(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async getConfig(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.queueService.getQueueConfig(ctx.orgId, attractionId);
   }
 
@@ -57,7 +54,7 @@ export class QueueController {
   async createConfig(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: CreateQueueConfigDto,
+    @Body() dto: CreateQueueConfigDto
   ) {
     return this.queueService.createQueueConfig(ctx.orgId, attractionId, dto);
   }
@@ -69,7 +66,7 @@ export class QueueController {
   async updateConfig(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: UpdateQueueConfigDto,
+    @Body() dto: UpdateQueueConfigDto
   ) {
     return this.queueService.updateQueueConfig(ctx.orgId, attractionId, dto);
   }
@@ -79,10 +76,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Pause queue (stop accepting new entries)' })
-  async pauseQueue(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async pauseQueue(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.queueService.pauseQueue(ctx.orgId, attractionId);
   }
 
@@ -91,10 +85,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Resume queue' })
-  async resumeQueue(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async resumeQueue(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.queueService.resumeQueue(ctx.orgId, attractionId);
   }
 
@@ -107,7 +98,7 @@ export class QueueController {
   async listEntries(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Query() query: ListQueueEntriesQueryDto,
+    @Query() query: ListQueueEntriesQueryDto
   ) {
     return this.queueService.listEntries(ctx.orgId, attractionId, query);
   }
@@ -119,7 +110,7 @@ export class QueueController {
   async joinQueue(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: JoinQueueDto,
+    @Body() dto: JoinQueueDto
   ) {
     return this.queueService.joinQueue(ctx.orgId, attractionId, dto);
   }
@@ -128,10 +119,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Get queue entry details' })
-  async getEntry(
-    @Tenant() ctx: TenantContext,
-    @Param('entryId') entryId: string,
-  ) {
+  async getEntry(@Tenant() ctx: TenantContext, @Param('entryId') entryId: string) {
     return this.queueService.getEntry(ctx.orgId, entryId);
   }
 
@@ -140,10 +128,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Call guest to enter' })
-  async callEntry(
-    @Tenant() ctx: TenantContext,
-    @Param('entryId') entryId: string,
-  ) {
+  async callEntry(@Tenant() ctx: TenantContext, @Param('entryId') entryId: string) {
     return this.queueService.callEntry(ctx.orgId, entryId);
   }
 
@@ -152,10 +137,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Mark guest as checked in' })
-  async checkInEntry(
-    @Tenant() ctx: TenantContext,
-    @Param('entryId') entryId: string,
-  ) {
+  async checkInEntry(@Tenant() ctx: TenantContext, @Param('entryId') entryId: string) {
     return this.queueService.checkInEntry(ctx.orgId, entryId);
   }
 
@@ -164,10 +146,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Mark as no-show' })
-  async markNoShow(
-    @Tenant() ctx: TenantContext,
-    @Param('entryId') entryId: string,
-  ) {
+  async markNoShow(@Tenant() ctx: TenantContext, @Param('entryId') entryId: string) {
     return this.queueService.markNoShow(ctx.orgId, entryId);
   }
 
@@ -178,7 +157,7 @@ export class QueueController {
   async updateEntry(
     @Tenant() ctx: TenantContext,
     @Param('entryId') entryId: string,
-    @Body() dto: UpdateEntryStatusDto,
+    @Body() dto: UpdateEntryStatusDto
   ) {
     return this.queueService.updateEntryStatus(ctx.orgId, entryId, dto);
   }
@@ -187,10 +166,7 @@ export class QueueController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager')
   @ApiOperation({ summary: 'Remove entry from queue' })
-  async removeEntry(
-    @Tenant() ctx: TenantContext,
-    @Param('entryId') entryId: string,
-  ) {
+  async removeEntry(@Tenant() ctx: TenantContext, @Param('entryId') entryId: string) {
     return this.queueService.removeEntry(ctx.orgId, entryId);
   }
 
@@ -203,7 +179,7 @@ export class QueueController {
   async getStats(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Query('date') date?: string,
+    @Query('date') date?: string
   ) {
     return this.queueService.getQueueStats(ctx.orgId, attractionId, date);
   }

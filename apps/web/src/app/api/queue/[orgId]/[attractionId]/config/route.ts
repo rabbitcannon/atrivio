@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { createQueueConfig, updateQueueConfig } from '@/lib/api';
 
 export async function POST(
@@ -30,12 +30,8 @@ export async function POST(
     }
 
     return NextResponse.json(result.data);
-  } catch (error) {
-    console.error('Queue config POST error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -69,11 +65,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(result.data);
-  } catch (error) {
-    console.error('Queue config PATCH error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

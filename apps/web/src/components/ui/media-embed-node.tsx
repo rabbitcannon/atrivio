@@ -1,26 +1,20 @@
 'use client';
 
-import * as React from 'react';
-import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import { Tweet } from 'react-tweet';
-
-import type { TMediaEmbedElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
-
 import { parseTwitterUrl, parseVideoUrl } from '@platejs/media';
 import { MediaEmbedPlugin, useMediaState } from '@platejs/media/react';
 import { ResizableProvider, useResizableValue } from '@platejs/resizable';
+
+import type { TMediaEmbedElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, withHOC } from 'platejs/react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils/cn';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaToolbar } from './media-toolbar';
-import {
-  mediaResizeHandleVariants,
-  Resizable,
-  ResizeHandle,
-} from './resize-handle';
+import { mediaResizeHandleVariants, Resizable, ResizeHandle } from './resize-handle';
 
 export const MediaEmbedElement = withHOC(
   ResizableProvider,
@@ -43,10 +37,7 @@ export const MediaEmbedElement = withHOC(
     return (
       <MediaToolbar plugin={MediaEmbedPlugin}>
         <PlateElement className="py-2.5" {...props}>
-          <figure
-            className="group relative m-0 w-full cursor-default"
-            contentEditable={false}
-          >
+          <figure className="group relative m-0 w-full cursor-default" contentEditable={false}>
             <Resizable
               align={align}
               options={{
@@ -63,7 +54,7 @@ export const MediaEmbedElement = withHOC(
               {isVideo ? (
                 isYoutube ? (
                   <LiteYouTubeEmbed
-                    id={embed!.id!}
+                    id={embed?.id!}
                     title="youtube"
                     wrapperClass={cn(
                       'rounded-sm',
@@ -99,7 +90,7 @@ export const MediaEmbedElement = withHOC(
                         focused && selected && 'ring-2 ring-ring ring-offset-2'
                       )}
                       title="embed"
-                      src={embed!.url}
+                      src={embed?.url}
                       allowFullScreen
                     />
                   </div>
@@ -115,7 +106,7 @@ export const MediaEmbedElement = withHOC(
                       '[&_.react-tweet-theme]:ring-2 [&_.react-tweet-theme]:ring-ring [&_.react-tweet-theme]:ring-offset-2'
                   )}
                 >
-                  <Tweet id={embed!.id!} />
+                  <Tweet id={embed?.id!} />
                 </div>
               )}
 

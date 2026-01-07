@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { AlertCircle, Calendar, Clock, ExternalLink, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { Calendar, Clock, MapPin, ExternalLink, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getMySchedules, type Schedule, type ScheduleStatus } from '@/lib/api/client';
 
 interface MyScheduleWidgetProps {
@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<ScheduleStatus, 'default' | 'secondary' | 'destructi
 };
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  const date = new Date(`${dateStr}T00:00:00`);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',

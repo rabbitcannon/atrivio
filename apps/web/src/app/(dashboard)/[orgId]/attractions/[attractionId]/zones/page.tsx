@@ -1,13 +1,12 @@
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ZoneForm } from '@/components/features/attractions/zone-form';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { ZoneForm } from '@/components/features/attractions/zone-form';
-import { getAttractionZones, getAttraction, resolveOrgId } from '@/lib/api';
+import { getAttraction, getAttractionZones, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Zones',
@@ -61,9 +60,7 @@ export default async function ZonesPage({ params }: ZonesPageProps) {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">Zones</h1>
-          <p className="text-muted-foreground">
-            Manage zones and areas within {attraction.name}.
-          </p>
+          <p className="text-muted-foreground">Manage zones and areas within {attraction.name}.</p>
         </div>
       </div>
 
@@ -91,9 +88,7 @@ export default async function ZonesPage({ params }: ZonesPageProps) {
                       </span>
                       <CardTitle className="text-base">{zone.name}</CardTitle>
                     </div>
-                    {zone.capacity && (
-                      <Badge variant="outline">Cap: {zone.capacity}</Badge>
-                    )}
+                    {zone.capacity && <Badge variant="outline">Cap: {zone.capacity}</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">

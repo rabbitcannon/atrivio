@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class SignWaiverDto {
   @ApiProperty({ example: 'liability_waiver' })

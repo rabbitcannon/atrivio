@@ -1,21 +1,21 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
   ArrowLeft,
-  HelpCircle,
-  Plus,
   Edit,
-  Trash2,
-  MoreHorizontal,
-  Star,
   GripVertical,
+  HelpCircle,
+  MoreHorizontal,
+  Plus,
+  Star,
   Tag,
+  Trash2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId, getStorefrontFaqs } from '@/lib/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getStorefrontFaqs, resolveOrgId } from '@/lib/api';
 import type { StorefrontFaq } from '@/lib/api/types';
 
 export const metadata: Metadata = {
@@ -83,9 +83,7 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{faqs.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {activeFaqs.length} active
-            </p>
+            <p className="text-xs text-muted-foreground">{activeFaqs.length} active</p>
           </CardContent>
         </Card>
         <Card>
@@ -94,9 +92,7 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{featuredFaqs.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Highlighted on homepage
-            </p>
+            <p className="text-xs text-muted-foreground">Highlighted on homepage</p>
           </CardContent>
         </Card>
         <Card>
@@ -105,9 +101,7 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{categories.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Unique categories
-            </p>
+            <p className="text-xs text-muted-foreground">Unique categories</p>
           </CardContent>
         </Card>
       </div>
@@ -116,7 +110,9 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
       {categories.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium">Categories:</span>
-          <Badge variant="secondary" className="cursor-pointer">All</Badge>
+          <Badge variant="secondary" className="cursor-pointer">
+            All
+          </Badge>
           {categories.map((category) => (
             <Badge key={category} variant="outline" className="cursor-pointer">
               {category}
@@ -132,9 +128,7 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
             <HelpCircle className="h-5 w-5" />
             All FAQs
           </CardTitle>
-          <CardDescription>
-            Drag to reorder. Featured FAQs appear on the homepage.
-          </CardDescription>
+          <CardDescription>Drag to reorder. Featured FAQs appear on the homepage.</CardDescription>
         </CardHeader>
         <CardContent>
           {faqs.length === 0 ? (
@@ -170,13 +164,9 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
                           Featured
                         </Badge>
                       )}
-                      {!faq.isActive && (
-                        <Badge variant="secondary">Inactive</Badge>
-                      )}
+                      {!faq.isActive && <Badge variant="secondary">Inactive</Badge>}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {faq.answer}
-                    </p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{faq.answer}</p>
                     {faq.category && (
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-xs">

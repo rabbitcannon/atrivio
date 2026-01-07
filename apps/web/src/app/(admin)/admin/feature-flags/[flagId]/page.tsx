@@ -1,31 +1,20 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { AlertCircle, ArrowLeft, CheckCircle2, Flag, Info, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  Flag,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  Info,
-} from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Slider } from '@/components/ui/slider';
-import {
-  getFeatureFlag,
-  updateFeatureFlag,
-  type FeatureFlagDetail,
-} from '@/lib/api/admin';
+import { type FeatureFlagDetail, getFeatureFlag, updateFeatureFlag } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -267,9 +256,7 @@ export default function FeatureFlagDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle>Rollout Percentage</CardTitle>
-            <CardDescription>
-              Gradually roll out to a percentage of users
-            </CardDescription>
+            <CardDescription>Gradually roll out to a percentage of users</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -324,7 +311,9 @@ export default function FeatureFlagDetailPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-2xl font-bold">{flag.org_ids?.length || 0}</p>
-              <p className="text-sm text-muted-foreground">Organizations with this feature enabled</p>
+              <p className="text-sm text-muted-foreground">
+                Organizations with this feature enabled
+              </p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-2xl font-bold">{flag.user_ids?.length || 0}</p>

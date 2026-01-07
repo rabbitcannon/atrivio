@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { createTestApp, closeTestApp, adminClient, TEST_ORGS } from '../helpers/index.js';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { adminClient, closeTestApp, createTestApp, TEST_ORGS } from '../helpers/index.js';
 import { getTestApp } from '../helpers/test-app.js';
 
 // Test Stripe account ID
@@ -45,22 +45,22 @@ describe('Stripe Webhooks (E2E)', () => {
   describe('account.updated webhook', () => {
     beforeEach(async () => {
       // Ensure test account exists in database
-      await adminClient.from('stripe_accounts').upsert({
-        org_id: TEST_ORGS.nightmareManor,
-        stripe_account_id: TEST_STRIPE_ACCOUNT,
-        status: 'onboarding',
-        charges_enabled: false,
-        payouts_enabled: false,
-        details_submitted: false,
-      }, { onConflict: 'org_id' });
+      await adminClient.from('stripe_accounts').upsert(
+        {
+          org_id: TEST_ORGS.nightmareManor,
+          stripe_account_id: TEST_STRIPE_ACCOUNT,
+          status: 'onboarding',
+          charges_enabled: false,
+          payouts_enabled: false,
+          details_submitted: false,
+        },
+        { onConflict: 'org_id' }
+      );
     });
 
     afterAll(async () => {
       // Cleanup webhook records
-      await adminClient
-        .from('stripe_webhooks')
-        .delete()
-        .like('stripe_event_id', 'evt_test_%');
+      await adminClient.from('stripe_webhooks').delete().like('stripe_event_id', 'evt_test_%');
     });
 
     it('should update account status to active when fully onboarded', async () => {
@@ -186,26 +186,23 @@ describe('Stripe Webhooks (E2E)', () => {
   describe('charge.succeeded webhook', () => {
     beforeEach(async () => {
       // Ensure test account exists
-      await adminClient.from('stripe_accounts').upsert({
-        org_id: TEST_ORGS.nightmareManor,
-        stripe_account_id: TEST_STRIPE_ACCOUNT,
-        status: 'active',
-        charges_enabled: true,
-        payouts_enabled: true,
-        details_submitted: true,
-      }, { onConflict: 'org_id' });
+      await adminClient.from('stripe_accounts').upsert(
+        {
+          org_id: TEST_ORGS.nightmareManor,
+          stripe_account_id: TEST_STRIPE_ACCOUNT,
+          status: 'active',
+          charges_enabled: true,
+          payouts_enabled: true,
+          details_submitted: true,
+        },
+        { onConflict: 'org_id' }
+      );
     });
 
     afterAll(async () => {
       // Cleanup
-      await adminClient
-        .from('stripe_transactions')
-        .delete()
-        .like('stripe_charge_id', 'ch_test_%');
-      await adminClient
-        .from('stripe_webhooks')
-        .delete()
-        .like('stripe_event_id', 'evt_test_%');
+      await adminClient.from('stripe_transactions').delete().like('stripe_charge_id', 'ch_test_%');
+      await adminClient.from('stripe_webhooks').delete().like('stripe_event_id', 'evt_test_%');
     });
 
     it('should record a successful charge with platform fee', async () => {
@@ -255,14 +252,17 @@ describe('Stripe Webhooks (E2E)', () => {
 
     beforeAll(async () => {
       // Ensure test account exists
-      await adminClient.from('stripe_accounts').upsert({
-        org_id: TEST_ORGS.nightmareManor,
-        stripe_account_id: TEST_STRIPE_ACCOUNT,
-        status: 'active',
-        charges_enabled: true,
-        payouts_enabled: true,
-        details_submitted: true,
-      }, { onConflict: 'org_id' });
+      await adminClient.from('stripe_accounts').upsert(
+        {
+          org_id: TEST_ORGS.nightmareManor,
+          stripe_account_id: TEST_STRIPE_ACCOUNT,
+          status: 'active',
+          charges_enabled: true,
+          payouts_enabled: true,
+          details_submitted: true,
+        },
+        { onConflict: 'org_id' }
+      );
 
       // Get the account ID for the transaction
       const { data: account } = await adminClient
@@ -273,7 +273,7 @@ describe('Stripe Webhooks (E2E)', () => {
 
       // Create a transaction to refund
       await adminClient.from('stripe_transactions').insert({
-        stripe_account_id: account!.id,
+        stripe_account_id: account?.id,
         stripe_charge_id: chargeId,
         type: 'charge',
         status: 'succeeded',
@@ -286,14 +286,8 @@ describe('Stripe Webhooks (E2E)', () => {
     });
 
     afterAll(async () => {
-      await adminClient
-        .from('stripe_transactions')
-        .delete()
-        .eq('stripe_charge_id', chargeId);
-      await adminClient
-        .from('stripe_webhooks')
-        .delete()
-        .like('stripe_event_id', 'evt_test_%');
+      await adminClient.from('stripe_transactions').delete().eq('stripe_charge_id', chargeId);
+      await adminClient.from('stripe_webhooks').delete().like('stripe_event_id', 'evt_test_%');
     });
 
     it('should update transaction status to refunded', async () => {

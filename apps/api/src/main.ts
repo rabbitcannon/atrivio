@@ -17,7 +17,10 @@ async function bootstrap() {
   // CORS configuration using Fastify's native plugin for better compatibility
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await app.register(fastifyCors as any, {
-    origin: process.env['CORS_ORIGINS']?.split(',') ?? ['http://localhost:3000', 'http://localhost:3002'],
+    origin: process.env['CORS_ORIGINS']?.split(',') ?? [
+      'http://localhost:3000',
+      'http://localhost:3002',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
     credentials: true,
@@ -37,9 +40,6 @@ async function bootstrap() {
 
   const port = process.env['PORT'] ?? 3001;
   await app.listen(port, '0.0.0.0');
-
-  console.log(`🚀 API running on: http://localhost:${port}`);
-  console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

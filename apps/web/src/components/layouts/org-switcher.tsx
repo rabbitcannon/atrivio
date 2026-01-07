@@ -2,7 +2,7 @@
 
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useOrg } from '@/hooks/use-org';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,8 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useOrg } from '@/hooks/use-org';
 
 function getOrgInitials(name: string): string {
   return name
@@ -29,7 +29,8 @@ export function OrgSwitcher() {
   const { currentOrg, organizations, isLoading, switchOrg } = useOrg();
 
   // Only owners and admins can create new organizations
-  const canCreateOrg = organizations.length === 0 ||
+  const canCreateOrg =
+    organizations.length === 0 ||
     organizations.some((org) => org.role === 'owner' || org.role === 'admin');
 
   if (isLoading) {
@@ -40,9 +41,7 @@ export function OrgSwitcher() {
     // No organization - user should be redirected to onboarding
     return (
       <Button variant="outline" className="w-full justify-start" asChild>
-        <a href="/onboarding">
-          Get Started
-        </a>
+        <a href="/onboarding">Get Started</a>
       </Button>
     );
   }
@@ -65,11 +64,7 @@ export function OrgSwitcher() {
         <DropdownMenuLabel>Organizations</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {organizations.map((org) => (
-          <DropdownMenuItem
-            key={org.id}
-            onClick={() => switchOrg(org)}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem key={org.id} onClick={() => switchOrg(org)} className="cursor-pointer">
             <Avatar className="mr-2 h-6 w-6">
               <AvatarImage src={org.logoUrl} alt={org.name} />
               <AvatarFallback className="text-xs">{getOrgInitials(org.name)}</AvatarFallback>

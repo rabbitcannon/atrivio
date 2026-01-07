@@ -1,5 +1,5 @@
+import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Injectable, Logger } from '@nestjs/common';
-import type { OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 
 /**
@@ -110,11 +110,7 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
       const windowStart = now - windowSeconds * 1000;
 
       // Get all metrics within the window
-      const results = await this.redis.zrangebyscore(
-        this.METRICS_KEY,
-        windowStart,
-        now,
-      );
+      const results = await this.redis.zrangebyscore(this.METRICS_KEY, windowStart, now);
 
       if (results.length === 0) {
         return defaultMetrics;

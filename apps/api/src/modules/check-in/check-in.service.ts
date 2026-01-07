@@ -1,20 +1,15 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { OrgId } from '@haunt/shared';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
-  ScanCheckInDto,
+  CapacityStatus,
+  GetQueueQueryDto,
+  GetStatsQueryDto,
+  ListCheckInsQueryDto,
   LookupDto,
   RecordWaiverDto,
+  ScanCheckInDto,
   WalkUpSaleDto,
-  ListCheckInsQueryDto,
-  GetStatsQueryDto,
-  GetQueueQueryDto,
-  CheckInMethod,
-  CapacityStatus,
 } from './dto/check-in.dto.js';
 
 @Injectable()
@@ -26,12 +21,7 @@ export class CheckInService {
   /**
    * Scan and check in a ticket by barcode
    */
-  async scanCheckIn(
-    orgId: OrgId,
-    attractionId: string,
-    userId: string,
-    dto: ScanCheckInDto,
-  ) {
+  async scanCheckIn(orgId: OrgId, attractionId: string, userId: string, dto: ScanCheckInDto) {
     // 1. Find ticket by barcode
     const { data: ticket, error: ticketError } = await this.supabase.adminClient
       .from('tickets')
@@ -230,7 +220,7 @@ export class CheckInService {
       case 'name':
         ordersQuery = ordersQuery.ilike('customer_name', `%${dto.query}%`);
         break;
-      case 'ticket_number':
+      case 'ticket_number': {
         // Special case: search by ticket number
         const { data: ticket } = await this.supabase.adminClient
           .from('tickets')
@@ -245,6 +235,7 @@ export class CheckInService {
           return { orders: [] };
         }
         break;
+      }
     }
 
     const { data: orders, error } = await ordersQuery.limit(10);
@@ -287,7 +278,13 @@ export class CheckInService {
   /**
    * Record a waiver signature
    */
-  async recordWaiver(orgId: OrgId, attractionId: string, dto: RecordWaiverDto, ipAddress?: string, userAgent?: string) {
+  async recordWaiver(
+    orgId: OrgId,
+    attractionId: string,
+    dto: RecordWaiverDto,
+    ipAddress?: string,
+    userAgent?: string
+  ) {
     // Get ticket to verify ownership
     const { data: ticket } = await this.supabase.adminClient
       .from('tickets')
@@ -338,10 +335,11 @@ export class CheckInService {
   /**
    * Get current capacity for an attraction
    */
-  async getCapacity(orgId: OrgId, attractionId: string) {
+  async getCapacity(_orgId: OrgId, attractionId: string) {
     // Use the database function
-    const { data, error } = await this.supabase.adminClient
-      .rpc('get_current_capacity', { p_attraction_id: attractionId });
+    const { data, error } = await this.supabase.adminClient.rpc('get_current_capacity', {
+      p_attraction_id: attractionId,
+    });
 
     if (error) {
       throw new BadRequestException({
@@ -382,7 +380,10 @@ export class CheckInService {
     const byTimeSlot = await Promise.all(
       (slots || []).map(async (slot: any) => {
         const startTime = new Date(`2000-01-01T${slot.start_time}`);
-        const slotStr = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const slotStr = startTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+        });
 
         const { count } = await this.supabase.adminClient
           .from('check_ins')
@@ -395,7 +396,7 @@ export class CheckInService {
           expected: slot.capacity || 0,
           checkedIn: count || 0,
         };
-      }),
+      })
     );
 
     return {
@@ -414,15 +415,14 @@ export class CheckInService {
   /**
    * Get check-in stats for a date
    */
-  async getStats(orgId: OrgId, attractionId: string, query: GetStatsQueryDto) {
+  async getStats(_orgId: OrgId, attractionId: string, query: GetStatsQueryDto) {
     const date = query.date || new Date().toISOString().split('T')[0];
 
     // Use database function
-    const { data, error } = await this.supabase.adminClient
-      .rpc('get_checkin_stats', {
-        p_attraction_id: attractionId,
-        p_date: date,
-      });
+    const { data, error } = await this.supabase.adminClient.rpc('get_checkin_stats', {
+      p_attraction_id: attractionId,
+      p_date: date,
+    });
 
     if (error) {
       throw new BadRequestException({
@@ -457,7 +457,7 @@ export class CheckInService {
   /**
    * Get check-in queue (pending arrivals)
    */
-  async getQueue(orgId: OrgId, attractionId: string, query: GetQueueQueryDto) {
+  async getQueue(orgId: OrgId, _attractionId: string, query: GetQueueQueryDto) {
     const today = new Date().toISOString().split('T')[0];
     const now = new Date();
 
@@ -499,10 +499,13 @@ export class CheckInService {
     for (const ticket of todayTickets as any[]) {
       const slotStart = new Date(`${ticket.time_slot.date}T${ticket.time_slot.start_time}`);
       const slotEnd = new Date(`${ticket.time_slot.date}T${ticket.time_slot.end_time}`);
-      const slotStr = new Date(`2000-01-01T${ticket.time_slot.start_time}`).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-      });
+      const slotStr = new Date(`2000-01-01T${ticket.time_slot.start_time}`).toLocaleTimeString(
+        'en-US',
+        {
+          hour: 'numeric',
+          minute: '2-digit',
+        }
+      );
 
       if (now < slotStart) {
         // Pending - slot hasn't started yet
@@ -551,12 +554,7 @@ export class CheckInService {
   /**
    * Create walk-up ticket(s) and check in immediately
    */
-  async walkUpSale(
-    orgId: OrgId,
-    attractionId: string,
-    userId: string,
-    dto: WalkUpSaleDto,
-  ) {
+  async walkUpSale(orgId: OrgId, attractionId: string, userId: string, dto: WalkUpSaleDto) {
     // 1. Verify ticket type exists and is available
     const { data: ticketType, error: typeError } = await this.supabase.adminClient
       .from('ticket_types')
@@ -697,12 +695,15 @@ export class CheckInService {
 
     let qb = this.supabase.adminClient
       .from('check_ins')
-      .select(`
+      .select(
+        `
         *,
         ticket:tickets(id, ticket_number, guest_name),
         station:check_in_stations(id, name),
         checked_in_by_user:profiles!check_ins_checked_in_by_fkey(id, first_name, last_name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .eq('org_id', orgId)
       .eq('attraction_id', attractionId)
       .order('check_in_time', { ascending: false });
@@ -752,12 +753,13 @@ export class CheckInService {
       .eq('id', attractionId)
       .single();
 
-    const prefix = attraction?.name
-      ?.split(' ')
-      .map((w: string) => w[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 3) || 'WLK';
+    const prefix =
+      attraction?.name
+        ?.split(' ')
+        .map((w: string) => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 3) || 'WLK';
 
     // Get next sequence number
     const { count } = await this.supabase.adminClient
@@ -769,19 +771,20 @@ export class CheckInService {
     return `${prefix}-${seq}`;
   }
 
-  private async generateTicketNumber(orgId: OrgId, attractionId: string): Promise<string> {
+  private async generateTicketNumber(_orgId: OrgId, attractionId: string): Promise<string> {
     const { data: attraction } = await this.supabase.adminClient
       .from('attractions')
       .select('name')
       .eq('id', attractionId)
       .single();
 
-    const prefix = attraction?.name
-      ?.split(' ')
-      .map((w: string) => w[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 3) || 'TKT';
+    const prefix =
+      attraction?.name
+        ?.split(' ')
+        .map((w: string) => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 3) || 'TKT';
 
     const seq = Math.random().toString(36).substring(2, 10).toUpperCase();
     return `${prefix}-T-${seq}`;

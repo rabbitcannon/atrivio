@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { syncStripeAccount } from '@/lib/api/payments';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { syncStripeAccount } from '@/lib/api/payments';
 
 interface AutoSyncStatusProps {
   orgId: string;
@@ -30,7 +30,7 @@ export function AutoSyncStatus({ orgId, currentStatus }: AutoSyncStatusProps) {
     const now = Date.now();
 
     // Don't sync if we synced in the last 5 seconds
-    if (lastSync && now - parseInt(lastSync) < 5000) {
+    if (lastSync && now - parseInt(lastSync, 10) < 5000) {
       return;
     }
 

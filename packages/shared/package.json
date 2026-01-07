@@ -43,12 +43,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "zod": "^3.24.1"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.4"
   }
 }

@@ -1,37 +1,37 @@
+import type { UserId } from '@haunt/shared';
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  UseInterceptors,
-  UseGuards,
   HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { OrdersService } from './orders.service.js';
-import {
-  CreateOrderDto,
-  UpdateOrderDto,
-  ListOrdersQueryDto,
-  UpdateTicketStatusDto,
-  RefundOrderDto,
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { AuthUser } from '../../core/auth/auth.service.js';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
   CartSessionDto,
   CheckoutDto,
+  CreateOrderDto,
+  ListOrdersQueryDto,
+  RefundOrderDto,
+  UpdateOrderDto,
+  UpdateTicketStatusDto,
   ValidateTicketDto,
 } from './dto/order.dto.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
-import type { AuthUser } from '../../core/auth/auth.service.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
-import { Feature } from '../../core/features/decorators/feature.decorator.js';
-import type { UserId } from '@haunt/shared';
+import { OrdersService } from './orders.service.js';
 
 @ApiTags('Orders')
 @Controller('organizations/:orgId')
@@ -48,10 +48,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'finance')
   @ApiOperation({ summary: 'List orders' })
-  async listOrders(
-    @Tenant() ctx: TenantContext,
-    @Query() query: ListOrdersQueryDto,
-  ) {
+  async listOrders(@Tenant() ctx: TenantContext, @Query() query: ListOrdersQueryDto) {
     return this.ordersService.listOrders(ctx.orgId, query);
   }
 
@@ -59,10 +56,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'finance')
   @ApiOperation({ summary: 'Get a single order' })
-  async getOrder(
-    @Tenant() ctx: TenantContext,
-    @Param('orderId') orderId: string,
-  ) {
+  async getOrder(@Tenant() ctx: TenantContext, @Param('orderId') orderId: string) {
     return this.ordersService.getOrder(ctx.orgId, orderId);
   }
 
@@ -70,10 +64,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'finance')
   @ApiOperation({ summary: 'Get order by order number' })
-  async getOrderByNumber(
-    @Tenant() ctx: TenantContext,
-    @Param('orderNumber') orderNumber: string,
-  ) {
+  async getOrderByNumber(@Tenant() ctx: TenantContext, @Param('orderNumber') orderNumber: string) {
     return this.ordersService.getOrderByNumber(ctx.orgId, orderNumber);
   }
 
@@ -84,7 +75,7 @@ export class OrdersController {
   async createOrder(
     @Tenant() ctx: TenantContext,
     @Body() dto: CreateOrderDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
     return this.ordersService.createOrder(ctx.orgId, dto, user.id as UserId);
   }
@@ -96,7 +87,7 @@ export class OrdersController {
   async updateOrder(
     @Tenant() ctx: TenantContext,
     @Param('orderId') orderId: string,
-    @Body() dto: UpdateOrderDto,
+    @Body() dto: UpdateOrderDto
   ) {
     return this.ordersService.updateOrder(ctx.orgId, orderId, dto);
   }
@@ -106,10 +97,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office')
   @ApiOperation({ summary: 'Complete an order and generate tickets' })
-  async completeOrder(
-    @Tenant() ctx: TenantContext,
-    @Param('orderId') orderId: string,
-  ) {
+  async completeOrder(@Tenant() ctx: TenantContext, @Param('orderId') orderId: string) {
     return this.ordersService.completeOrder(ctx.orgId, orderId);
   }
 
@@ -121,7 +109,7 @@ export class OrdersController {
   async cancelOrder(
     @Tenant() ctx: TenantContext,
     @Param('orderId') orderId: string,
-    @Body('reason') reason?: string,
+    @Body('reason') reason?: string
   ) {
     return this.ordersService.cancelOrder(ctx.orgId, orderId, reason);
   }
@@ -134,7 +122,7 @@ export class OrdersController {
   async refundOrder(
     @Tenant() ctx: TenantContext,
     @Param('orderId') orderId: string,
-    @Body() dto: RefundOrderDto,
+    @Body() dto: RefundOrderDto
   ) {
     return this.ordersService.refundOrder(ctx.orgId, orderId, dto);
   }
@@ -145,10 +133,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Get a ticket by ID' })
-  async getTicket(
-    @Tenant() ctx: TenantContext,
-    @Param('ticketId') ticketId: string,
-  ) {
+  async getTicket(@Tenant() ctx: TenantContext, @Param('ticketId') ticketId: string) {
     return this.ordersService.getTicket(ctx.orgId, ticketId);
   }
 
@@ -156,10 +141,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Get a ticket by barcode' })
-  async getTicketByBarcode(
-    @Tenant() ctx: TenantContext,
-    @Param('barcode') barcode: string,
-  ) {
+  async getTicketByBarcode(@Tenant() ctx: TenantContext, @Param('barcode') barcode: string) {
     return this.ordersService.getTicketByBarcode(ctx.orgId, barcode);
   }
 
@@ -170,7 +152,7 @@ export class OrdersController {
   async updateTicketStatus(
     @Tenant() ctx: TenantContext,
     @Param('ticketId') ticketId: string,
-    @Body() dto: UpdateTicketStatusDto,
+    @Body() dto: UpdateTicketStatusDto
   ) {
     return this.ordersService.updateTicketStatus(ctx.orgId, ticketId, dto);
   }
@@ -180,10 +162,7 @@ export class OrdersController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'box_office', 'scanner')
   @ApiOperation({ summary: 'Validate a ticket (check if valid without marking as used)' })
-  async validateTicket(
-    @Tenant() ctx: TenantContext,
-    @Body() dto: ValidateTicketDto,
-  ) {
+  async validateTicket(@Tenant() ctx: TenantContext, @Body() dto: ValidateTicketDto) {
     return this.ordersService.validateTicket(ctx.orgId, dto.barcode);
   }
 
@@ -195,7 +174,7 @@ export class OrdersController {
   async scanTicket(
     @Tenant() ctx: TenantContext,
     @Body() dto: ValidateTicketDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
     return this.ordersService.scanTicket(ctx.orgId, dto.barcode, user.id as UserId);
   }
@@ -207,17 +186,14 @@ export class OrdersController {
   async upsertCart(
     @Tenant() ctx: TenantContext,
     @Body() dto: CartSessionDto,
-    @Query('sessionId') sessionId?: string,
+    @Query('sessionId') sessionId?: string
   ) {
     return this.ordersService.upsertCartSession(ctx.orgId, sessionId || null, dto);
   }
 
   @Get('cart/:sessionId')
   @ApiOperation({ summary: 'Get a cart session' })
-  async getCart(
-    @Tenant() ctx: TenantContext,
-    @Param('sessionId') sessionId: string,
-  ) {
+  async getCart(@Tenant() ctx: TenantContext, @Param('sessionId') sessionId: string) {
     return this.ordersService.getCartSession(ctx.orgId, sessionId);
   }
 
@@ -226,7 +202,7 @@ export class OrdersController {
   async checkout(
     @Tenant() ctx: TenantContext,
     @Body() dto: CheckoutDto,
-    @CurrentUser() user?: AuthUser,
+    @CurrentUser() user?: AuthUser
   ) {
     return this.ordersService.checkout(ctx.orgId, dto, user?.id as UserId | undefined);
   }

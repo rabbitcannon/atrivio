@@ -1,10 +1,10 @@
+import { AlertCircle, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Plus, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { AttractionCard } from '@/components/features/attractions/attraction-card';
-import { getAttractions, resolveOrgId } from '@/lib/api';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { getAttractions, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Attractions',

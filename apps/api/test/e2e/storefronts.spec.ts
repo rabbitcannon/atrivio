@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
-  TEST_ORGS,
   TEST_ATTRACTIONS,
+  TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch, put, del } from '../helpers/request.js';
+import { del, get, patch, post, put } from '../helpers/request.js';
 
 // Seed data IDs from seed.sql
 const SEED_DATA = {
@@ -159,11 +159,7 @@ describe('Storefronts (F14)', () => {
     it('should publish storefront as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await post(
-        `${baseUrl}/publish`,
-        {},
-        { token: owner.accessToken }
-      );
+      const response = await post(`${baseUrl}/publish`, {}, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('isPublished', true);
@@ -173,11 +169,7 @@ describe('Storefronts (F14)', () => {
     it('should reject managers from publishing', async () => {
       const manager = await loginTestUser(TEST_USERS.manager.email, TEST_USERS.manager.password);
 
-      const response = await post(
-        `${baseUrl}/publish`,
-        {},
-        { token: manager.accessToken }
-      );
+      const response = await post(`${baseUrl}/publish`, {}, { token: manager.accessToken });
 
       expect(response.statusCode).toBe(403);
     });
@@ -187,11 +179,7 @@ describe('Storefronts (F14)', () => {
     it('should unpublish storefront as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await post(
-        `${baseUrl}/unpublish`,
-        {},
-        { token: owner.accessToken }
-      );
+      const response = await post(`${baseUrl}/unpublish`, {}, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('isPublished', false);
@@ -233,7 +221,9 @@ describe('Storefronts (F14)', () => {
       const response = await get(`${baseUrl}/pages?status=published`, { token: owner.accessToken });
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.pages.every((p: { status: string }) => p.status === 'published')).toBe(true);
+      expect(response.body.pages.every((p: { status: string }) => p.status === 'published')).toBe(
+        true
+      );
     });
 
     it('should reject actors from listing pages', async () => {
@@ -249,10 +239,9 @@ describe('Storefronts (F14)', () => {
     it('should get a specific page', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `${baseUrl}/pages/${SEED_DATA.pages.home}`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`${baseUrl}/pages/${SEED_DATA.pages.home}`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('page');
@@ -267,10 +256,9 @@ describe('Storefronts (F14)', () => {
     it('should return 404 for non-existent page', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `${baseUrl}/pages/00000000-0000-0000-0000-000000000000`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`${baseUrl}/pages/00000000-0000-0000-0000-000000000000`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(404);
     });
@@ -285,7 +273,7 @@ describe('Storefronts (F14)', () => {
       const response = await post(
         `${baseUrl}/pages`,
         {
-          slug: 'test-page-' + Date.now(),
+          slug: `test-page-${Date.now()}`,
           title: 'Test Page',
           content: 'This is test content for E2E testing',
           page_type: 'custom',
@@ -305,7 +293,7 @@ describe('Storefronts (F14)', () => {
 
     it('should reject duplicate slugs', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
-      const uniqueSlug = 'dup-test-' + Date.now();
+      const uniqueSlug = `dup-test-${Date.now()}`;
 
       // First create a page
       const createResponse = await post(
@@ -376,7 +364,7 @@ describe('Storefronts (F14)', () => {
       const createResponse = await post(
         `${baseUrl}/pages`,
         {
-          slug: 'to-delete-' + Date.now(),
+          slug: `to-delete-${Date.now()}`,
           title: 'Page to Delete',
           content: 'Will be deleted',
           page_type: 'custom',
@@ -386,10 +374,7 @@ describe('Storefronts (F14)', () => {
 
       const pageId = createResponse.body.page.id;
 
-      const deleteResponse = await del(
-        `${baseUrl}/pages/${pageId}`,
-        { token: owner.accessToken }
-      );
+      const deleteResponse = await del(`${baseUrl}/pages/${pageId}`, { token: owner.accessToken });
 
       expect(deleteResponse.statusCode).toBe(204);
     });
@@ -503,7 +488,9 @@ describe('Storefronts (F14)', () => {
 
       expect(response.statusCode).toBe(200);
       if (response.body.faqs.length > 0) {
-        expect(response.body.faqs.every((f: { category: string }) => f.category === 'General')).toBe(true);
+        expect(
+          response.body.faqs.every((f: { category: string }) => f.category === 'General')
+        ).toBe(true);
       }
     });
   });
@@ -566,10 +553,7 @@ describe('Storefronts (F14)', () => {
       const response = await post(
         `${baseUrl}/faqs/reorder`,
         {
-          order: [
-            SEED_DATA.faqs.general2,
-            SEED_DATA.faqs.general1,
-          ],
+          order: [SEED_DATA.faqs.general2, SEED_DATA.faqs.general1],
         },
         { token: owner.accessToken }
       );
@@ -623,7 +607,9 @@ describe('Storefronts (F14)', () => {
     afterAll(async () => {
       if (createdAnnouncementId) {
         const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
-        await del(`${baseUrl}/announcements/${createdAnnouncementId}`, { token: owner.accessToken });
+        await del(`${baseUrl}/announcements/${createdAnnouncementId}`, {
+          token: owner.accessToken,
+        });
       }
     });
   });
@@ -672,9 +658,7 @@ describe('Storefronts (F14)', () => {
             { label: 'Home', link_type: 'home' },
             { label: 'About', link_type: 'page', page_id: SEED_DATA.pages.about },
           ],
-          footer: [
-            { label: 'Contact', link_type: 'page', page_id: SEED_DATA.pages.contact },
-          ],
+          footer: [{ label: 'Contact', link_type: 'page', page_id: SEED_DATA.pages.contact }],
         },
         { token: owner.accessToken }
       );
@@ -691,11 +675,7 @@ describe('Storefronts (F14)', () => {
     it('should get public storefront by attraction slug', async () => {
       // First ensure the storefront is published
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
-      await post(
-        `${baseUrl}/publish`,
-        {},
-        { token: owner.accessToken }
-      );
+      await post(`${baseUrl}/publish`, {}, { token: owner.accessToken });
 
       const response = await get(`/storefronts/${TEST_ATTRACTIONS.mainHauntSlug}`);
 
@@ -728,7 +708,9 @@ describe('Storefronts (F14)', () => {
     });
 
     it('should return 404 for non-existent page', async () => {
-      const response = await get(`/storefronts/${TEST_ATTRACTIONS.mainHauntSlug}/pages/non-existent-page`);
+      const response = await get(
+        `/storefronts/${TEST_ATTRACTIONS.mainHauntSlug}/pages/non-existent-page`
+      );
 
       expect(response.statusCode).toBe(404);
     });
@@ -744,11 +726,15 @@ describe('Storefronts (F14)', () => {
     });
 
     it('should filter public FAQs by category', async () => {
-      const response = await get(`/storefronts/${TEST_ATTRACTIONS.mainHauntSlug}/faqs?category=General`);
+      const response = await get(
+        `/storefronts/${TEST_ATTRACTIONS.mainHauntSlug}/faqs?category=General`
+      );
 
       expect(response.statusCode).toBe(200);
       if (response.body.faqs.length > 0) {
-        expect(response.body.faqs.every((f: { category: string }) => f.category === 'General')).toBe(true);
+        expect(
+          response.body.faqs.every((f: { category: string }) => f.category === 'General')
+        ).toBe(true);
       }
     });
   });

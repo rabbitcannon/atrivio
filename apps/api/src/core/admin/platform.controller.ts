@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { AdminService } from './admin.service.js';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../auth/auth.service.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { AdminService } from './admin.service.js';
 
 @ApiTags('Platform')
 @Controller('platform')
@@ -22,7 +22,7 @@ export class PlatformController {
   @ApiResponse({ status: 200, description: 'Announcement dismissed' })
   async dismissAnnouncement(
     @Param('announcementId') announcementId: string,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
     return this.adminService.dismissAnnouncement(announcementId, user.id);
   }

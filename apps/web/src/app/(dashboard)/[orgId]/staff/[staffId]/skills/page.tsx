@@ -1,8 +1,8 @@
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { SkillsManager } from '@/components/features/staff/skills-manager';
+import { Button } from '@/components/ui/button';
 import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {

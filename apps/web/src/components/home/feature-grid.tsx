@@ -1,8 +1,8 @@
 'use client';
 
+import { motion, useInView } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
-import { motion, useInView } from 'motion/react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {
@@ -19,12 +19,7 @@ interface FeatureGridProps {
   id?: string;
 }
 
-export function FeatureGrid({
-  title,
-  features,
-  variant = 'default',
-  id,
-}: FeatureGridProps) {
+export function FeatureGrid({ title, features, variant = 'default', id }: FeatureGridProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 

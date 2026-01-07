@@ -1,24 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  AlertCircle,
+  ArrowDown,
+  ArrowLeftRight,
+  Calendar,
+  Check,
+  Clock,
+  Hand,
+  X,
+} from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -27,23 +23,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ArrowLeftRight,
-  ArrowDown,
-  Hand,
-  Check,
-  X,
-  AlertCircle,
-  Clock,
-  Calendar,
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  getSwapRequests,
   approveSwapRequest,
+  getSwapRequests,
   rejectSwapRequest,
   type ShiftSwapRequest,
   type SwapStatus,
@@ -70,7 +70,7 @@ const SWAP_TYPE_LABELS = {
 };
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  const date = new Date(`${dateStr}T00:00:00`);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -119,12 +119,24 @@ function SwapsTableSkeleton() {
         <TableBody>
           {[1, 2, 3, 4, 5].map((i) => (
             <TableRow key={i}>
-              <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-              <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-24" /></TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-16" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-8 w-24" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -180,7 +192,11 @@ export default function SwapRequestsPage() {
     if (!selectedSwap) return;
     setActionLoading(true);
 
-    const { error: apiError } = await approveSwapRequest(orgId, selectedSwap.id, actionNotes || undefined);
+    const { error: apiError } = await approveSwapRequest(
+      orgId,
+      selectedSwap.id,
+      actionNotes || undefined
+    );
 
     if (apiError) {
       setError(apiError.message || 'Failed to approve request');
@@ -338,9 +354,7 @@ export default function SwapRequestsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_COLORS[swap.status]}>
-                        {swap.status}
-                      </Badge>
+                      <Badge variant={STATUS_COLORS[swap.status]}>{swap.status}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-muted-foreground">
@@ -414,11 +428,20 @@ export default function SwapRequestsPage() {
           {selectedSwap && (
             <div className="rounded-lg border p-4 bg-muted/50">
               <div className="text-sm space-y-1">
-                <div><strong>Type:</strong> {SWAP_TYPE_LABELS[selectedSwap.swap_type]}</div>
-                <div><strong>Staff:</strong> {getStaffName(selectedSwap.requesting_staff)}</div>
-                <div><strong>Shift:</strong> {formatDate(selectedSwap.schedule.date)} at {formatTime(selectedSwap.schedule.start_time)}</div>
+                <div>
+                  <strong>Type:</strong> {SWAP_TYPE_LABELS[selectedSwap.swap_type]}
+                </div>
+                <div>
+                  <strong>Staff:</strong> {getStaffName(selectedSwap.requesting_staff)}
+                </div>
+                <div>
+                  <strong>Shift:</strong> {formatDate(selectedSwap.schedule.date)} at{' '}
+                  {formatTime(selectedSwap.schedule.start_time)}
+                </div>
                 {selectedSwap.reason && (
-                  <div><strong>Reason:</strong> {selectedSwap.reason}</div>
+                  <div>
+                    <strong>Reason:</strong> {selectedSwap.reason}
+                  </div>
                 )}
               </div>
             </div>

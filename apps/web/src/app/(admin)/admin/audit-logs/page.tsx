@@ -1,12 +1,19 @@
 'use client';
 
+import { AlertCircle, Building2, Filter, Flag, Search, Settings, Shield, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Search, Filter, AlertCircle, User, Building2, Settings, Shield, Flag } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -16,14 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { getAuditLogs, type AuditLog } from '@/lib/api/admin';
+import { type AuditLog, getAuditLogs } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -45,7 +45,9 @@ function getActionIcon(action: string) {
   return <Settings className="h-4 w-4" />;
 }
 
-function getActionBadgeVariant(action: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getActionBadgeVariant(
+  action: string
+): 'default' | 'secondary' | 'destructive' | 'outline' {
   if (action.includes('delete') || action.includes('suspend') || action.includes('revoke')) {
     return 'destructive';
   }
@@ -87,7 +89,6 @@ export default function AdminAuditLogsPage() {
 
   useEffect(() => {
     fetchLogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {

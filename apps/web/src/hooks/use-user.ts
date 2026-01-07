@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAuthStore } from '@/stores/auth-store';
 import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/auth-store';
 
 /**
  * Hook to get the current authenticated user and manage auth state.

@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
 import { motion, useInView } from 'motion/react';
+import { useRef } from 'react';
 
 export function CtaSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -47,8 +47,8 @@ export function CtaSection() {
           transition={{ duration: 0.5, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
           className="mx-auto mb-10 max-w-2xl text-lg text-white/80"
         >
-          Join hundreds of attractions already using Atrivio to streamline their
-          operations, increase revenue, and deliver exceptional guest experiences.
+          Join hundreds of attractions already using Atrivio to streamline their operations,
+          increase revenue, and deliver exceptional guest experiences.
         </motion.p>
 
         <motion.div
@@ -109,30 +109,54 @@ export function CtaSection() {
           transition={{ duration: 0.5, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
           className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-white/60"
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+              />
             </svg>
             <span>PCI Compliant</span>
           </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+              />
             </svg>
             <span>SOC 2 Type II</span>
           </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>99.9% Uptime SLA</span>
           </motion.div>

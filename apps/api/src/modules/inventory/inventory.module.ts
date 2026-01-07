@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../../shared/database/database.module.js';
-import { TenancyModule } from '../../core/tenancy/tenancy.module.js';
 import { RbacModule } from '../../core/rbac/rbac.module.js';
-import { InventoryController } from './inventory.controller.js';
-import { InventoryService } from './inventory.service.js';
+import { TenancyModule } from '../../core/tenancy/tenancy.module.js';
+import { DatabaseModule } from '../../shared/database/database.module.js';
 import { CategoriesService } from './categories.service.js';
 import { CheckoutsService } from './checkouts.service.js';
+import { InventoryController } from './inventory.controller.js';
+import { InventoryService } from './inventory.service.js';
 
 @Module({
   imports: [DatabaseModule, TenancyModule, RbacModule],

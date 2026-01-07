@@ -16,8 +16,7 @@ const features: OperationFeature[] = [
   {
     id: 'costume-inventory',
     title: 'Costume Inventory',
-    description:
-      'Database to list all costumes and track assignments to staff on specific nights.',
+    description: 'Database to list all costumes and track assignments to staff on specific nights.',
   },
   {
     id: 'safety-planning',
@@ -39,9 +38,8 @@ export function OperationsSection() {
         </h2>
 
         <p className="mx-auto mb-12 max-w-2xl text-lg text-[hsl(var(--landing-text-muted))]">
-          Use the Attraction Studio to build digital floor plans, place actor
-          positions, and map scenes to preview nightly distributions and safety
-          routes.
+          Use the Attraction Studio to build digital floor plans, place actor positions, and map
+          scenes to preview nightly distributions and safety routes.
         </p>
 
         <div className="mb-12">

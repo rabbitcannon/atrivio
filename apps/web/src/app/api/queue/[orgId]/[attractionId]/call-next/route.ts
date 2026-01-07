@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { callNextBatch } from '@/lib/api';
 
 export async function POST(
@@ -19,11 +19,7 @@ export async function POST(
     }
 
     return NextResponse.json(result.data);
-  } catch (error) {
-    console.error('Call next batch error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (_error) {
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

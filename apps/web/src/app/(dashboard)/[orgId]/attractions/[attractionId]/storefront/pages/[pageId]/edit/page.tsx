@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { resolveOrgId, getAttraction, getStorefrontPage, updateStorefrontPage } from '@/lib/api';
+import { getAttraction, getStorefrontPage, resolveOrgId, updateStorefrontPage } from '@/lib/api';
 import { PageEditorForm, type PageFormData } from '../../_components/page-editor-form';
 
 export const metadata: Metadata = {

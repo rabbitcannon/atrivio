@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { CheckoutsList } from '@/components/features/inventory';
 import { Button } from '@/components/ui/button';
 import { resolveOrgId } from '@/lib/api';
-import { CheckoutsList } from '@/components/features/inventory';
 
 export const metadata: Metadata = {
   title: 'Inventory Checkouts',
@@ -33,9 +33,7 @@ export default async function CheckoutsPage({ params }: CheckoutsPageProps) {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Checkouts</h1>
-          <p className="text-muted-foreground">
-            Track items checked out to staff members.
-          </p>
+          <p className="text-muted-foreground">Track items checked out to staff members.</p>
         </div>
       </div>
 

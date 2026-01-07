@@ -1,21 +1,21 @@
 import {
-  Controller,
-  Get,
-  Patch,
-  Post,
-  Delete,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { UsersService } from './users.service.js';
-import { CurrentUser, AccessToken } from './decorators/current-user.decorator.js';
-import type { AuthUser } from './auth.service.js';
-import { UpdateProfileDto, ChangePasswordDto } from './dto/users.dto.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SuperAdmin } from '../rbac/decorators/super-admin.decorator.js';
+import type { AuthUser } from './auth.service.js';
+import { AccessToken, CurrentUser } from './decorators/current-user.decorator.js';
+import type { ChangePasswordDto, UpdateProfileDto } from './dto/users.dto.js';
+import { UsersService } from './users.service.js';
 
 @ApiTags('Users')
 @Controller('users')
@@ -31,20 +31,14 @@ export class UsersController {
 
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
-  async updateMe(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: UpdateProfileDto,
-  ) {
+  async updateMe(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(user.id, dto);
   }
 
   @Post('me/change-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change password' })
-  async changePassword(
-    @AccessToken() token: string,
-    @Body() dto: ChangePasswordDto,
-  ) {
+  async changePassword(@AccessToken() token: string, @Body() dto: ChangePasswordDto) {
     return this.usersService.changePassword(token, dto);
   }
 
@@ -62,7 +56,7 @@ export class UsersController {
   async listUsers(
     @Query('page') page = 1,
     @Query('limit') limit = 20,
-    @Query('search') search?: string,
+    @Query('search') search?: string
   ) {
     return this.usersService.listUsers({
       page,
@@ -81,10 +75,7 @@ export class UsersController {
   @Patch(':id')
   @SuperAdmin()
   @ApiOperation({ summary: 'Update user (super admin only)' })
-  async updateUser(
-    @Param('id') id: string,
-    @Body() dto: { is_super_admin?: boolean },
-  ) {
+  async updateUser(@Param('id') id: string, @Body() dto: { is_super_admin?: boolean }) {
     return this.usersService.updateUser(id, dto);
   }
 }

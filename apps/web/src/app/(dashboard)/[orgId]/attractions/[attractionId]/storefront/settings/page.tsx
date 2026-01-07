@@ -1,12 +1,17 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft, Globe } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { resolveOrgId, getStorefrontSettings, getStorefrontDomains, getAttraction } from '@/lib/api';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { StorefrontSettingsForm } from '@/components/features/storefronts/settings-form';
-import type { StorefrontSettings, StorefrontDomain } from '@/lib/api/types';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  getAttraction,
+  getStorefrontDomains,
+  getStorefrontSettings,
+  resolveOrgId,
+} from '@/lib/api';
+import type { StorefrontDomain, StorefrontSettings } from '@/lib/api/types';
 
 export const metadata: Metadata = {
   title: 'Storefront Settings',
@@ -45,7 +50,9 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
 
   const subdomainDomain = domains.find((d) => d.domainType === 'subdomain');
   const primaryDomain = domains.find((d) => d.isPrimary && d.domainType === 'custom');
-  const subdomain = subdomainDomain?.domain ?? `${attractionName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.haunt.dev`;
+  const subdomain =
+    subdomainDomain?.domain ??
+    `${attractionName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.haunt.dev`;
 
   return (
     <div className="space-y-6">
@@ -78,9 +85,7 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
             <Globe className="h-5 w-5" />
             Domain Configuration
           </CardTitle>
-          <CardDescription>
-            Your storefront URLs
-          </CardDescription>
+          <CardDescription>Your storefront URLs</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -89,16 +94,12 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
               <div className="mt-1 flex items-center gap-2 p-3 bg-muted rounded-lg">
                 <code className="text-sm">{subdomain}</code>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Your default storefront URL
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Your default storefront URL</p>
             </div>
             <div>
               <label className="text-sm font-medium">Primary Domain</label>
               <div className="mt-1 flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <code className="text-sm">
-                  {primaryDomain?.domain ?? 'Not configured'}
-                </code>
+                <code className="text-sm">{primaryDomain?.domain ?? 'Not configured'}</code>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Custom domain for your storefront
@@ -116,11 +117,7 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
       </Card>
 
       {/* Editable Settings Form */}
-      <StorefrontSettingsForm
-        orgId={orgId}
-        attractionId={attractionId}
-        settings={settings}
-      />
+      <StorefrontSettingsForm orgId={orgId} attractionId={attractionId} settings={settings} />
     </div>
   );
 }

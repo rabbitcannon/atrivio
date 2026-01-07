@@ -1,11 +1,27 @@
 'use client';
 
+import { AlertCircle, MoreHorizontal, Search, Shield, ShieldOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Search, MoreHorizontal, Shield, ShieldOff, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -16,23 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { getAdminUsers, updateAdminUser, type AdminUser } from '@/lib/api/admin';
+import { type AdminUser, getAdminUsers, updateAdminUser } from '@/lib/api/admin';
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -72,7 +72,6 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -147,9 +146,7 @@ export default function AdminUsersPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>All Users</CardTitle>
-              <CardDescription>
-                {meta.total} total users
-              </CardDescription>
+              <CardDescription>{meta.total} total users</CardDescription>
             </div>
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="relative">
@@ -225,9 +222,7 @@ export default function AdminUsersPage() {
                             Revoke Admin
                           </DropdownMenuItem>
                         ) : (
-                          <DropdownMenuItem
-                            onClick={() => openConfirmDialog(user, 'grant')}
-                          >
+                          <DropdownMenuItem onClick={() => openConfirmDialog(user, 'grant')}>
                             <Shield className="mr-2 h-4 w-4" />
                             Grant Admin
                           </DropdownMenuItem>

@@ -1,23 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Put,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
-  UseInterceptors,
+  Patch,
+  Post,
+  Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { ZonesService } from './zones.service.js';
-import { CreateZoneDto, UpdateZoneDto, ReorderZonesDto } from './dto/zones.dto.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type { CreateZoneDto, ReorderZonesDto, UpdateZoneDto } from './dto/zones.dto.js';
+import { ZonesService } from './zones.service.js';
 
 @ApiTags('Attraction Zones')
 @Controller('organizations/:orgId/attractions/:attractionId/zones')
@@ -33,17 +33,14 @@ export class ZonesController {
   async create(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: CreateZoneDto,
+    @Body() dto: CreateZoneDto
   ) {
     return this.zonesService.create(ctx.orgId, attractionId, dto);
   }
 
   @Get()
   @ApiOperation({ summary: 'List zones' })
-  async list(
-    @Tenant() ctx: TenantContext,
-    @Param('attractionId') attractionId: string,
-  ) {
+  async list(@Tenant() ctx: TenantContext, @Param('attractionId') attractionId: string) {
     return this.zonesService.findAll(ctx.orgId, attractionId);
   }
 
@@ -52,7 +49,7 @@ export class ZonesController {
   async findOne(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Param('zoneId') zoneId: string,
+    @Param('zoneId') zoneId: string
   ) {
     return this.zonesService.findById(ctx.orgId, attractionId, zoneId);
   }
@@ -65,7 +62,7 @@ export class ZonesController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Param('zoneId') zoneId: string,
-    @Body() dto: UpdateZoneDto,
+    @Body() dto: UpdateZoneDto
   ) {
     return this.zonesService.update(ctx.orgId, attractionId, zoneId, dto);
   }
@@ -77,7 +74,7 @@ export class ZonesController {
   async delete(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Param('zoneId') zoneId: string,
+    @Param('zoneId') zoneId: string
   ) {
     return this.zonesService.delete(ctx.orgId, attractionId, zoneId);
   }
@@ -89,7 +86,7 @@ export class ZonesController {
   async reorder(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: ReorderZonesDto,
+    @Body() dto: ReorderZonesDto
   ) {
     return this.zonesService.reorder(ctx.orgId, attractionId, dto.zone_ids);
   }

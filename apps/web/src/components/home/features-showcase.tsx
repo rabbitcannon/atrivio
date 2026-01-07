@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion, useInView } from 'motion/react';
+import { useRef, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {
@@ -117,8 +117,8 @@ export function FeaturesShowcase() {
             Everything You Need, Nothing You Don&apos;t
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-[hsl(var(--landing-text-muted))]">
-            Purpose-built for attractions, our platform gives you the tools to run
-            your operation efficiently — without the bloat of generic software.
+            Purpose-built for attractions, our platform gives you the tools to run your operation
+            efficiently — without the bloat of generic software.
           </p>
         </motion.div>
 
@@ -152,7 +152,9 @@ export function FeaturesShowcase() {
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden="true">{feature.icon}</span>
+                  <span className="text-2xl" aria-hidden="true">
+                    {feature.icon}
+                  </span>
                   <span className="font-semibold">{feature.title}</span>
                 </div>
               </motion.button>
@@ -175,7 +177,9 @@ export function FeaturesShowcase() {
                 transition={{ duration: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
               >
                 <div className="mb-6 flex items-center gap-4">
-                  <span className="text-5xl" aria-hidden="true">{activeFeature.icon}</span>
+                  <span className="text-5xl" aria-hidden="true">
+                    {activeFeature.icon}
+                  </span>
                   <div>
                     <h3 className="text-2xl font-bold text-[hsl(var(--landing-text-primary))]">
                       {activeFeature.title}
@@ -199,7 +203,10 @@ export function FeaturesShowcase() {
                       }}
                       className="flex items-start gap-3 rounded-lg bg-[hsl(var(--landing-bg-dark))] p-4"
                     >
-                      <span className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]" aria-hidden="true">
+                      <span
+                        className="mt-0.5 text-[hsl(var(--landing-accent-secondary))]"
+                        aria-hidden="true"
+                      >
                         ✓
                       </span>
                       <span className="text-[hsl(var(--landing-text-muted))]">{detail}</span>

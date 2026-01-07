@@ -185,8 +185,7 @@ export async function getPublicStorefront(identifier: string): Promise<PublicSto
       navigation: data.navigation,
       domain: data.domain,
     };
-  } catch (error) {
-    console.error('Error fetching storefront:', error);
+  } catch (_error) {
     return null;
   }
 }
@@ -194,7 +193,10 @@ export async function getPublicStorefront(identifier: string): Promise<PublicSto
 /**
  * Fetch a specific public page by slug
  */
-export async function getPublicPage(storefrontIdentifier: string, pageSlug: string): Promise<StorefrontPage | null> {
+export async function getPublicPage(
+  storefrontIdentifier: string,
+  pageSlug: string
+): Promise<StorefrontPage | null> {
   try {
     const res = await fetch(
       `${API_URL}/storefronts/${encodeURIComponent(storefrontIdentifier)}/pages/${encodeURIComponent(pageSlug)}`,
@@ -208,8 +210,7 @@ export async function getPublicPage(storefrontIdentifier: string, pageSlug: stri
 
     const data = await res.json();
     return data.page;
-  } catch (error) {
-    console.error('Error fetching page:', error);
+  } catch (_error) {
     return null;
   }
 }
@@ -232,8 +233,7 @@ export async function getPublicFaqs(
     }
 
     return res.json();
-  } catch (error) {
-    console.error('Error fetching FAQs:', error);
+  } catch (_error) {
     return { faqs: [], categories: [] };
   }
 }
@@ -255,8 +255,7 @@ export async function getPublicTicketTypes(
     }
 
     return res.json();
-  } catch (error) {
-    console.error('Error fetching ticket types:', error);
+  } catch (_error) {
     return { ticketTypes: [] };
   }
 }

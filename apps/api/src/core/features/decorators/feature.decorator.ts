@@ -17,5 +17,4 @@ export const FEATURE_KEY = 'feature_flag';
  * @Post('scan')
  * scanTicket() {}
  */
-export const Feature = (...features: string[]) =>
-  SetMetadata(FEATURE_KEY, features);
+export const Feature = (...features: string[]) => SetMetadata(FEATURE_KEY, features);

@@ -16,9 +16,7 @@ export async function generateMetadata(_props: OrgLayoutProps): Promise<Metadata
   };
 }
 
-export default async function OrgLayout({
-  children,
-}: Omit<OrgLayoutProps, 'params'>) {
+export default async function OrgLayout({ children }: Omit<OrgLayoutProps, 'params'>) {
   // The org context is managed client-side via useOrg hook
   // This layout just provides the structure
   return <>{children}</>;

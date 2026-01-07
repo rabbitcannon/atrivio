@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { EditorKit } from '@/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/components/ui/editor';
@@ -92,7 +92,7 @@ export function PageContentEditor({
   minHeight = '400px',
 }: PageContentEditorProps) {
   // Parse initial value from JSON
-  const initialValue = React.useMemo(() => parseValue(value), []);
+  const initialValue = React.useMemo(() => parseValue(value), [value]);
 
   const editor = usePlateEditor({
     plugins: EditorKit,
@@ -106,9 +106,7 @@ export function PageContentEditor({
         try {
           const jsonString = JSON.stringify(newValue);
           onChange(jsonString);
-        } catch (e) {
-          console.error('Failed to serialize content:', e);
-        }
+        } catch (_e) {}
       }
     },
     [onChange]
@@ -116,17 +114,9 @@ export function PageContentEditor({
 
   return (
     <TooltipProvider>
-      <div
-        className={cn(
-          'rounded-lg border bg-background overflow-hidden',
-          className
-        )}
-      >
+      <div className={cn('rounded-lg border bg-background overflow-hidden', className)}>
         <Plate editor={editor} onChange={handleChange}>
-          <EditorContainer
-            className="relative"
-            style={{ minHeight }}
-          >
+          <EditorContainer className="relative" style={{ minHeight }}>
             <Editor
               variant="fullWidth"
               placeholder={placeholder}

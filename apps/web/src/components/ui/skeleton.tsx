@@ -87,13 +87,7 @@ function SkeletonCard({ shimmer, className }: { shimmer?: boolean; className?: s
 /**
  * Table row skeleton
  */
-function SkeletonTableRow({
-  columns = 4,
-  shimmer,
-}: {
-  columns?: number;
-  shimmer?: boolean;
-}) {
+function SkeletonTableRow({ columns = 4, shimmer }: { columns?: number; shimmer?: boolean }) {
   return (
     <tr className="border-b">
       {[...Array(columns)].map((_, i) => (
@@ -120,20 +114,7 @@ function SkeletonImage({
   shimmer?: boolean;
   className?: string;
 }) {
-  return (
-    <Skeleton
-      shimmer={shimmer}
-      className={cn('w-full', className)}
-      style={{ aspectRatio }}
-    />
-  );
+  return <Skeleton shimmer={shimmer} className={cn('w-full', className)} style={{ aspectRatio }} />;
 }
 
-export {
-  Skeleton,
-  SkeletonText,
-  SkeletonAvatar,
-  SkeletonCard,
-  SkeletonTableRow,
-  SkeletonImage,
-};
+export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonTableRow, SkeletonImage };

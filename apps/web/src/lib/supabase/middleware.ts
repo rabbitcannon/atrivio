@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
 import type { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { type NextRequest, NextResponse } from 'next/server';
 
 interface CookieToSet {
   name: string;
@@ -24,32 +24,28 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet: CookieToSet[]) {
-          for (const { name, value } of cookiesToSet) {
-            request.cookies.set(name, value);
-          }
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          for (const { name, value, options } of cookiesToSet) {
-            if (options) {
-              supabaseResponse.cookies.set(name, value, options);
-            } else {
-              supabaseResponse.cookies.set(name, value);
-            }
-          }
-        },
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
       },
-    }
-  );
+      setAll(cookiesToSet: CookieToSet[]) {
+        for (const { name, value } of cookiesToSet) {
+          request.cookies.set(name, value);
+        }
+        supabaseResponse = NextResponse.next({
+          request,
+        });
+        for (const { name, value, options } of cookiesToSet) {
+          if (options) {
+            supabaseResponse.cookies.set(name, value, options);
+          } else {
+            supabaseResponse.cookies.set(name, value);
+          }
+        }
+      },
+    },
+  });
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug

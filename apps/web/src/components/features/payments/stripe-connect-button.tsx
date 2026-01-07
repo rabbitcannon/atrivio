@@ -1,13 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  createStripeAccount,
-  createOnboardingLink,
-  createDashboardLink,
-} from '@/lib/api/payments';
+import { createDashboardLink, createOnboardingLink, createStripeAccount } from '@/lib/api/payments';
 
 interface StripeConnectButtonProps {
   orgId: string;
@@ -90,9 +86,7 @@ export function StripeConnectButton({
         ) : null}
         {getButtonText()}
       </Button>
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }

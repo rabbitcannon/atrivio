@@ -1,5 +1,5 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { FEATURE_KEY } from '../decorators/feature.decorator.js';
 import { FeaturesService } from '../features.service.js';
@@ -20,14 +20,14 @@ import { FeaturesService } from '../features.service.js';
 export class FeatureGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private featuresService: FeaturesService,
+    private featuresService: FeaturesService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredFeatures = this.reflector.getAllAndOverride<string[]>(
-      FEATURE_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredFeatures = this.reflector.getAllAndOverride<string[]>(FEATURE_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // No feature requirement = allow access
     if (!requiredFeatures || requiredFeatures.length === 0) {
@@ -46,11 +46,7 @@ export class FeatureGuard implements CanActivate {
     const userId = tenant?.userId;
 
     // Check if all required features are enabled
-    const allEnabled = await this.featuresService.areAllEnabled(
-      requiredFeatures,
-      orgId,
-      userId,
-    );
+    const allEnabled = await this.featuresService.areAllEnabled(requiredFeatures, orgId, userId);
 
     if (!allEnabled) {
       // Get flag details for better error message

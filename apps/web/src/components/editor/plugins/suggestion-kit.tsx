@@ -1,18 +1,11 @@
 'use client';
 
+import { type BaseSuggestionConfig, BaseSuggestionPlugin } from '@platejs/suggestion';
 import type { ExtendConfig, Path } from 'platejs';
-
-import {
-  type BaseSuggestionConfig,
-  BaseSuggestionPlugin,
-} from '@platejs/suggestion';
 import { isSlateEditor, isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
-import {
-  SuggestionLeaf,
-  SuggestionLineBreak,
-} from '@/components/ui/suggestion-node';
+import { SuggestionLeaf, SuggestionLineBreak } from '@/components/ui/suggestion-node';
 
 import { discussionPlugin } from './discussion-kit';
 
@@ -57,7 +50,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
         const isBlockSuggestion = leaf.dataset.blockSuggestion === 'true';
 
         if (leaf.classList.contains(`slate-${type}`) || isBlockSuggestion) {
-          const suggestionEntry = api.suggestion!.node({
+          const suggestionEntry = api.suggestion?.node({
             isText: !isBlockSuggestion,
           });
 
@@ -67,7 +60,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
             break;
           }
 
-          const id = api.suggestion!.nodeId(suggestionEntry[0]);
+          const id = api.suggestion?.nodeId(suggestionEntry[0]);
           setOption('activeId', id ?? null);
 
           isSet = true;

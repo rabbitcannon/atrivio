@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import {
-  DollarSign,
-  TrendingUp,
+  AlertCircle,
   ArrowUpDown,
   Building2,
   Calendar,
-  AlertCircle,
-  RefreshCw,
   CheckCircle2,
+  DollarSign,
+  RefreshCw,
+  TrendingUp,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -26,14 +26,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  getRevenueSummary,
   getRevenueByOrg,
+  getRevenueSummary,
   getRevenueTrend,
-  syncAllTransactions,
-  type RevenueSummary,
   type RevenueByOrg,
+  type RevenueSummary,
   type RevenueTrend,
   type SyncTransactionsResult,
+  syncAllTransactions,
 } from '@/lib/api/admin';
 
 function formatCurrency(cents: number): string {
@@ -78,7 +78,10 @@ function SimpleBarChart({ data }: { data: RevenueTrend['trend'] }) {
               <div className="rounded bg-popover px-2 py-1 text-xs shadow-lg whitespace-nowrap">
                 <div className="font-medium">{formatCurrency(day.platform_fees)}</div>
                 <div className="text-muted-foreground">
-                  {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {new Date(day.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </div>
               </div>
             </div>
@@ -169,7 +172,9 @@ export default function AdminRevenuePage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Platform Revenue</h1>
-          <p className="text-muted-foreground">View platform fee revenue across all organizations</p>
+          <p className="text-muted-foreground">
+            View platform fee revenue across all organizations
+          </p>
         </div>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -232,8 +237,8 @@ export default function AdminRevenuePage() {
           <CheckCircle2 className="h-4 w-4" />
           <AlertTitle>Sync Complete</AlertTitle>
           <AlertDescription>
-            {syncResult.message}. Found {syncResult.application_fees_found} platform fees
-            from {syncResult.connected_accounts} connected accounts.
+            {syncResult.message}. Found {syncResult.application_fees_found} platform fees from{' '}
+            {syncResult.connected_accounts} connected accounts.
             {syncResult.errors && syncResult.errors.length > 0 && (
               <span className="text-destructive"> ({syncResult.errors.length} errors)</span>
             )}

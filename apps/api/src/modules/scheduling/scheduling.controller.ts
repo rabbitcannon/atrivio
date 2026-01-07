@@ -1,33 +1,33 @@
+import type { UserId } from '@haunt/shared';
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
+  Post,
   Query,
-  UseInterceptors,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { SchedulingService } from './scheduling.service.js';
-import {
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { AuthUser } from '../../core/auth/auth.service.js';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type {
   CreateScheduleDto,
-  UpdateScheduleDto,
   ListSchedulesQueryDto,
   PublishSchedulesDto,
+  UpdateScheduleDto,
 } from './dto/schedule.dto.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
-import type { AuthUser } from '../../core/auth/auth.service.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
-import { Feature } from '../../core/features/decorators/feature.decorator.js';
-import type { UserId } from '@haunt/shared';
+import { SchedulingService } from './scheduling.service.js';
 
 @ApiTags('Scheduling')
 @Controller('organizations/:orgId')
@@ -47,23 +47,16 @@ export class SchedulingController {
   async listSchedules(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Query() query: ListSchedulesQueryDto,
+    @Query() query: ListSchedulesQueryDto
   ) {
-    return this.schedulingService.listSchedules(
-      ctx.orgId,
-      attractionId,
-      query,
-    );
+    return this.schedulingService.listSchedules(ctx.orgId, attractionId, query);
   }
 
   @Get('schedules/:scheduleId')
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Get a single schedule' })
-  async getSchedule(
-    @Tenant() ctx: TenantContext,
-    @Param('scheduleId') scheduleId: string,
-  ) {
+  async getSchedule(@Tenant() ctx: TenantContext, @Param('scheduleId') scheduleId: string) {
     return this.schedulingService.getSchedule(ctx.orgId, scheduleId);
   }
 
@@ -75,12 +68,12 @@ export class SchedulingController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Body() dto: CreateScheduleDto,
-    @CurrentUser() user: AuthUser,
+    @CurrentUser() user: AuthUser
   ) {
     return this.schedulingService.createSchedule(
       ctx.orgId,
       { ...dto, attractionId },
-      user.id as UserId,
+      user.id as UserId
     );
   }
 
@@ -91,7 +84,7 @@ export class SchedulingController {
   async updateSchedule(
     @Tenant() ctx: TenantContext,
     @Param('scheduleId') scheduleId: string,
-    @Body() dto: UpdateScheduleDto,
+    @Body() dto: UpdateScheduleDto
   ) {
     return this.schedulingService.updateSchedule(ctx.orgId, scheduleId, dto);
   }
@@ -100,10 +93,7 @@ export class SchedulingController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Delete a schedule' })
-  async deleteSchedule(
-    @Tenant() ctx: TenantContext,
-    @Param('scheduleId') scheduleId: string,
-  ) {
+  async deleteSchedule(@Tenant() ctx: TenantContext, @Param('scheduleId') scheduleId: string) {
     return this.schedulingService.deleteSchedule(ctx.orgId, scheduleId);
   }
 
@@ -116,13 +106,9 @@ export class SchedulingController {
   async publishSchedules(
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
-    @Body() dto: PublishSchedulesDto,
+    @Body() dto: PublishSchedulesDto
   ) {
-    return this.schedulingService.publishSchedules(
-      ctx.orgId,
-      attractionId,
-      dto,
-    );
+    return this.schedulingService.publishSchedules(ctx.orgId, attractionId, dto);
   }
 
   // ============== Staff Self-Service ==============
@@ -133,14 +119,9 @@ export class SchedulingController {
     @Tenant() ctx: TenantContext,
     @CurrentUser() user: AuthUser,
     @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
+    @Query('endDate') endDate?: string
   ) {
-    return this.schedulingService.getMySchedules(
-      ctx.orgId,
-      user.id as UserId,
-      startDate,
-      endDate,
-    );
+    return this.schedulingService.getMySchedules(ctx.orgId, user.id as UserId, startDate, endDate);
   }
 
   // ============== Utilities ==============
@@ -159,14 +140,9 @@ export class SchedulingController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
+    @Query('endDate') endDate?: string
   ) {
-    return this.schedulingService.getUnassignedShifts(
-      ctx.orgId,
-      attractionId,
-      startDate,
-      endDate,
-    );
+    return this.schedulingService.getUnassignedShifts(ctx.orgId, attractionId, startDate, endDate);
   }
 
   @Get('attractions/:attractionId/schedules/conflicts')
@@ -177,13 +153,8 @@ export class SchedulingController {
     @Tenant() ctx: TenantContext,
     @Param('attractionId') attractionId: string,
     @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
+    @Query('endDate') endDate: string
   ) {
-    return this.schedulingService.detectConflicts(
-      ctx.orgId,
-      attractionId,
-      startDate,
-      endDate,
-    );
+    return this.schedulingService.detectConflicts(ctx.orgId, attractionId, startDate, endDate);
   }
 }

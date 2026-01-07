@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { FeaturesService } from './features.service.js';
 import { FeatureGuard } from './guards/feature.guard.js';
 

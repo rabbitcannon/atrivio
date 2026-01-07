@@ -1,16 +1,16 @@
-import {
-  IsUUID,
-  IsString,
-  IsInt,
-  IsOptional,
-  IsBoolean,
-  IsDateString,
-  Min,
-  Max,
-  Matches,
-} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  Max,
+  Min,
+} from 'class-validator';
 
 // UUID regex that accepts any valid format (doesn't check version bits)
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

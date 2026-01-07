@@ -1,25 +1,38 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import {
-  Globe,
-  Settings,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Eye,
   FileText,
-  Link2,
+  Globe,
   HelpCircle,
+  Link2,
   Megaphone,
   Navigation,
-  Eye,
-  ExternalLink,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
+  Settings,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId, getStorefrontSettings, getStorefrontPages, getStorefrontDomains, getStorefrontFaqs, getStorefrontAnnouncements } from '@/lib/api';
-import type { StorefrontSettings, StorefrontPage, StorefrontDomain, StorefrontFaq, StorefrontAnnouncement } from '@/lib/api/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  getStorefrontAnnouncements,
+  getStorefrontDomains,
+  getStorefrontFaqs,
+  getStorefrontPages,
+  getStorefrontSettings,
+  resolveOrgId,
+} from '@/lib/api';
+import type {
+  StorefrontAnnouncement,
+  StorefrontDomain,
+  StorefrontFaq,
+  StorefrontPage,
+  StorefrontSettings,
+} from '@/lib/api/types';
 
 export const metadata: Metadata = {
   title: 'Storefront',
@@ -86,13 +99,14 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
   let announcements: StorefrontAnnouncement[] = [];
 
   try {
-    const [settingsResult, pagesResult, domainsResult, faqsResult, announcementsResult] = await Promise.all([
-      getStorefrontSettings(orgId, attractionId),
-      getStorefrontPages(orgId, attractionId),
-      getStorefrontDomains(orgId, attractionId),
-      getStorefrontFaqs(orgId, attractionId),
-      getStorefrontAnnouncements(orgId, attractionId),
-    ]);
+    const [settingsResult, pagesResult, domainsResult, faqsResult, announcementsResult] =
+      await Promise.all([
+        getStorefrontSettings(orgId, attractionId),
+        getStorefrontPages(orgId, attractionId),
+        getStorefrontDomains(orgId, attractionId),
+        getStorefrontFaqs(orgId, attractionId),
+        getStorefrontAnnouncements(orgId, attractionId),
+      ]);
 
     settings = settingsResult.data?.settings ?? null;
     pages = pagesResult.data?.pages ?? [];
@@ -168,9 +182,7 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeDomains.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Active domains
-            </p>
+            <p className="text-xs text-muted-foreground">Active domains</p>
           </CardContent>
         </Card>
         <Card>
@@ -180,9 +192,7 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeFaqs.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Active questions
-            </p>
+            <p className="text-xs text-muted-foreground">Active questions</p>
           </CardContent>
         </Card>
         <Card>
@@ -192,16 +202,20 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeAnnouncements.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Active announcements
-            </p>
+            <p className="text-xs text-muted-foreground">Active announcements</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Status Banner */}
       {settings && (
-        <Card className={settings.isPublished ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-amber-500 bg-amber-50 dark:bg-amber-950/20'}>
+        <Card
+          className={
+            settings.isPublished
+              ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
+              : 'border-amber-500 bg-amber-50 dark:bg-amber-950/20'
+          }
+        >
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               {settings.isPublished ? (
@@ -211,7 +225,8 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
                     <h3 className="font-semibold">Storefront is Published</h3>
                     <p className="text-sm text-muted-foreground">
                       Your storefront is live and accessible to the public.
-                      {settings.publishedAt && ` Published ${new Date(settings.publishedAt).toLocaleDateString()}`}
+                      {settings.publishedAt &&
+                        ` Published ${new Date(settings.publishedAt).toLocaleDateString()}`}
                     </p>
                   </div>
                   {previewUrl && (
@@ -229,7 +244,8 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
                   <div className="flex-1">
                     <h3 className="font-semibold">Storefront is in Draft Mode</h3>
                     <p className="text-sm text-muted-foreground">
-                      Your storefront is not yet public. Configure your settings and pages, then publish when ready.
+                      Your storefront is not yet public. Configure your settings and pages, then
+                      publish when ready.
                     </p>
                   </div>
                   <Link href={`${basePath}/storefront/settings`}>
@@ -287,14 +303,15 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
               <Globe className="h-5 w-5" />
               Domain Status
             </CardTitle>
-            <CardDescription>
-              Your storefront domain configuration
-            </CardDescription>
+            <CardDescription>Your storefront domain configuration</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {domains.slice(0, 3).map((domain) => (
-                <div key={domain.id} className="flex items-center justify-between p-3 rounded-lg border">
+                <div
+                  key={domain.id}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
                   <div className="flex items-center gap-3">
                     {domain.status === 'active' ? (
                       <CheckCircle2 className="h-5 w-5 text-green-500" />

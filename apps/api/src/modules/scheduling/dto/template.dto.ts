@@ -1,5 +1,14 @@
-import { IsUUID, IsOptional, IsString, IsInt, Min, Max, IsBoolean, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateShiftTemplateDto {
   @ApiProperty({ description: 'Attraction ID' })

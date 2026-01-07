@@ -1,36 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
 import {
-  Clock,
-  Users,
   AlertTriangle,
-  CheckCircle2,
-  Search,
-  Filter,
-  RefreshCw,
-  User,
-  Calendar,
-  Loader2,
   Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Filter,
+  Loader2,
+  RefreshCw,
+  Search,
+  User,
+  Users,
 } from 'lucide-react';
+import { useParams, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -39,15 +26,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import {
-  getAttractions,
-  getCheckInQueue,
-  scanCheckIn,
-} from '@/lib/api/client';
-import type { AttractionListItem, QueueItem, QueueStatus } from '@/lib/api/types';
+import { getAttractions, getCheckInQueue, scanCheckIn } from '@/lib/api/client';
+import type { AttractionListItem, QueueItem } from '@/lib/api/types';
 
 // Extended QueueItem with computed status for display
 interface DisplayQueueItem extends QueueItem {
@@ -89,8 +79,7 @@ function QueuePageContent() {
             setSelectedAttractionId(defaultAttraction.id);
           }
         }
-      } catch (error) {
-        console.error('Failed to load attractions:', error);
+      } catch (_error) {
         toast({
           title: 'Error',
           description: 'Failed to load attractions',
@@ -114,8 +103,7 @@ function QueuePageContent() {
         setPendingGuests(result.data.pending || []);
         setLateGuests(result.data.late || []);
       }
-    } catch (error) {
-      console.error('Failed to load queue:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load queue data',
@@ -178,8 +166,7 @@ function QueuePageContent() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Check-in failed:', error);
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to check in guest',
@@ -223,8 +210,7 @@ function QueuePageContent() {
       guest.guestName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guest.ticketId.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all' || guest.displayStatus === statusFilter;
+    const matchesStatus = statusFilter === 'all' || guest.displayStatus === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -242,9 +228,7 @@ function QueuePageContent() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Guest Queue</h1>
-          <p className="text-muted-foreground">
-            View pending arrivals and manage late guests.
-          </p>
+          <p className="text-muted-foreground">View pending arrivals and manage late guests.</p>
         </div>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -264,15 +248,10 @@ function QueuePageContent() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Guest Queue</h1>
-          <p className="text-muted-foreground">
-            View pending arrivals and manage late guests.
-          </p>
+          <p className="text-muted-foreground">View pending arrivals and manage late guests.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Select
-            value={selectedAttractionId ?? ''}
-            onValueChange={handleAttractionChange}
-          >
+          <Select value={selectedAttractionId ?? ''} onValueChange={handleAttractionChange}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select attraction" />
             </SelectTrigger>
@@ -289,9 +268,7 @@ function QueuePageContent() {
             onClick={handleRefresh}
             disabled={isRefreshing || !selectedAttractionId}
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
@@ -301,42 +278,26 @@ function QueuePageContent() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Arriving Soon
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Arriving Soon</CardTitle>
             <Clock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isRefreshing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                arrivingSoonCount
-              )}
+              {isRefreshing ? <Loader2 className="h-5 w-5 animate-spin" /> : arrivingSoonCount}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Expected in next 30 min
-            </p>
+            <p className="text-xs text-muted-foreground">Expected in next 30 min</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Pending Today
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Pending Today</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isRefreshing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                pendingCount
-              )}
+              {isRefreshing ? <Loader2 className="h-5 w-5 animate-spin" /> : pendingCount}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Not yet checked in
-            </p>
+            <p className="text-xs text-muted-foreground">Not yet checked in</p>
           </CardContent>
         </Card>
         <Card>
@@ -346,11 +307,7 @@ function QueuePageContent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {isRefreshing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                lateCount
-              )}
+              {isRefreshing ? <Loader2 className="h-5 w-5 animate-spin" /> : lateCount}
             </div>
             <p className="text-xs text-muted-foreground">Past their time slot</p>
           </CardContent>
@@ -362,9 +319,7 @@ function QueuePageContent() {
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <TabsList>
             <TabsTrigger value="all">All ({allGuests.length})</TabsTrigger>
-            <TabsTrigger value="arriving">
-              Arriving Soon ({arrivingSoonCount})
-            </TabsTrigger>
+            <TabsTrigger value="arriving">Arriving Soon ({arrivingSoonCount})</TabsTrigger>
             <TabsTrigger value="late">Late ({lateCount})</TabsTrigger>
           </TabsList>
 
@@ -439,9 +394,7 @@ function QueueTable({ guests, onCheckIn, getStatusBadge, checkingIn }: QueueTabl
           <div className="text-center text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium">No guests in queue</p>
-            <p className="text-sm">
-              All guests have been checked in or no arrivals are expected.
-            </p>
+            <p className="text-sm">All guests have been checked in or no arrivals are expected.</p>
           </div>
         </CardContent>
       </Card>
@@ -478,9 +431,7 @@ function QueueTable({ guests, onCheckIn, getStatusBadge, checkingIn }: QueueTabl
                       <User className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="font-medium">
-                        {guest.guestName || 'Guest'}
-                      </p>
+                      <p className="font-medium">{guest.guestName || 'Guest'}</p>
                       <p className="text-sm text-muted-foreground">
                         {guest.ticketId.slice(0, 8)}...
                       </p>

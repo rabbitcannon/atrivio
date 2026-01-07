@@ -1,18 +1,18 @@
 'use client';
 
+import { CtaSection } from './cta-section';
+import { FeatureGrid } from './feature-grid';
+import { FeaturesShowcase } from './features-showcase';
+import { HeroSection } from './hero-section';
+import { CheckInIllustration } from './illustrations/check-in-illustration';
+import { MobileCheckout } from './illustrations/mobile-checkout';
+import { LandingFooter } from './landing-footer';
 // Direct imports to avoid barrel export bundling issues
 import { LandingHeader } from './landing-header';
-import { HeroSection } from './hero-section';
-import { FeatureGrid } from './feature-grid';
-import { SplitSection } from './split-section';
-import { LandingFooter } from './landing-footer';
-import { StatsSection } from './stats-section';
 import { PricingSection } from './pricing-section';
+import { SplitSection } from './split-section';
+import { StatsSection } from './stats-section';
 import { TestimonialsSection } from './testimonials-section';
-import { CtaSection } from './cta-section';
-import { FeaturesShowcase } from './features-showcase';
-import { MobileCheckout } from './illustrations/mobile-checkout';
-import { CheckInIllustration } from './illustrations/check-in-illustration';
 
 const platformFeatures = [
   {
@@ -63,22 +63,40 @@ const staffingFeatures = [
 ];
 
 const ticketingFeatures = [
-  { id: 'timed-ticketing', text: 'Timed ticketing with slot-based entry for automatic capacity balancing.' },
-  { id: 'ticket-types', text: 'Multiple ticket types: general admission, VIP, fast pass, group rates, and combos.' },
-  { id: 'promo-codes', text: 'Flexible promo codes with usage limits, date ranges, and minimum purchase requirements.' },
-  { id: 'fast-payouts', text: 'Stripe Connect integration with 1-2 business day payouts to your bank.' },
+  {
+    id: 'timed-ticketing',
+    text: 'Timed ticketing with slot-based entry for automatic capacity balancing.',
+  },
+  {
+    id: 'ticket-types',
+    text: 'Multiple ticket types: general admission, VIP, fast pass, group rates, and combos.',
+  },
+  {
+    id: 'promo-codes',
+    text: 'Flexible promo codes with usage limits, date ranges, and minimum purchase requirements.',
+  },
+  {
+    id: 'fast-payouts',
+    text: 'Stripe Connect integration with 1-2 business day payouts to your bank.',
+  },
 ];
 
 const checkInFeatures = [
   { id: 'barcode-scan', text: 'Lightning-fast barcode and QR code scanning from any device.' },
   { id: 'capacity-tracking', text: 'Real-time capacity tracking with automatic gate control.' },
   { id: 'waiver-collection', text: 'Digital waiver collection and signature capture at check-in.' },
-  { id: 'queue-management', text: 'Virtual queue management to reduce wait times and improve guest experience.' },
+  {
+    id: 'queue-management',
+    text: 'Virtual queue management to reduce wait times and improve guest experience.',
+  },
 ];
 
 export function LandingContent() {
   return (
-    <div data-theme="landing" className="min-h-screen bg-[hsl(var(--landing-bg-darkest))] text-[hsl(var(--landing-text-primary))]">
+    <div
+      data-theme="landing"
+      className="min-h-screen bg-[hsl(var(--landing-bg-darkest))] text-[hsl(var(--landing-text-primary))]"
+    >
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-[hsl(var(--landing-accent-primary))] focus:px-4 focus:py-2 focus:text-white focus:outline-none"
@@ -113,9 +131,7 @@ export function LandingContent() {
           title={
             <>
               Maximize Revenue with{' '}
-              <span className="text-[hsl(var(--landing-accent-secondary))]">
-                Smart Ticketing
-              </span>
+              <span className="text-[hsl(var(--landing-accent-secondary))]">Smart Ticketing</span>
             </>
           }
           description="Sell tickets online with branded storefronts, or use our POS interface for walk-up sales. Integrated payment processing with Stripe Connect."
@@ -129,10 +145,7 @@ export function LandingContent() {
           id="checkin"
           title={
             <>
-              Seamless{' '}
-              <span className="text-[hsl(var(--landing-accent-primary))]">
-                Check-In
-              </span>{' '}
+              Seamless <span className="text-[hsl(var(--landing-accent-primary))]">Check-In</span>{' '}
               Experience
             </>
           }

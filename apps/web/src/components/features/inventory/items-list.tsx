@@ -1,25 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Package, Search, Filter, MoreHorizontal, Edit, Trash2, TrendingDown } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Edit, MoreHorizontal, Package, Plus, Search, Trash2, TrendingDown } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,10 +12,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getInventoryItems, deleteInventoryItem, type InventoryItem } from '@/lib/api/client';
-import { ItemFormDialog } from './item-form-dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { deleteInventoryItem, getInventoryItems, type InventoryItem } from '@/lib/api/client';
 import { AdjustQuantityDialog } from './adjust-quantity-dialog';
+import { ItemFormDialog } from './item-form-dialog';
 
 interface ItemsListProps {
   orgId: string;
@@ -52,7 +52,10 @@ export function ItemsList({ orgId }: ItemsListProps) {
 
   const loadItems = useCallback(async () => {
     setLoading(true);
-    const { data } = await getInventoryItems(orgId, searchQuery ? { search: searchQuery } : undefined);
+    const { data } = await getInventoryItems(
+      orgId,
+      searchQuery ? { search: searchQuery } : undefined
+    );
     if (data?.items) {
       setItems(data.items);
     }
@@ -108,7 +111,12 @@ export function ItemsList({ orgId }: ItemsListProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button onClick={() => { setSelectedItem(null); setFormDialogOpen(true); }}>
+        <Button
+          onClick={() => {
+            setSelectedItem(null);
+            setFormDialogOpen(true);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Item
         </Button>
@@ -137,10 +145,17 @@ export function ItemsList({ orgId }: ItemsListProps) {
               <Package className="mb-4 h-12 w-12" />
               <p className="text-lg font-medium">No items found</p>
               <p className="mb-4 text-sm">
-                {searchQuery ? 'Try a different search term.' : 'Add your first inventory item to get started.'}
+                {searchQuery
+                  ? 'Try a different search term.'
+                  : 'Add your first inventory item to get started.'}
               </p>
               {!searchQuery && (
-                <Button onClick={() => { setSelectedItem(null); setFormDialogOpen(true); }}>
+                <Button
+                  onClick={() => {
+                    setSelectedItem(null);
+                    setFormDialogOpen(true);
+                  }}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Item
                 </Button>
@@ -170,9 +185,7 @@ export function ItemsList({ orgId }: ItemsListProps) {
                     <TableCell>{item.category?.name || '—'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {isLowStock(item) && (
-                          <TrendingDown className="h-4 w-4 text-destructive" />
-                        )}
+                        {isLowStock(item) && <TrendingDown className="h-4 w-4 text-destructive" />}
                         <span className={isLowStock(item) ? 'text-destructive font-medium' : ''}>
                           {item.quantity} {item.unit}
                         </span>
@@ -196,7 +209,10 @@ export function ItemsList({ orgId }: ItemsListProps) {
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => { setSelectedItem(item); setDeleteDialogOpen(true); }}
+                            onClick={() => {
+                              setSelectedItem(item);
+                              setDeleteDialogOpen(true);
+                            }}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -240,7 +256,10 @@ export function ItemsList({ orgId }: ItemsListProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

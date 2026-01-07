@@ -1,25 +1,25 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  UseInterceptors,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { InvitationsService } from './invitations.service.js';
-import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
-import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
-import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
-import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
-import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
-import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
-import type { AuthUser } from '../../core/auth/auth.service.js';
-import { Public } from '../../core/auth/decorators/public.decorator.js';
-import { CreateInvitationDto, AcceptInvitationDto } from './dto/invitations.dto.js';
 import type { UserId } from '@haunt/shared';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { AuthUser } from '../../core/auth/auth.service.js';
+import { CurrentUser } from '../../core/auth/decorators/current-user.decorator.js';
+import { Public } from '../../core/auth/decorators/public.decorator.js';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
+import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
+import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
+import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
+import type { AcceptInvitationDto, CreateInvitationDto } from './dto/invitations.dto.js';
+import { InvitationsService } from './invitations.service.js';
 
 @ApiTags('Organization Invitations')
 @Controller()
@@ -35,13 +35,7 @@ export class InvitationsController {
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Create invitation' })
   async create(@Tenant() ctx: TenantContext, @Body() dto: CreateInvitationDto) {
-    return this.invitationsService.create(
-      ctx.orgId,
-      dto.email,
-      dto.role,
-      ctx.userId,
-      ctx.role,
-    );
+    return this.invitationsService.create(ctx.orgId, dto.email, dto.role, ctx.userId, ctx.role);
   }
 
   @Get('organizations/:orgId/invitations')
@@ -58,10 +52,7 @@ export class InvitationsController {
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Cancel invitation' })
-  async cancel(
-    @Tenant() ctx: TenantContext,
-    @Param('invitationId') invitationId: string,
-  ) {
+  async cancel(@Tenant() ctx: TenantContext, @Param('invitationId') invitationId: string) {
     return this.invitationsService.cancel(ctx.orgId, invitationId);
   }
 
@@ -76,10 +67,7 @@ export class InvitationsController {
 
   @Post('invitations/accept')
   @ApiOperation({ summary: 'Accept invitation' })
-  async accept(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: AcceptInvitationDto,
-  ) {
+  async accept(@CurrentUser() user: AuthUser, @Body() dto: AcceptInvitationDto) {
     return this.invitationsService.accept(dto.token, user.id as UserId);
   }
 }

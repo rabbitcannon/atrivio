@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  createTestApp,
   closeTestApp,
+  createTestApp,
   loginTestUser,
-  TEST_USERS,
-  TEST_ORGS,
   TEST_ATTRACTIONS,
+  TEST_ORGS,
+  TEST_USERS,
 } from '../helpers/index.js';
-import { get, post, patch, del } from '../helpers/request.js';
+import { get, post } from '../helpers/request.js';
 
 // Test IDs from seed data
 const TEST_TICKET_TYPES = {
@@ -41,10 +41,9 @@ describe('Ticketing (F8)', () => {
     it('should list ticket categories using UUID', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/ticket-categories`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/ticket-categories`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -64,9 +63,7 @@ describe('Ticketing (F8)', () => {
     });
 
     it('should reject unauthenticated requests', async () => {
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/ticket-categories`
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/ticket-categories`);
 
       expect(response.statusCode).toBe(401);
     });
@@ -78,10 +75,9 @@ describe('Ticketing (F8)', () => {
     it('should list ticket types', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/ticket-types`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/ticket-types`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -103,10 +99,9 @@ describe('Ticketing (F8)', () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
       // Default is to only show active, includeInactive=true shows all
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/ticket-types`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/ticket-types`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -215,10 +210,9 @@ describe('Ticketing (F8)', () => {
     it('should list time slots', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/time-slots`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/time-slots`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -279,8 +273,12 @@ describe('Ticketing (F8)', () => {
     it('should create a time slot as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
       // Use a far future date with random time to avoid conflicts
-      const futureDate = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const randomMinute = Math.floor(Math.random() * 60).toString().padStart(2, '0');
+      const futureDate = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
+      const randomMinute = Math.floor(Math.random() * 60)
+        .toString()
+        .padStart(2, '0');
 
       const response = await post(
         `/organizations/${TEST_ORGS.nightmareManor}/time-slots`,
@@ -301,7 +299,9 @@ describe('Ticketing (F8)', () => {
 
     it('should reject actors from creating time slots', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
-      const futureDate = new Date(Date.now() + 181 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const futureDate = new Date(Date.now() + 181 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
 
       const response = await post(
         `/organizations/${TEST_ORGS.nightmareManor}/time-slots`,
@@ -324,8 +324,12 @@ describe('Ticketing (F8)', () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
       // Use dates far in the future with randomness to avoid conflicts
       const randomOffset = Math.floor(Math.random() * 500) + 500; // 500-1000 days in future
-      const startDate = new Date(Date.now() + randomOffset * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const endDate = new Date(Date.now() + (randomOffset + 2) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const startDate = new Date(Date.now() + randomOffset * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
+      const endDate = new Date(Date.now() + (randomOffset + 2) * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
 
       const response = await post(
         `/organizations/${TEST_ORGS.nightmareManor}/time-slots/bulk`,
@@ -375,10 +379,9 @@ describe('Ticketing (F8)', () => {
     it('should list promo codes as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/promo-codes`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/promo-codes`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -387,10 +390,9 @@ describe('Ticketing (F8)', () => {
     it('should list promo codes as manager', async () => {
       const manager = await loginTestUser(TEST_USERS.manager.email, TEST_USERS.manager.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/promo-codes`,
-        { token: manager.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/promo-codes`, {
+        token: manager.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -399,10 +401,9 @@ describe('Ticketing (F8)', () => {
     it('should reject actors from viewing promo codes', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/promo-codes`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/promo-codes`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(403);
     });
@@ -441,7 +442,7 @@ describe('Ticketing (F8)', () => {
       const response = await post(
         `/organizations/${TEST_ORGS.nightmareManor}/promo-codes`,
         {
-          code: 'TESTCODE' + Date.now(),
+          code: `TESTCODE${Date.now()}`,
           name: 'Test Promo',
           discountType: 'percentage',
           discountValue: 10,
@@ -461,7 +462,7 @@ describe('Ticketing (F8)', () => {
       const response = await post(
         `/organizations/${TEST_ORGS.nightmareManor}/promo-codes`,
         {
-          code: 'FIXEDTEST' + Date.now(),
+          code: `FIXEDTEST${Date.now()}`,
           name: 'Fixed Amount Test',
           discountType: 'fixed_amount',
           discountValue: 500, // $5 off
@@ -533,10 +534,9 @@ describe('Ticketing (F8)', () => {
     it('should list order sources', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/order-sources`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/order-sources`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -561,10 +561,9 @@ describe('Ticketing (F8)', () => {
     it('should list orders as owner', async () => {
       const owner = await loginTestUser(TEST_USERS.owner.email, TEST_USERS.owner.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/orders`,
-        { token: owner.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/orders`, {
+        token: owner.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('data');
@@ -575,10 +574,9 @@ describe('Ticketing (F8)', () => {
     it('should list orders as manager', async () => {
       const manager = await loginTestUser(TEST_USERS.manager.email, TEST_USERS.manager.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/orders`,
-        { token: manager.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/orders`, {
+        token: manager.accessToken,
+      });
 
       expect(response.statusCode).toBe(200);
     });
@@ -586,10 +584,9 @@ describe('Ticketing (F8)', () => {
     it('should reject actors from viewing orders', async () => {
       const actor = await loginTestUser(TEST_USERS.actor.email, TEST_USERS.actor.password);
 
-      const response = await get(
-        `/organizations/${TEST_ORGS.nightmareManor}/orders`,
-        { token: actor.accessToken }
-      );
+      const response = await get(`/organizations/${TEST_ORGS.nightmareManor}/orders`, {
+        token: actor.accessToken,
+      });
 
       expect(response.statusCode).toBe(403);
     });

@@ -1,14 +1,14 @@
+import type { UserId } from '@haunt/shared';
 import {
+  type CallHandler,
+  type ExecutionContext,
+  ForbiddenException,
   Injectable,
   type NestInterceptor,
-  type ExecutionContext,
-  type CallHandler,
-  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { TenancyService } from '../tenancy.service.js';
-import type { OrgId, UserId } from '@haunt/shared';
 
 /**
  * Interceptor that resolves tenant context from :orgId route parameter
@@ -26,10 +26,7 @@ import type { OrgId, UserId } from '@haunt/shared';
 export class TenantInterceptor implements NestInterceptor {
   constructor(private tenancyService: TenancyService) {}
 
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Promise<Observable<any>> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const orgIdentifier = request.params.orgId as string;
@@ -74,9 +71,7 @@ export class TenantInterceptor implements NestInterceptor {
     }
 
     // Check if user is super admin (bypasses org membership check)
-    const isSuperAdmin = await this.tenancyService.isSuperAdmin(
-      user.id as UserId,
-    );
+    const isSuperAdmin = await this.tenancyService.isSuperAdmin(user.id as UserId);
 
     if (isSuperAdmin) {
       // Super admins get full access with owner permissions
@@ -94,10 +89,7 @@ export class TenantInterceptor implements NestInterceptor {
     }
 
     // Resolve tenant context for regular users
-    const tenant = await this.tenancyService.resolveTenantContext(
-      user.id as UserId,
-      orgId,
-    );
+    const tenant = await this.tenancyService.resolveTenantContext(user.id as UserId, orgId);
 
     // Attach to request for use in controllers
     request.tenant = tenant;
