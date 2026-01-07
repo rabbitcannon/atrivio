@@ -368,6 +368,11 @@ export class UpdateAnnouncementDto {
   @IsDateString()
   @IsOptional()
   expires_at?: string;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  active?: boolean;
 }
 
 // ============================================================================

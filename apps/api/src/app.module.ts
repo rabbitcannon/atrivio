@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 // Shared modules
 import { DatabaseModule } from './shared/database/database.module.js';
+
+// Metrics module (global)
+import { MetricsModule } from './core/metrics/metrics.module.js';
+import { MetricsInterceptor } from './core/metrics/metrics.interceptor.js';
 
 // Core modules
 import { AuthModule } from './core/auth/auth.module.js';
@@ -59,6 +63,9 @@ import { StorefrontsModule } from './modules/storefronts/storefronts.module.js';
     // Shared modules
     DatabaseModule,
 
+    // Metrics (global)
+    MetricsModule,
+
     // Core modules
     AuthModule,
     TenancyModule,
@@ -97,6 +104,11 @@ import { StorefrontsModule } from './modules/storefronts/storefronts.module.js';
   ],
   controllers: [],
   providers: [
+    // Global Metrics Interceptor (runs on every request)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
+    },
     // Global JWT Auth Guard (runs first - sets request.user)
     {
       provide: APP_GUARD,

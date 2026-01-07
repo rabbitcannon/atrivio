@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AdminController } from './admin.controller.js';
+import { PlatformController } from './platform.controller.js';
 import { AdminService } from './admin.service.js';
+import { HealthService } from './health.service.js';
 import { SuperAdminGuard } from './guards/super-admin.guard.js';
 
 @Module({
-  controllers: [AdminController],
-  providers: [AdminService, SuperAdminGuard],
-  exports: [AdminService, SuperAdminGuard],
+  controllers: [AdminController, PlatformController],
+  providers: [AdminService, HealthService, SuperAdminGuard],
+  exports: [AdminService, HealthService, SuperAdminGuard],
 })
 export class AdminModule {}

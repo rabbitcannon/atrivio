@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
+import { HealthService } from './health.service.js';
 import type {
   ListUsersDto,
   UpdateUserDto,
@@ -31,7 +32,10 @@ type AnyRecord = Record<string, unknown>;
 
 @Injectable()
 export class AdminService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private healthService: HealthService,
+  ) {}
 
   // ============================================================================
   // DASHBOARD
@@ -1561,6 +1565,7 @@ export class AdminService {
     if (dto.content) updateData['content'] = dto.content;
     if (dto.type) updateData['type'] = dto.type;
     if (dto.expires_at) updateData['expires_at'] = dto.expires_at;
+    if (dto.active !== undefined) updateData['active'] = dto.active;
 
     const { data, error } = await client
       .from('platform_announcements')
@@ -1623,6 +1628,134 @@ export class AdminService {
       message: 'Announcement deleted',
       id: announcementId,
     };
+  }
+
+  // ============================================================================
+  // USER-FACING ANNOUNCEMENTS
+  // ============================================================================
+
+  async getActiveAnnouncementsForUser(userId: string) {
+    const client = this.supabase.adminClient;
+
+    // Get user's org memberships to check role-targeted announcements
+    const { data: memberships } = await client
+      .from('org_members')
+      .select('org_id, role')
+      .eq('user_id', userId);
+
+    const userRoles = memberships?.map((m) => m.role) || [];
+    const userOrgIds = memberships?.map((m) => m.org_id) || [];
+
+    // Get user's dismissed announcements
+    const { data: dismissals } = await client
+      .from('announcement_dismissals')
+      .select('announcement_id')
+      .eq('user_id', userId);
+
+    const dismissedIds = dismissals?.map((d) => d.announcement_id) || [];
+
+    // Get active announcements
+    const { data: announcements, error } = await client
+      .from('platform_announcements')
+      .select('*')
+      .eq('active', true)
+      .lte('starts_at', new Date().toISOString())
+      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return { announcements: [] };
+    }
+
+    // Filter announcements:
+    // 1. Not dismissed by user
+    // 2. Matches user's role (if role-targeted)
+    // 3. Matches user's org (if org-targeted)
+    const filteredAnnouncements = (announcements || []).filter((a) => {
+      // Skip dismissed
+      if (dismissedIds.includes(a.id)) return false;
+
+      // Check role targeting
+      if (a.target_roles && a.target_roles.length > 0) {
+        const hasMatchingRole = a.target_roles.some((role: string) => userRoles.includes(role));
+        if (!hasMatchingRole) return false;
+      }
+
+      // Check org targeting
+      if (a.target_org_ids && a.target_org_ids.length > 0) {
+        const hasMatchingOrg = a.target_org_ids.some((orgId: string) => userOrgIds.includes(orgId));
+        if (!hasMatchingOrg) return false;
+      }
+
+      return true;
+    });
+
+    return { announcements: filteredAnnouncements };
+  }
+
+  async dismissAnnouncement(announcementId: string, userId: string) {
+    const client = this.supabase.adminClient;
+
+    // Check announcement exists and is dismissible
+    const { data: announcement } = await client
+      .from('platform_announcements')
+      .select('id, is_dismissible')
+      .eq('id', announcementId)
+      .single();
+
+    if (!announcement) {
+      throw new NotFoundException({
+        code: 'ANNOUNCEMENT_NOT_FOUND',
+        message: 'Announcement not found',
+      });
+    }
+
+    if (!announcement.is_dismissible) {
+      throw new BadRequestException({
+        code: 'ANNOUNCEMENT_NOT_DISMISSIBLE',
+        message: 'This announcement cannot be dismissed',
+      });
+    }
+
+    // Insert dismissal record
+    const { error } = await client.from('announcement_dismissals').upsert(
+      {
+        announcement_id: announcementId,
+        user_id: userId,
+        dismissed_at: new Date().toISOString(),
+      },
+      { onConflict: 'announcement_id,user_id' },
+    );
+
+    if (error) {
+      throw new BadRequestException({
+        code: 'DISMISS_FAILED',
+        message: error.message,
+      });
+    }
+
+    // Update dismiss count (fire and forget)
+    client
+      .from('platform_announcements')
+      .update({ dismiss_count: announcement.is_dismissible ? 1 : 0 }) // Will be overwritten by proper count
+      .eq('id', announcementId)
+      .then(() => {
+        // Get actual count and update
+        return client
+          .from('announcement_dismissals')
+          .select('id', { count: 'exact', head: true })
+          .eq('announcement_id', announcementId);
+      })
+      .then(({ count }) => {
+        if (count !== null) {
+          return client
+            .from('platform_announcements')
+            .update({ dismiss_count: count })
+            .eq('id', announcementId);
+        }
+      });
+
+    return { message: 'Announcement dismissed' };
   }
 
   // ============================================================================
@@ -1735,48 +1868,8 @@ export class AdminService {
   // ============================================================================
 
   async getSystemHealth() {
-    const client = this.supabase.adminClient;
-
-    // Get latest health status for each service
-    const { data: healthLogs } = await client
-      .from('system_health_logs')
-      .select('service, status, latency_ms, checked_at')
-      .order('checked_at', { ascending: false })
-      .limit(50);
-
-    const services: Record<string, { status: string; latency_ms: number; last_check: string }> = {};
-    const seen = new Set<string>();
-
-    for (const log of (healthLogs || []) as AnyRecord[]) {
-      const service = log['service'] as string;
-      if (!seen.has(service)) {
-        seen.add(service);
-        services[service] = {
-          status: log['status'] as string,
-          latency_ms: log['latency_ms'] as number,
-          last_check: log['checked_at'] as string,
-        };
-      }
-    }
-
-    // Determine overall status
-    const statuses = Object.values(services).map((s) => s.status);
-    let overallStatus = 'healthy';
-    if (statuses.includes('unhealthy')) {
-      overallStatus = 'unhealthy';
-    } else if (statuses.includes('degraded')) {
-      overallStatus = 'degraded';
-    }
-
-    return {
-      status: overallStatus,
-      services,
-      metrics: {
-        requests_per_minute: 0, // Would need actual metrics collection
-        error_rate: 0,
-        avg_response_time_ms: 0,
-      },
-    };
+    // Perform real health checks via the health service
+    return this.healthService.checkAll();
   }
 
   async getHealthHistory(dto: HealthHistoryDto) {

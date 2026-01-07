@@ -1741,3 +1741,35 @@ export async function deleteStation(orgId: string, attractionId: string, station
     `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`
   );
 }
+
+// =============================================================================
+// PLATFORM ANNOUNCEMENTS
+// =============================================================================
+
+/**
+ * Platform announcement for users
+ */
+export interface PlatformAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  type: 'info' | 'warning' | 'critical' | 'maintenance' | 'feature';
+  link_url?: string | null;
+  link_text?: string | null;
+  is_dismissible: boolean;
+  created_at: string;
+}
+
+/**
+ * Get active announcements for the current user
+ */
+export async function getActiveAnnouncements() {
+  return api.get<{ announcements: PlatformAnnouncement[] }>('/platform/announcements');
+}
+
+/**
+ * Dismiss an announcement
+ */
+export async function dismissAnnouncement(announcementId: string) {
+  return api.post<{ message: string }>(`/platform/announcements/${announcementId}/dismiss`, {});
+}
