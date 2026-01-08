@@ -28,21 +28,6 @@ export default async function DashboardPage() {
     redirect(`/${org.slug}` as never);
   }
 
-  // No organizations - show onboarding or create org prompt
-  return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <div className="text-center max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Welcome to Haunt Platform</h1>
-        <p className="text-muted-foreground mb-6">
-          You do not have any organizations yet. Create your first organization to get started.
-        </p>
-        <a
-          href="/onboarding"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Create Organization
-        </a>
-      </div>
-    </div>
-  );
+  // No organizations - redirect to create one
+  redirect('/organizations/new');
 }
