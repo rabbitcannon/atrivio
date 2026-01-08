@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { AnnouncementBanner } from '@/components/features/platform/announcement-banner';
 import { DashboardHeader } from '@/components/layouts/dashboard-header';
 import { DashboardSidebar } from '@/components/layouts/dashboard-sidebar';
+import { PageTransition } from '@/components/ui/page-transition';
 import { getUser } from '@/lib/supabase/server';
 
 // Force dynamic rendering - dashboard requires authentication
@@ -21,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardSidebar />
         <main className="flex-1 overflow-auto bg-background p-6">
           <AnnouncementBanner />
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
     </div>
