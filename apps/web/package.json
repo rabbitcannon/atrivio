@@ -2,6 +2,7 @@
   "name": "@atrivio/web",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "Atrivio Web - Next.js 15 with App Router",
   "scripts": {
     "dev": "echo '\\n  📚 Docs available at: http://localhost:3000/docs\\n' && next dev --port 3000",

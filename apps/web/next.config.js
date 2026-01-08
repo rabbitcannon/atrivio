@@ -13,8 +13,8 @@ const nextConfig = {
 
   // Note: @atrivio/shared is pre-built, no need to transpile
 
-  // Transpile motion and framer-motion for proper ESM support
-  transpilePackages: ['motion', 'framer-motion'],
+  // Transpile motion for proper ESM support
+  transpilePackages: ['motion'],
 
   // Experimental features
   experimental: {
@@ -99,13 +99,12 @@ const nextConfig = {
       };
     }
 
-    // Fix motion/framer-motion module resolution
+    // Fix motion module resolution
     // Ensure consistent module resolution to avoid 'call' errors
     config.resolve.alias = {
       ...config.resolve.alias,
-      // Force ESM imports for motion packages
+      // Force ESM imports for motion package
       'motion/react': require.resolve('motion/react'),
-      'framer-motion': require.resolve('framer-motion'),
     };
 
     return config;
