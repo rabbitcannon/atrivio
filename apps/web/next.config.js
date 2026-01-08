@@ -1,8 +1,11 @@
 import createMDX from '@next/mdx';
 import remarkGfm from 'remark-gfm';
 import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 const require = createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,6 +13,12 @@ const nextConfig = {
 
   // Enable MDX pages
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+
+  // Output standalone for Vercel monorepo deployment
+  output: 'standalone',
+
+  // Set output file tracing root to monorepo root for proper file resolution
+  outputFileTracingRoot: path.join(__dirname, '../../'),
 
   // Note: @atrivio/shared is pre-built, no need to transpile
 
