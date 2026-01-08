@@ -24,6 +24,7 @@ export function FloorPlan() {
         className="absolute left-1/2 top-1/2 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2"
         viewBox="0 0 400 300"
         fill="none"
+        aria-hidden="true"
       >
         {/* Main pathway */}
         <path
@@ -108,12 +109,7 @@ export function FloorPlan() {
             className="animate-[landing-glow_3s_ease-in-out_infinite] fill-[hsl(var(--landing-accent-secondary)/0.3)] stroke-[hsl(var(--landing-accent-secondary))]"
             strokeWidth="2"
           />
-          <circle
-            cx="100"
-            cy="170"
-            r="5"
-            className="fill-[hsl(var(--landing-accent-secondary))]"
-          />
+          <circle cx="100" cy="170" r="5" className="fill-[hsl(var(--landing-accent-secondary))]" />
         </g>
 
         <g>
@@ -124,12 +120,7 @@ export function FloorPlan() {
             className="animate-[landing-glow_3s_ease-in-out_infinite_0.5s] fill-[hsl(var(--landing-accent-secondary)/0.3)] stroke-[hsl(var(--landing-accent-secondary))]"
             strokeWidth="2"
           />
-          <circle
-            cx="200"
-            cy="140"
-            r="5"
-            className="fill-[hsl(var(--landing-accent-secondary))]"
-          />
+          <circle cx="200" cy="140" r="5" className="fill-[hsl(var(--landing-accent-secondary))]" />
         </g>
 
         <g>
@@ -140,12 +131,7 @@ export function FloorPlan() {
             className="animate-[landing-glow_3s_ease-in-out_infinite_1s] fill-[hsl(var(--landing-accent-secondary)/0.3)] stroke-[hsl(var(--landing-accent-secondary))]"
             strokeWidth="2"
           />
-          <circle
-            cx="300"
-            cy="170"
-            r="5"
-            className="fill-[hsl(var(--landing-accent-secondary))]"
-          />
+          <circle cx="300" cy="170" r="5" className="fill-[hsl(var(--landing-accent-secondary))]" />
         </g>
 
         {/* Emergency exit */}
@@ -195,10 +181,7 @@ export function FloorPlan() {
             refY="3.5"
             orient="auto"
           >
-            <polygon
-              points="0 0, 10 3.5, 0 7"
-              fill="hsl(var(--landing-text-muted))"
-            />
+            <polygon points="0 0, 10 3.5, 0 7" fill="hsl(var(--landing-text-muted))" />
           </marker>
         </defs>
       </svg>

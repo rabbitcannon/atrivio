@@ -1,4 +1,4 @@
-# Haunt Platform
+# Atrivio
 
 Multi-tenant SaaS platform for the haunt industry (haunted attractions, escape rooms, mazes).
 
@@ -55,31 +55,108 @@ docker compose -f infrastructure/docker/docker-compose.yml up -d
 pnpm dev
 ```
 
-**Supabase URLs:**
-- Studio (DB GUI): http://localhost:54323
-- API: http://localhost:54321
-- Database: localhost:54322
+**Supabase Local URLs:**
+| Service | URL |
+|---------|-----|
+| Studio (DB GUI) | http://localhost:54323 |
+| API | http://localhost:54321 |
+| Inbucket (email testing) | http://localhost:54324 |
+| Database | localhost:54322 |
+
+**Database Connection (TablePlus, etc.):**
+| Field | Value |
+|-------|-------|
+| Host | `127.0.0.1` |
+| Port | `54322` |
+| User | `postgres` |
+| Password | `postgres` |
+| Database | `postgres` |
+
+Connection string: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+
+### Test Accounts (Local Development Only)
+
+After running `supabase db reset`, these test accounts are available (password: `password123` for all):
+
+**Platform Admins:**
+
+| Email | Role |
+|-------|------|
+| `admin@haunt.dev` | Super Admin |
+| `support@haunt.dev` | Support Admin |
+
+**Nightmare Manor** (Pro tier - `nightmare-manor`):
+
+| Email | Role |
+|-------|------|
+| `owner@haunt.dev` | Owner |
+| `manager@haunt.dev` | Manager |
+| `hr@haunt.dev` | HR |
+| `finance@haunt.dev` | Finance |
+| `boxoffice@haunt.dev` | Box Office |
+| `actor1@haunt.dev` | Actor |
+| `actor2@haunt.dev` | Actor |
+| `actor3@haunt.dev` | Actor |
+| `scanner@haunt.dev` | Scanner |
+
+**Spooky Hollow** (Basic tier - `spooky-hollow`):
+
+| Email | Role |
+|-------|------|
+| `hollow.owner@haunt.dev` | Owner |
+| `hollow.boxoffice@haunt.dev` | Box Office |
+| `hollow.actor1@haunt.dev` | Actor |
+| `hollow.actor2@haunt.dev` | Actor |
+
+**Terror Collective** (Enterprise tier - `terror-collective`):
+
+| Email | Role |
+|-------|------|
+| `ceo@terror.dev` | Owner |
+| `coo@terror.dev` | Admin |
+| `marketing@terror.dev` | Admin |
+| `it@terror.dev` | Admin |
+| `venue1.manager@terror.dev` | Manager |
+| `venue2.manager@terror.dev` | Manager |
+| `v1.actor1@terror.dev` | Actor |
+| `v1.actor2@terror.dev` | Actor |
+| `v2.actor1@terror.dev` | Actor |
+| `v2.actor2@terror.dev` | Actor |
+
+**Newhouse Haunts** (Onboarding - `newhouse-haunts`):
+
+| Email | Role |
+|-------|------|
+| `newowner@haunt.dev` | Owner |
+
+**Test Data:**
+- **4 Organizations** at different subscription tiers (Basic, Pro, Enterprise, Onboarding)
+- **11 Attractions** across all organizations with zones and seasons
+- **17 Staff profiles** with skills, certifications, and time entries
+- **Feature flags** configured per tier (scheduling, inventory, virtual queue, etc.)
+
+> **Note:** These accounts only exist in local development. Production users sign up through the app.
 
 ## Running Individual Apps
 
 ```bash
 # Web frontend only
-pnpm --filter @haunt/web dev
+pnpm --filter @atrivio/web dev
 
 # API backend only
-pnpm --filter @haunt/api dev
+pnpm --filter @atrivio/api dev
 
 # Workers only
-pnpm --filter @haunt/workers dev
+pnpm --filter @atrivio/workers dev
 ```
 
 ## Project Structure
 
 ```
-haunt-platform/
+atrivio/
 ├── apps/
 │   ├── api/          # NestJS backend (Fastify)
-│   ├── web/          # Next.js 14 frontend
+│   ├── web/          # Next.js 15 frontend
 │   └── workers/      # BullMQ background jobs
 ├── packages/
 │   ├── shared/       # Shared types & utilities
@@ -95,8 +172,8 @@ haunt-platform/
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 14 (App Router), React 18, Tailwind CSS v4, shadcn/ui |
-| Backend | NestJS 10+ with Fastify adapter |
+| Frontend | Next.js 15 (App Router), React 19, Tailwind CSS v4, shadcn/ui |
+| Backend | NestJS 11+ with Fastify adapter |
 | Database | Supabase (PostgreSQL + Row Level Security) |
 | Auth | Supabase Auth (PKCE flow) |
 | Payments | Stripe Connect (Express accounts) |

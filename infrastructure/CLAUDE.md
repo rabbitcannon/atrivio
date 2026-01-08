@@ -2,6 +2,29 @@
 
 Local development and deployment configuration.
 
+## Database Migrations
+
+**IMPORTANT**: All migrations must go in `supabase/migrations/` at the project root.
+
+```
+atrivio/
+└── supabase/
+    ├── migrations/        ← ALL MIGRATIONS GO HERE
+    │   └── 20260104000000_f12_notifications.sql
+    ├── seed.sql
+    └── config.toml
+```
+
+Migration naming: `YYYYMMDDHHMMSS_description.sql`
+
+```bash
+# Apply migrations
+supabase db reset
+
+# Check migration status
+supabase migration list --local
+```
+
 ## Docker
 
 ```bash

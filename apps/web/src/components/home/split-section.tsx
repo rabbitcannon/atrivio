@@ -1,7 +1,12 @@
+'use client';
+
+import { motion, useInView } from 'motion/react';
 import type { ReactNode } from 'react';
+import { useRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface Feature {
+  id: string;
   text: string;
 }
 
@@ -28,6 +33,9 @@ export function SplitSection({
   reverse = false,
   variant = 'default',
 }: SplitSectionProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+
   return (
     <section
       id={id}
@@ -39,13 +47,19 @@ export function SplitSection({
       )}
     >
       <div
+        ref={ref}
         className={cn(
           'mx-auto flex max-w-[var(--landing-container-max)] flex-col items-center gap-12 lg:flex-row lg:gap-16',
           reverse && 'lg:flex-row-reverse'
         )}
       >
         {/* Text content */}
-        <div className="flex-1">
+        <motion.div
+          initial={{ opacity: 0, x: reverse ? 30 : -30 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: reverse ? 30 : -30 }}
+          transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="flex-1"
+        >
           <h2 className="mb-5 text-3xl font-bold text-[hsl(var(--landing-text-primary))] sm:text-4xl">
             {title}
           </h2>
@@ -54,10 +68,17 @@ export function SplitSection({
             {description}
           </p>
 
-          <ul className="mb-8 space-y-4" role="list">
+          <ul className="mb-8 space-y-4">
             {features.map((feature, index) => (
-              <li
-                key={index}
+              <motion.li
+                key={feature.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                transition={{
+                  duration: 0.4,
+                  delay: 0.2 + index * 0.1,
+                  ease: [0.21, 0.47, 0.32, 0.98],
+                }}
                 className="flex items-start gap-3 text-[hsl(var(--landing-text-muted))]"
               >
                 <span
@@ -67,20 +88,32 @@ export function SplitSection({
                   ✓
                 </span>
                 <span>{feature.text}</span>
-              </li>
+              </motion.li>
             ))}
           </ul>
 
-          <a
+          <motion.a
+            initial={{ opacity: 0, y: 10 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+            transition={{ duration: 0.4, delay: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             href={ctaHref}
-            className="inline-block rounded-lg bg-[hsl(var(--landing-accent-primary))] px-6 py-3 font-semibold text-white transition-all duration-[var(--landing-transition-normal)] hover:-translate-y-0.5 hover:bg-[hsl(var(--landing-accent-primary-hover))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--landing-bg-darkest))]"
+            className="inline-block rounded-lg bg-[hsl(var(--landing-accent-primary))] px-6 py-3 font-semibold text-white transition-all duration-[var(--landing-transition-normal)] hover:bg-[hsl(var(--landing-accent-primary-hover))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--landing-accent-primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--landing-bg-darkest))]"
           >
             {ctaText}
-          </a>
-        </div>
+          </motion.a>
+        </motion.div>
 
         {/* Illustration */}
-        <div className="w-full flex-1 lg:w-auto">{illustration}</div>
+        <motion.div
+          initial={{ opacity: 0, x: reverse ? -30 : 30 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: reverse ? -30 : 30 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="w-full flex-1 lg:w-auto"
+        >
+          {illustration}
+        </motion.div>
       </div>
     </section>
   );

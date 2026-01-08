@@ -1,0 +1,36 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { AttractionForm } from '@/components/features/attractions/attraction-form';
+import { getAttractionTypes, resolveOrgId } from '@/lib/api';
+
+export const metadata: Metadata = {
+  title: 'New Attraction',
+};
+
+interface NewAttractionPageProps {
+  params: Promise<{ orgId: string }>;
+}
+
+export default async function NewAttractionPage({ params }: NewAttractionPageProps) {
+  const { orgId: orgIdentifier } = await params;
+
+  // Resolve slug to UUID if needed
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) {
+    notFound();
+  }
+
+  // Fetch attraction types for the form
+  const attractionTypes = await getAttractionTypes();
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Create Attraction</h1>
+        <p className="text-muted-foreground">Add a new attraction to your organization.</p>
+      </div>
+
+      <AttractionForm orgId={orgId} attractionTypes={attractionTypes} />
+    </div>
+  );
+}

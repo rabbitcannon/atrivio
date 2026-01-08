@@ -23,6 +23,32 @@ Features are implemented in phases after scaffolding is complete. Each feature r
 | **F11** | Virtual Queue | `docs/features/F11-queue/ERD.md` | F8 | Low |
 | **F12** | Notifications | `docs/features/F12-notifications/ERD.md` | F1-F4 | Low |
 | **F13** | Analytics | `docs/features/F13-analytics/ERD.md` | All | Low |
+| **F14** | Permissions & RBAC | `docs/features/F14-permissions/ERD.md` | F2, F4, F5 | Medium |
+| **F15** | Documentation Site | `docs/features/F15-docs/SPEC.md` | F1-F14 | High |
+
+### Future/Optional Features
+
+| Feature | Name | ERD Location | Dependencies | Notes |
+|---------|------|--------------|--------------|-------|
+| **F100** | Platform Billing | `docs/features/F100-billing/ERD.md` | F2, F6 | Optional - requires pricing approval |
+
+---
+
+## MVP Phases
+
+### MVP Part 1 - Foundation (F1-F4)
+- F1: Auth & Users
+- F2: Organizations
+- F3: Attractions/Venues
+- F4: Staff & Roles
+
+### MVP Part 2 - Admin & Payments (F5-F6)
+- F5: Platform Admin
+- F6: Stripe Connect
+
+### MVP Part 3 - Operations & Permissions (F7, F14)
+- F7: Scheduling
+- F14: Permissions & RBAC (configurable role permissions per org)
 
 ---
 
@@ -63,7 +89,8 @@ F1 (Auth) → F2 (Orgs) → F3 (Haunts) → F4 (Staff) → F5 (Admin)
                       F6 (Payments) ──────────┘
 ```
 
-MVP requires: F1, F2, F3, F4, F5, F6
+MVP Part 1-2 requires: F1, F2, F3, F4, F5, F6
+MVP Part 3 adds: F7, F14
 
 ---
 
@@ -86,6 +113,8 @@ F5 Admin ◄───┴──────────┴───────�
              │
              ▼
 F7 Scheduling ◄── F4
+             │
+F14 Permissions ◄── F2, F4, F5
              │
 F8 Ticketing ◄── F3, F6
              │

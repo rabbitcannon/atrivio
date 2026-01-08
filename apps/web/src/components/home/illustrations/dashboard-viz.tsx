@@ -21,11 +21,17 @@ export function DashboardViz() {
           <div className="mb-2 h-3 w-16 rounded bg-[hsl(var(--landing-text-muted)/0.3)]" />
           <div className="mb-4 h-8 w-24 rounded bg-[hsl(var(--landing-accent-primary))]" />
           <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map((i) => (
+            {[
+              { id: 'bar-1', height: 35 },
+              { id: 'bar-2', height: 45 },
+              { id: 'bar-3', height: 28 },
+              { id: 'bar-4', height: 52 },
+              { id: 'bar-5', height: 38 },
+            ].map((bar) => (
               <div
-                key={i}
+                key={bar.id}
                 className="h-12 w-full rounded bg-[hsl(var(--landing-accent-primary)/0.4)]"
-                style={{ height: `${20 + Math.random() * 30}px` }}
+                style={{ height: `${bar.height}px` }}
               />
             ))}
           </div>
@@ -35,8 +41,8 @@ export function DashboardViz() {
         <div className="animate-[landing-float_6s_ease-in-out_infinite_0.5s] rounded-lg bg-[hsl(var(--landing-bg-card-hover))] p-4">
           <div className="mb-3 h-3 w-20 rounded bg-[hsl(var(--landing-text-muted)/0.3)]" />
           <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-2">
+            {['item-1', 'item-2', 'item-3'].map((id) => (
+              <div key={id} className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-[hsl(var(--landing-accent-secondary)/0.3)]" />
                 <div className="flex-1">
                   <div className="mb-1 h-2 w-full rounded bg-[hsl(var(--landing-border))]" />
@@ -50,7 +56,7 @@ export function DashboardViz() {
         <div className="animate-[landing-float_6s_ease-in-out_infinite_1s] rounded-lg bg-[hsl(var(--landing-bg-card-hover))] p-4">
           <div className="mb-3 h-3 w-16 rounded bg-[hsl(var(--landing-text-muted)/0.3)]" />
           <div className="relative h-24 w-24 mx-auto">
-            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden="true">
               <circle
                 cx="50"
                 cy="50"
@@ -83,21 +89,40 @@ export function DashboardViz() {
             <div className="h-3 w-24 rounded bg-[hsl(var(--landing-text-muted)/0.3)]" />
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 animate-[landing-pulse_2s_ease-in-out_infinite] rounded-full bg-[hsl(var(--landing-accent-secondary))]" />
-              <span className="text-xs text-[hsl(var(--landing-accent-secondary))]">
-                LIVE
-              </span>
+              <span className="text-xs text-[hsl(var(--landing-accent-secondary))]">LIVE</span>
             </div>
           </div>
           <div className="flex h-16 items-end gap-1">
-            {Array.from({ length: 24 }).map((_, i) => (
+            {[
+              { id: 'h-0', height: 35 },
+              { id: 'h-1', height: 42 },
+              { id: 'h-2', height: 55 },
+              { id: 'h-3', height: 48 },
+              { id: 'h-4', height: 62 },
+              { id: 'h-5', height: 58 },
+              { id: 'h-6', height: 70 },
+              { id: 'h-7', height: 65 },
+              { id: 'h-8', height: 78 },
+              { id: 'h-9', height: 72 },
+              { id: 'h-10', height: 85 },
+              { id: 'h-11', height: 80 },
+              { id: 'h-12', height: 75 },
+              { id: 'h-13', height: 68 },
+              { id: 'h-14', height: 60 },
+              { id: 'h-15', height: 52 },
+              { id: 'h-16', height: 45 },
+              { id: 'h-17', height: 38 },
+              { id: 'h-18', height: 42 },
+              { id: 'h-19', height: 48 },
+              { id: 'h-20', height: 55 },
+              { id: 'h-21', height: 50 },
+              { id: 'h-22', height: 45 },
+              { id: 'h-23', height: 40 },
+            ].map((bar) => (
               <div
-                key={i}
+                key={bar.id}
                 className="flex-1 rounded-t bg-gradient-to-t from-[hsl(var(--landing-accent-primary))] to-[hsl(var(--landing-accent-primary)/0.3)]"
-                style={{
-                  height: `${
-                    20 + Math.sin((i / 24) * Math.PI * 2) * 30 + Math.random() * 20
-                  }%`,
-                }}
+                style={{ height: `${bar.height}%` }}
               />
             ))}
           </div>

@@ -1,12 +1,12 @@
-# Haunt Platform
+# Attraction Platform
 
-Multi-tenant SaaS for the haunt industry (haunted attractions, escape rooms, mazes).
+Multi-tenant SaaS for the attractions industry (haunted attractions, escape rooms, mazes, theme parks, entertainment venues).
 
 ## Architecture
 
 - **Monorepo**: pnpm workspaces + Turborepo
-- **Backend**: NestJS 10+ with Fastify adapter
-- **Frontend**: Next.js 14 App Router, Tailwind v4, shadcn/ui
+- **Backend**: NestJS 11+ with Fastify adapter
+- **Frontend**: Next.js 15 App Router, React 19, Tailwind v4, shadcn/ui
 - **Database**: Supabase (PostgreSQL + RLS)
 - **Auth**: Supabase Auth (PKCE flow)
 - **Payments**: Stripe Connect (Express accounts)
@@ -30,15 +30,110 @@ Multi-tenant SaaS for the haunt industry (haunted attractions, escape rooms, maz
 
 ## Key Patterns
 
-- **Branded IDs**: `OrgId`, `HauntId`, `UserId` prevent mixing types
+- **Branded IDs**: `OrgId`, `AttractionId`, `UserId` prevent mixing types
 - **Permission strings**: Template literals like `ticket:refund`, `schedule:publish`
-- **Money**: Always integers (cents) - use `@haunt/shared/utils/money`
+- **Money**: Always integers (cents) - use `@atrivio/shared/utils/money`
+
+## Implemented Features
+
+### MVP (Part 1) - Foundation
+| Feature | Status | Description |
+|---------|--------|-------------|
+| F1 Organizations | ✅ Complete | Multi-tenant org management |
+| F2 Auth | ✅ Complete | Supabase Auth with PKCE |
+| F3 Attractions | ✅ Complete | Haunt/attraction management |
+| F4 Staff | ✅ Complete | Staff profiles, roles, time clock |
+| F5 Admin | ✅ Complete | Platform admin dashboard |
+| F6 Payments | ✅ Complete | Stripe Connect integration |
+
+### MVP (Part 2) - Operations
+| Feature | Status | Description |
+|---------|--------|-------------|
+| F7a Time Tracking | ✅ Complete | Clock in/out, status tracking |
+| F7b Scheduling | ✅ Complete | Shifts, availability, swaps |
+| F8 Ticketing | ✅ Complete | Ticket types, orders, promo codes |
+| F9 Check-In | ✅ Complete | Barcode scan, capacity, waivers |
+| F10 Inventory | 🔲 Pending | Props, costumes, checkouts |
+
+## Feature Flags
+
+The platform uses a tier-based feature flag system for plan-based access control.
+
+### Flag Tiers
+| Tier | Features | Description |
+|------|----------|-------------|
+| **basic** | ticketing, checkin, time_tracking, notifications | Core features, always enabled |
+| **pro** | scheduling, inventory, analytics_pro | Advanced operations |
+| **enterprise** | virtual_queue, sms_notifications, custom_domains | Premium features |
+
+### Per-Org Activation
+Feature flags are enabled per-organization via:
+- `enabled: true` + `rollout_percentage: 100` = All orgs get it
+- `org_ids: ['uuid']` = Only specific orgs get the feature
+- Orgs upgrade their tier to unlock gated features
+
+### Using Feature Flags
+
+**API (Controller level)**:
+```typescript
+import { FeatureGuard } from '../../core/features/guards/feature.guard.js';
+import { Feature } from '../../core/features/decorators/feature.decorator.js';
+
+@Controller('organizations/:orgId/schedules')
+@UseGuards(FeatureGuard)
+@Feature('scheduling')  // Requires 'scheduling' flag to be enabled
+export class SchedulingController {}
+```
+
+**API (Service level)**:
+```typescript
+import { FeaturesService } from '../../core/features/features.service.js';
+
+if (await this.featuresService.isEnabled('virtual_queue', orgId)) {
+  // Enable virtual queue features
+}
+```
+
+### Database Function
+```sql
+-- Check if feature is enabled for org/user
+SELECT is_feature_enabled('scheduling', user_id, org_id);
+```
+
+### Adding New Feature Flags
+1. Add to `supabase/seed.sql` in the `feature_flags` INSERT
+2. Set `metadata.tier` to 'basic', 'pro', or 'enterprise'
+3. Set `metadata.module: true` for module-level flags
+4. Apply `@Feature('flag-key')` decorator to controllers
 
 ## Feature Implementation
 
 Before implementing any feature:
 1. Create ERD in `docs/features/FX-name/ERD.md`
 2. Design API in `docs/features/FX-name/API.md`
-3. Write migrations in `packages/database/migrations/`
+3. Write migrations in `supabase/migrations/` (NOT `infrastructure/supabase/migrations/`)
 
 See `.claude/plans/feature-roadmap.md` for implementation order.
+
+## Agent Auto-Activation
+
+### Frontend Agent (`/frontend`)
+**Auto-activate when working on:**
+- Components in `apps/web/src/components/`
+- Pages in `apps/web/src/app/`
+- React hooks in `apps/web/src/hooks/`
+- Any UI/UX implementation tasks
+- Keywords: component, page, form, dashboard, UI, responsive, accessibility
+
+**Trigger**: When user asks to build, create, or implement frontend features, automatically use the `/frontend` command context for the response.
+
+### Planning Agent (`/plan`)
+**Auto-activate when:**
+- User requests to plan a feature or implementation
+- Starting work on a new feature from the roadmap (F1-F13)
+- User says "plan", "design", "architect", or "let's figure out"
+
+**Trigger**: When planning is needed, automatically:
+1. Create a plan file at `.claude/plans/{task-name}.md`
+2. Use the template from `.claude/templates/plan-template.md`
+3. Track progress across sessions

@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+@config "../../tailwind.config.js";
+
+@layer base {
+  :root {
+    /* Base theme - overridden by storefront settings */
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 72% 51%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 72% 51%;
+    --radius: 0.5rem;
+
+    /* Storefront dynamic colors - set from API response */
+    --storefront-primary: #dc2626;
+    --storefront-secondary: #1f2937;
+    --storefront-accent: #f59e0b;
+    --storefront-background: #0a0a0a;
+    --storefront-text: #f5f5f5;
+
+    /* Fonts - set from API response */
+    --font-heading: 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Light theme variant for storefronts that want it */
+  .theme-light {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 72% 51%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 72% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--storefront-background);
+    color: var(--storefront-text);
+    @apply font-body antialiased;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+/* Utility for applying storefront theme colors */
+@layer utilities {
+  .text-storefront-primary {
+    color: var(--storefront-primary);
+  }
+  .bg-storefront-primary {
+    background-color: var(--storefront-primary);
+  }
+  .border-storefront-primary {
+    border-color: var(--storefront-primary);
+  }
+  .text-storefront-secondary {
+    color: var(--storefront-secondary);
+  }
+  .bg-storefront-secondary {
+    background-color: var(--storefront-secondary);
+  }
+}

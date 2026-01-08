@@ -1,10 +1,10 @@
 # Architecture Documentation
 
-This folder contains architecture documentation for the Haunt Platform.
+This folder contains architecture documentation for the Attraction Platform.
 
 ## Overview
 
-The Haunt Platform is a multi-tenant SaaS application for the haunt industry, including:
+The Attraction Platform is a multi-tenant SaaS application for the attractions industry, including:
 - Haunted attractions
 - Escape rooms
 - Mazes
@@ -19,8 +19,8 @@ The Haunt Platform is a multi-tenant SaaS application for the haunt industry, in
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 14 (App Router), React 18, Tailwind CSS v4 |
-| Backend | NestJS 10+ with Fastify adapter |
+| Frontend | Next.js 15 (App Router), React 19, Tailwind CSS v4 |
+| Backend | NestJS 11+ with Fastify adapter |
 | Database | Supabase (PostgreSQL with RLS) |
 | Auth | Supabase Auth (PKCE flow) |
 | Payments | Stripe Connect (Express accounts) |

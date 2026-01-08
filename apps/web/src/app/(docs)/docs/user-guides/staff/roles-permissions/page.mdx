@@ -1,0 +1,170 @@
+# Roles & Permissions
+
+Understanding the role system helps you give your team the right level of access.
+
+## Role Hierarchy
+
+Roles are organized in a hierarchy, with higher roles having more permissions:
+
+```
+Owner
+  └── Admin
+        └── Manager / HR / Finance
+              └── Box Office
+                    └── Actor
+                          └── Scanner
+```
+
+## Role Details
+
+### Owner
+
+The **Owner** is the person who created the organization.
+
+**Permissions:**
+- Everything an Admin can do
+- Transfer ownership to another user
+- Delete the organization
+
+> **Note:** There can only be one Owner per organization.
+
+### Admin
+
+**Admins** have full management access.
+
+**Permissions:**
+- Manage all staff and roles
+- Configure organization settings
+- Access all financial data
+- Manage Stripe payouts
+- Configure storefront
+
+**Cannot:**
+- Delete the organization
+- Transfer ownership
+
+### Manager
+
+**Managers** handle day-to-day operations.
+
+**Permissions:**
+- Create and edit schedules
+- Manage check-in stations
+- View reports
+- Approve shift swaps
+- Manage attractions
+
+**Cannot:**
+- Change organization settings
+- Access financial configurations
+- Manage admin-level users
+
+### HR
+
+**HR** focuses on staff management.
+
+**Permissions:**
+- Add and edit staff profiles
+- View and export time records
+- Manage availability
+- Run HR reports
+
+**Cannot:**
+- Create schedules
+- Access financial data
+- Configure check-in
+
+### Finance
+
+**Finance** manages money matters.
+
+**Permissions:**
+- View all financial reports
+- Process refunds
+- Export transaction data
+- View payout schedules
+
+**Cannot:**
+- Manage staff
+- Create schedules
+- Configure settings
+
+### Box Office
+
+**Box Office** sells tickets and checks in guests.
+
+**Permissions:**
+- Sell tickets
+- Check in guests
+- View daily reports
+- Process walk-ups
+
+**Cannot:**
+- Manage staff or schedules
+- Access financial settings
+- Configure attractions
+
+### Actor
+
+**Actors** are performers with basic access.
+
+**Permissions:**
+- Clock in and out
+- View their schedule
+- Request shift swaps
+- Update availability
+
+**Cannot:**
+- Sell tickets
+- Check in guests
+- View other staff data
+
+### Scanner
+
+**Scanners** have check-in-only access.
+
+**Permissions:**
+- Scan tickets
+- View check-in queue
+
+**Cannot:**
+- Clock in/out
+- View schedules
+- Access any other features
+
+## Permission Matrix
+
+| Feature | Owner | Admin | Manager | HR | Finance | Box Office | Actor | Scanner |
+|---------|-------|-------|---------|-----|---------|------------|-------|---------|
+| Organization settings | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Manage all staff | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Create schedules | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| View schedules | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | Own | ❌ |
+| Time clock | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Sell tickets | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Check-in | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Financial reports | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Process refunds | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+
+## Changing Roles
+
+To change someone's role:
+
+1. Go to **Staff** → select the person
+2. Click **Change Role**
+3. Select the new role
+4. Click **Confirm**
+
+> **Important:** Demoting someone removes their access immediately. Make sure to communicate the change.
+
+## Best Practices
+
+1. **Start with minimal access** - Upgrade roles as needed rather than starting high
+2. **Use specific roles** - HR for HR tasks, Finance for finance, etc.
+3. **Review regularly** - Audit roles quarterly
+4. **Document changes** - Keep track of who has what access
+
+## Next steps
+
+- [Set up time tracking](/docs/user-guides/time-clock/clocking-in-out)
+- [Create schedules](/docs/user-guides/scheduling/creating-shifts)

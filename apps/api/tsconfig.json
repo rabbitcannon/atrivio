@@ -3,12 +3,6 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@haunt/shared": ["../../packages/shared/src"],
-      "@haunt/shared/*": ["../../packages/shared/src/*"]
-    },
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },

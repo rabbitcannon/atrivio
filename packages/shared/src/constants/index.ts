@@ -1,3 +1,5 @@
 // Constant exports
-export * from './roles.js';
-export * from './permissions.js';
+
+export * from './permissions';
+export * from './roles';
+export * from './themes';

@@ -2,8 +2,8 @@
 
 ## Stack
 
-- Next.js 14 with **App Router** (not Pages Router)
-- React 18 with Server Components by default
+- Next.js 15 with **App Router** (not Pages Router)
+- React 19 with Server Components by default
 - Tailwind CSS v4 + shadcn/ui + CVA
 - TanStack Query for server state
 - Zustand for client state
@@ -37,6 +37,17 @@ src/
 3. **Suspense**: Use for loading states, no `isLoading` booleans
 4. **CVA**: Use class-variance-authority for component variants
 
+### React 19 Features (Available)
+- **ref as prop**: Can pass `ref` directly to components without `forwardRef` wrapper
+- **use() hook**: Unwrap promises/context in render (alternative to Suspense)
+- **Actions**: Form handling with `useActionState`, `useFormStatus`, `useOptimistic`
+- **Note**: 85 existing `forwardRef` usages work unchanged (backward compatible)
+
+### Next.js 15 Notes
+- **Async Request APIs**: `params`, `searchParams`, `cookies()`, `headers()` are async
+- **Caching**: Default is `no-store` (fetch caching opt-in)
+- **Auth layouts**: Use `export const dynamic = 'force-dynamic'` for pages requiring cookies
+
 ## Auth Flow
 
 - Supabase Auth with PKCE
@@ -48,6 +59,77 @@ src/
 - `(auth)`: Login, register, forgot-password
 - `(dashboard)`: Main app, requires org membership
 - `(admin)`: Super admin area, requires `platform_admins` check
+- `(time)`: Public time clock for staff
+
+## Implemented Dashboard Routes
+
+```
+[orgId]/
+├── page.tsx              # Dashboard overview
+├── attractions/          # F3 Attractions
+├── staff/                # F4 Staff management
+│   └── [staffId]/        # Staff detail
+├── payments/             # F6 Stripe Connect
+├── schedule/             # F7b Scheduling
+│   ├── page.tsx          # Calendar view
+│   ├── availability/     # Staff availability
+│   └── templates/        # Shift templates
+├── ticketing/            # F8 Ticketing
+│   ├── page.tsx          # Ticket types list
+│   ├── orders/           # Order management
+│   └── promo-codes/      # Promo codes
+└── check-in/             # F9 Check-In
+    ├── page.tsx          # Stations list
+    ├── scan/             # Scanner interface
+    ├── queue/            # Queue management
+    └── reports/          # Check-in analytics
+```
+
+## Feature Flags (Frontend)
+
+The API enforces feature flags, but the frontend should also check them for UI/UX:
+
+### Hide Navigation for Disabled Features
+```tsx
+// In sidebar/navigation - hide links to disabled features
+{features.scheduling && (
+  <NavLink href={`/${orgId}/schedule`}>Schedule</NavLink>
+)}
+```
+
+### Show Upgrade Prompts
+```tsx
+// When a feature is disabled, show upgrade prompt instead of content
+if (!features.scheduling) {
+  return (
+    <UpgradePrompt
+      feature="Scheduling"
+      tier="pro"
+      description="Manage staff shifts, availability, and swaps"
+    />
+  );
+}
+```
+
+### Feature Flag Context (TODO)
+```tsx
+// Future: Create a FeatureFlagsProvider
+const { isEnabled, tier } = useFeatureFlags();
+
+if (!isEnabled('virtual_queue')) {
+  return <UpgradeCard feature="Virtual Queue" requiredTier="enterprise" />;
+}
+```
+
+### Current Feature Tiers
+| Feature | Flag Key | Tier |
+|---------|----------|------|
+| Time Tracking | `time_tracking` | basic |
+| Ticketing | `ticketing` | basic |
+| Check-In | `checkin` | basic |
+| Scheduling | `scheduling` | pro |
+| Inventory | `inventory` | pro |
+| Virtual Queue | `virtual_queue` | enterprise |
 
 ## Styling
 
@@ -142,4 +224,46 @@ className="bg-[hsl(var(--landing-accent-primary))]"
 className="text-foreground"
 className="bg-primary"
 className="text-muted-foreground"
+```
+
+## Animations
+
+### Library
+- Uses `motion` package (v12+) - import from `motion/react`
+- Motion is a wrapper around framer-motion (same library, new branding)
+- All animation components must have `'use client'` directive
+
+### Pre-built Components (`@/components/ui/motion`)
+| Component | Use Case |
+|-----------|----------|
+| `MotionDiv` | General animated container |
+| `MotionCard` | Cards with hover effects |
+| `MotionList/Item` | Staggered list animations |
+| `FadeIn` | Simple fade with direction |
+| `StaggerContainer/Item` | Grid animations |
+
+### Variants (`@/lib/motion`)
+- `fadeVariants`, `fadeUpVariants` - Fade animations
+- `scaleVariants` - Scale in/out
+- `slideLeftVariants`, `slideRightVariants` - Slide panels
+- `cardHover`, `buttonStates` - Interactive states
+
+### Accessibility
+- All components check `useReducedMotion()`
+- Fallback to static rendering when reduced motion preferred
+- Use `prefersReducedMotion()` utility for custom animations
+
+### When to Use What
+| Context | Approach |
+|---------|----------|
+| Landing page sections | `FadeIn`, `StaggerContainer` with `useInView` |
+| Dashboard cards | `MotionCard` or CSS transitions |
+| Page transitions | `PageTransition` component |
+| Hover effects | `cardHover` or `buttonStates` presets |
+| Loading states | CSS `skeleton-shimmer` class |
+
+### Configuration (next.config.js)
+```js
+transpilePackages: ['motion', 'framer-motion'],
+// Both needed - motion re-exports framer-motion
 ```

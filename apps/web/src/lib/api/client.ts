@@ -1,0 +1,1820 @@
+'use client';
+
+import { createClient } from '@/lib/supabase/client';
+import type {
+  Attraction,
+  AttractionsResponse,
+  Organization,
+  OrganizationListItem,
+  OrganizationMember,
+  OrganizationMembersResponse,
+  OrgRole,
+  StaffCertification,
+  StaffMember,
+  StaffResponse,
+  StaffSkill,
+  TimeEntriesResponse,
+  TimeEntry,
+  Zone,
+} from './types';
+
+const API_BASE_URL = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001/api/v1';
+
+export interface ApiError {
+  message: string;
+  statusCode: number;
+  error?: string;
+}
+
+export interface ApiResponse<T> {
+  data: T | null;
+  error: ApiError | null;
+}
+
+/**
+ * Client-side API client for Client Components.
+ * Uses the browser Supabase client to get auth tokens.
+ */
+export async function apiClient<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (session?.access_token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json().catch(() => ({
+        message: 'An unexpected error occurred',
+        statusCode: response.status,
+      }));
+      return { data: null, error };
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return { data: null as T, error: null };
+    }
+
+    const data: T = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: {
+        message: err instanceof Error ? err.message : 'Network error',
+        statusCode: 0,
+      },
+    };
+  }
+}
+
+// Convenience methods (returns { data, error } wrapper)
+export const api = {
+  get: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'GET' }),
+  post: <T>(endpoint: string, body: unknown) =>
+    apiClient<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(endpoint: string, body: unknown) =>
+    apiClient<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(endpoint: string, body: unknown) =>
+    apiClient<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(endpoint: string) => apiClient<T>(endpoint, { method: 'DELETE' }),
+};
+
+// ============================================================================
+// Direct API Client (returns data directly, throws on error)
+// Used by ticketing pages and other legacy patterns
+// ============================================================================
+
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const supabase = createClient();
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError) {
+    throw new Error('Authentication error. Please try logging in again.');
+  }
+
+  if (!session?.access_token) {
+    throw new Error('Not authenticated. Please log in to continue.');
+  }
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (_fetchError) {
+    throw new Error('Network error. Please check your connection and try again.');
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      message: 'An unexpected error occurred',
+      statusCode: response.status,
+    }));
+    throw new Error(error.message || 'API request failed');
+  }
+
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return null as T;
+  }
+
+  return response.json();
+}
+
+/**
+ * API client that returns data directly and throws on errors.
+ * Used by ticketing pages and other legacy patterns.
+ */
+export const apiClientDirect = {
+  get: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'GET' }),
+  post: <T>(endpoint: string, body: unknown) =>
+    apiRequest<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(endpoint: string, body: unknown) =>
+    apiRequest<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(endpoint: string, body: unknown) =>
+    apiRequest<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'DELETE' }),
+};
+
+// ============================================================================
+// Org ID Resolution (client-side)
+// ============================================================================
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Check if a string is a valid UUID
+ */
+export function isUUID(str: string): boolean {
+  return UUID_REGEX.test(str);
+}
+
+/**
+ * Client-side org ID resolution.
+ * If the identifier is already a UUID, returns it directly.
+ * If it's a slug, looks up the org via the API.
+ */
+export async function resolveOrgId(orgIdentifier: string): Promise<string | null> {
+  // If it's already a UUID, return it
+  if (isUUID(orgIdentifier)) {
+    return orgIdentifier;
+  }
+
+  // Otherwise, it's a slug - look it up via the API
+  const supabase = createClient();
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id')
+    .eq('slug', orgIdentifier)
+    .single();
+
+  return org?.id ?? null;
+}
+
+// ============================================================================
+// Client-side API Functions (for use in Client Components)
+// ============================================================================
+
+// Re-export types for convenience
+export type {
+  Attraction,
+  AttractionListItem,
+  AttractionsResponse,
+  Organization,
+  OrganizationListItem,
+  OrganizationMember,
+  OrganizationMembersResponse,
+  OrgRole,
+  StaffCertification,
+  StaffListItem,
+  StaffMember,
+  StaffResponse,
+  StaffSkill,
+  TimeEntriesResponse,
+  TimeEntry,
+  Zone,
+} from './types';
+
+/**
+ * Get all organizations for the current user (client-side)
+ */
+export async function getOrganizations() {
+  return api.get<{ data: OrganizationListItem[] }>('/organizations');
+}
+
+/**
+ * Create a new organization (client-side)
+ */
+export async function createOrganization(data: {
+  name: string;
+  slug: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  timezone?: string;
+  address?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+  };
+}) {
+  return api.post<Organization & { membership: { role: string; is_owner: boolean } }>(
+    '/organizations',
+    data
+  );
+}
+
+/**
+ * Get a single organization by ID (client-side)
+ */
+export async function getOrganization(orgId: string) {
+  return api.get<Organization>(`/organizations/${orgId}`);
+}
+
+/**
+ * Update an organization (client-side)
+ */
+export async function updateOrganization(
+  orgId: string,
+  data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    website?: string;
+    timezone?: string;
+    address?: {
+      line1: string;
+      line2?: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+    settings?: Record<string, unknown>;
+  }
+) {
+  return api.patch<Organization>(`/organizations/${orgId}`, data);
+}
+
+/**
+ * Get members of an organization (client-side)
+ */
+export async function getOrganizationMembers(orgId: string) {
+  return api.get<OrganizationMembersResponse>(`/organizations/${orgId}/members`);
+}
+
+/**
+ * Update a member's role (client-side)
+ */
+export async function updateMemberRole(orgId: string, memberId: string, role: OrgRole) {
+  return api.patch<OrganizationMember>(`/organizations/${orgId}/members/${memberId}`, { role });
+}
+
+/**
+ * Remove a member from the organization (client-side)
+ */
+export async function removeMember(orgId: string, memberId: string) {
+  return api.delete<{ message: string }>(`/organizations/${orgId}/members/${memberId}`);
+}
+
+/**
+ * Get all attractions for an organization (client-side)
+ */
+export async function getAttractions(orgId: string) {
+  return api.get<AttractionsResponse>(`/organizations/${orgId}/attractions`);
+}
+
+/**
+ * Get a single attraction by ID (client-side)
+ */
+export async function getAttraction(orgId: string, attractionId: string) {
+  return api.get<Attraction>(`/organizations/${orgId}/attractions/${attractionId}`);
+}
+
+/**
+ * Get zones for an attraction (client-side)
+ */
+export async function getAttractionZones(orgId: string, attractionId: string) {
+  return api.get<{ data: Zone[] }>(`/organizations/${orgId}/attractions/${attractionId}/zones`);
+}
+
+/**
+ * Create an attraction (client-side)
+ */
+export async function createAttraction(
+  orgId: string,
+  data: {
+    name: string;
+    slug: string;
+    type_id: string;
+    description?: string;
+    capacity?: number;
+    min_age?: number;
+    intensity_level?: number;
+    duration_minutes?: number;
+  }
+) {
+  return api.post<Attraction>(`/organizations/${orgId}/attractions`, data);
+}
+
+/**
+ * Update an attraction (client-side)
+ */
+export async function updateAttraction(
+  orgId: string,
+  attractionId: string,
+  data: {
+    name?: string;
+    description?: string;
+    capacity?: number;
+    min_age?: number;
+    intensity_level?: number;
+    duration_minutes?: number;
+  }
+) {
+  return api.patch<Attraction>(`/organizations/${orgId}/attractions/${attractionId}`, data);
+}
+
+/**
+ * Get all staff members for an organization (client-side)
+ */
+export async function getStaff(orgId: string, filters?: { status?: string; role?: string }) {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.role) params.set('role', filters.role);
+  const query = params.toString();
+  return api.get<StaffResponse>(`/organizations/${orgId}/staff${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get a single staff member by ID (client-side)
+ */
+export async function getStaffMember(orgId: string, staffId: string) {
+  return api.get<StaffMember>(`/organizations/${orgId}/staff/${staffId}`);
+}
+
+/**
+ * Update a staff member (client-side)
+ */
+export async function updateStaffMember(
+  orgId: string,
+  staffId: string,
+  data: {
+    employee_id?: string;
+    status?: 'active' | 'inactive' | 'on_leave' | 'terminated';
+    employment_type?: 'full_time' | 'part_time' | 'seasonal' | 'contractor';
+    hourly_rate?: number;
+    shirt_size?: string;
+    emergency_contact?: {
+      name: string;
+      phone: string;
+      relation?: string;
+    };
+    notes?: string;
+  }
+) {
+  return api.patch<StaffMember>(`/organizations/${orgId}/staff/${staffId}`, data);
+}
+
+// ============================================================================
+// Staff Skills API (Client-side)
+// ============================================================================
+
+/**
+ * Get skills for a staff member (client-side)
+ */
+export async function getStaffSkills(orgId: string, staffId: string) {
+  return api.get<{ data: StaffSkill[] }>(`/organizations/${orgId}/staff/${staffId}/skills`);
+}
+
+/**
+ * Add or update a skill for a staff member (client-side)
+ */
+export async function addStaffSkill(
+  orgId: string,
+  staffId: string,
+  data: {
+    skill: string;
+    level: number;
+    notes?: string;
+  }
+) {
+  return api.post<StaffSkill>(`/organizations/${orgId}/staff/${staffId}/skills`, data);
+}
+
+/**
+ * Remove a skill from a staff member (client-side)
+ */
+export async function removeStaffSkill(orgId: string, staffId: string, skillId: string) {
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/staff/${staffId}/skills/${skillId}`
+  );
+}
+
+// ============================================================================
+// Staff Certifications API (Client-side)
+// ============================================================================
+
+/**
+ * Get certifications for a staff member (client-side)
+ */
+export async function getStaffCertifications(orgId: string, staffId: string) {
+  return api.get<{ data: StaffCertification[] }>(
+    `/organizations/${orgId}/staff/${staffId}/certifications`
+  );
+}
+
+/**
+ * Add a certification for a staff member (client-side)
+ */
+export async function addStaffCertification(
+  orgId: string,
+  staffId: string,
+  data: {
+    type: string;
+    certificate_number?: string;
+    issued_at: string;
+    expires_at?: string;
+  }
+) {
+  return api.post<StaffCertification>(
+    `/organizations/${orgId}/staff/${staffId}/certifications`,
+    data
+  );
+}
+
+/**
+ * Verify a certification (client-side)
+ */
+export async function verifyCertification(orgId: string, staffId: string, certId: string) {
+  return api.post<StaffCertification>(
+    `/organizations/${orgId}/staff/${staffId}/certifications/${certId}/verify`,
+    {}
+  );
+}
+
+/**
+ * Remove a certification from a staff member (client-side)
+ */
+export async function removeCertification(orgId: string, staffId: string, certId: string) {
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/staff/${staffId}/certifications/${certId}`
+  );
+}
+
+// ============================================================================
+// Time Tracking API (Client-side)
+// ============================================================================
+
+/**
+ * Get time entries for a staff member (client-side)
+ */
+export async function getTimeEntries(
+  orgId: string,
+  staffId: string,
+  filters?: { start_date?: string; end_date?: string; status?: string }
+) {
+  const params = new URLSearchParams();
+  if (filters?.start_date) params.set('start_date', filters.start_date);
+  if (filters?.end_date) params.set('end_date', filters.end_date);
+  if (filters?.status) params.set('status', filters.status);
+  const query = params.toString();
+  return api.get<TimeEntriesResponse>(
+    `/organizations/${orgId}/staff/${staffId}/time${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Clock in for a staff member (client-side)
+ */
+export async function clockIn(orgId: string, staffId: string, attractionId: string) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/staff/${staffId}/time/clock-in`, {
+    attraction_id: attractionId,
+  });
+}
+
+/**
+ * Clock out for a staff member (client-side)
+ */
+export async function clockOut(
+  orgId: string,
+  staffId: string,
+  data?: { break_minutes?: number; notes?: string }
+) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/staff/${staffId}/time/clock-out`, data || {});
+}
+
+/**
+ * Update a time entry (client-side)
+ */
+export async function updateTimeEntry(
+  orgId: string,
+  entryId: string,
+  data: {
+    clock_in?: string;
+    clock_out?: string;
+    break_minutes?: number;
+    notes?: string;
+  }
+) {
+  return api.patch<TimeEntry>(`/organizations/${orgId}/time-entries/${entryId}`, data);
+}
+
+/**
+ * Approve a time entry (client-side)
+ */
+export async function approveTimeEntry(orgId: string, entryId: string) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/time-entries/${entryId}/approve`, {});
+}
+
+// ============================================================================
+// Invitations API (Client-side)
+// ============================================================================
+
+export interface Invitation {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  expires_at: string;
+  created_at: string;
+}
+
+/**
+ * Create an invitation to add a staff member (client-side)
+ */
+export async function createInvitation(orgId: string, email: string, role: string) {
+  return api.post<Invitation>(`/organizations/${orgId}/invitations`, { email, role });
+}
+
+/**
+ * List pending invitations (client-side)
+ */
+export async function getInvitations(orgId: string) {
+  return api.get<{ data: Invitation[] }>(`/organizations/${orgId}/invitations`);
+}
+
+/**
+ * Cancel an invitation (client-side)
+ */
+export async function cancelInvitation(orgId: string, invitationId: string) {
+  return api.delete<{ message: string }>(`/organizations/${orgId}/invitations/${invitationId}`);
+}
+
+// ============================================================================
+// Zones API (Client-side)
+// ============================================================================
+
+/**
+ * Create a zone for an attraction (client-side)
+ */
+export async function createZone(
+  orgId: string,
+  attractionId: string,
+  data: {
+    name: string;
+    description?: string;
+    capacity?: number;
+    color?: string;
+  }
+) {
+  return api.post<Zone>(`/organizations/${orgId}/attractions/${attractionId}/zones`, data);
+}
+
+/**
+ * Update a zone (client-side)
+ */
+export async function updateZone(
+  orgId: string,
+  attractionId: string,
+  zoneId: string,
+  data: {
+    name?: string;
+    description?: string;
+    capacity?: number;
+    color?: string;
+  }
+) {
+  return api.patch<Zone>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones/${zoneId}`,
+    data
+  );
+}
+
+/**
+ * Delete a zone (client-side)
+ */
+export async function deleteZone(orgId: string, attractionId: string, zoneId: string) {
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones/${zoneId}`
+  );
+}
+
+/**
+ * Reorder zones (client-side)
+ */
+export async function reorderZones(orgId: string, attractionId: string, zoneIds: string[]) {
+  return api.put<{ data: Zone[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/zones/reorder`,
+    { zone_ids: zoneIds }
+  );
+}
+
+// ============================================================================
+// Seasons API (Client-side)
+// ============================================================================
+
+export interface Season {
+  id: string;
+  attraction_id: string;
+  name: string;
+  year: number;
+  start_date: string;
+  end_date: string;
+  status: 'upcoming' | 'active' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Get all seasons for an attraction (client-side)
+ */
+export async function getSeasons(
+  orgId: string,
+  attractionId: string,
+  filters?: { year?: number; status?: string }
+) {
+  const params = new URLSearchParams();
+  if (filters?.year) params.set('year', filters.year.toString());
+  if (filters?.status) params.set('status', filters.status);
+  const query = params.toString();
+  return api.get<{ data: Season[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create a season for an attraction (client-side)
+ */
+export async function createSeason(
+  orgId: string,
+  attractionId: string,
+  data: {
+    name: string;
+    year: number;
+    start_date: string;
+    end_date: string;
+  }
+) {
+  return api.post<Season>(`/organizations/${orgId}/attractions/${attractionId}/seasons`, data);
+}
+
+/**
+ * Update a season (client-side)
+ */
+export async function updateSeason(
+  orgId: string,
+  attractionId: string,
+  seasonId: string,
+  data: {
+    name?: string;
+    year?: number;
+    start_date?: string;
+    end_date?: string;
+    status?: 'upcoming' | 'active' | 'completed' | 'cancelled';
+  }
+) {
+  return api.patch<Season>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`,
+    data
+  );
+}
+
+/**
+ * Delete a season (client-side)
+ */
+export async function deleteSeason(orgId: string, attractionId: string, seasonId: string) {
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/seasons/${seasonId}`
+  );
+}
+
+// ============================================================================
+// Quick Time Clock API (Self-service, Client-side)
+// ============================================================================
+
+export interface TimeClockStatus {
+  is_clocked_in: boolean;
+  current_entry: {
+    id: string;
+    clock_in: string;
+    attraction: { id: string; name: string } | null;
+    duration_minutes: number;
+  } | null;
+  staff_id: string;
+  attractions: { id: string; name: string; is_primary: boolean }[];
+}
+
+export interface ActiveStaffEntry {
+  entry_id: string;
+  staff_id: string;
+  user: { first_name: string; last_name: string; avatar_url?: string } | null;
+  clock_in: string;
+  attraction: { id: string; name: string } | null;
+  duration_minutes: number;
+}
+
+export interface OrgBySlug {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+}
+
+/**
+ * Get organization by slug (for time clock page)
+ */
+export async function getOrgBySlug(slug: string) {
+  return api.get<OrgBySlug>(`/organizations/by-slug/${slug}`);
+}
+
+/**
+ * Get current user's time clock status (self-service)
+ */
+export async function getMyTimeStatus(orgId: string) {
+  return api.get<TimeClockStatus>(`/organizations/${orgId}/time/my-status`);
+}
+
+/**
+ * Self-service clock in
+ */
+export async function selfClockIn(orgId: string, attractionId: string) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/time/clock-in`, {
+    attraction_id: attractionId,
+  });
+}
+
+/**
+ * Self-service clock out
+ */
+export async function selfClockOut(
+  orgId: string,
+  data?: { break_minutes?: number; notes?: string }
+) {
+  return api.post<TimeEntry>(`/organizations/${orgId}/time/clock-out`, data || {});
+}
+
+/**
+ * Get currently clocked-in staff (manager view)
+ */
+export async function getActiveClockedIn(orgId: string) {
+  return api.get<{ data: ActiveStaffEntry[]; count: number }>(
+    `/organizations/${orgId}/time/active`
+  );
+}
+
+// ============================================================================
+// Scheduling API (Client-side)
+// ============================================================================
+
+import type {
+  AvailabilityType,
+  Schedule,
+  ScheduleRole,
+  ScheduleStatus,
+  ShiftSwapRequest,
+  ShiftTemplate,
+  StaffAvailability,
+  SwapStatus,
+} from './types';
+
+export type {
+  Schedule,
+  ScheduleRole,
+  ScheduleStatus,
+  ShiftTemplate,
+  StaffAvailability,
+  ShiftSwapRequest,
+  SwapStatus,
+  AvailabilityType,
+};
+
+/**
+ * Get schedule roles for an organization (client-side)
+ */
+export async function getScheduleRoles(orgId: string) {
+  return api.get<ScheduleRole[]>(`/organizations/${orgId}/schedule-roles`);
+}
+
+/**
+ * Get schedules for an attraction (client-side)
+ */
+export async function getSchedules(
+  orgId: string,
+  attractionId: string,
+  filters?: {
+    staffId?: string;
+    roleId?: string;
+    status?: ScheduleStatus;
+    startDate?: string;
+    endDate?: string;
+    includeUnassigned?: boolean;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.staffId) params.set('staffId', filters.staffId);
+  if (filters?.roleId) params.set('roleId', filters.roleId);
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.startDate) params.set('startDate', filters.startDate);
+  if (filters?.endDate) params.set('endDate', filters.endDate);
+  if (filters?.includeUnassigned) params.set('includeUnassigned', 'true');
+  const query = params.toString();
+  return api.get<Schedule[]>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create a schedule (client-side)
+ */
+export async function createSchedule(
+  orgId: string,
+  attractionId: string,
+  data: {
+    roleId: string;
+    shiftDate: string;
+    startTime: string;
+    endTime: string;
+    staffId?: string;
+    periodId?: string;
+    notes?: string;
+  }
+) {
+  return api.post<Schedule>(`/organizations/${orgId}/attractions/${attractionId}/schedules`, data);
+}
+
+/**
+ * Update a schedule (client-side)
+ */
+export async function updateSchedule(
+  orgId: string,
+  scheduleId: string,
+  data: {
+    staffId?: string;
+    roleId?: string;
+    shiftDate?: string;
+    startTime?: string;
+    endTime?: string;
+    status?: ScheduleStatus;
+    notes?: string;
+  }
+) {
+  return api.patch<Schedule>(`/organizations/${orgId}/schedules/${scheduleId}`, data);
+}
+
+/**
+ * Delete a schedule (client-side)
+ */
+export async function deleteSchedule(orgId: string, scheduleId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/schedules/${scheduleId}`);
+}
+
+/**
+ * Publish schedules within a date range (client-side)
+ */
+export async function publishSchedules(
+  orgId: string,
+  attractionId: string,
+  data: {
+    startDate: string;
+    endDate: string;
+    notifyStaff?: boolean;
+  }
+) {
+  return api.post<{ publishedCount: number; schedules: Schedule[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules/publish`,
+    data
+  );
+}
+
+/**
+ * Get my schedules (staff self-service)
+ */
+export async function getMySchedules(
+  orgId: string,
+  filters?: { startDate?: string; endDate?: string }
+) {
+  const params = new URLSearchParams();
+  if (filters?.startDate) params.set('startDate', filters.startDate);
+  if (filters?.endDate) params.set('endDate', filters.endDate);
+  const query = params.toString();
+  return api.get<Schedule[]>(`/organizations/${orgId}/my-schedules${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get unassigned shifts for an attraction (client-side)
+ */
+export async function getUnassignedShifts(
+  orgId: string,
+  attractionId: string,
+  filters?: { startDate?: string; endDate?: string }
+) {
+  const params = new URLSearchParams();
+  if (filters?.startDate) params.set('startDate', filters.startDate);
+  if (filters?.endDate) params.set('endDate', filters.endDate);
+  const query = params.toString();
+  return api.get<Schedule[]>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules/unassigned${query ? `?${query}` : ''}`
+  );
+}
+
+// ============================================================================
+// Shift Templates API (Client-side)
+// ============================================================================
+
+/**
+ * Get shift templates for an attraction (client-side)
+ */
+export async function getShiftTemplates(orgId: string, attractionId: string) {
+  return api.get<ShiftTemplate[]>(
+    `/organizations/${orgId}/attractions/${attractionId}/shift-templates`
+  );
+}
+
+/**
+ * Create a shift template (client-side)
+ */
+export async function createShiftTemplate(
+  orgId: string,
+  attractionId: string,
+  data: {
+    name: string;
+    roleId: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    staffCount?: number;
+    isActive?: boolean;
+    notes?: string;
+  }
+) {
+  return api.post<ShiftTemplate>(
+    `/organizations/${orgId}/attractions/${attractionId}/shift-templates`,
+    data
+  );
+}
+
+/**
+ * Update a shift template (client-side)
+ */
+export async function updateShiftTemplate(
+  orgId: string,
+  templateId: string,
+  data: {
+    name?: string;
+    roleId?: string;
+    dayOfWeek?: number;
+    startTime?: string;
+    endTime?: string;
+    staffCount?: number;
+    isActive?: boolean;
+    notes?: string;
+  }
+) {
+  return api.patch<ShiftTemplate>(`/organizations/${orgId}/shift-templates/${templateId}`, data);
+}
+
+/**
+ * Delete a shift template (client-side)
+ */
+export async function deleteShiftTemplate(orgId: string, templateId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/shift-templates/${templateId}`);
+}
+
+/**
+ * Generate schedules from templates (client-side)
+ */
+export async function generateSchedulesFromTemplates(
+  orgId: string,
+  attractionId: string,
+  data: {
+    startDate: string;
+    endDate: string;
+    templateIds?: string[];
+    asDraft?: boolean;
+  }
+) {
+  return api.post<{ message: string; createdCount: number; schedules: Schedule[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/schedules/generate`,
+    data
+  );
+}
+
+// ============================================================================
+// Staff Availability API (Client-side)
+// ============================================================================
+
+/**
+ * Get staff availability (client-side)
+ */
+export async function getStaffAvailability(orgId: string, staffId: string) {
+  return api.get<StaffAvailability[]>(`/organizations/${orgId}/staff/${staffId}/availability`);
+}
+
+/**
+ * Set recurring availability (client-side)
+ */
+export async function setStaffAvailability(
+  orgId: string,
+  staffId: string,
+  data: {
+    availability: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      availabilityType: 'available' | 'unavailable' | 'preferred';
+    }>;
+  }
+) {
+  return api.put<StaffAvailability[]>(
+    `/organizations/${orgId}/staff/${staffId}/availability`,
+    data
+  );
+}
+
+/**
+ * Request time off (client-side)
+ */
+export async function requestTimeOff(
+  orgId: string,
+  staffId: string,
+  data: { startDate: string; endDate: string; reason?: string }
+) {
+  return api.post<{ message: string; status: string }>(
+    `/organizations/${orgId}/staff/${staffId}/time-off`,
+    data
+  );
+}
+
+/**
+ * Get my availability (staff self-service)
+ */
+export async function getMyAvailability(orgId: string) {
+  return api.get<StaffAvailability[]>(`/organizations/${orgId}/my-availability`);
+}
+
+/**
+ * Set my availability (staff self-service)
+ */
+export async function setMyAvailability(
+  orgId: string,
+  data: {
+    availability: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      availabilityType: 'available' | 'unavailable' | 'preferred';
+    }>;
+  }
+) {
+  return api.put<StaffAvailability[]>(`/organizations/${orgId}/my-availability`, data);
+}
+
+// ============================================================================
+// Shift Swap Requests API (Client-side)
+// ============================================================================
+
+/**
+ * Get swap requests (client-side)
+ */
+export async function getSwapRequests(
+  orgId: string,
+  filters?: { status?: SwapStatus; swapType?: 'swap' | 'drop' | 'pickup' }
+) {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.swapType) params.set('swapType', filters.swapType);
+  const query = params.toString();
+  return api.get<ShiftSwapRequest[]>(
+    `/organizations/${orgId}/swap-requests${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create a swap request (staff self-service)
+ */
+export async function createSwapRequest(
+  orgId: string,
+  scheduleId: string,
+  data: {
+    swapType: 'swap' | 'drop' | 'pickup';
+    targetStaffId?: string;
+    targetScheduleId?: string;
+    reason?: string;
+  }
+) {
+  return api.post<ShiftSwapRequest>(
+    `/organizations/${orgId}/schedules/${scheduleId}/swap-request`,
+    data
+  );
+}
+
+/**
+ * Approve a swap request (client-side)
+ */
+export async function approveSwapRequest(orgId: string, swapId: string, notes?: string) {
+  return api.post<ShiftSwapRequest>(`/organizations/${orgId}/swap-requests/${swapId}/approve`, {
+    notes,
+  });
+}
+
+/**
+ * Reject a swap request (client-side)
+ */
+export async function rejectSwapRequest(orgId: string, swapId: string, reason: string) {
+  return api.post<ShiftSwapRequest>(`/organizations/${orgId}/swap-requests/${swapId}/reject`, {
+    reason,
+  });
+}
+
+/**
+ * Cancel my swap request (staff self-service)
+ */
+export async function cancelSwapRequest(orgId: string, swapId: string) {
+  return api.post<ShiftSwapRequest>(`/organizations/${orgId}/swap-requests/${swapId}/cancel`, {});
+}
+
+/**
+ * Get my swap requests (staff self-service)
+ */
+export async function getMySwapRequests(orgId: string, status?: SwapStatus) {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  const query = params.toString();
+  return api.get<ShiftSwapRequest[]>(
+    `/organizations/${orgId}/my-swap-requests${query ? `?${query}` : ''}`
+  );
+}
+
+// ============================================================================
+// Inventory API (F10) - Client-side
+// ============================================================================
+
+import type {
+  CheckoutCondition,
+  InventoryCategory,
+  InventoryCheckout,
+  InventoryItem,
+  InventorySummary,
+  InventoryTransaction,
+  InventoryType,
+} from './types';
+
+export type {
+  InventoryType,
+  InventoryCategory,
+  InventoryItem,
+  InventoryCheckout,
+  InventoryTransaction,
+  InventorySummary,
+  CheckoutCondition,
+};
+
+/**
+ * Get inventory summary (client-side)
+ */
+export async function getInventorySummary(orgId: string) {
+  return api.get<InventorySummary>(`/organizations/${orgId}/inventory/summary`);
+}
+
+// ----- Inventory Types -----
+
+/**
+ * Get inventory types (system + org custom)
+ */
+export async function getInventoryTypes(orgId: string) {
+  return api.get<{ types: InventoryType[] }>(`/organizations/${orgId}/inventory/types`);
+}
+
+/**
+ * Create a custom inventory type
+ */
+export async function createInventoryType(
+  orgId: string,
+  data: {
+    key: string;
+    name: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    requiresCheckout?: boolean;
+    isConsumable?: boolean;
+    trackCondition?: boolean;
+  }
+) {
+  return api.post<InventoryType>(`/organizations/${orgId}/inventory/types`, data);
+}
+
+/**
+ * Update an inventory type
+ */
+export async function updateInventoryType(
+  orgId: string,
+  typeId: string,
+  data: {
+    name?: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    requiresCheckout?: boolean;
+    isConsumable?: boolean;
+    trackCondition?: boolean;
+    isActive?: boolean;
+  }
+) {
+  return api.patch<InventoryType>(`/organizations/${orgId}/inventory/types/${typeId}`, data);
+}
+
+/**
+ * Delete an inventory type
+ */
+export async function deleteInventoryType(orgId: string, typeId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/inventory/types/${typeId}`);
+}
+
+// ----- Inventory Categories -----
+
+/**
+ * Get inventory categories (hierarchical)
+ */
+export async function getInventoryCategories(orgId: string) {
+  return api.get<{ categories: InventoryCategory[] }>(
+    `/organizations/${orgId}/inventory/categories`
+  );
+}
+
+/**
+ * Create an inventory category
+ */
+export async function createInventoryCategory(
+  orgId: string,
+  data: {
+    name: string;
+    description?: string;
+    parentId?: string;
+    color?: string;
+  }
+) {
+  return api.post<InventoryCategory>(`/organizations/${orgId}/inventory/categories`, data);
+}
+
+/**
+ * Update an inventory category
+ */
+export async function updateInventoryCategory(
+  orgId: string,
+  categoryId: string,
+  data: {
+    name?: string;
+    description?: string;
+    parentId?: string;
+    color?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  return api.patch<InventoryCategory>(
+    `/organizations/${orgId}/inventory/categories/${categoryId}`,
+    data
+  );
+}
+
+/**
+ * Delete an inventory category
+ */
+export async function deleteInventoryCategory(orgId: string, categoryId: string) {
+  return api.delete<{ success: boolean }>(
+    `/organizations/${orgId}/inventory/categories/${categoryId}`
+  );
+}
+
+// ----- Inventory Items -----
+
+/**
+ * Get inventory items (with filters)
+ */
+export async function getInventoryItems(
+  orgId: string,
+  filters?: {
+    categoryId?: string;
+    typeId?: string;
+    attractionId?: string;
+    search?: string;
+    lowStock?: boolean;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.categoryId) params.set('categoryId', filters.categoryId);
+  if (filters?.typeId) params.set('typeId', filters.typeId);
+  if (filters?.attractionId) params.set('attractionId', filters.attractionId);
+  if (filters?.search) params.set('search', filters.search);
+  if (filters?.lowStock) params.set('lowStock', 'true');
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{
+    items: InventoryItem[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/items${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get a single inventory item
+ */
+export async function getInventoryItem(orgId: string, itemId: string) {
+  return api.get<InventoryItem>(`/organizations/${orgId}/inventory/items/${itemId}`);
+}
+
+/**
+ * Create an inventory item
+ */
+export async function createInventoryItem(
+  orgId: string,
+  data: {
+    name: string;
+    typeId: string;
+    sku?: string;
+    description?: string;
+    categoryId?: string;
+    attractionId?: string;
+    quantity?: number;
+    minQuantity?: number;
+    maxQuantity?: number;
+    unit?: string;
+    costCents?: number;
+    location?: string;
+    condition?: CheckoutCondition;
+    notes?: string;
+  }
+) {
+  return api.post<InventoryItem>(`/organizations/${orgId}/inventory/items`, data);
+}
+
+/**
+ * Update an inventory item
+ */
+export async function updateInventoryItem(
+  orgId: string,
+  itemId: string,
+  data: {
+    name?: string;
+    typeId?: string;
+    sku?: string;
+    description?: string;
+    categoryId?: string;
+    attractionId?: string;
+    minQuantity?: number;
+    maxQuantity?: number;
+    unit?: string;
+    costCents?: number;
+    location?: string;
+    condition?: CheckoutCondition;
+    notes?: string;
+    isActive?: boolean;
+  }
+) {
+  return api.patch<InventoryItem>(`/organizations/${orgId}/inventory/items/${itemId}`, data);
+}
+
+/**
+ * Delete (deactivate) an inventory item
+ */
+export async function deleteInventoryItem(orgId: string, itemId: string) {
+  return api.delete<{ success: boolean }>(`/organizations/${orgId}/inventory/items/${itemId}`);
+}
+
+/**
+ * Adjust item quantity
+ */
+export async function adjustInventoryQuantity(
+  orgId: string,
+  itemId: string,
+  data: {
+    quantityChange: number;
+    reason: 'purchase' | 'adjustment' | 'damaged' | 'lost' | 'disposed';
+    notes?: string;
+  }
+) {
+  return api.post<InventoryItem>(`/organizations/${orgId}/inventory/items/${itemId}/adjust`, data);
+}
+
+/**
+ * Get item transaction history
+ */
+export async function getItemTransactions(
+  orgId: string,
+  itemId: string,
+  filters?: { page?: number; limit?: number }
+) {
+  const params = new URLSearchParams();
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{
+    transactions: InventoryTransaction[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/items/${itemId}/transactions${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get all inventory transactions (org-wide)
+ */
+export async function getInventoryTransactions(
+  orgId: string,
+  filters?: {
+    itemId?: string;
+    type?:
+      | 'purchase'
+      | 'adjustment'
+      | 'checkout'
+      | 'return'
+      | 'transfer'
+      | 'damaged'
+      | 'lost'
+      | 'disposed';
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.itemId) params.set('itemId', filters.itemId);
+  if (filters?.type) params.set('type', filters.type);
+  if (filters?.from) params.set('from', filters.from);
+  if (filters?.to) params.set('to', filters.to);
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{
+    transactions: InventoryTransaction[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/transactions${query ? `?${query}` : ''}`);
+}
+
+// ----- Inventory Checkouts -----
+
+/**
+ * Get inventory checkouts (with filters)
+ */
+export async function getInventoryCheckouts(
+  orgId: string,
+  filters?: {
+    itemId?: string;
+    staffId?: string;
+    activeOnly?: boolean;
+    overdueOnly?: boolean;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.itemId) params.set('itemId', filters.itemId);
+  if (filters?.staffId) params.set('staffId', filters.staffId);
+  if (filters?.activeOnly) params.set('activeOnly', 'true');
+  if (filters?.overdueOnly) params.set('overdueOnly', 'true');
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{
+    checkouts: InventoryCheckout[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/inventory/checkouts${query ? `?${query}` : ''}`);
+}
+
+/**
+ * Get a single checkout
+ */
+export async function getInventoryCheckout(orgId: string, checkoutId: string) {
+  return api.get<InventoryCheckout>(`/organizations/${orgId}/inventory/checkouts/${checkoutId}`);
+}
+
+/**
+ * Create a checkout (assign item to staff)
+ */
+export async function createInventoryCheckout(
+  orgId: string,
+  data: {
+    itemId: string;
+    staffId: string;
+    quantity?: number;
+    dueDate?: string;
+    conditionOut?: CheckoutCondition;
+    notes?: string;
+  }
+) {
+  return api.post<InventoryCheckout>(`/organizations/${orgId}/inventory/checkouts`, data);
+}
+
+/**
+ * Return a checkout
+ */
+export async function returnInventoryCheckout(
+  orgId: string,
+  checkoutId: string,
+  data?: {
+    conditionIn?: CheckoutCondition;
+    notes?: string;
+  }
+) {
+  return api.post<InventoryCheckout>(
+    `/organizations/${orgId}/inventory/checkouts/${checkoutId}/return`,
+    data || {}
+  );
+}
+
+/**
+ * Get overdue checkouts
+ */
+export async function getOverdueCheckouts(orgId: string) {
+  return api.get<{ checkouts: InventoryCheckout[] }>(
+    `/organizations/${orgId}/inventory/checkouts/overdue`
+  );
+}
+
+/**
+ * Get active checkouts for a staff member
+ */
+export async function getStaffCheckouts(orgId: string, staffId: string) {
+  return api.get<{ checkouts: InventoryCheckout[] }>(
+    `/organizations/${orgId}/inventory/staff/${staffId}/checkouts`
+  );
+}
+
+// ============================================================================
+// Check-In API (F9) - Client-side
+// ============================================================================
+
+import type {
+  CapacityResponse,
+  CheckInMethod,
+  CheckInRecord,
+  CheckInScanRequest,
+  CheckInScanResponse,
+  CheckInStation,
+  CheckInStats,
+  CreateStationRequest,
+  LookupRequest,
+  LookupResponse,
+  QueueResponse,
+  RecordWaiverRequest,
+  UpdateStationRequest,
+  WalkUpSaleRequest,
+} from './types';
+
+export type {
+  CheckInScanRequest,
+  CheckInScanResponse,
+  LookupResponse,
+  CapacityResponse,
+  CheckInStats,
+  QueueResponse,
+  CheckInStation,
+  CheckInRecord,
+  CheckInMethod,
+};
+
+/**
+ * Scan and check in a ticket
+ */
+export async function scanCheckIn(orgId: string, attractionId: string, data: CheckInScanRequest) {
+  return api.post<CheckInScanResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/scan`,
+    data
+  );
+}
+
+/**
+ * Look up tickets by email, phone, order number, etc.
+ */
+export async function lookupTickets(orgId: string, attractionId: string, data: LookupRequest) {
+  return api.post<LookupResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/lookup`,
+    data
+  );
+}
+
+/**
+ * Record waiver signature
+ */
+export async function recordWaiver(orgId: string, attractionId: string, data: RecordWaiverRequest) {
+  return api.post<{ success: boolean; waiverId: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/waiver`,
+    data
+  );
+}
+
+/**
+ * Get current capacity
+ */
+export async function getCapacity(orgId: string, attractionId: string) {
+  return api.get<CapacityResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/capacity`
+  );
+}
+
+/**
+ * Get check-in stats
+ */
+export async function getCheckInStats(orgId: string, attractionId: string, date?: string) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  const query = params.toString();
+  return api.get<CheckInStats>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stats${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Get check-in queue (pending arrivals)
+ */
+export async function getCheckInQueue(
+  orgId: string,
+  attractionId: string,
+  filters?: { timeSlotId?: string; status?: 'pending' | 'late' | 'no_show' }
+) {
+  const params = new URLSearchParams();
+  if (filters?.timeSlotId) params.set('timeSlotId', filters.timeSlotId);
+  if (filters?.status) params.set('status', filters.status);
+  const query = params.toString();
+  return api.get<QueueResponse>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/queue${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Create walk-up ticket and check in immediately
+ */
+export async function createWalkUpSale(
+  orgId: string,
+  attractionId: string,
+  data: WalkUpSaleRequest
+) {
+  return api.post<{ order: { id: string; orderNumber: string }; checkIns: { id: string }[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/walk-up`,
+    data
+  );
+}
+
+/**
+ * List check-ins
+ */
+export async function listCheckIns(
+  orgId: string,
+  attractionId: string,
+  filters?: {
+    from?: string;
+    to?: string;
+    stationId?: string;
+    method?: CheckInMethod;
+    page?: number;
+    limit?: number;
+  }
+) {
+  const params = new URLSearchParams();
+  if (filters?.from) params.set('from', filters.from);
+  if (filters?.to) params.set('to', filters.to);
+  if (filters?.stationId) params.set('stationId', filters.stationId);
+  if (filters?.method) params.set('method', filters.method);
+  if (filters?.page) params.set('page', filters.page.toString());
+  if (filters?.limit) params.set('limit', filters.limit.toString());
+  const query = params.toString();
+  return api.get<{
+    checkIns: CheckInRecord[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(`/organizations/${orgId}/attractions/${attractionId}/check-in${query ? `?${query}` : ''}`);
+}
+
+// ----- Check-In Stations -----
+
+/**
+ * List check-in stations
+ */
+export async function listStations(orgId: string, attractionId: string) {
+  return api.get<{ stations: CheckInStation[] }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations`
+  );
+}
+
+/**
+ * Get a single station
+ */
+export async function getStation(orgId: string, attractionId: string, stationId: string) {
+  return api.get<CheckInStation>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`
+  );
+}
+
+/**
+ * Create a check-in station
+ */
+export async function createStation(
+  orgId: string,
+  attractionId: string,
+  data: CreateStationRequest
+) {
+  return api.post<CheckInStation>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations`,
+    data
+  );
+}
+
+/**
+ * Update a check-in station
+ */
+export async function updateStation(
+  orgId: string,
+  attractionId: string,
+  stationId: string,
+  data: UpdateStationRequest
+) {
+  return api.patch<CheckInStation>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`,
+    data
+  );
+}
+
+/**
+ * Delete a check-in station
+ */
+export async function deleteStation(orgId: string, attractionId: string, stationId: string) {
+  return api.delete<{ success: boolean }>(
+    `/organizations/${orgId}/attractions/${attractionId}/check-in/stations/${stationId}`
+  );
+}
+
+// =============================================================================
+// PLATFORM ANNOUNCEMENTS
+// =============================================================================
+
+/**
+ * Platform announcement for users
+ */
+export interface PlatformAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  type: 'info' | 'warning' | 'critical' | 'maintenance' | 'feature';
+  link_url?: string | null;
+  link_text?: string | null;
+  is_dismissible: boolean;
+  created_at: string;
+}
+
+/**
+ * Get active announcements for the current user
+ */
+export async function getActiveAnnouncements() {
+  return api.get<{ announcements: PlatformAnnouncement[] }>('/platform/announcements');
+}
+
+/**
+ * Dismiss an announcement
+ */
+export async function dismissAnnouncement(announcementId: string) {
+  return api.post<{ message: string }>(`/platform/announcements/${announcementId}/dismiss`, {});
+}

@@ -1,0 +1,135 @@
+# Stripe Setup
+
+Connect your Stripe account to accept payments for tickets.
+
+![Payments Settings](/docs/screenshots/payments.png)
+
+## Overview
+
+Atrivio uses Stripe Connect to process payments. This allows you to accept credit card payments while Stripe handles the payment processing and compliance.
+
+## Getting Started
+
+### Prerequisites
+
+Before connecting Stripe, ensure you have:
+- Organization owner or admin access
+- Business information ready
+- Bank account for payouts
+
+### Connect Your Account
+
+1. Navigate to **Settings** → **Payments**
+2. Click **Connect with Stripe**
+3. You'll be redirected to Stripe
+4. Complete the Stripe onboarding:
+   - Business details
+   - Bank account
+   - Identity verification
+5. Return to Atrivio
+
+## Stripe Onboarding
+
+### Required Information
+
+Stripe requires:
+
+| Information | Purpose |
+|-------------|---------|
+| Business Type | Individual, LLC, Corporation |
+| Business Details | Name, address, phone |
+| Personal Info | Owner/representative details |
+| Bank Account | For receiving payouts |
+| Tax ID | EIN or SSN |
+
+### Verification
+
+Stripe may require:
+- ID verification
+- Business documentation
+- Additional information
+
+Complete verification to enable payouts.
+
+## Account Status
+
+### Status Types
+
+| Status | Description |
+|--------|-------------|
+| Pending | Onboarding in progress |
+| Active | Ready to accept payments |
+| Restricted | Action required |
+| Suspended | Account suspended |
+
+### Check Status
+
+View your connection status on the Payments page:
+- Connection health
+- Payout status
+- Required actions
+
+## Payment Settings
+
+### Accepted Methods
+
+Configure which payment methods to accept:
+- ✅ Credit/Debit Cards
+- ✅ Apple Pay
+- ✅ Google Pay
+- ⬜ ACH Bank Transfer
+
+### Currency
+
+Select your operating currency:
+- USD (default)
+- CAD
+- Other supported currencies
+
+## Testing Payments
+
+### Test Mode
+
+Before going live:
+1. Enable test mode
+2. Use Stripe test cards
+3. Verify checkout flow
+4. Test refunds
+
+### Test Card Numbers
+
+| Card | Number |
+|------|--------|
+| Success | 4242 4242 4242 4242 |
+| Decline | 4000 0000 0000 0002 |
+| Auth Required | 4000 0025 0000 3155 |
+
+## Troubleshooting
+
+### Connection Issues
+
+If connection fails:
+1. Check Stripe dashboard for errors
+2. Complete any pending requirements
+3. Contact support if needed
+
+### Payment Failures
+
+Common failure reasons:
+- Card declined
+- Insufficient funds
+- Authentication required
+
+## Security
+
+Atrivio never stores:
+- Full card numbers
+- CVV codes
+- Sensitive payment data
+
+All payment data is handled securely by Stripe.
+
+## Next Steps
+
+- [Payouts](/docs/admin-guides/payments/payouts) - Configure payout settings
+- [Ticket Types](/docs/user-guides/ticketing/ticket-types) - Set up your tickets

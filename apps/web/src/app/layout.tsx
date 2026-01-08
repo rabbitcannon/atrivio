@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
+import { Providers } from '@/components/providers';
 import '@/styles/globals.css';
 
 const inter = Inter({
@@ -9,10 +11,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Haunt Platform',
-    template: '%s | Haunt Platform',
+    default: 'Atrivio',
+    template: '%s | Atrivio',
   },
-  description: 'Multi-tenant haunt industry management system',
+  description: 'Multi-tenant attraction industry management system',
 };
 
 export default function RootLayout({
@@ -22,7 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <Providers>{children}</Providers>
+        <Toaster richColors position="top-right" />
+      </body>
     </html>
   );
 }

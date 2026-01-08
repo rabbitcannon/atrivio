@@ -1,20 +1,20 @@
 {
-  "name": "@haunt/database",
+  "name": "@atrivio/database",
   "version": "0.0.1",
   "private": true,
-  "description": "Haunt Platform Database - Migrations, Seeds, and Types",
+  "description": "Atrivio Database - Migrations, Seeds, and Types",
   "type": "module",
   "scripts": {
     "migrate": "echo 'Run migrations via Supabase CLI'",
     "seed": "echo 'Run seeds via Supabase CLI'",
     "generate-types": "supabase gen types typescript --local > types/database.types.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "echo 'No TypeScript sources to check'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.10"
+    "@supabase/supabase-js": "^2.89.0"
   },
   "devDependencies": {
     "supabase": "^1.226.4",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   }
 }

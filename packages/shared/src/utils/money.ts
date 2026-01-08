@@ -55,9 +55,6 @@ export function percentageOfCents(cents: CentsAmount, percentage: number): Cents
 /**
  * Calculate platform fee for a transaction
  */
-export function calculatePlatformFee(
-  amountCents: CentsAmount,
-  feePercentage: number
-): CentsAmount {
+export function calculatePlatformFee(amountCents: CentsAmount, feePercentage: number): CentsAmount {
   return percentageOfCents(amountCents, feePercentage);
 }

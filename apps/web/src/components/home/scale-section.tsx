@@ -1,4 +1,5 @@
 interface ScaleFeature {
+  id: string;
   title: string;
   description: string;
   accentColor: 'primary' | 'secondary';
@@ -6,18 +7,21 @@ interface ScaleFeature {
 
 const features: ScaleFeature[] = [
   {
+    id: 'marketing-growth',
     title: 'Marketing Growth',
     accentColor: 'secondary',
     description:
       'Includes branded landing pages for each haunt, email marketing integrations, and social media pixel tracking (Facebook, TikTok, GA4).',
   },
   {
+    id: 'enterprise-control',
     title: 'Enterprise Control',
     accentColor: 'primary',
     description:
       'Manage via Role-Based Access Control (RBAC) for fine-grained permissions and comprehensive audit logging to track changes.',
   },
   {
+    id: 'data-insights',
     title: 'Data Insights',
     accentColor: 'secondary',
     description:
@@ -34,9 +38,9 @@ export function ScaleSection() {
         </h2>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <article
-              key={index}
+              key={feature.id}
               className="rounded-xl bg-[hsl(var(--landing-bg-card))] p-6 transition-all duration-[var(--landing-transition-normal)] hover:-translate-y-1 sm:p-8"
               style={{
                 borderTop: `3px solid hsl(var(--landing-accent-${feature.accentColor}))`,

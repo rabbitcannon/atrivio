@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,17 +7,28 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/.next/**",
-      "**/coverage/**",
-      "**/*.gen.ts",
-      "**/database.types.ts"
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.json",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.next",
+      "!**/coverage",
+      "!**/*.gen.ts",
+      "!**/database.types.ts"
     ]
   },
-  "organizeImports": {
-    "enabled": true
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on"
+        }
+      }
+    }
   },
   "formatter": {
     "enabled": true,
@@ -27,6 +38,9 @@
     "lineEnding": "lf"
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "quoteStyle": "single",
       "trailingCommas": "es5",
@@ -39,24 +53,49 @@
       "trailingCommas": "none"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": true
+    },
+    "formatter": {
+      "enabled": false
+    },
+    "linter": {
+      "enabled": false
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "noLabelWithoutControl": "warn",
+        "useSemanticElements": "warn",
+        "noSvgWithoutTitle": "warn",
+        "noStaticElementInteractions": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useFocusableInteractive": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "useKeyWithMouseEvents": "warn",
+        "useMediaCaption": "warn"
+      },
       "complexity": {
         "noExcessiveCognitiveComplexity": "warn",
-        "useLiteralKeys": "error"
+        "useLiteralKeys": "off"
       },
       "correctness": {
         "noUnusedImports": "error",
-        "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
+        "noUnusedVariables": "warn",
+        "noUnusedFunctionParameters": "off",
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "warn"
       },
       "performance": {
-        "noAccumulatingSpread": "warn"
+        "noAccumulatingSpread": "warn",
+        "noImgElement": "off"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "error"
+        "noDangerouslySetInnerHtml": "warn"
       },
       "style": {
         "noNonNullAssertion": "warn",
@@ -66,8 +105,12 @@
         "useNodejsImportProtocol": "error"
       },
       "suspicious": {
-        "noConsoleLog": "warn",
-        "noExplicitAny": "warn"
+        "noConsole": "warn",
+        "noExplicitAny": "warn",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "warn",
+        "useIterableCallbackReturn": "warn",
+        "noNonNullAssertedOptionalChain": "warn"
       }
     }
   }

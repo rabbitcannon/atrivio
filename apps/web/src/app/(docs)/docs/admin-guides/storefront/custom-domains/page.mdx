@@ -1,0 +1,167 @@
+# Custom Domains
+
+Use your own domain name for your ticket storefront.
+
+## Overview
+
+Custom domains allow you to use your own domain (e.g., tickets.yourhaunt.com) instead of the default yourhaunt.atrivio.io URL. This feature is available on Enterprise plans.
+
+## Prerequisites
+
+Before setting up a custom domain:
+- Enterprise plan subscription
+- Domain registered with a DNS provider
+- Access to DNS settings
+
+## Setup Process
+
+### 1. Add Domain
+
+1. Go to **Storefront** → **Domains**
+2. Click **Add Custom Domain**
+3. Enter your domain (e.g., tickets.yourhaunt.com)
+4. Click **Add Domain**
+
+### 2. Configure DNS
+
+Add DNS records at your domain provider:
+
+#### For Subdomains (Recommended)
+
+Add a CNAME record:
+```
+Type: CNAME
+Name: tickets (or your subdomain)
+Value: domains.atrivio.io
+TTL: 3600
+```
+
+#### For Root Domains
+
+Add A records:
+```
+Type: A
+Name: @
+Value: [IP addresses provided]
+TTL: 3600
+```
+
+### 3. Verify Domain
+
+1. Return to the Domains page
+2. Click **Verify**
+3. Wait for DNS propagation (up to 48 hours)
+4. Status will show "Verified"
+
+### 4. Enable SSL
+
+SSL certificates are automatically provisioned:
+1. Once verified, SSL begins setup
+2. Wait 10-15 minutes
+3. Status shows "SSL Active"
+
+## Domain Status
+
+| Status | Description |
+|--------|-------------|
+| Pending | Awaiting DNS configuration |
+| Verifying | Checking DNS records |
+| Verified | DNS configured correctly |
+| SSL Pending | Certificate being issued |
+| Active | Domain fully configured |
+| Error | Configuration issue |
+
+## Managing Domains
+
+### Primary Domain
+
+Set your main domain:
+1. Click domain settings
+2. Toggle **Primary Domain**
+3. This becomes your main storefront URL
+
+### Remove Domain
+
+1. Open domain settings
+2. Click **Remove Domain**
+3. Confirm removal
+
+Storefront remains accessible via default URL.
+
+## DNS Providers
+
+### Common Providers
+
+Instructions for popular providers:
+
+**GoDaddy**
+1. Go to DNS Management
+2. Add CNAME record
+3. Save changes
+
+**Cloudflare**
+1. Go to DNS settings
+2. Add CNAME record
+3. Set proxy status to "DNS only"
+4. Save
+
+**Namecheap**
+1. Go to Advanced DNS
+2. Add new record
+3. Select CNAME
+4. Enter values
+5. Save
+
+## Troubleshooting
+
+### Domain Not Verifying
+
+Check these common issues:
+- DNS records entered correctly
+- Allow 24-48 hours for propagation
+- No conflicting records
+
+### SSL Not Working
+
+If SSL isn't activating:
+- Ensure domain is verified first
+- Check for CAA records blocking issuance
+- Contact support if persists
+
+### Wrong Site Showing
+
+If another site appears:
+- Clear browser cache
+- Check DNS is pointing correctly
+- Verify no other A/CNAME records
+
+## Best Practices
+
+### Subdomain vs Root Domain
+
+**Recommended**: Use subdomain
+- `tickets.yourhaunt.com`
+- Easier to configure
+- More reliable
+
+**Alternative**: Root domain
+- `yourhaunt.com`
+- Requires A records
+- May conflict with existing site
+
+### DNS Settings
+
+1. Use low TTL initially (300 seconds)
+2. Increase after confirmed working
+3. Keep backup of original records
+
+### Email Considerations
+
+If using root domain:
+- Preserve MX records for email
+- Don't remove existing SPF/DKIM
+
+## Next Steps
+
+- [Setup](/docs/admin-guides/storefront/setup) - Configure your storefront
+- [Pages](/docs/admin-guides/storefront/pages) - Add custom pages
