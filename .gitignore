@@ -56,3 +56,5 @@ npm install -g supabase
 # Deployment
 .vercel
 .netlify
+
+supabase/.temp

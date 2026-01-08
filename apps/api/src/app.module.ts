@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AppController } from './app.controller.js';
 import { AdminModule } from './core/admin/admin.module.js';
 // Core modules
 import { AuthModule } from './core/auth/auth.module.js';
@@ -91,7 +92,7 @@ import { DatabaseModule } from './shared/database/database.module.js';
     // Storefronts (F14 Storefronts)
     StorefrontsModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     // Global Metrics Interceptor (runs on every request)
     {
