@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright configuration for documentation screenshots
- * Run with: pnpm --filter @haunt/web screenshots
+ * Run with: pnpm --filter @atrivio/web screenshots
  */
 export default defineConfig({
   testDir: './e2e/screenshots',

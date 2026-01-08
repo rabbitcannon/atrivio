@@ -265,7 +265,7 @@ CREATE TRIGGER update_system_settings_updated_at
 
 ```sql
 INSERT INTO system_settings (key, value, description, category, is_public) VALUES
-  ('platform_name', '"Haunt Platform"', 'Platform display name', 'branding', TRUE),
+  ('platform_name', '"Atrivio"', 'Platform display name', 'branding', TRUE),
   ('support_email', '"support@haunt.dev"', 'Support contact email', 'support', TRUE),
   ('max_orgs_per_user', '5', 'Maximum organizations a user can own', 'limits', FALSE),
   ('max_attractions_per_org', '10', 'Maximum attractions per organization', 'limits', FALSE),

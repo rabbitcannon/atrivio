@@ -47,7 +47,7 @@ Vercel provides the best experience for Next.js with automatic SSL, edge caching
 
 2. **Configure Project Settings**
    - Framework Preset: Next.js
-   - Build Command: `pnpm turbo build --filter=@haunt/storefront`
+   - Build Command: `pnpm turbo build --filter=@atrivio/storefront`
    - Output Directory: `apps/storefront/.next`
    - Install Command: `pnpm install`
    - Root Directory: `./` (monorepo root)
@@ -143,10 +143,10 @@ Railway offers simpler pricing and good monorepo support.
      "$schema": "https://railway.app/railway.schema.json",
      "build": {
        "builder": "NIXPACKS",
-       "buildCommand": "pnpm turbo build --filter=@haunt/storefront"
+       "buildCommand": "pnpm turbo build --filter=@atrivio/storefront"
      },
      "deploy": {
-       "startCommand": "pnpm --filter @haunt/storefront start",
+       "startCommand": "pnpm --filter @atrivio/storefront start",
        "restartPolicyType": "ON_FAILURE",
        "restartPolicyMaxRetries": 10
      }
@@ -381,7 +381,7 @@ If you started with the storefront in the main app:
 
 2. **Update Imports**
    - Change `@/` to storefront-specific paths
-   - Extract shared components to `@haunt/shared`
+   - Extract shared components to `@atrivio/shared`
 
 3. **Configure Routing**
    - Set up new domain in deployment platform

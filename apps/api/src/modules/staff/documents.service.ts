@@ -1,4 +1,4 @@
-import type { OrgId, UserId } from '@haunt/shared';
+import type { OrgId, UserId } from '@atrivio/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 

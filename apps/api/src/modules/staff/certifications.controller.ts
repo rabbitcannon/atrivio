@@ -1,4 +1,4 @@
-import type { UserId } from '@haunt/shared';
+import type { UserId } from '@atrivio/shared';
 import {
   Body,
   Controller,

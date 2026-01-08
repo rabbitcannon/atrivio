@@ -1,6 +1,6 @@
 # Testing Guide & Stripe Connect Architecture
 
-This document covers how to test the Haunt Platform and explains the Stripe Connect payment architecture.
+This document covers how to test the Atrivio and explains the Stripe Connect payment architecture.
 
 ---
 
@@ -74,10 +74,10 @@ All test accounts use the password: `password123`
 supabase start
 
 # Terminal 2: Start the API (NestJS)
-pnpm --filter @haunt/api dev
+pnpm --filter @atrivio/api dev
 
 # Terminal 3: Start the frontend (Next.js)
-pnpm --filter @haunt/web dev
+pnpm --filter @atrivio/web dev
 ```
 
 ### URLs

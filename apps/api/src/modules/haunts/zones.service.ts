@@ -1,4 +1,4 @@
-import type { OrgId } from '@haunt/shared';
+import type { OrgId } from '@atrivio/shared';
 import {
   BadRequestException,
   ConflictException,

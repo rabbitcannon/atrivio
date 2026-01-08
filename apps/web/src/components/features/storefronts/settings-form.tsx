@@ -7,7 +7,7 @@ import {
   THEME_FONT_OPTIONS,
   THEME_PRESETS,
   type ThemePreset,
-} from '@haunt/shared/constants';
+} from '@atrivio/shared/constants';
 import { BarChart3, Image, Loader2, Palette, RotateCcw, Save, Search, Share2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';

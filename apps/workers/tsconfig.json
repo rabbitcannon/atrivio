@@ -6,8 +6,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@haunt/shared": ["../../packages/shared/src"],
-      "@haunt/shared/*": ["../../packages/shared/src/*"]
+      "@atrivio/shared": ["../../packages/shared/src"],
+      "@atrivio/shared/*": ["../../packages/shared/src/*"]
     }
   },
   "include": ["src/**/*"],

@@ -1,6 +1,6 @@
 'use client';
 
-import type { OrgRole } from '@haunt/shared';
+import type { OrgRole } from '@atrivio/shared';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';

@@ -1,8 +1,8 @@
 {
-  "name": "@haunt/storefront",
+  "name": "@atrivio/storefront",
   "version": "0.0.1",
   "private": true,
-  "description": "Haunt Platform Storefront - Public-facing attraction websites",
+  "description": "Atrivio Storefront - Public-facing attraction websites",
   "scripts": {
     "dev": "next dev --port 3002",
     "build": "next build",
@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@haunt/shared": "workspace:*",
+    "@atrivio/shared": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

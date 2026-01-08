@@ -11,7 +11,7 @@ const nextConfig = {
   // Enable MDX pages
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
-  // Note: @haunt/shared is pre-built, no need to transpile
+  // Note: @atrivio/shared is pre-built, no need to transpile
 
   // Transpile motion and framer-motion for proper ESM support
   transpilePackages: ['motion', 'framer-motion'],

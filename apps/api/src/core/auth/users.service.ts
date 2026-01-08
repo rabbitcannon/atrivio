@@ -1,4 +1,4 @@
-import type { UserId } from '@haunt/shared';
+import type { UserId } from '@atrivio/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { ChangePasswordDto, UpdateProfileDto } from './dto/users.dto.js';

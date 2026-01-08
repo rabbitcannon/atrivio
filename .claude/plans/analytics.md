@@ -1,4 +1,4 @@
-# Haunt Platform - F13 Analytics (Post-MVP)
+# Atrivio - F13 Analytics (Post-MVP)
 
 **Created Date**: 2026-01-05
 **Status**: Deferred (Post-MVP)

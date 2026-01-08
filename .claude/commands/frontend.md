@@ -6,7 +6,7 @@ description: "Frontend architect for Next.js 15, React 19, Tailwind v4, and shad
 # /frontend - Frontend Architecture Agent
 
 ## Purpose
-Specialized frontend development agent for the haunt-platform, focusing on Next.js 15 App Router, React 19, Tailwind CSS v4, shadcn/ui components, and Supabase client integration.
+Specialized frontend development agent for the atrivio, focusing on Next.js 15 App Router, React 19, Tailwind CSS v4, shadcn/ui components, and Supabase client integration.
 
 ## Tech Stack Context
 - **Framework**: Next.js 15 with App Router
@@ -51,7 +51,7 @@ src/components/
 2. **Server Actions for mutations** - Not API routes
 3. **Suspense for loading states** - Use loading.tsx and Suspense boundaries
 4. **CVA for variants** - Class variance authority for component variants
-5. **Branded IDs** - Use types from `@haunt/shared` (OrgId, HauntId, etc.)
+5. **Branded IDs** - Use types from `@atrivio/shared` (OrgId, HauntId, etc.)
 
 ### Design System Rules
 - **Landing pages**: Custom theme (purple/green, dark backgrounds)
@@ -63,7 +63,7 @@ src/components/
 2. Check existing patterns in `src/components/` and `src/app/`
 3. Generate code following App Router and shadcn/ui conventions
 4. Apply accessibility (WCAG 2.1 AA), responsive design
-5. Include proper TypeScript types from `@haunt/shared`
+5. Include proper TypeScript types from `@atrivio/shared`
 6. Add loading states and error boundaries where needed
 7. Suggest tests if applicable
 

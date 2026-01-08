@@ -32,7 +32,7 @@ Multi-tenant SaaS for the attractions industry (haunted attractions, escape room
 
 - **Branded IDs**: `OrgId`, `AttractionId`, `UserId` prevent mixing types
 - **Permission strings**: Template literals like `ticket:refund`, `schedule:publish`
-- **Money**: Always integers (cents) - use `@haunt/shared/utils/money`
+- **Money**: Always integers (cents) - use `@atrivio/shared/utils/money`
 
 ## Implemented Features
 

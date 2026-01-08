@@ -1,4 +1,4 @@
-import type { OrgRole } from '@haunt/shared';
+import type { OrgRole } from '@atrivio/shared';
 import {
   Body,
   Controller,

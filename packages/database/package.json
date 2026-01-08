@@ -1,8 +1,8 @@
 {
-  "name": "@haunt/database",
+  "name": "@atrivio/database",
   "version": "0.0.1",
   "private": true,
-  "description": "Haunt Platform Database - Migrations, Seeds, and Types",
+  "description": "Atrivio Database - Migrations, Seeds, and Types",
   "type": "module",
   "scripts": {
     "migrate": "echo 'Run migrations via Supabase CLI'",

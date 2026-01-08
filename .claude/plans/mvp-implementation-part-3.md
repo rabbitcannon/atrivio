@@ -1,4 +1,4 @@
-# Haunt Platform - Implementation Plan Part 3: Engagement & Growth (F11-F12, F14-F15)
+# Atrivio - Implementation Plan Part 3: Engagement & Growth (F11-F12, F14-F15)
 
 **Created Date**: 2025-12-31
 **Last Updated**: 2026-01-06

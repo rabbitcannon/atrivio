@@ -1,8 +1,8 @@
 {
-  "name": "@haunt/shared",
+  "name": "@atrivio/shared",
   "version": "0.0.1",
   "private": true,
-  "description": "Haunt Platform Shared Types & Utilities",
+  "description": "Atrivio Shared Types & Utilities",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

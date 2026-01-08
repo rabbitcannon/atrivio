@@ -1,4 +1,4 @@
-# Haunt Platform - Implementation Plan Part 2: Operations (F7-F10)
+# Atrivio - Implementation Plan Part 2: Operations (F7-F10)
 
 **Created Date**: 2025-12-31
 **Last Updated**: 2026-01-03

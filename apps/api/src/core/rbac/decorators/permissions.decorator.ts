@@ -1,4 +1,4 @@
-import type { Permission } from '@haunt/shared';
+import type { Permission } from '@atrivio/shared';
 import { SetMetadata } from '@nestjs/common';
 
 export const PERMISSIONS_KEY = 'permissions';

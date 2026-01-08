@@ -45,7 +45,7 @@ Converts task description to kebab-case filename:
 
 4. **Write to `.claude/plans/[auto-generated-name].md`**
 
-## Agent Assignments for Haunt Platform
+## Agent Assignments for Atrivio
 
 Based on task type, assign agents:
 - **Backend/API tasks**: Use `/sc:implement --type api`

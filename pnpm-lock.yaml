@@ -26,15 +26,15 @@ importers:
 
   apps/api:
     dependencies:
+      '@atrivio/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
       '@fastify/static':
         specifier: ^9.0.0
         version: 9.0.0
-      '@haunt/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@nestjs/common':
         specifier: ^11.1.11
         version: 11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -117,7 +117,7 @@ importers:
 
   apps/storefront:
     dependencies:
-      '@haunt/shared':
+      '@atrivio/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       class-variance-authority:
@@ -175,6 +175,9 @@ importers:
       '@ariakit/react':
         specifier: ^0.4.20
         version: 0.4.20(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@atrivio/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@emoji-mart/data':
         specifier: 1.2.1
         version: 1.2.1
@@ -184,9 +187,6 @@ importers:
       '@faker-js/faker':
         specifier: ^10.2.0
         version: 10.2.0
-      '@haunt/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@mdx-js/loader':
         specifier: ^3.1.1
         version: 3.1.1(webpack@5.103.0)
@@ -503,7 +503,7 @@ importers:
 
   apps/workers:
     dependencies:
-      '@haunt/shared':
+      '@atrivio/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@supabase/supabase-js':

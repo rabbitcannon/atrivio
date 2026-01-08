@@ -1,4 +1,4 @@
-# Haunt Platform
+# Atrivio
 
 Multi-tenant SaaS platform for the haunt industry (haunted attractions, escape rooms, mazes).
 
@@ -141,19 +141,19 @@ After running `supabase db reset`, these test accounts are available (password: 
 
 ```bash
 # Web frontend only
-pnpm --filter @haunt/web dev
+pnpm --filter @atrivio/web dev
 
 # API backend only
-pnpm --filter @haunt/api dev
+pnpm --filter @atrivio/api dev
 
 # Workers only
-pnpm --filter @haunt/workers dev
+pnpm --filter @atrivio/workers dev
 ```
 
 ## Project Structure
 
 ```
-haunt-platform/
+atrivio/
 ├── apps/
 │   ├── api/          # NestJS backend (Fastify)
 │   ├── web/          # Next.js 15 frontend

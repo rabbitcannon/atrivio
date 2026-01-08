@@ -4,7 +4,7 @@ export { type ApiError, type ApiResponse, apiServer, serverApi } from './server'
 // Re-export types
 export * from './types';
 
-import type { OrgRole } from '@haunt/shared';
+import type { OrgRole } from '@atrivio/shared';
 import { createClient } from '@/lib/supabase/server';
 import { serverApi } from './server';
 import type {

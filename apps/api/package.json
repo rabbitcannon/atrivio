@@ -1,9 +1,9 @@
 {
-  "name": "@haunt/api",
+  "name": "@atrivio/api",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "Haunt Platform API - NestJS with Fastify",
+  "description": "Atrivio API - NestJS with Fastify",
   "scripts": {
     "build": "nest build",
     "dev": "nest start --watch",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/static": "^9.0.0",
-    "@haunt/shared": "workspace:*",
+    "@atrivio/shared": "workspace:*",
     "@nestjs/common": "^11.1.11",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.11",

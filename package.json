@@ -1,9 +1,9 @@
 {
-  "name": "haunt-platform",
+  "name": "atrivio",
   "version": "0.0.1",
   "private": true,
-  "description": "Ultimate Haunt Platform - Multi-tenant haunt industry management system",
-  "author": "Haunt Platform Team",
+  "description": "Atrivio - Multi-tenant attractions industry management system",
+  "author": "Atrivio Team",
   "license": "UNLICENSED",
   "scripts": {
     "dev": "turbo dev",
@@ -19,9 +19,9 @@
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "clean": "turbo clean && rm -rf node_modules",
-    "db:migrate": "pnpm --filter @haunt/database migrate",
-    "db:seed": "pnpm --filter @haunt/database seed",
-    "db:types": "pnpm --filter @haunt/database generate-types"
+    "db:migrate": "pnpm --filter @atrivio/database migrate",
+    "db:seed": "pnpm --filter @atrivio/database seed",
+    "db:types": "pnpm --filter @atrivio/database generate-types"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",

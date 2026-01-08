@@ -132,6 +132,7 @@ export const TEST_USERS = {
  */
 export const TEST_ORGS = {
   nightmareManor: 'b0000000-0000-0000-0000-000000000001',
+  spookyHollow: 'b0000000-0000-0000-0000-000000000002',
 };
 
 /**

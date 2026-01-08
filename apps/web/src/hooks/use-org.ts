@@ -1,6 +1,6 @@
 'use client';
 
-import { createOrgId, type OrgRole } from '@haunt/shared';
+import { createOrgId, type OrgRole } from '@atrivio/shared';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';

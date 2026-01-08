@@ -12,7 +12,7 @@ ALTER TABLE storefront_settings
   ALTER COLUMN text_color SET DEFAULT '#f5f5f5';         -- Gray-100
 
 -- Add comment documenting the theme system
-COMMENT ON COLUMN storefront_settings.theme_preset IS 'Theme preset key (dark, light, horror, vintage, neon, blood-moon, forest, carnival). See @haunt/shared/constants/themes for definitions.';
+COMMENT ON COLUMN storefront_settings.theme_preset IS 'Theme preset key (dark, light, horror, vintage, neon, blood-moon, forest, carnival). See @atrivio/shared/constants/themes for definitions.';
 COMMENT ON COLUMN storefront_settings.primary_color IS 'Primary brand color in hex format (#RRGGBB)';
 COMMENT ON COLUMN storefront_settings.secondary_color IS 'Secondary color for cards/sections in hex format';
 COMMENT ON COLUMN storefront_settings.accent_color IS 'Accent color for highlights/badges in hex format';

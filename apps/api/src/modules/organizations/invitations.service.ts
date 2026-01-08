@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import type { OrgId, OrgRole, UserId } from '@haunt/shared';
+import type { OrgId, OrgRole, UserId } from '@atrivio/shared';
 import {
   BadRequestException,
   ConflictException,

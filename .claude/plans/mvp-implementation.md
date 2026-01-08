@@ -1,4 +1,4 @@
-# Haunt Platform MVP - Implementation Plan & Progress Tracker
+# Atrivio MVP - Implementation Plan & Progress Tracker
 
 **Created Date**: 2025-12-30
 **Last Updated**: 2025-12-31

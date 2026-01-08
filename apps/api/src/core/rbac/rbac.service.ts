@@ -1,11 +1,11 @@
-import type { OrgId, UserId } from '@haunt/shared';
+import type { OrgId, UserId } from '@atrivio/shared';
 import {
   canManageRole,
   ORG_ROLE_HIERARCHY,
   type OrgRole,
   type Permission,
   ROLE_PERMISSIONS,
-} from '@haunt/shared';
+} from '@atrivio/shared';
 import { Injectable } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 

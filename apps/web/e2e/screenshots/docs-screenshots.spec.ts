@@ -7,7 +7,7 @@ import path from 'path';
  * This test file captures screenshots for the documentation site.
  * Screenshots are saved to public/docs/screenshots/ for use in MDX files.
  *
- * Run: pnpm --filter @haunt/web screenshots
+ * Run: pnpm --filter @atrivio/web screenshots
  */
 
 const SCREENSHOT_DIR = path.join(__dirname, '../../public/docs/screenshots');

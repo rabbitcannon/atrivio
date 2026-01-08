@@ -1,4 +1,4 @@
-import { ORG_ROLES, type OrgRole } from '@haunt/shared';
+import { ORG_ROLES, type OrgRole } from '@atrivio/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 

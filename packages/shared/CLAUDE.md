@@ -5,9 +5,9 @@ Shared code used by all apps (api, web, workers).
 ## Exports
 
 ```typescript
-import { OrgId, UserId } from '@haunt/shared/types';
-import { ORG_ROLES, ROLE_PERMISSIONS } from '@haunt/shared/constants';
-import { formatCurrency, dollarsToCents } from '@haunt/shared/utils';
+import { OrgId, UserId } from '@atrivio/shared/types';
+import { ORG_ROLES, ROLE_PERMISSIONS } from '@atrivio/shared/constants';
+import { formatCurrency, dollarsToCents } from '@atrivio/shared/utils';
 ```
 
 ## Branded Types

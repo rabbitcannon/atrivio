@@ -1,4 +1,4 @@
-import type { OrgId } from '@haunt/shared';
+import type { OrgId } from '@atrivio/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { CreateSeasonDto, UpdateSeasonDto } from './dto/seasons.dto.js';

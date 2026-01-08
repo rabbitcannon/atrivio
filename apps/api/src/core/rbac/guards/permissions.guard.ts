@@ -1,4 +1,4 @@
-import type { Permission } from '@haunt/shared';
+import type { Permission } from '@atrivio/shared';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';

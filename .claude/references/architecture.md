@@ -1,4 +1,4 @@
-# Ultimate Haunt Platform
+# Ultimate Atrivio
 
 ## Architecture & System Design (Supabase + TypeScript)
 

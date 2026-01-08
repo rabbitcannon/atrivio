@@ -7,7 +7,7 @@ Local development and deployment configuration.
 **IMPORTANT**: All migrations must go in `supabase/migrations/` at the project root.
 
 ```
-haunt-platform/
+atrivio/
 └── supabase/
     ├── migrations/        ← ALL MIGRATIONS GO HERE
     │   └── 20260104000000_f12_notifications.sql

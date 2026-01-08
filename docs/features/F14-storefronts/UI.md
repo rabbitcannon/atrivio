@@ -101,7 +101,7 @@ https://{domain}/contact             → Contact page
 │                                                                         │
 │   Home | Attractions | Tickets | FAQ | Contact | Privacy | Terms        │
 │                                                                         │
-│   © 2024 Nightmare Manor. Powered by Haunt Platform.                    │
+│   © 2024 Nightmare Manor. Powered by Atrivio.                    │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```

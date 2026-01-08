@@ -42,12 +42,12 @@ This plan covers upgrading the remaining "high-risk" major version packages that
 
 ```bash
 # 1. Update React packages in web
-pnpm --filter @haunt/web add react@^19.0.0 react-dom@^19.0.0
-pnpm --filter @haunt/web add -D @types/react@^19 @types/react-dom@^19
+pnpm --filter @atrivio/web add react@^19.0.0 react-dom@^19.0.0
+pnpm --filter @atrivio/web add -D @types/react@^19 @types/react-dom@^19
 
 # 2. Update React packages in storefront
-pnpm --filter @haunt/storefront add react@^19.0.0 react-dom@^19.0.0
-pnpm --filter @haunt/storefront add -D @types/react@^19 @types/react-dom@^19
+pnpm --filter @atrivio/storefront add react@^19.0.0 react-dom@^19.0.0
+pnpm --filter @atrivio/storefront add -D @types/react@^19 @types/react-dom@^19
 
 # 3. Verify
 pnpm typecheck && pnpm build
@@ -98,8 +98,8 @@ Codebase already used async `params` pattern (e.g., `params: Promise<{ orgId: st
 
 ```bash
 # 1. Update Next.js in both apps
-pnpm --filter @haunt/web add next@^15
-pnpm --filter @haunt/storefront add next@^15
+pnpm --filter @atrivio/web add next@^15
+pnpm --filter @atrivio/storefront add next@^15
 
 # 2. Run codemod (found 0 files - already using async pattern)
 cd apps/web && npx @next/codemod@latest next-async-request-api .
@@ -178,7 +178,7 @@ app.register(fastifyCors, {
 
 ```bash
 # 1. Update NestJS packages
-pnpm --filter @haunt/api add \
+pnpm --filter @atrivio/api add \
   @nestjs/core@^11 \
   @nestjs/common@^11 \
   @nestjs/platform-fastify@^11 \
@@ -186,19 +186,19 @@ pnpm --filter @haunt/api add \
   @nestjs/swagger@^11
 
 # 2. Update NestJS dev packages
-pnpm --filter @haunt/api add -D \
+pnpm --filter @atrivio/api add -D \
   @nestjs/cli@^11 \
   @nestjs/schematics@^11 \
   @nestjs/testing@^11
 
 # 3. Update Fastify packages
-pnpm --filter @haunt/api add \
+pnpm --filter @atrivio/api add \
   @fastify/cors@^11 \
   @fastify/static@^9
 
 # 4. Verify
-pnpm --filter @haunt/api typecheck
-pnpm --filter @haunt/api build
+pnpm --filter @atrivio/api typecheck
+pnpm --filter @atrivio/api build
 ```
 
 ### Result
@@ -253,10 +253,10 @@ Zod usage in this project is minimal:
 # 1. Codemod skipped (Node 24 compatibility issue, also unnecessary)
 
 # 2. Update Zod in all packages
-pnpm --filter @haunt/api add zod@^4
-pnpm --filter @haunt/web add zod@^4
-pnpm --filter @haunt/workers add zod@^4
-pnpm --filter @haunt/shared add zod@^4
+pnpm --filter @atrivio/api add zod@^4
+pnpm --filter @atrivio/web add zod@^4
+pnpm --filter @atrivio/workers add zod@^4
+pnpm --filter @atrivio/shared add zod@^4
 
 # 3. Verify
 pnpm typecheck
@@ -298,18 +298,18 @@ pnpm build
 
 ```bash
 # 1. Update Vitest in all packages
-pnpm --filter @haunt/api add -D vitest@^3
-pnpm --filter @haunt/web add -D vitest@^3
-pnpm --filter @haunt/workers add -D vitest@^3
-pnpm --filter @haunt/shared add -D vitest@^3
+pnpm --filter @atrivio/api add -D vitest@^3
+pnpm --filter @atrivio/web add -D vitest@^3
+pnpm --filter @atrivio/workers add -D vitest@^3
+pnpm --filter @atrivio/shared add -D vitest@^3
 
 # 2. Update coverage package to match
-pnpm --filter @haunt/api add -D @vitest/coverage-v8@^3
+pnpm --filter @atrivio/api add -D @vitest/coverage-v8@^3
 
 # 3. Verify
 pnpm typecheck
 pnpm build
-pnpm --filter @haunt/api vitest run --config vitest.e2e.config.ts
+pnpm --filter @atrivio/api vitest run --config vitest.e2e.config.ts
 ```
 
 ### Result
@@ -413,8 +413,8 @@ pnpm typecheck && pnpm build
 grep -r "createTailwindMerge" apps --include="*.ts" --include="*.tsx"
 
 # 2. Update tailwind-merge in both frontend apps
-pnpm --filter @haunt/web add tailwind-merge@^3
-pnpm --filter @haunt/storefront add tailwind-merge@^3
+pnpm --filter @atrivio/web add tailwind-merge@^3
+pnpm --filter @atrivio/storefront add tailwind-merge@^3
 
 # 3. Verify with typecheck and build
 pnpm typecheck && pnpm build

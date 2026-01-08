@@ -1,8 +1,8 @@
 {
-  "name": "@haunt/workers",
+  "name": "@atrivio/workers",
   "version": "0.0.1",
   "private": true,
-  "description": "Haunt Platform Workers - BullMQ Background Jobs",
+  "description": "Atrivio Workers - BullMQ Background Jobs",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -15,7 +15,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@haunt/shared": "workspace:*",
+    "@atrivio/shared": "workspace:*",
     "@supabase/supabase-js": "^2.89.0",
     "bullmq": "^5.66.4",
     "ioredis": "^5.9.0",

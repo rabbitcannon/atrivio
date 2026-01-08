@@ -1,4 +1,4 @@
-import type { OrgRole } from '@haunt/shared';
+import type { OrgRole } from '@atrivio/shared';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';

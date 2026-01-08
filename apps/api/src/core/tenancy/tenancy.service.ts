@@ -1,4 +1,4 @@
-import { type OrgId, type OrgRole, ROLE_PERMISSIONS, type UserId } from '@haunt/shared';
+import { type OrgId, type OrgRole, ROLE_PERMISSIONS, type UserId } from '@atrivio/shared';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 

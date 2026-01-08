@@ -71,7 +71,7 @@ All data comes from the NestJS API:
 
 ```bash
 # Start the storefront app (included in `pnpm dev` at root)
-pnpm --filter @haunt/storefront dev
+pnpm --filter @atrivio/storefront dev
 
 # Access with attraction slug
 http://localhost:3002?storefront=haunted-mansion

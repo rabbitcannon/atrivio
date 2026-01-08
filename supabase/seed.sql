@@ -2396,7 +2396,7 @@ BEGIN
 
   -- Note: Storefronts are now per-attraction, not per-org
   -- Theme presets: dark, light, horror, vintage, neon, blood-moon, forest, carnival
-  -- See @haunt/shared/constants/themes.ts for full preset definitions
+  -- See @atrivio/shared/constants/themes.ts for full preset definitions
   INSERT INTO storefront_settings (
     id, org_id, attraction_id, tagline, description,
     logo_url, favicon_url, hero_image_url, hero_title, hero_subtitle,
