@@ -11,15 +11,15 @@ This guide covers deploying the public storefront app (`apps/storefront`) with s
 │                        DNS Resolution                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  Subdomain:     haunted-mansion.hauntplatform.com               │
+│  Subdomain:     haunted-mansion.atrivio.io               │
 │                         │                                        │
 │                         ▼                                        │
-│              *.hauntplatform.com → Vercel/Railway               │
+│              *.atrivio.io → Vercel/Railway               │
 │                                                                  │
 │  Custom Domain: hauntedmansion.com                              │
 │                         │                                        │
 │                         ▼                                        │
-│              CNAME → cname.hauntplatform.com                    │
+│              CNAME → cname.atrivio.io                    │
 │                         │                                        │
 │                         ▼                                        │
 │              Vercel/Railway (auto SSL)                          │
@@ -54,8 +54,8 @@ Vercel provides the best experience for Next.js with automatic SSL, edge caching
 
 3. **Set Environment Variables**
    ```
-   NEXT_PUBLIC_API_URL=https://api.hauntplatform.com/api/v1
-   NEXT_PUBLIC_PLATFORM_DOMAIN=hauntplatform.com
+   NEXT_PUBLIC_API_URL=https://api.atrivio.io/api/v1
+   NEXT_PUBLIC_PLATFORM_DOMAIN=atrivio.io
    ```
 
 #### Domain Configuration
@@ -64,7 +64,7 @@ Vercel provides the best experience for Next.js with automatic SSL, edge caching
 
    In Vercel Dashboard → Project Settings → Domains:
    ```
-   *.hauntplatform.com
+   *.atrivio.io
    ```
 
    Then in your DNS provider (e.g., Cloudflare, Route53):
@@ -77,8 +77,8 @@ Vercel provides the best experience for Next.js with automatic SSL, edge caching
 
 2. **Add Platform Apex Domain**
    ```
-   hauntplatform.com → 76.76.21.21 (A record)
-   www.hauntplatform.com → cname.vercel-dns.com (CNAME)
+   atrivio.io → 76.76.21.21 (A record)
+   www.atrivio.io → cname.vercel-dns.com (CNAME)
    ```
 
 #### Custom Domain Support
@@ -89,7 +89,7 @@ When customers add custom domains, they need to:
    ```
    Type: CNAME
    Name: www (or @)
-   Target: cname.hauntplatform.com
+   Target: cname.atrivio.io
    TTL: 3600
    ```
 
@@ -155,16 +155,16 @@ Railway offers simpler pricing and good monorepo support.
 
 3. **Set Environment Variables**
    ```bash
-   railway variables set NEXT_PUBLIC_API_URL=https://api.hauntplatform.com/api/v1
-   railway variables set NEXT_PUBLIC_PLATFORM_DOMAIN=hauntplatform.com
+   railway variables set NEXT_PUBLIC_API_URL=https://api.atrivio.io/api/v1
+   railway variables set NEXT_PUBLIC_PLATFORM_DOMAIN=atrivio.io
    ```
 
 #### Domain Configuration
 
 1. **Add Custom Domain in Railway Dashboard**
    - Go to Service Settings → Domains
-   - Add `*.hauntplatform.com` (wildcard)
-   - Add `hauntplatform.com` (apex)
+   - Add `*.atrivio.io` (wildcard)
+   - Add `atrivio.io` (apex)
 
 2. **Configure DNS**
 
@@ -281,7 +281,7 @@ TTL: 3600
 ```
 Name: @ or www
 Type: CNAME
-Value: cname.hauntplatform.com
+Value: cname.atrivio.io
 TTL: 3600
 ```
 
@@ -299,8 +299,8 @@ TTL: 3600
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | API endpoint | `https://api.hauntplatform.com/api/v1` |
-| `NEXT_PUBLIC_PLATFORM_DOMAIN` | Platform domain for subdomain detection | `hauntplatform.com` |
+| `NEXT_PUBLIC_API_URL` | API endpoint | `https://api.atrivio.io/api/v1` |
+| `NEXT_PUBLIC_PLATFORM_DOMAIN` | Platform domain for subdomain detection | `atrivio.io` |
 | `VERCEL_TOKEN` | Vercel API token (for domain management) | `xxx` |
 | `RAILWAY_TOKEN` | Railway API token (alternative) | `xxx` |
 

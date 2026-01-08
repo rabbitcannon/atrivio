@@ -42,7 +42,7 @@ Storefronts are **per-attraction** (not per-org). Each attraction can have its o
 The middleware handles three scenarios:
 
 1. **Development**: `localhost:3002?storefront=haunted-mansion` (attraction slug)
-2. **Subdomain**: `haunted-mansion.hauntplatform.com`
+2. **Subdomain**: `haunted-mansion.atrivio.io`
 3. **Custom Domain**: `hauntedmansion.com`
 
 The identifier is passed to the layout via `x-storefront-identifier` header.
@@ -83,7 +83,7 @@ For production with custom domains:
 
 ### Vercel
 1. Deploy the storefront app
-2. Add wildcard domain: `*.hauntplatform.com`
+2. Add wildcard domain: `*.atrivio.io`
 3. For custom domains, users add CNAME pointing to Vercel
 
 ### Railway

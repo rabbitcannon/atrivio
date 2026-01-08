@@ -125,8 +125,8 @@ export class NotificationsService {
       const msg = {
         to,
         from: {
-          email: this.config.get('SENDGRID_FROM_EMAIL') || 'noreply@hauntplatform.com',
-          name: this.config.get('SENDGRID_FROM_NAME') || 'Haunt Platform',
+          email: this.config.get('SENDGRID_FROM_EMAIL') || 'noreply@atrivio.io',
+          name: this.config.get('SENDGRID_FROM_NAME') || 'Atrivio',
         },
         subject,
         text: body,

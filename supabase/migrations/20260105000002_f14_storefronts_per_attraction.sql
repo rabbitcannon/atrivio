@@ -473,8 +473,8 @@ BEGIN
   LIMIT 1;
 
   IF NOT FOUND THEN
-    -- Check subdomain pattern (slug.hauntplatform.com)
-    IF p_domain LIKE '%.hauntplatform.com' THEN
+    -- Check subdomain pattern (slug.atrivio.io)
+    IF p_domain LIKE '%.atrivio.io' THEN
       -- First try attraction slug
       RETURN QUERY
       SELECT a.org_id, a.id as attraction_id

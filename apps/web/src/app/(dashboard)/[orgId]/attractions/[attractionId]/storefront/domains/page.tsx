@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getStorefrontDomains, getStorefrontSettings, resolveOrgId } from '@/lib/api';
 import type { DomainStatus, StorefrontDomain, StorefrontSettings } from '@/lib/api/types';
+import { siteConfig } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Storefront Domains',
@@ -68,7 +69,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
     // Feature might not be enabled
   }
 
-  // Find the default subdomain (domain ending with .hauntplatform.com)
+  // Find the default subdomain (domain ending with platform domain)
   const defaultSubdomain = domains.find((d) => d.domainType === 'subdomain');
 
   return (
@@ -102,7 +103,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
               <Globe className="h-5 w-5" />
               Default Subdomain
             </CardTitle>
-            <CardDescription>Your free subdomain on hauntplatform.com</CardDescription>
+            <CardDescription>Your free subdomain on {siteConfig.platformDomain}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -223,7 +224,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
               <div className="mt-2 p-3 bg-muted rounded-lg font-mono text-xs">
                 <p>Type: CNAME</p>
                 <p>Name: www (or @)</p>
-                <p>Value: cname.haunt.dev</p>
+                <p>Value: {siteConfig.cnameTarget}</p>
               </div>
               <p className="mt-1 text-muted-foreground">
                 For apex domains (example.com), you may need an ALIAS or ANAME record.

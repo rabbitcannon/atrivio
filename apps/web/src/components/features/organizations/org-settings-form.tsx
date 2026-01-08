@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateOrganization } from '@/lib/api/client';
 import type { Address, Organization } from '@/lib/api/types';
+import { siteConfig } from '@/lib/config';
 
 interface OrgSettingsFormProps {
   orgId: string;
@@ -137,7 +138,7 @@ export function OrgSettingsForm({ orgId, organization }: OrgSettingsFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="slug">URL Slug</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">hauntplatform.com/</span>
+                  <span className="text-sm text-muted-foreground">{siteConfig.platformDomain}/</span>
                   <Input id="slug" value={organization.slug} disabled className="flex-1 bg-muted" />
                 </div>
                 <p className="text-xs text-muted-foreground">

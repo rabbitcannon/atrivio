@@ -553,7 +553,7 @@ https://{domain}/contact             → Contact page
 │  │                     │  │                     │                      │
 │  │  STATUS             │  │  DOMAIN             │                      │
 │  │  ● Published        │  │  nightmare-manor.   │                      │
-│  │                     │  │  hauntplatform.com  │                      │
+│  │                     │  │  atrivio.io  │                      │
 │  │  [ Unpublish ]      │  │  [ Manage Domains ] │                      │
 │  │                     │  │                     │                      │
 │  └─────────────────────┘  └─────────────────────┘                      │
@@ -776,7 +776,7 @@ https://{domain}/contact             → Contact page
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
 │  │                                                                  │   │
-│  │  nightmare-manor.hauntplatform.com                              │   │
+│  │  nightmare-manor.atrivio.io                              │   │
 │  │  ● Active    Subdomain    SSL Active                             │   │
 │  │  Included with your plan                                         │   │
 │  │                                                                  │   │
@@ -802,7 +802,7 @@ https://{domain}/contact             → Contact page
 │  │                                                                  │   │
 │  │  Type   Name                    Value                            │   │
 │  │  ─────────────────────────────────────────────────────────────  │   │
-│  │  CNAME  tickets                 cname.hauntplatform.com          │   │
+│  │  CNAME  tickets                 cname.atrivio.io          │   │
 │  │  TXT    _haunt-verify.tickets   haunt-verification=abc123        │   │
 │  │                                                                  │   │
 │  │  [ Check DNS ]  [ Copy Instructions ]            [ Remove ]      │   │

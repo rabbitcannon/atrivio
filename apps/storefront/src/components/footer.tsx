@@ -80,12 +80,12 @@ export function Footer() {
           <p className="mt-1 text-xs">
             Powered by{' '}
             <a
-              href="https://hauntplatform.com"
+              href="https://atrivio.io"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
             >
-              Haunt Platform
+              Atrivio
             </a>
           </p>
         </div>

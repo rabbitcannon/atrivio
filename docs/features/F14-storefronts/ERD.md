@@ -218,7 +218,7 @@ CREATE TYPE page_status AS ENUM (
 );
 
 CREATE TYPE domain_type AS ENUM (
-  'subdomain',   -- org-slug.hauntplatform.com (free)
+  'subdomain',   -- org-slug.atrivio.io (free)
   'custom'       -- customdomain.com (premium)
 );
 
@@ -571,8 +571,8 @@ BEGIN
     RETURN v_org_id;
   END IF;
 
-  -- Check subdomain pattern (slug.hauntplatform.com)
-  IF p_domain LIKE '%.hauntplatform.com' THEN
+  -- Check subdomain pattern (slug.atrivio.io)
+  IF p_domain LIKE '%.atrivio.io' THEN
     SELECT id INTO v_org_id
     FROM organizations
     WHERE slug = SPLIT_PART(p_domain, '.', 1)
@@ -595,7 +595,7 @@ BEGIN
 
   -- Create default subdomain
   INSERT INTO storefront_domains (org_id, domain, domain_type, status, verified_at)
-  VALUES (NEW.id, NEW.slug || '.hauntplatform.com', 'subdomain', 'active', NOW());
+  VALUES (NEW.id, NEW.slug || '.atrivio.io', 'subdomain', 'active', NOW());
 
   RETURN NEW;
 END;
@@ -611,7 +611,7 @@ CREATE TRIGGER create_storefront_on_org_create
 
 1. **Auto-Setup**: Storefront settings and subdomain created automatically when org is created.
 
-2. **Subdomain**: Every org gets `{slug}.hauntplatform.com` free and pre-verified.
+2. **Subdomain**: Every org gets `{slug}.atrivio.io` free and pre-verified.
 
 3. **Custom Domains**: Require DNS verification before activation. Premium feature.
 

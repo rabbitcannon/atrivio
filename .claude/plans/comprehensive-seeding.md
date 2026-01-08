@@ -620,7 +620,7 @@ For orgs with connected Stripe accounts, seed sample transactions:
 - Push device registrations
 
 **Custom Domains** ✅:
-- Subdomain: terror-collective.hauntplatform.com
+- Subdomain: terror-collective.atrivio.io
 - Custom: terror-collective.com (demo)
 
 ---

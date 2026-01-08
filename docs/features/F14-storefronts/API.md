@@ -451,7 +451,7 @@ POST /api/v1/orgs/:orgId/storefront/unpublish
 {
   "is_published": true,
   "published_at": "2024-10-01T12:00:00Z",
-  "url": "https://nightmare-manor.hauntplatform.com"
+  "url": "https://nightmare-manor.atrivio.io"
 }
 ```
 
@@ -468,7 +468,7 @@ GET /api/v1/orgs/:orgId/storefront/preview
 **Response:** `200 OK`
 ```json
 {
-  "preview_url": "https://nightmare-manor.hauntplatform.com?preview=abc123",
+  "preview_url": "https://nightmare-manor.atrivio.io?preview=abc123",
   "expires_at": "2024-10-01T13:00:00Z"
 }
 ```
@@ -589,7 +589,7 @@ GET /api/v1/orgs/:orgId/storefront/domains
   "domains": [
     {
       "id": "uuid",
-      "domain": "nightmare-manor.hauntplatform.com",
+      "domain": "nightmare-manor.atrivio.io",
       "domain_type": "subdomain",
       "is_primary": false,
       "status": "active",

@@ -27,7 +27,7 @@ CREATE TYPE page_status AS ENUM (
 );
 
 CREATE TYPE domain_type AS ENUM (
-  'subdomain',   -- org-slug.hauntplatform.com (free)
+  'subdomain',   -- org-slug.atrivio.io (free)
   'custom'       -- customdomain.com (premium)
 );
 
@@ -506,8 +506,8 @@ BEGIN
     RETURN v_org_id;
   END IF;
 
-  -- Check subdomain pattern (slug.hauntplatform.com)
-  IF p_domain LIKE '%.hauntplatform.com' THEN
+  -- Check subdomain pattern (slug.atrivio.io)
+  IF p_domain LIKE '%.atrivio.io' THEN
     SELECT id INTO v_org_id
     FROM organizations
     WHERE slug = SPLIT_PART(p_domain, '.', 1)

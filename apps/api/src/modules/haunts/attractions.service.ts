@@ -3,16 +3,23 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
+import { StorefrontsService } from '../storefronts/storefronts.service.js';
 import type { CreateAttractionDto, UpdateAttractionDto } from './dto/attractions.dto.js';
 
 export type AttractionId = string;
 
 @Injectable()
 export class AttractionsService {
-  constructor(private supabase: SupabaseService) {}
+  private readonly logger = new Logger(AttractionsService.name);
+
+  constructor(
+    private supabase: SupabaseService,
+    private storefrontsService: StorefrontsService
+  ) {}
 
   /**
    * Create a new attraction
@@ -62,6 +69,15 @@ export class AttractionsService {
         code: 'ATTRACTION_CREATE_FAILED',
         message: error.message,
       });
+    }
+
+    // Auto-create subdomain for the new attraction
+    try {
+      await this.storefrontsService.createSubdomain(orgId, data.id);
+      this.logger.log(`Created subdomain for attraction ${data.id}: ${data.slug}`);
+    } catch (subdomainError) {
+      // Log but don't fail attraction creation if subdomain creation fails
+      this.logger.warn(`Failed to create subdomain for attraction ${data.id}:`, subdomainError);
     }
 
     return data;

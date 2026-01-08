@@ -415,7 +415,13 @@ export class StorefrontsService {
     return data ? this.mapDomain(data) : null;
   }
 
-  private async createSubdomain(orgId: string, attractionId: string): Promise<void> {
+  /**
+   * Create auto-generated subdomain for an attraction
+   * Called when attraction is created or when storefront settings are first saved
+   */
+  async createSubdomain(orgId: string, attractionId: string): Promise<void> {
+    const PLATFORM_DOMAIN = process.env['PLATFORM_DOMAIN'] || 'atrivio.io';
+
     // Get attraction slug
     const { data: attraction } = await this.supabase.adminClient
       .from('attractions')
@@ -425,7 +431,7 @@ export class StorefrontsService {
 
     if (!attraction) return;
 
-    const subdomain = `${attraction.slug}.hauntplatform.com`;
+    const subdomain = `${attraction.slug}.${PLATFORM_DOMAIN}`;
 
     // Check if subdomain already exists
     const { data: existing } = await this.supabase.adminClient
@@ -472,7 +478,7 @@ export class StorefrontsService {
     }
 
     // Generate verification token
-    const verificationToken = `haunt-verify-${Buffer.from(attractionId).toString('base64').slice(0, 16)}`;
+    const verificationToken = `atrivio-verify-${Buffer.from(attractionId).toString('base64').slice(0, 16)}`;
 
     const { data, error } = await this.supabase.adminClient
       .from('storefront_domains')
@@ -555,12 +561,12 @@ export class StorefrontsService {
 
     try {
       if (method === 'dns_txt') {
-        // Check for TXT record at _haunt-verify.domain.com
+        // Check for TXT record at _atrivio-verify.domain.com
         const { Resolver } = await import('node:dns/promises');
         const resolver = new Resolver();
         resolver.setServers(['8.8.8.8', '1.1.1.1']); // Use public DNS
 
-        const verifyDomain = `_haunt-verify.${domain}`;
+        const verifyDomain = `_atrivio-verify.${domain}`;
         this.logger.log(`Looking up TXT records for ${verifyDomain}`);
 
         try {
@@ -591,7 +597,7 @@ export class StorefrontsService {
           this.logger.log(`Found CNAME records: ${JSON.stringify(records)}`);
 
           // Check if CNAME points to our platform domain
-          const expectedCname = 'cname.hauntplatform.com';
+          const expectedCname = 'cname.atrivio.io';
           return records.some((r) => r.toLowerCase() === expectedCname);
         } catch (dnsError: unknown) {
           const error = dnsError as { code?: string };
@@ -933,11 +939,13 @@ export class StorefrontsService {
   // ===========================================================================
 
   async getPublicStorefront(identifier: string): Promise<PublicStorefrontResponse | null> {
+    const PLATFORM_DOMAIN = process.env['PLATFORM_DOMAIN'] || 'atrivio.io';
+
     // Try to resolve by domain first, then by attraction slug
     let attractionId: string | null = null;
     let currentDomain: string = identifier;
 
-    // Check if identifier is a domain
+    // Check if identifier is a domain in storefront_domains table
     const { data: domainData } = await this.supabase.adminClient
       .from('storefront_domains')
       .select('attraction_id, domain')
@@ -949,16 +957,24 @@ export class StorefrontsService {
       attractionId = domainData.attraction_id;
       currentDomain = domainData.domain;
     } else {
+      // Extract slug from identifier
+      // If it's a subdomain like "haunted-mansion.atrivio.io", extract "haunted-mansion"
+      // Otherwise use the identifier as-is (for direct slug lookups)
+      let slugToLookup = identifier.toLowerCase();
+      if (identifier.toLowerCase().endsWith(`.${PLATFORM_DOMAIN}`)) {
+        slugToLookup = identifier.toLowerCase().replace(`.${PLATFORM_DOMAIN}`, '');
+      }
+
       // Try attraction slug
       const { data: attractionData } = await this.supabase.adminClient
         .from('attractions')
         .select('id, slug')
-        .eq('slug', identifier.toLowerCase())
+        .eq('slug', slugToLookup)
         .single();
 
       if (attractionData) {
         attractionId = attractionData.id;
-        currentDomain = `${attractionData.slug}.hauntplatform.com`;
+        currentDomain = `${attractionData.slug}.${PLATFORM_DOMAIN}`;
       }
     }
 
@@ -1318,12 +1334,12 @@ export class StorefrontsService {
       response.verification = {
         method,
         recordName:
-          method === 'dns_txt' ? `_haunt-verify.${row['domain']}` : (row['domain'] as string),
+          method === 'dns_txt' ? `_atrivio-verify.${row['domain']}` : (row['domain'] as string),
         recordValue: row['verification_token'] as string,
         instructions:
           method === 'dns_txt'
-            ? `Add a TXT record to your DNS with name "_haunt-verify" and value "${row['verification_token']}"`
-            : `Add a CNAME record pointing ${row['domain']} to hauntplatform.com`,
+            ? `Add a TXT record to your DNS with name "_atrivio-verify" and value "${row['verification_token']}"`
+            : `Add a CNAME record pointing ${row['domain']} to cname.atrivio.io`,
       };
     }
 

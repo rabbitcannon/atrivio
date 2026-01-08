@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const PLATFORM_DOMAIN = process.env['NEXT_PUBLIC_PLATFORM_DOMAIN'] || 'hauntplatform.com';
+const PLATFORM_DOMAIN = process.env['NEXT_PUBLIC_PLATFORM_DOMAIN'] || 'atrivio.io';
 
 /**
  * Middleware to resolve storefront from domain
  *
  * Handles:
- * - Subdomains: haunted-mansion.hauntplatform.com
+ * - Subdomains: haunted-mansion.atrivio.io
  * - Custom domains: hauntedmansion.com
  * - Development: localhost with ?storefront= param
  */
@@ -33,7 +33,7 @@ export function middleware(request: NextRequest) {
       }
     }
   }
-  // Production subdomain: xxx.hauntplatform.com
+  // Production subdomain: xxx.atrivio.io
   else if (host.endsWith(`.${PLATFORM_DOMAIN}`)) {
     storefrontIdentifier = host; // Full domain for lookup
   }
