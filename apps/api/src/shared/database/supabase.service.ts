@@ -17,8 +17,13 @@ export class SupabaseService implements OnModuleInit {
   constructor(private configService: ConfigService) {}
 
   onModuleInit() {
-    const supabaseUrl = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_URL');
-    const anonKey = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    // Support both backend (SUPABASE_URL) and frontend (NEXT_PUBLIC_*) naming conventions
+    const supabaseUrl =
+      this.configService.get<string>('SUPABASE_URL') ??
+      this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_URL');
+    const anonKey =
+      this.configService.get<string>('SUPABASE_ANON_KEY') ??
+      this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_ANON_KEY');
     const serviceRoleKey = this.configService.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY');
 
     // Client that respects RLS - used with user's JWT
@@ -43,8 +48,12 @@ export class SupabaseService implements OnModuleInit {
    * This respects RLS policies
    */
   getClientWithToken(accessToken: string): SupabaseClient {
-    const supabaseUrl = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_URL');
-    const anonKey = this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    const supabaseUrl =
+      this.configService.get<string>('SUPABASE_URL') ??
+      this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_URL');
+    const anonKey =
+      this.configService.get<string>('SUPABASE_ANON_KEY') ??
+      this.configService.getOrThrow<string>('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 
     return createClient(supabaseUrl, anonKey, {
       auth: {
