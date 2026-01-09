@@ -1,6 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getAttraction, getStorefrontPage, resolveOrgId, updateStorefrontPage } from '@/lib/api';
+import {
+  getAttraction,
+  getStorefrontNavigation,
+  getStorefrontPage,
+  resolveOrgId,
+  updateStorefrontNavigation,
+  updateStorefrontPage,
+} from '@/lib/api';
+import type { StorefrontNavItem } from '@/lib/api/types';
 import { PageEditorForm, type PageFormData } from '../../_components/page-editor-form';
 
 export const metadata: Metadata = {
@@ -9,6 +17,25 @@ export const metadata: Metadata = {
 
 interface EditPageProps {
   params: Promise<{ orgId: string; attractionId: string; pageId: string }>;
+}
+
+// Helper to convert StorefrontNavItem to API expected format
+function mapNavItemForApi(item: StorefrontNavItem) {
+  // Map linkType to the API's expected 'type' values
+  let type: 'page' | 'link' | 'dropdown' = 'link';
+  if (item.linkType === 'page') {
+    type = 'page';
+  } else if (item.linkType === 'external' || item.linkType === 'home' || item.linkType === 'tickets') {
+    type = 'link';
+  }
+
+  return {
+    label: item.label,
+    type,
+    pageId: item.pageId ?? undefined,
+    url: item.externalUrl || item.url || (item.linkType === 'home' ? '/' : item.linkType === 'tickets' ? '/tickets' : undefined),
+    openNewTab: item.openInNewTab || item.openNewTab,
+  };
 }
 
 export default async function EditStorefrontPage({ params }: EditPageProps) {
@@ -46,6 +73,8 @@ export default async function EditStorefrontPage({ params }: EditPageProps) {
   const capturedOrgId = orgId;
   const capturedAttractionId = attractionId;
   const capturedPageId = pageId;
+  const originalShowInNav = page.showInNav;
+  const originalStatus = page.status;
 
   async function handleSave(data: PageFormData) {
     'use server';
@@ -62,6 +91,44 @@ export default async function EditStorefrontPage({ params }: EditPageProps) {
     if (data.seo.description) payload.metaDescription = data.seo.description;
 
     await updateStorefrontPage(capturedOrgId, capturedAttractionId, capturedPageId, payload);
+
+    // Sync navigation based on showInNav changes
+    const wasInNav = originalShowInNav && originalStatus === 'published';
+    const shouldBeInNav = data.showInNav && data.status === 'published';
+
+    if (wasInNav !== shouldBeInNav) {
+      try {
+        const navResult = await getStorefrontNavigation(capturedOrgId, capturedAttractionId);
+        const currentNav = navResult.data?.navigation ?? { header: [], footer: [] };
+
+        if (shouldBeInNav && !wasInNav) {
+          // Add to navigation (header by default)
+          const newNavItem = {
+            label: data.title,
+            type: 'page' as const,
+            pageId: capturedPageId,
+            openNewTab: false,
+          };
+
+          await updateStorefrontNavigation(capturedOrgId, capturedAttractionId, {
+            header: [...currentNav.header.map(mapNavItemForApi), newNavItem],
+            footer: currentNav.footer.map(mapNavItemForApi),
+          });
+        } else if (!shouldBeInNav && wasInNav) {
+          // Remove from navigation (check both header and footer)
+          const headerWithoutPage = currentNav.header.filter((item) => item.pageId !== capturedPageId);
+          const footerWithoutPage = currentNav.footer.filter((item) => item.pageId !== capturedPageId);
+
+          await updateStorefrontNavigation(capturedOrgId, capturedAttractionId, {
+            header: headerWithoutPage.map(mapNavItemForApi),
+            footer: footerWithoutPage.map(mapNavItemForApi),
+          });
+        }
+      } catch {
+        // Navigation sync failed, but page was updated - don't fail the whole operation
+        console.error('Failed to sync navigation after page update');
+      }
+    }
   }
 
   return (

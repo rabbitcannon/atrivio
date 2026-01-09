@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createStorefrontPage, getAttraction, resolveOrgId } from '@/lib/api';
+import {
+  createStorefrontPage,
+  getAttraction,
+  getStorefrontNavigation,
+  resolveOrgId,
+  updateStorefrontNavigation,
+} from '@/lib/api';
+import type { StorefrontNavItem } from '@/lib/api/types';
 import { PageEditorForm, type PageFormData } from '../_components/page-editor-form';
 
 export const metadata: Metadata = {
@@ -9,6 +16,25 @@ export const metadata: Metadata = {
 
 interface NewPageProps {
   params: Promise<{ orgId: string; attractionId: string }>;
+}
+
+// Helper to convert StorefrontNavItem to API expected format
+function mapNavItemForApi(item: StorefrontNavItem) {
+  // Map linkType to the API's expected 'type' values
+  let type: 'page' | 'link' | 'dropdown' = 'link';
+  if (item.linkType === 'page') {
+    type = 'page';
+  } else if (item.linkType === 'external' || item.linkType === 'home' || item.linkType === 'tickets') {
+    type = 'link';
+  }
+
+  return {
+    label: item.label,
+    type,
+    pageId: item.pageId ?? undefined,
+    url: item.externalUrl || item.url || (item.linkType === 'home' ? '/' : item.linkType === 'tickets' ? '/tickets' : undefined),
+    openNewTab: item.openInNewTab || item.openNewTab,
+  };
 }
 
 export default async function NewStorefrontPage({ params }: NewPageProps) {
@@ -48,7 +74,33 @@ export default async function NewStorefrontPage({ params }: NewPageProps) {
     if (data.seo.title) payload.metaTitle = data.seo.title;
     if (data.seo.description) payload.metaDescription = data.seo.description;
 
-    await createStorefrontPage(capturedOrgId, capturedAttractionId, payload);
+    // Create the page first
+    const result = await createStorefrontPage(capturedOrgId, capturedAttractionId, payload);
+    const createdPage = result.data?.page;
+
+    // If showInNav is true and page is published, add to navigation
+    if (data.showInNav && data.status === 'published' && createdPage) {
+      try {
+        const navResult = await getStorefrontNavigation(capturedOrgId, capturedAttractionId);
+        const currentNav = navResult.data?.navigation ?? { header: [], footer: [] };
+
+        // Add new nav item for this page to header
+        const newNavItem = {
+          label: data.title,
+          type: 'page' as const,
+          pageId: createdPage.id,
+          openNewTab: false,
+        };
+
+        await updateStorefrontNavigation(capturedOrgId, capturedAttractionId, {
+          header: [...currentNav.header.map(mapNavItemForApi), newNavItem],
+          footer: currentNav.footer.map(mapNavItemForApi),
+        });
+      } catch {
+        // Navigation sync failed, but page was created - don't fail the whole operation
+        console.error('Failed to sync navigation after page creation');
+      }
+    }
   }
 
   return (

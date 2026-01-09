@@ -826,9 +826,30 @@ export async function createStorefrontPage(
     showInNav?: boolean;
   }
 ) {
+  // Transform to snake_case for API
+  const payload: Record<string, unknown> = {
+    page_type: data.pageType,
+    title: data.title,
+  };
+  if (data.slug !== undefined) payload.slug = data.slug;
+  if (data.content !== undefined) payload.content = data.content;
+  if (data.contentFormat !== undefined) payload.content_format = data.contentFormat;
+  if (data.featuredImageUrl !== undefined) payload.featured_image_url = data.featuredImageUrl;
+  if (data.status !== undefined) payload.status = data.status;
+  if (data.sortOrder !== undefined) payload.sort_order = data.sortOrder;
+  if (data.showInNav !== undefined) payload.show_in_nav = data.showInNav;
+
+  // SEO fields are nested
+  if (data.metaTitle !== undefined || data.metaDescription !== undefined) {
+    payload.seo = {
+      ...(data.metaTitle !== undefined && { title: data.metaTitle }),
+      ...(data.metaDescription !== undefined && { description: data.metaDescription }),
+    };
+  }
+
   return serverApi.post<{ page: StorefrontPage }>(
     `/organizations/${orgId}/attractions/${attractionId}/storefront/pages`,
-    data
+    payload
   );
 }
 
@@ -852,9 +873,28 @@ export async function updateStorefrontPage(
     showInNav: boolean;
   }>
 ) {
+  // Transform to snake_case for API
+  const payload: Record<string, unknown> = {};
+  if (data.slug !== undefined) payload.slug = data.slug;
+  if (data.title !== undefined) payload.title = data.title;
+  if (data.content !== undefined) payload.content = data.content;
+  if (data.contentFormat !== undefined) payload.content_format = data.contentFormat;
+  if (data.featuredImageUrl !== undefined) payload.featured_image_url = data.featuredImageUrl;
+  if (data.status !== undefined) payload.status = data.status;
+  if (data.sortOrder !== undefined) payload.sort_order = data.sortOrder;
+  if (data.showInNav !== undefined) payload.show_in_nav = data.showInNav;
+
+  // SEO fields are nested
+  if (data.metaTitle !== undefined || data.metaDescription !== undefined) {
+    payload.seo = {
+      ...(data.metaTitle !== undefined && { title: data.metaTitle }),
+      ...(data.metaDescription !== undefined && { description: data.metaDescription }),
+    };
+  }
+
   return serverApi.patch<{ page: StorefrontPage }>(
     `/organizations/${orgId}/attractions/${attractionId}/storefront/pages/${pageId}`,
-    data
+    payload
   );
 }
 

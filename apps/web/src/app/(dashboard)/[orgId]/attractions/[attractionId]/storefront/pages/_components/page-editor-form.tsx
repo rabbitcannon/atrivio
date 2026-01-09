@@ -273,9 +273,17 @@ export function PageEditorForm({
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Show in Navigation</Label>
-                  <p className="text-xs text-muted-foreground">Add to site header/footer</p>
+                  <p className="text-xs text-muted-foreground">
+                    {status === 'published'
+                      ? 'Auto-add to header menu when saved'
+                      : 'Publish page first to add to navigation'}
+                  </p>
                 </div>
-                <Switch checked={showInNav} onCheckedChange={setShowInNav} />
+                <Switch
+                  checked={showInNav}
+                  onCheckedChange={setShowInNav}
+                  disabled={status !== 'published'}
+                />
               </div>
             </CardContent>
           </Card>
