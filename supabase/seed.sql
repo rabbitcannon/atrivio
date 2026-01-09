@@ -1599,7 +1599,28 @@ BEGIN
     ('81000000-0000-0000-0000-000000000017', v_org_id, v_mansion_id, '2025-10-05', '18:00', '18:15', 20, 5, 'available', 0),
     ('81000000-0000-0000-0000-000000000018', v_org_id, v_mansion_id, '2025-10-05', '18:15', '18:30', 20, 3, 'available', 0),
     ('81000000-0000-0000-0000-000000000019', v_org_id, v_mansion_id, '2025-10-05', '18:30', '18:45', 20, 0, 'available', 0),
-    ('81000000-0000-0000-0000-000000000020', v_org_id, v_mansion_id, '2025-10-05', '18:45', '19:00', 20, 0, 'available', 0)
+    ('81000000-0000-0000-0000-000000000020', v_org_id, v_mansion_id, '2025-10-05', '18:45', '19:00', 20, 0, 'available', 0),
+
+    -- Terror Trail time slots (30-min intervals from 7pm-10pm on Fri/Sat/Sun)
+    -- Friday Oct 3, 2025
+    ('81000000-0000-0000-0000-000000000101', v_org_id, v_trail_id, '2025-10-03', '19:00', '19:30', 15, 10, 'available', 0),
+    ('81000000-0000-0000-0000-000000000102', v_org_id, v_trail_id, '2025-10-03', '19:30', '20:00', 15, 8, 'available', 0),
+    ('81000000-0000-0000-0000-000000000103', v_org_id, v_trail_id, '2025-10-03', '20:00', '20:30', 15, 5, 'available', 0),
+    ('81000000-0000-0000-0000-000000000104', v_org_id, v_trail_id, '2025-10-03', '20:30', '21:00', 15, 3, 'available', 500),
+    ('81000000-0000-0000-0000-000000000105', v_org_id, v_trail_id, '2025-10-03', '21:00', '21:30', 15, 0, 'available', 500),
+    ('81000000-0000-0000-0000-000000000106', v_org_id, v_trail_id, '2025-10-03', '21:30', '22:00', 15, 0, 'available', 500),
+    -- Saturday Oct 4, 2025 (busier)
+    ('81000000-0000-0000-0000-000000000107', v_org_id, v_trail_id, '2025-10-04', '19:00', '19:30', 20, 20, 'sold_out', 0),
+    ('81000000-0000-0000-0000-000000000108', v_org_id, v_trail_id, '2025-10-04', '19:30', '20:00', 20, 18, 'limited', 0),
+    ('81000000-0000-0000-0000-000000000109', v_org_id, v_trail_id, '2025-10-04', '20:00', '20:30', 20, 15, 'available', 500),
+    ('81000000-0000-0000-0000-000000000110', v_org_id, v_trail_id, '2025-10-04', '20:30', '21:00', 20, 10, 'available', 500),
+    ('81000000-0000-0000-0000-000000000111', v_org_id, v_trail_id, '2025-10-04', '21:00', '21:30', 20, 5, 'available', 1000),
+    ('81000000-0000-0000-0000-000000000112', v_org_id, v_trail_id, '2025-10-04', '21:30', '22:00', 20, 0, 'available', 1000),
+    -- Sunday Oct 5, 2025
+    ('81000000-0000-0000-0000-000000000113', v_org_id, v_trail_id, '2025-10-05', '19:00', '19:30', 15, 5, 'available', 0),
+    ('81000000-0000-0000-0000-000000000114', v_org_id, v_trail_id, '2025-10-05', '19:30', '20:00', 15, 3, 'available', 0),
+    ('81000000-0000-0000-0000-000000000115', v_org_id, v_trail_id, '2025-10-05', '20:00', '20:30', 15, 0, 'available', 0),
+    ('81000000-0000-0000-0000-000000000116', v_org_id, v_trail_id, '2025-10-05', '20:30', '21:00', 15, 0, 'available', 0)
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================
@@ -2442,7 +2463,7 @@ BEGIN
       TRUE,
       NOW() - INTERVAL '30 days'
     ),
-    -- Terror Trail storefront (draft) - uses 'forest' preset
+    -- Terror Trail storefront (published) - uses 'forest' preset
     (
       'f0000000-0000-0000-0000-000000000002',
       v_org_id,
@@ -2474,7 +2495,42 @@ BEGIN
       TRUE,
       FALSE,
       NULL,
+      TRUE,               -- is_published = TRUE
+      NOW() - INTERVAL '15 days'  -- published_at
+    ),
+    -- Escape the Asylum storefront (draft) - uses 'vintage' preset
+    (
+      'f0000000-0000-0000-0000-000000000003',
+      v_org_id,
+      'c0000000-0000-0000-0000-000000000003',  -- escape-asylum attraction
+      'Escape Before They Find You',
+      'Can you escape the abandoned asylum before the patients find you? A 60-minute immersive escape experience.',
+      NULL,
+      NULL,
+      NULL,
+      'Escape the Asylum',
+      'Time is running out',
+      'vintage',       -- Vintage sepia theme for old asylum
+      '#a16207',       -- Yellow-700 (old paper)
+      '#1c1917',       -- Stone-900
+      '#b91c1c',       -- Red-700 (danger/blood)
+      '#1c1917',       -- Stone-900
+      '#fef3c7',       -- Amber-100
+      'Playfair Display',
+      'Inter',
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      TRUE,
+      TRUE,
+      TRUE,
       FALSE,
+      NULL,
+      FALSE,           -- Draft mode
       NULL
     )
   ON CONFLICT (attraction_id) DO NOTHING;
@@ -2530,6 +2586,20 @@ BEGIN
       NULL,
       'dns_txt',
       NOW() - INTERVAL '15 days',
+      'active',
+      'active'
+    ),
+    -- Escape the Asylum subdomain (auto-verified)
+    (
+      'f2000000-0000-0000-0000-000000000004',
+      v_org_id,
+      'c0000000-0000-0000-0000-000000000003',
+      'escape-asylum.atrivio.io',
+      'subdomain',
+      TRUE,
+      NULL,
+      'dns_txt',
+      NOW() - INTERVAL '10 days',
       'active',
       'active'
     )

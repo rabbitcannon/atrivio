@@ -8,7 +8,18 @@ import {
   THEME_PRESETS,
   type ThemePreset,
 } from '@atrivio/shared/constants';
-import { BarChart3, Image, Loader2, Palette, RotateCcw, Save, Search, Share2 } from 'lucide-react';
+import {
+  BarChart3,
+  Eye,
+  EyeOff,
+  Image,
+  Loader2,
+  Palette,
+  RotateCcw,
+  Save,
+  Search,
+  Share2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -73,6 +84,8 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
   const router = useRouter();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [isPublished, setIsPublished] = useState(settings?.isPublished ?? false);
 
   // Get initial theme values - use saved values or default preset
   const getInitialTheme = () => {
@@ -277,10 +290,61 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
     }
   };
 
+  const handlePublish = async () => {
+    setPublishing(true);
+    try {
+      const endpoint = isPublished
+        ? `/organizations/${orgId}/attractions/${attractionId}/storefront/unpublish`
+        : `/organizations/${orgId}/attractions/${attractionId}/storefront/publish`;
+
+      await apiClientDirect.post(endpoint, {});
+
+      setIsPublished(!isPublished);
+      toast({
+        title: isPublished ? 'Storefront unpublished' : 'Storefront published',
+        description: isPublished
+          ? 'Your storefront is now in draft mode.'
+          : 'Your storefront is now live and accessible to the public.',
+      });
+
+      router.refresh();
+    } catch (error) {
+      toast({
+        title: `Error ${isPublished ? 'unpublishing' : 'publishing'} storefront`,
+        description: error instanceof Error ? error.message : 'Something went wrong',
+        variant: 'destructive',
+      });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving}>
+      <div className="flex justify-end gap-2">
+        <Button
+          variant={isPublished ? 'outline' : 'default'}
+          onClick={handlePublish}
+          disabled={publishing || saving}
+        >
+          {publishing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {isPublished ? 'Unpublishing...' : 'Publishing...'}
+            </>
+          ) : isPublished ? (
+            <>
+              <EyeOff className="mr-2 h-4 w-4" />
+              Unpublish
+            </>
+          ) : (
+            <>
+              <Eye className="mr-2 h-4 w-4" />
+              Publish
+            </>
+          )}
+        </Button>
+        <Button variant="outline" onClick={handleSave} disabled={saving || publishing}>
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
