@@ -175,6 +175,15 @@ export class StorefrontsController {
     return { domains };
   }
 
+  @Get('domains/limits')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin')
+  @ApiOperation({ summary: 'Get domain limits for organization' })
+  async getDomainLimits(@Tenant() ctx: TenantContext) {
+    const limits = await this.storefrontsService.getDomainLimits(ctx.orgId);
+    return { limits };
+  }
+
   @Post('domains')
   @UseGuards(RolesGuard)
   @Roles('owner', 'admin')

@@ -2483,6 +2483,9 @@ BEGIN
   -- STOREFRONT DOMAINS
   -- ============================================================================
 
+  -- Set custom domain limit to 5 (Pro tier) for seed org to allow custom domains
+  UPDATE organizations SET custom_domain_limit = 5 WHERE id = v_org_id;
+
   INSERT INTO storefront_domains (
     id, org_id, attraction_id, domain, domain_type, is_primary,
     verification_token, verification_method, verified_at,

@@ -455,12 +455,56 @@ export class StorefrontsService {
     });
   }
 
+  async getDomainLimits(orgId: string): Promise<{
+    customDomainCount: number;
+    customDomainLimit: number;
+    remaining: number;
+  }> {
+    // Get org's custom domain limit
+    const { data: org } = await this.supabase.adminClient
+      .from('organizations')
+      .select('custom_domain_limit')
+      .eq('id', orgId)
+      .single();
+
+    const limit = org?.custom_domain_limit ?? 0;
+
+    // Count current custom domains for this org
+    const { count } = await this.supabase.adminClient
+      .from('storefront_domains')
+      .select('id', { count: 'exact', head: true })
+      .eq('org_id', orgId)
+      .eq('domain_type', 'custom');
+
+    const currentCount = count ?? 0;
+
+    return {
+      customDomainCount: currentCount,
+      customDomainLimit: limit,
+      remaining: limit - currentCount,
+    };
+  }
+
   async addDomain(orgId: string, attractionId: string, dto: AddDomainDto): Promise<DomainResponse> {
     // Validate domain format - allow single-char subdomains and full domains
     const domainRegex =
       /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
     if (!domainRegex.test(dto.domain)) {
       throw new BadRequestException('Invalid domain format');
+    }
+
+    // Check domain limit before proceeding
+    const limits = await this.getDomainLimits(orgId);
+    if (limits.customDomainLimit === 0) {
+      throw new BadRequestException(
+        'Custom domains are not available on the free plan. Upgrade to Pro to add custom domains.',
+      );
+    }
+    if (limits.remaining <= 0) {
+      throw new BadRequestException(
+        `Custom domain limit reached. Your plan allows up to ${limits.customDomainLimit} custom domains. ` +
+          `Contact support to upgrade for additional domains.`,
+      );
     }
 
     // Check if domain already exists globally

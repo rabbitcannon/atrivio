@@ -24,7 +24,8 @@ export async function apiServer<T>(
   const session = await getSession();
 
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    // Only set Content-Type for requests with a body
+    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...options.headers,
   };
 

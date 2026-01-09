@@ -929,6 +929,19 @@ export async function deleteStorefrontDomain(
   );
 }
 
+/**
+ * Get domain limits for organization
+ */
+export async function getStorefrontDomainLimits(orgId: string, attractionId: string) {
+  return serverApi.get<{
+    limits: {
+      customDomainCount: number;
+      customDomainLimit: number;
+      remaining: number;
+    };
+  }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/limits`);
+}
+
 // ===================== Storefront FAQs =====================
 
 /**

@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import {
   addStorefrontDomain,
   deleteStorefrontDomain,
+  getStorefrontDomainLimits,
   getStorefrontDomains,
   getStorefrontSettings,
   resolveOrgId,
@@ -65,17 +66,23 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
 
   let domains: StorefrontDomain[] = [];
   let _settings: StorefrontSettings | null = null;
+  let domainLimits = { customDomainCount: 0, customDomainLimit: 0, remaining: 0 };
 
   try {
-    const [domainsResult, settingsResult] = await Promise.all([
+    const [domainsResult, settingsResult, limitsResult] = await Promise.all([
       getStorefrontDomains(orgId, attractionId),
       getStorefrontSettings(orgId, attractionId),
+      getStorefrontDomainLimits(orgId, attractionId),
     ]);
     domains = domainsResult.data?.domains ?? [];
     _settings = settingsResult.data?.settings ?? null;
+    domainLimits = limitsResult.data?.limits ?? domainLimits;
   } catch {
     // Feature might not be enabled
   }
+
+  const canAddDomains = domainLimits.customDomainLimit > 0;
+  const isAtLimit = domainLimits.remaining <= 0;
 
   // Find the default subdomain
   const defaultSubdomain = domains.find((d) => d.domainType === 'subdomain');
@@ -172,7 +179,21 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
           <h1 className="text-3xl font-bold">Domains</h1>
           <p className="text-muted-foreground">Manage custom domains for your storefront.</p>
         </div>
-        <AddDomainDialog onAddDomain={handleAddDomain} />
+        <div className="flex items-center gap-4">
+          {canAddDomains && (
+            <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+              <Link2 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">
+                {domainLimits.customDomainCount} of {domainLimits.customDomainLimit}
+              </span>
+              <span className="text-sm text-muted-foreground">domains</span>
+            </div>
+          )}
+          {canAddDomains && !isAtLimit && <AddDomainDialog onAddDomain={handleAddDomain} />}
+          {canAddDomains && isAtLimit && (
+            <Badge variant="secondary">Domain limit reached</Badge>
+          )}
+        </div>
       </div>
 
       {/* Default Subdomain */}
@@ -210,7 +231,17 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
           <CardDescription>Connect your own domain to your storefront</CardDescription>
         </CardHeader>
         <CardContent>
-          {customDomains.length === 0 ? (
+          {!canAddDomains ? (
+            <div className="text-center py-12">
+              <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="font-semibold mb-2">Custom domains available on Pro plan</h3>
+              <p className="text-muted-foreground mb-4">
+                Upgrade to Pro to connect your own domain to your storefront.
+                Your free subdomain will always be available.
+              </p>
+              <Badge variant="secondary">Pro Feature</Badge>
+            </div>
+          ) : customDomains.length === 0 ? (
             <div className="text-center py-12">
               <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-semibold mb-2">No custom domains</h3>
@@ -286,8 +317,8 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
         </CardContent>
       </Card>
 
-      {/* DNS Instructions - only show when relevant */}
-      {showInstructions && (
+      {/* DNS Instructions - only show when relevant and user can add domains */}
+      {canAddDomains && showInstructions && (
         <Card>
           <CardHeader>
             <CardTitle>How to Connect a Custom Domain</CardTitle>
