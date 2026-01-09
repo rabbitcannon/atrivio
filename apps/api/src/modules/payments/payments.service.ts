@@ -16,16 +16,28 @@ import type {
   ListPayoutsDto,
   ListTransactionsDto,
 } from './dto/payments.dto.js';
+import { SubscriptionsService, type SubscriptionTier } from './subscriptions.service.js';
 
-// Default platform fee if not configured
-const DEFAULT_PLATFORM_FEE_PERCENT = 3.0;
+// Default platform fee if not configured (fallback values)
+const DEFAULT_PLATFORM_FEE_PERCENT = 3.9;
+const DEFAULT_PLATFORM_FEE_FIXED_CENTS = 30;
+
+export interface PlatformFee {
+  percent: number;
+  fixedCents: number;
+  isCustom: boolean;
+  tier: SubscriptionTier | null;
+}
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
   private stripe: Stripe;
 
-  constructor(private supabase: SupabaseService) {
+  constructor(
+    private supabase: SupabaseService,
+    private subscriptionsService: SubscriptionsService,
+  ) {
     const stripeKey = process.env['STRIPE_SECRET_KEY'];
     if (!stripeKey) {
       this.logger.warn('STRIPE_SECRET_KEY not configured - Stripe operations will fail');
@@ -49,43 +61,67 @@ export class PaymentsService {
   }
 
   /**
-   * Get effective platform fee percentage for an organization
-   * Uses org-specific fee if set, otherwise global default
+   * Get effective platform fee for an organization
+   * Priority:
+   * 1. Org-specific custom fee (if set)
+   * 2. Tier-based fee from subscription_tier_config
+   * 3. Global default fallback
    */
-  async getPlatformFee(orgId: OrgId): Promise<{ percent: number; isCustom: boolean }> {
-    // Try to get org-specific fee first
+  async getPlatformFee(orgId: OrgId): Promise<PlatformFee> {
+    // First, get org data including tier and any custom fee override
     const { data: org } = await this.supabase.adminClient
       .from('organizations')
-      .select('platform_fee_percent')
+      .select('platform_fee_percent, subscription_tier')
       .eq('id', orgId)
       .single();
 
+    // Check for org-specific custom fee override
     if (org?.platform_fee_percent !== null && org?.platform_fee_percent !== undefined) {
       return {
         percent: Number(org.platform_fee_percent),
+        fixedCents: 0, // Custom fee overrides don't have a fixed component
         isCustom: true,
+        tier: (org.subscription_tier as SubscriptionTier) || 'free',
       };
     }
 
-    // Fall back to global default
-    const { data: setting } = await this.supabase.adminClient
-      .from('platform_settings')
-      .select('value')
-      .eq('key', 'stripe_platform_fee_percent')
-      .single();
+    // Get tier-based fee from subscription tier config
+    const tier = (org?.subscription_tier as SubscriptionTier) || 'free';
+    const tierConfig = await this.subscriptionsService.getTierConfig(tier);
 
+    if (tierConfig) {
+      return {
+        percent: tierConfig.transactionFeePercentage,
+        fixedCents: tierConfig.transactionFeeFixedCents,
+        isCustom: false,
+        tier,
+      };
+    }
+
+    // Fallback to global defaults if tier config not found
+    this.logger.warn(`No tier config found for tier ${tier}, using fallback defaults`);
     return {
-      percent: setting?.value ? Number(setting.value) : DEFAULT_PLATFORM_FEE_PERCENT,
+      percent: DEFAULT_PLATFORM_FEE_PERCENT,
+      fixedCents: DEFAULT_PLATFORM_FEE_FIXED_CENTS,
       isCustom: false,
+      tier,
     };
   }
 
   /**
    * Calculate platform fee amount from transaction amount
+   * Fee = (amount * percent / 100) + fixedCents
+   *
+   * Example for Free tier (3.9% + $0.30):
+   *   $50 ticket = ($50 * 0.039) + $0.30 = $1.95 + $0.30 = $2.25
+   *
+   * Example for Enterprise tier (1.9% + $0.15):
+   *   $50 ticket = ($50 * 0.019) + $0.15 = $0.95 + $0.15 = $1.10
    */
   async calculatePlatformFee(orgId: OrgId, amountCents: number): Promise<number> {
-    const { percent } = await this.getPlatformFee(orgId);
-    return Math.round(amountCents * (percent / 100));
+    const { percent, fixedCents } = await this.getPlatformFee(orgId);
+    const percentageFee = Math.round(amountCents * (percent / 100));
+    return percentageFee + fixedCents;
   }
 
   /**
@@ -624,8 +660,8 @@ export class PaymentsService {
       }
 
       // Calculate platform fee (we don't have the original fee info, so estimate)
-      const { percent } = await this.getPlatformFee(orgId);
-      const platformFee = Math.round(charge.amount * (percent / 100));
+      const { percent, fixedCents } = await this.getPlatformFee(orgId);
+      const platformFee = Math.round(charge.amount * (percent / 100)) + fixedCents;
 
       // Get Stripe's fee from the balance transaction if available
       let stripeFee = 0;

@@ -25,7 +25,7 @@ CREATE TABLE subscription_tier_config (
 CREATE TRIGGER update_subscription_tier_config_updated_at
   BEFORE UPDATE ON subscription_tier_config
   FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
+  EXECUTE FUNCTION update_updated_at_column();
 
 -- Create index on tier for lookups
 CREATE INDEX idx_subscription_tier_config_tier ON subscription_tier_config(tier);
@@ -89,14 +89,14 @@ INSERT INTO subscription_tier_config (
 );
 
 -- Update get_tier_limits function to read from database
-CREATE OR REPLACE FUNCTION get_tier_limits(p_tier subscription_tier)
+CREATE OR REPLACE FUNCTION get_tier_limits(tier subscription_tier)
 RETURNS JSONB AS $$
 DECLARE
   v_config RECORD;
 BEGIN
   SELECT * INTO v_config
-  FROM subscription_tier_config
-  WHERE tier = p_tier;
+  FROM subscription_tier_config stc
+  WHERE stc.tier = get_tier_limits.tier;
 
   IF NOT FOUND THEN
     -- Fallback for unknown tier

@@ -943,6 +943,19 @@ export interface PublicStorefront {
   domain: string;
 }
 
+export interface PublicTicketType {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  comparePrice: number | null;
+  category: string | null;
+  includes: string[] | null;
+  maxPerOrder: number;
+  minPerOrder: number;
+  isAvailable: boolean;
+}
+
 // ============================================================================
 // Check-In Types (F9)
 // ============================================================================

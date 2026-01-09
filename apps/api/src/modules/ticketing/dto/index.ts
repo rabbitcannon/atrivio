@@ -1,3 +1,4 @@
+export * from './checkout.dto.js';
 export * from './order.dto.js';
 export * from './promo-code.dto.js';
 export * from './ticket-type.dto.js';

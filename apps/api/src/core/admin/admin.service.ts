@@ -605,6 +605,7 @@ export class AdminService {
           name: o['name'] as string,
           slug: o['slug'] as string,
           status: o['status'] as string,
+          subscription_tier: o['subscription_tier'] as string | null,
           owner: orgOwners[orgId] || null,
           member_count: orgMemberCounts[orgId] || 0,
           attraction_count: orgAttractionCounts[orgId] || 0,

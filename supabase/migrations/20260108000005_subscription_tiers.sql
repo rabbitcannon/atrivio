@@ -53,7 +53,7 @@ CREATE POLICY "Org members can view subscription history"
   ON subscription_history FOR SELECT
   USING (
     org_id IN (
-      SELECT org_id FROM organization_members
+      SELECT org_id FROM org_memberships
       WHERE user_id = auth.uid() AND role IN ('owner', 'admin')
     )
   );

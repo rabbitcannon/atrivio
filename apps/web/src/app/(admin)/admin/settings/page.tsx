@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  ArrowRight,
   Check,
   Clock,
   CreditCard,
@@ -12,6 +13,7 @@ import {
   Shield,
   Sliders,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -513,6 +515,38 @@ export default function AdminSettingsPage() {
       {maintenanceSetting && (
         <MaintenanceModeCard setting={maintenanceSetting} onUpdate={handleUpdate} />
       )}
+
+      {/* Subscription Tiers Link */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <CreditCard className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Subscription Tiers</CardTitle>
+                <CardDescription>
+                  Configure pricing, limits, and features for Free, Pro, and Enterprise tiers
+                </CardDescription>
+              </div>
+            </div>
+            <Button asChild>
+              <Link href="/admin/subscription-tiers">
+                Manage Tiers
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Subscription tier settings control per-tier limits (attractions, staff, domains),
+            transaction fees, and enabled features. These settings override global defaults
+            for organizations on each tier.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Settings by Category */}
       <div className="grid gap-6 lg:grid-cols-2">

@@ -8,9 +8,12 @@ import { StorefrontLink } from './storefront-link';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { attraction, navigation, settings } = useStorefront();
+  const { attraction, navigation } = useStorefront();
 
-  const headerLinks = navigation.header || [];
+  // Filter out /tickets links since we have a dedicated button for that
+  const headerLinks = (navigation.header || []).filter(
+    (link) => link.url !== '/tickets' && !link.url.includes('/tickets')
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

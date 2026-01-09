@@ -259,3 +259,90 @@ export async function getPublicTicketTypes(
     return { ticketTypes: [] };
   }
 }
+
+// =====================
+// Checkout API
+// =====================
+
+export interface CheckoutItem {
+  ticketTypeId: string;
+  quantity: number;
+}
+
+export interface CreateCheckoutRequest {
+  customerEmail: string;
+  customerName?: string;
+  customerPhone?: string;
+  items: CheckoutItem[];
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export interface CheckoutSession {
+  checkoutUrl: string;
+  sessionId: string;
+  orderId: string;
+  orderNumber: string;
+  total: number;
+  platformFee: number;
+  currency: string;
+}
+
+export interface VerifiedCheckout {
+  success: boolean;
+  order: {
+    id: string;
+    orderNumber: string;
+    customerEmail: string;
+    total: number;
+    status: string;
+    tickets: Array<{
+      id: string;
+      ticketNumber: string;
+      barcode: string;
+    }>;
+  };
+}
+
+/**
+ * Create a Stripe Checkout session for ticket purchase
+ */
+export async function createCheckoutSession(
+  storefrontIdentifier: string,
+  data: CreateCheckoutRequest
+): Promise<CheckoutSession> {
+  const res = await fetch(
+    `${API_URL}/storefronts/${encodeURIComponent(storefrontIdentifier)}/checkout`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to create checkout session' }));
+    throw new Error(error.message || 'Failed to create checkout session');
+  }
+
+  return res.json();
+}
+
+/**
+ * Verify a completed checkout session and get order details
+ */
+export async function verifyCheckoutSession(
+  storefrontIdentifier: string,
+  sessionId: string
+): Promise<VerifiedCheckout> {
+  const res = await fetch(
+    `${API_URL}/storefronts/${encodeURIComponent(storefrontIdentifier)}/checkout/verify/${sessionId}`
+  );
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to verify checkout' }));
+    throw new Error(error.message || 'Failed to verify checkout');
+  }
+
+  return res.json();
+}
