@@ -1,11 +1,19 @@
-import { AlertCircle, Calendar, MapPin, Settings, Store } from 'lucide-react';
+import {
+  AlertCircle,
+  Calendar,
+  ChevronRight,
+  MapPin,
+  Settings,
+  Store,
+  Users,
+} from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAttraction, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -44,138 +52,117 @@ export default async function AttractionDetailPage({ params }: AttractionDetailP
 
   const zonesCount = attraction.zones_count ?? attraction.zones?.length ?? 0;
   const typeName = attraction.type_name || attraction.type?.replace('_', ' ') || 'Unknown';
+  const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
+
+  const featureCards = [
+    {
+      title: 'Zones',
+      description: 'Manage areas and actor positions within your attraction',
+      href: `${basePath}/zones`,
+      icon: MapPin,
+      stat: zonesCount,
+      statLabel: zonesCount === 1 ? 'zone' : 'zones',
+    },
+    {
+      title: 'Seasons',
+      description: 'Configure operating dates, hours, and seasonal settings',
+      href: `${basePath}/seasons`,
+      icon: Calendar,
+      stat: null, // TODO: Add active seasons count
+      statLabel: 'Configure schedules',
+    },
+    {
+      title: 'Storefront',
+      description: 'Public-facing site for tickets, info, and announcements',
+      href: `${basePath}/storefront`,
+      icon: Store,
+      stat: null, // TODO: Add published status
+      statLabel: 'Manage public site',
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{attraction.name}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{attraction.name}</h1>
             <Badge variant={attraction.status === 'active' ? 'default' : 'secondary'}>
               {attraction.status}
             </Badge>
           </div>
-          <p className="text-muted-foreground">{attraction.description || 'No description'}</p>
+          <p className="text-muted-foreground">
+            {attraction.description || 'No description provided'}
+          </p>
         </div>
         <Button variant="outline" asChild>
-          <a href={`/${orgIdentifier}/attractions/${attractionId}/settings`}>
+          <Link href={`${basePath}/settings`}>
             <Settings className="mr-2 h-4 w-4" />
             Settings
-          </a>
+          </Link>
         </Button>
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="zones">Zones</TabsTrigger>
-          <TabsTrigger value="seasons">Seasons</TabsTrigger>
-          <TabsTrigger value="storefront">Storefront</TabsTrigger>
-        </TabsList>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Zones</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{zonesCount}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Capacity</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{attraction.capacity || 0}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold capitalize">{typeName}</div>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Zones</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{zonesCount}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Capacity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{attraction.capacity || 0}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Type</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold capitalize">{typeName}</div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="zones">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Zones</CardTitle>
-                  <CardDescription>Manage zones within this attraction.</CardDescription>
-                </div>
-                <Button asChild>
-                  <a href={`/${orgIdentifier}/attractions/${attractionId}/zones`}>
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Manage Zones
-                  </a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View and configure zones for this attraction.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="seasons">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Seasons</CardTitle>
-                  <CardDescription>Manage operating seasons.</CardDescription>
-                </div>
-                <Button asChild>
-                  <a href={`/${orgIdentifier}/attractions/${attractionId}/seasons`}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Manage Seasons
-                  </a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Configure operating hours and seasonal settings.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="storefront">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Storefront</CardTitle>
-                  <CardDescription>
-                    Manage your public-facing storefront for ticket sales and information.
-                  </CardDescription>
-                </div>
-                <Button asChild>
-                  <a href={`/${orgIdentifier}/attractions/${attractionId}/storefront`}>
-                    <Store className="mr-2 h-4 w-4" />
-                    Manage Storefront
-                  </a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Configure your storefront appearance, pages, FAQs, domains, and announcements.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Feature Cards */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Manage</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {featureCards.map((feature) => (
+            <Link key={feature.title} href={feature.href} className="group">
+              <Card className="h-full transition-colors hover:bg-muted/50">
+                <CardHeader className="flex flex-row items-start justify-between pb-2">
+                  <div className="rounded-md bg-primary/10 p-2">
+                    <feature.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  {feature.stat !== null ? (
+                    <p className="pt-2 text-sm font-medium text-primary">
+                      {feature.stat} {feature.statLabel}
+                    </p>
+                  ) : (
+                    <p className="pt-2 text-sm text-muted-foreground">{feature.statLabel}</p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
