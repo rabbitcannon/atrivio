@@ -597,12 +597,6 @@ export class StorefrontsService {
   private async checkDnsRecord(domain: string, method: string, token: string): Promise<boolean> {
     this.logger.log(`Checking DNS for ${domain} with method ${method}, token ${token}`);
 
-    // In development, auto-verify for test domains
-    if (process.env['NODE_ENV'] !== 'production') {
-      this.logger.log('Development mode: auto-verifying domain');
-      return true;
-    }
-
     try {
       if (method === 'dns_txt') {
         // Check for TXT record at _atrivio-verify.domain.com
@@ -641,8 +635,10 @@ export class StorefrontsService {
           this.logger.log(`Found CNAME records: ${JSON.stringify(records)}`);
 
           // Check if CNAME points to our platform domain
-          const expectedCname = 'cname.atrivio.io';
-          return records.some((r) => r.toLowerCase() === expectedCname);
+          const platformDomain = process.env['PLATFORM_DOMAIN'] || 'atrivio.io';
+          const expectedCname = `cname.${platformDomain}`;
+          this.logger.log(`Expected CNAME: ${expectedCname}`);
+          return records.some((r) => r.toLowerCase() === expectedCname.toLowerCase());
         } catch (dnsError: unknown) {
           const error = dnsError as { code?: string };
           if (error.code === 'ENODATA' || error.code === 'ENOTFOUND') {
@@ -1375,6 +1371,7 @@ export class StorefrontsService {
 
     if (includeVerification && row['verification_token']) {
       const method = row['verification_method'] as VerificationMethod;
+      const platformDomain = process.env['PLATFORM_DOMAIN'] || 'atrivio.io';
       response.verification = {
         method,
         recordName:
@@ -1383,7 +1380,7 @@ export class StorefrontsService {
         instructions:
           method === 'dns_txt'
             ? `Add a TXT record to your DNS with name "_atrivio-verify" and value "${row['verification_token']}"`
-            : `Add a CNAME record pointing ${row['domain']} to cname.atrivio.io`,
+            : `Add a CNAME record pointing ${row['domain']} to cname.${platformDomain}`,
       };
     }
 
