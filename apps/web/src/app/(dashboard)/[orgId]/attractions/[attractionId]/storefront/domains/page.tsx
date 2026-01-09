@@ -5,22 +5,29 @@ import {
   Clock,
   Globe,
   Link2,
-  Plus,
-  RefreshCw,
   Shield,
   Star,
-  Trash2,
   XCircle,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getStorefrontDomains, getStorefrontSettings, resolveOrgId } from '@/lib/api';
+import {
+  addStorefrontDomain,
+  deleteStorefrontDomain,
+  getStorefrontDomains,
+  getStorefrontSettings,
+  resolveOrgId,
+  setStorefrontPrimaryDomain,
+  verifyStorefrontDomain,
+} from '@/lib/api';
 import type { DomainStatus, StorefrontDomain, StorefrontSettings } from '@/lib/api/types';
 import { siteConfig } from '@/lib/config';
+import { AddDomainDialog } from './_components/add-domain-dialog';
+import { DomainActions } from './_components/domain-actions';
+import { VerificationInstructions } from './_components/verification-instructions';
 
 export const metadata: Metadata = {
   title: 'Storefront Domains',
@@ -48,10 +55,11 @@ const STATUS_CONFIG: Record<
 export default async function StorefrontDomainsPage({ params }: DomainsPageProps) {
   const { orgId: orgIdentifier, attractionId } = await params;
 
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
+  const resolvedOrgId = await resolveOrgId(orgIdentifier);
+  if (!resolvedOrgId) {
     notFound();
   }
+  const orgId: string = resolvedOrgId;
 
   const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
 
@@ -69,8 +77,83 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
     // Feature might not be enabled
   }
 
-  // Find the default subdomain (domain ending with platform domain)
+  // Find the default subdomain
   const defaultSubdomain = domains.find((d) => d.domainType === 'subdomain');
+  const customDomains = domains.filter((d) => d.domainType === 'custom');
+
+  // Show instructions if there are pending/failed domains or no custom domains yet
+  const hasPendingDomains = customDomains.some((d) => d.status === 'pending' || d.status === 'failed');
+  const showInstructions = hasPendingDomains || customDomains.length === 0;
+
+  // Get environment-aware subdomain display
+  const getSubdomainDisplay = (domain: string) => {
+    const slug = siteConfig.getSlugFromSubdomain(domain);
+    return slug ? `${slug}.${siteConfig.platformDomain}` : domain;
+  };
+
+  // Capture values for server actions
+  const capturedOrgId = orgId;
+  const capturedAttractionId = attractionId;
+
+  // Server action: Add domain
+  async function handleAddDomain(domain: string): Promise<{ success: boolean; error?: string }> {
+    'use server';
+    try {
+      const result = await addStorefrontDomain(capturedOrgId, capturedAttractionId, domain);
+      if (result.error) {
+        return { success: false, error: result.error.message };
+      }
+      return { success: true };
+    } catch (err) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Failed to add domain' };
+    }
+  }
+
+  // Server action: Verify domain
+  async function handleVerifyDomain(domainId: string): Promise<{ success: boolean; error?: string }> {
+    'use server';
+    try {
+      const result = await verifyStorefrontDomain(capturedOrgId, capturedAttractionId, domainId);
+      if (result.error) {
+        return { success: false, error: result.error.message };
+      }
+      return { success: true };
+    } catch (err) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Verification failed' };
+    }
+  }
+
+  // Server action: Set primary domain
+  async function handleSetPrimaryDomain(domainId: string): Promise<{ success: boolean; error?: string }> {
+    'use server';
+    try {
+      const result = await setStorefrontPrimaryDomain(capturedOrgId, capturedAttractionId, domainId);
+      if (result.error) {
+        return { success: false, error: result.error.message };
+      }
+      return { success: true };
+    } catch (err) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Failed to set as primary' };
+    }
+  }
+
+  // Server action: Delete domain
+  async function handleDeleteDomain(domainId: string): Promise<{ success: boolean; error?: string }> {
+    'use server';
+    try {
+      const result = await deleteStorefrontDomain(capturedOrgId, capturedAttractionId, domainId);
+      if (result.error) {
+        return { success: false, error: result.error.message };
+      }
+      return { success: true };
+    } catch (err) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Failed to delete domain' };
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -89,10 +172,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
           <h1 className="text-3xl font-bold">Domains</h1>
           <p className="text-muted-foreground">Manage custom domains for your storefront.</p>
         </div>
-        <Button disabled>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Domain
-        </Button>
+        <AddDomainDialog onAddDomain={handleAddDomain} />
       </div>
 
       {/* Default Subdomain */}
@@ -110,7 +190,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 <div>
-                  <p className="font-medium">{defaultSubdomain.domain}</p>
+                  <p className="font-medium">{getSubdomainDisplay(defaultSubdomain.domain)}</p>
                   <p className="text-sm text-muted-foreground">Always available • SSL included</p>
                 </div>
               </div>
@@ -130,21 +210,18 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
           <CardDescription>Connect your own domain to your storefront</CardDescription>
         </CardHeader>
         <CardContent>
-          {domains.length === 0 ? (
+          {customDomains.length === 0 ? (
             <div className="text-center py-12">
               <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-semibold mb-2">No custom domains</h3>
               <p className="text-muted-foreground mb-4">
                 Add a custom domain to use your own URL for your storefront.
               </p>
-              <Button disabled>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Custom Domain
-              </Button>
+              <AddDomainDialog onAddDomain={handleAddDomain} />
             </div>
           ) : (
             <div className="space-y-3">
-              {domains.map((domain) => {
+              {customDomains.map((domain) => {
                 const statusConfig = STATUS_CONFIG[domain.status];
                 const StatusIcon = statusConfig.icon;
 
@@ -183,24 +260,24 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
                             <span>Verified {new Date(domain.verifiedAt).toLocaleDateString()}</span>
                           )}
                         </div>
+                        {/* Show verification instructions for pending domains */}
+                        {(domain.status === 'pending' || domain.status === 'failed') && domain.verification && (
+                          <div className="mt-2">
+                            <VerificationInstructions verification={domain.verification} />
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {domain.status === 'pending' || domain.status === 'failed' ? (
-                        <Button variant="outline" size="sm" disabled>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Verify
-                        </Button>
-                      ) : null}
-                      {!domain.isPrimary && domain.status === 'active' && (
-                        <Button variant="ghost" size="sm" disabled>
-                          Set as Primary
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" disabled>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                    <DomainActions
+                      domainId={domain.id}
+                      domain={domain.domain}
+                      domainType={domain.domainType}
+                      status={domain.status}
+                      isPrimary={domain.isPrimary}
+                      onVerify={handleVerifyDomain}
+                      onSetPrimary={handleSetPrimaryDomain}
+                      onDelete={handleDeleteDomain}
+                    />
                   </div>
                 );
               })}
@@ -209,45 +286,43 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
         </CardContent>
       </Card>
 
-      {/* DNS Instructions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>How to Connect a Custom Domain</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ol className="list-decimal list-inside space-y-3 text-sm">
-            <li>
-              <strong>Add your domain</strong> using the button above
-            </li>
-            <li>
-              <strong>Configure DNS records</strong> at your domain registrar:
-              <div className="mt-2 p-3 bg-muted rounded-lg font-mono text-xs">
-                <p>Type: CNAME</p>
-                <p>Name: www (or @)</p>
-                <p>Value: {siteConfig.cnameTarget}</p>
-              </div>
-              <p className="mt-1 text-muted-foreground">
-                For apex domains (example.com), you may need an ALIAS or ANAME record.
-              </p>
-            </li>
-            <li>
-              <strong>Verify your domain</strong> - we&apos;ll check the DNS records and provision
-              SSL automatically
-            </li>
-            <li>
-              <strong>Set as primary</strong> (optional) - make this your main storefront URL
-            </li>
-          </ol>
-          <p className="text-sm text-muted-foreground">
-            DNS changes can take up to 48 hours to propagate, though most complete within a few
-            minutes.
-          </p>
-        </CardContent>
-      </Card>
-
-      <p className="text-sm text-muted-foreground text-center">
-        Domain management will be available in a future update.
-      </p>
+      {/* DNS Instructions - only show when relevant */}
+      {showInstructions && (
+        <Card>
+          <CardHeader>
+            <CardTitle>How to Connect a Custom Domain</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ol className="list-decimal list-inside space-y-3 text-sm">
+              <li>
+                <strong>Add your domain</strong> using the button above
+              </li>
+              <li>
+                <strong>Configure DNS records</strong> at your domain registrar:
+                <div className="mt-2 p-3 bg-muted rounded-lg font-mono text-xs">
+                  <p>Type: CNAME</p>
+                  <p>Name: www (or @)</p>
+                  <p>Value: {siteConfig.cnameTarget}</p>
+                </div>
+                <p className="mt-1 text-muted-foreground">
+                  For apex domains (example.com), you may need an ALIAS or ANAME record.
+                </p>
+              </li>
+              <li>
+                <strong>Verify your domain</strong> - we&apos;ll check the DNS records and provision
+                SSL automatically
+              </li>
+              <li>
+                <strong>Set as primary</strong> (optional) - make this your main storefront URL
+              </li>
+            </ol>
+            <p className="text-sm text-muted-foreground">
+              DNS changes can take up to 48 hours to propagate, though most complete within a few
+              minutes.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

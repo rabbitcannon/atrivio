@@ -33,6 +33,7 @@ import type {
   StorefrontPage,
   StorefrontSettings,
 } from '@/lib/api/types';
+import { siteConfig } from '@/lib/config/site';
 
 export const metadata: Metadata = {
   title: 'Storefront',
@@ -130,10 +131,19 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
 
   const getPreviewUrl = () => {
     const primaryDomain = domains.find((d) => d.isPrimary && d.status === 'active');
-    if (primaryDomain) return `https://${primaryDomain.domain}`;
+    if (primaryDomain) return siteConfig.getDomainUrl(primaryDomain.domain);
     const subdomain = domains.find((d) => d.domainType === 'subdomain' && d.status === 'active');
-    if (subdomain) return `https://${subdomain.domain}`;
+    if (subdomain) return siteConfig.getDomainUrl(subdomain.domain);
     return null;
+  };
+
+  // Get environment-aware domain display
+  const getDomainDisplay = (domain: string, domainType: string) => {
+    if (domainType === 'subdomain') {
+      const slug = siteConfig.getSlugFromSubdomain(domain);
+      return slug ? `${slug}.${siteConfig.platformDomain}` : domain;
+    }
+    return domain;
   };
 
   const previewUrl = getPreviewUrl();
@@ -321,7 +331,9 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
                       <AlertCircle className="h-5 w-5 text-red-500" />
                     )}
                     <div>
-                      <p className="font-medium">{domain.domain}</p>
+                      <p className="font-medium">
+                        {getDomainDisplay(domain.domain, domain.domainType)}
+                      </p>
                       <p className="text-xs text-muted-foreground capitalize">
                         {domain.domainType} {domain.isPrimary && '• Primary'}
                       </p>
