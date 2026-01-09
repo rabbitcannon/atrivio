@@ -3,6 +3,7 @@
 import {
   Activity,
   Building2,
+  CreditCard,
   DollarSign,
   FileText,
   Flag,
@@ -38,6 +39,7 @@ const systemNavItems: NavItem[] = [
 ];
 
 const configNavItems: NavItem[] = [
+  { label: 'Subscription Tiers', href: '/admin/subscription-tiers', icon: CreditCard },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
   { label: 'System Health', href: '/admin/health', icon: Activity },
   { label: 'Rate Limits', href: '/admin/rate-limits', icon: Shield },

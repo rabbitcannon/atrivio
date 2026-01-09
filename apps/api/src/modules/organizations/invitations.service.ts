@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { RbacService } from '../../core/rbac/rbac.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { SubscriptionsService } from '../payments/subscriptions.service.js';
 
 @Injectable()
 export class InvitationsService {
@@ -21,7 +22,8 @@ export class InvitationsService {
     private supabase: SupabaseService,
     private rbacService: RbacService,
     private notificationsService: NotificationsService,
-    private config: ConfigService
+    private config: ConfigService,
+    private subscriptionsService: SubscriptionsService
   ) {}
 
   /**
@@ -40,6 +42,35 @@ export class InvitationsService {
         code: 'ROLE_ESCALATION',
         message: 'Cannot invite to this role',
       });
+    }
+
+    // Check staff member limit for org's subscription tier
+    const subscription = await this.subscriptionsService.getSubscription(orgId);
+    const limit = subscription.limits.staffMembers;
+
+    if (limit !== -1) {
+      // -1 means unlimited
+      // Count active members + pending invitations
+      const { count: memberCount } = await this.supabase.adminClient
+        .from('org_memberships')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId)
+        .eq('status', 'active');
+
+      const { count: pendingCount } = await this.supabase.adminClient
+        .from('org_invitations')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId)
+        .eq('status', 'pending');
+
+      const totalCount = (memberCount || 0) + (pendingCount || 0);
+
+      if (totalCount >= limit) {
+        throw new ForbiddenException({
+          code: 'STAFF_LIMIT_REACHED',
+          message: `Your ${subscription.tier} plan allows up to ${limit} staff member(s). Please upgrade to add more.`,
+        });
+      }
     }
 
     // Check if user is already a member
@@ -355,6 +386,25 @@ Atrivio Platform`;
         code: 'MEMBER_ALREADY_EXISTS',
         message: 'You are already a member of this organization',
       });
+    }
+
+    // Safety check: verify staff limit hasn't been reached since invitation was sent
+    const subscription = await this.subscriptionsService.getSubscription(invite.org_id);
+    const limit = subscription.limits.staffMembers;
+
+    if (limit !== -1) {
+      const { count: memberCount } = await this.supabase.adminClient
+        .from('org_memberships')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', invite.org_id)
+        .eq('status', 'active');
+
+      if (memberCount !== null && memberCount >= limit) {
+        throw new ForbiddenException({
+          code: 'STAFF_LIMIT_REACHED',
+          message: `This organization has reached their staff member limit. Please contact the organization owner to upgrade their plan.`,
+        });
+      }
     }
 
     // Create membership

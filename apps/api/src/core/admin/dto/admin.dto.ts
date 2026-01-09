@@ -544,3 +544,81 @@ export class RevenueTrendDto {
   @Type(() => Number)
   days?: number = 30;
 }
+
+// ============================================================================
+// SUBSCRIPTION TIERS
+// ============================================================================
+
+export class UpdateSubscriptionTierDto {
+  @ApiPropertyOptional({ description: 'Display name for the tier' })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(50)
+  @IsOptional()
+  name?: string;
+
+  @ApiPropertyOptional({ description: 'Tier description' })
+  @IsString()
+  @MaxLength(500)
+  @IsOptional()
+  description?: string;
+
+  @ApiPropertyOptional({ description: 'Monthly price in cents (e.g., 14900 = $149.00)' })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  monthly_price_cents?: number;
+
+  @ApiPropertyOptional({ description: 'Transaction fee percentage (e.g., 2.9 = 2.9%)' })
+  @Min(0)
+  @Max(10)
+  @IsOptional()
+  @Type(() => Number)
+  transaction_fee_percentage?: number;
+
+  @ApiPropertyOptional({ description: 'Fixed transaction fee in cents (e.g., 30 = $0.30)' })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  transaction_fee_fixed_cents?: number;
+
+  @ApiPropertyOptional({ description: 'Max custom domains (-1 = unlimited)' })
+  @IsInt()
+  @Min(-1)
+  @IsOptional()
+  custom_domains_limit?: number;
+
+  @ApiPropertyOptional({ description: 'Max attractions (-1 = unlimited)' })
+  @IsInt()
+  @Min(-1)
+  @IsOptional()
+  attractions_limit?: number;
+
+  @ApiPropertyOptional({ description: 'Max staff members (-1 = unlimited)' })
+  @IsInt()
+  @Min(-1)
+  @IsOptional()
+  staff_members_limit?: number;
+
+  @ApiPropertyOptional({ description: 'Features enabled for this tier', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  features?: string[];
+
+  @ApiPropertyOptional({ description: 'Whether this tier is active' })
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
+
+  @ApiPropertyOptional({ description: 'Display order (lower = first)' })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  display_order?: number;
+
+  @ApiPropertyOptional({ description: 'Additional metadata' })
+  @IsObject()
+  @IsOptional()
+  metadata?: Record<string, unknown>;
+}

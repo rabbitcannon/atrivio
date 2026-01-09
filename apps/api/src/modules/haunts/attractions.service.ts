@@ -2,10 +2,12 @@ import type { OrgId } from '@atrivio/shared';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { SubscriptionsService } from '../payments/subscriptions.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { StorefrontsService } from '../storefronts/storefronts.service.js';
 import type { CreateAttractionDto, UpdateAttractionDto } from './dto/attractions.dto.js';
@@ -18,13 +20,33 @@ export class AttractionsService {
 
   constructor(
     private supabase: SupabaseService,
-    private storefrontsService: StorefrontsService
+    private storefrontsService: StorefrontsService,
+    private subscriptionsService: SubscriptionsService
   ) {}
 
   /**
    * Create a new attraction
    */
   async create(orgId: OrgId, dto: CreateAttractionDto) {
+    // Check attraction limit for org's subscription tier
+    const subscription = await this.subscriptionsService.getSubscription(orgId);
+    const limit = subscription.limits.attractions;
+
+    if (limit !== -1) {
+      // -1 means unlimited
+      const { count } = await this.supabase.adminClient
+        .from('attractions')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId);
+
+      if (count !== null && count >= limit) {
+        throw new ForbiddenException({
+          code: 'ATTRACTION_LIMIT_REACHED',
+          message: `Your ${subscription.tier} plan allows up to ${limit} attraction(s). Please upgrade to add more.`,
+        });
+      }
+    }
+
     // Check if slug is taken within org
     const { data: existing } = await this.supabase.adminClient
       .from('attractions')

@@ -601,3 +601,64 @@ export interface SyncTransactionsResult {
 export async function syncAllTransactions() {
   return api.post<SyncTransactionsResult>('/admin/revenue/sync', {});
 }
+
+// ============================================================================
+// SUBSCRIPTION TIERS
+// ============================================================================
+
+export interface SubscriptionTierConfig {
+  tier: 'free' | 'pro' | 'enterprise';
+  name: string;
+  description: string;
+  monthlyPriceCents: number;
+  monthlyPrice: string;
+  transactionFeePercentage: number;
+  transactionFeeFixedCents: number;
+  transactionFee: string;
+  limits: {
+    customDomains: number;
+    attractions: number;
+    staffMembers: number;
+  };
+  features: string[];
+  isActive: boolean;
+  displayOrder: number;
+  metadata: Record<string, unknown>;
+  organizationsCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionTiersResponse {
+  tiers: SubscriptionTierConfig[];
+}
+
+export interface UpdateSubscriptionTierParams {
+  name?: string;
+  description?: string;
+  monthly_price_cents?: number;
+  transaction_fee_percentage?: number;
+  transaction_fee_fixed_cents?: number;
+  custom_domains_limit?: number;
+  attractions_limit?: number;
+  staff_members_limit?: number;
+  features?: string[];
+  is_active?: boolean;
+  display_order?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export async function getSubscriptionTiers() {
+  return api.get<SubscriptionTiersResponse>('/admin/subscription-tiers');
+}
+
+export async function getSubscriptionTier(tier: string) {
+  return api.get<SubscriptionTierConfig>(`/admin/subscription-tiers/${tier}`);
+}
+
+export async function updateSubscriptionTier(tier: string, data: UpdateSubscriptionTierParams) {
+  return api.patch<{ message: string; tier: SubscriptionTierConfig }>(
+    `/admin/subscription-tiers/${tier}`,
+    data
+  );
+}

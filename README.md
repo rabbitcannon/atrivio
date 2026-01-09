@@ -85,6 +85,14 @@ After running `supabase db reset`, these test accounts are available (password: 
 | `admin@haunt.dev` | Super Admin |
 | `support@haunt.dev` | Support Admin |
 
+**Quick Demo Accounts** (for testing subscription tiers):
+
+| Email | Organization | Tier | Role |
+|-------|--------------|------|------|
+| `free@haunt.dev` | Spooky Hollow | Free | Owner |
+| `pro@haunt.dev` | Nightmare Manor | Pro | Owner |
+| `enterprise@haunt.dev` | Terror Collective | Enterprise | Owner |
+
 **Nightmare Manor** (Pro tier - `nightmare-manor`):
 
 | Email | Role |
@@ -99,7 +107,7 @@ After running `supabase db reset`, these test accounts are available (password: 
 | `actor3@haunt.dev` | Actor |
 | `scanner@haunt.dev` | Scanner |
 
-**Spooky Hollow** (Basic tier - `spooky-hollow`):
+**Spooky Hollow** (Free tier - `spooky-hollow`):
 
 | Email | Role |
 |-------|------|
@@ -123,17 +131,34 @@ After running `supabase db reset`, these test accounts are available (password: 
 | `v2.actor1@terror.dev` | Actor |
 | `v2.actor2@terror.dev` | Actor |
 
-**Newhouse Haunts** (Onboarding - `newhouse-haunts`):
+**Newhouse Haunts** (Onboarding/Free tier - `newhouse-haunts`):
 
 | Email | Role |
 |-------|------|
 | `newowner@haunt.dev` | Owner |
 
 **Test Data:**
-- **4 Organizations** at different subscription tiers (Basic, Pro, Enterprise, Onboarding)
+- **4 Organizations** at different subscription tiers (Free, Pro, Enterprise, Onboarding)
 - **11 Attractions** across all organizations with zones and seasons
 - **17 Staff profiles** with skills, certifications, and time entries
 - **Feature flags** configured per tier (scheduling, inventory, virtual queue, etc.)
+
+**Subscription Tier Limits:**
+
+| Tier | Price | Attractions | Staff | Custom Domains | Transaction Fee |
+|------|-------|-------------|-------|----------------|-----------------|
+| Free | $0 | 1 | 10 | 0 (subdomain only) | 3.9% + 30¢ |
+| Pro | $149/mo | 5 | 50 | 5 | 2.9% + 30¢ |
+| Enterprise | $499/mo | Unlimited | Unlimited | 10 | 2.5% + 30¢ |
+
+All tiers have **unlimited ticket sales** - revenue is earned on each transaction.
+
+**Super Admin Panel** (`/admin` - requires `admin@haunt.dev`):
+- **Feature Flags**: Toggle features, set rollout %, target specific orgs/users
+- **Organizations**: View all orgs, change subscription tiers
+- **Users**: Manage platform users
+- **Audit Logs**: Track admin actions
+- **Health**: System health monitoring
 
 > **Note:** These accounts only exist in local development. Production users sign up through the app.
 

@@ -13,6 +13,36 @@ export interface FeatureFlag {
   metadata: Record<string, unknown>;
 }
 
+export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
+
+// Features available per tier (must match get_tier_limits SQL function)
+const TIER_FEATURES: Record<SubscriptionTier, string[]> = {
+  free: ['ticketing', 'checkin', 'time_tracking', 'notifications'],
+  pro: [
+    'ticketing',
+    'checkin',
+    'time_tracking',
+    'notifications',
+    'scheduling',
+    'inventory',
+    'analytics_pro',
+    'storefronts',
+  ],
+  enterprise: [
+    'ticketing',
+    'checkin',
+    'time_tracking',
+    'notifications',
+    'scheduling',
+    'inventory',
+    'analytics_pro',
+    'storefronts',
+    'virtual_queue',
+    'sms_notifications',
+    'custom_domains',
+  ],
+};
+
 /**
  * Service for checking feature flags
  *
@@ -132,5 +162,36 @@ export class FeaturesService {
    */
   clearCache(): void {
     this.cache.clear();
+  }
+
+  /**
+   * Get org subscription tier
+   */
+  async getOrgTier(orgId: string): Promise<SubscriptionTier> {
+    const { data, error } = await this.supabase.adminClient
+      .from('organizations')
+      .select('subscription_tier')
+      .eq('id', orgId)
+      .single();
+
+    if (error || !data) {
+      return 'free';
+    }
+
+    return (data.subscription_tier as SubscriptionTier) || 'free';
+  }
+
+  /**
+   * Check if a tier has access to a feature (without DB call)
+   */
+  tierHasFeature(tier: SubscriptionTier, feature: string): boolean {
+    return TIER_FEATURES[tier]?.includes(feature) ?? false;
+  }
+
+  /**
+   * Get all features available for a tier
+   */
+  getTierFeatures(tier: SubscriptionTier): string[] {
+    return TIER_FEATURES[tier] || TIER_FEATURES.free;
   }
 }

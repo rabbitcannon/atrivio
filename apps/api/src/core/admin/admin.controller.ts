@@ -37,6 +37,7 @@ import type {
   UpdateOrganizationDto,
   UpdateRateLimitDto,
   UpdateSettingDto,
+  UpdateSubscriptionTierDto,
   UpdateUserDto,
 } from './dto/admin.dto.js';
 import { SuperAdminGuard } from './guards/super-admin.guard.js';
@@ -445,5 +446,36 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Transactions synced' })
   async syncAllTransactions() {
     return this.adminService.syncAllTransactions();
+  }
+
+  // ============================================================================
+  // SUBSCRIPTION TIERS
+  // ============================================================================
+
+  @Get('subscription-tiers')
+  @ApiOperation({ summary: 'List all subscription tier configurations' })
+  @ApiResponse({ status: 200, description: 'Subscription tiers retrieved' })
+  async listSubscriptionTiers() {
+    return this.adminService.listSubscriptionTiers();
+  }
+
+  @Get('subscription-tiers/:tier')
+  @ApiOperation({ summary: 'Get subscription tier configuration' })
+  @ApiResponse({ status: 200, description: 'Subscription tier retrieved' })
+  @ApiResponse({ status: 404, description: 'Tier not found' })
+  async getSubscriptionTier(@Param('tier') tier: string) {
+    return this.adminService.getSubscriptionTier(tier);
+  }
+
+  @Patch('subscription-tiers/:tier')
+  @ApiOperation({ summary: 'Update subscription tier configuration' })
+  @ApiResponse({ status: 200, description: 'Subscription tier updated' })
+  @ApiResponse({ status: 404, description: 'Tier not found' })
+  async updateSubscriptionTier(
+    @Param('tier') tier: string,
+    @Body() dto: UpdateSubscriptionTierDto,
+    @CurrentUser() admin: AuthUser
+  ) {
+    return this.adminService.updateSubscriptionTier(tier, dto, admin.id);
   }
 }

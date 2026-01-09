@@ -6,13 +6,17 @@ import {
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
+import { SubscriptionsService } from './subscriptions.service.js';
 
 @Injectable()
 export class WebhooksService {
   private readonly logger = new Logger(WebhooksService.name);
   private stripe: Stripe;
 
-  constructor(private supabase: SupabaseService) {
+  constructor(
+    private supabase: SupabaseService,
+    private subscriptions: SubscriptionsService
+  ) {
     const stripeKey = process.env['STRIPE_SECRET_KEY'];
     if (!stripeKey) {
       this.logger.warn('STRIPE_SECRET_KEY not configured - webhook verification will be skipped');
@@ -171,8 +175,55 @@ export class WebhooksService {
         await this.handleDisputeCreated(event.data.object);
         break;
 
+      // Subscription events (Platform billing, not Connect)
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+        await this.subscriptions.handleSubscriptionUpdated(
+          event.data.object as Stripe.Subscription
+        );
+        break;
+
+      case 'customer.subscription.deleted':
+        await this.subscriptions.handleSubscriptionDeleted(
+          event.data.object as Stripe.Subscription
+        );
+        break;
+
+      case 'checkout.session.completed':
+        await this.subscriptions.handleCheckoutCompleted(
+          event.data.object as Stripe.Checkout.Session
+        );
+        break;
+
+      case 'invoice.payment_failed':
+        await this.handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+        break;
+
       default:
         this.logger.log(`Unhandled event type: ${event.type}`);
+    }
+  }
+
+  /**
+   * Handle invoice payment failed - update subscription status
+   */
+  private async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+    // Get subscription ID from invoice (using unknown cast for type compatibility)
+    const sub = (invoice as unknown as Record<string, unknown>)['subscription'];
+    const subscriptionId = typeof sub === 'string' ? sub : (sub as { id?: string })?.id;
+
+    if (!subscriptionId) return;
+
+    // Find org by subscription ID and update status
+    const { error } = await this.supabase.adminClient
+      .from('organizations')
+      .update({ subscription_status: 'past_due' })
+      .eq('stripe_subscription_id', subscriptionId);
+
+    if (error) {
+      this.logger.error(`Failed to update subscription status: ${error.message}`);
+    } else {
+      this.logger.log(`Marked subscription ${subscriptionId} as past_due`);
     }
   }
 

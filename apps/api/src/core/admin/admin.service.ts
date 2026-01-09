@@ -23,6 +23,7 @@ import type {
   UpdateOrganizationDto,
   UpdateRateLimitDto,
   UpdateSettingDto,
+  UpdateSubscriptionTierDto,
   UpdateUserDto,
 } from './dto/admin.dto.js';
 import { HealthService } from './health.service.js';
@@ -2387,5 +2388,160 @@ export class AdminService {
         message: `Failed to sync from Stripe: ${message}`,
       });
     }
+  }
+
+  // ============================================================================
+  // SUBSCRIPTION TIERS
+  // ============================================================================
+
+  async listSubscriptionTiers() {
+    const { data, error } = await this.supabase.adminClient
+      .from('subscription_tier_config')
+      .select('*')
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      throw new BadRequestException(`Failed to fetch subscription tiers: ${error.message}`);
+    }
+
+    return {
+      tiers: data.map((tier) => ({
+        tier: tier.tier,
+        name: tier.name,
+        description: tier.description,
+        monthlyPriceCents: tier.monthly_price_cents,
+        monthlyPrice: `$${(tier.monthly_price_cents / 100).toFixed(0)}`,
+        transactionFeePercentage: Number(tier.transaction_fee_percentage),
+        transactionFeeFixedCents: tier.transaction_fee_fixed_cents,
+        transactionFee: `${Number(tier.transaction_fee_percentage)}% + $${(tier.transaction_fee_fixed_cents / 100).toFixed(2)}`,
+        limits: {
+          customDomains: tier.custom_domains_limit,
+          attractions: tier.attractions_limit,
+          staffMembers: tier.staff_members_limit,
+        },
+        features: tier.features,
+        isActive: tier.is_active,
+        displayOrder: tier.display_order,
+        metadata: tier.metadata || {},
+        createdAt: tier.created_at,
+        updatedAt: tier.updated_at,
+      })),
+    };
+  }
+
+  async getSubscriptionTier(tier: string) {
+    const { data, error } = await this.supabase.adminClient
+      .from('subscription_tier_config')
+      .select('*')
+      .eq('tier', tier)
+      .single();
+
+    if (error || !data) {
+      throw new NotFoundException(`Subscription tier '${tier}' not found`);
+    }
+
+    // Also get count of orgs using this tier
+    const { count: orgCount } = await this.supabase.adminClient
+      .from('organizations')
+      .select('id', { count: 'exact', head: true })
+      .eq('subscription_tier', tier);
+
+    return {
+      tier: data.tier,
+      name: data.name,
+      description: data.description,
+      monthlyPriceCents: data.monthly_price_cents,
+      monthlyPrice: `$${(data.monthly_price_cents / 100).toFixed(0)}`,
+      transactionFeePercentage: Number(data.transaction_fee_percentage),
+      transactionFeeFixedCents: data.transaction_fee_fixed_cents,
+      transactionFee: `${Number(data.transaction_fee_percentage)}% + $${(data.transaction_fee_fixed_cents / 100).toFixed(2)}`,
+      limits: {
+        customDomains: data.custom_domains_limit,
+        attractions: data.attractions_limit,
+        staffMembers: data.staff_members_limit,
+      },
+      features: data.features,
+      isActive: data.is_active,
+      displayOrder: data.display_order,
+      metadata: data.metadata || {},
+      organizationsCount: orgCount || 0,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  }
+
+  async updateSubscriptionTier(
+    tier: string,
+    dto: UpdateSubscriptionTierDto,
+    adminId: string
+  ) {
+    // Check tier exists
+    const { data: existing, error: fetchError } = await this.supabase.adminClient
+      .from('subscription_tier_config')
+      .select('*')
+      .eq('tier', tier)
+      .single();
+
+    if (fetchError || !existing) {
+      throw new NotFoundException(`Subscription tier '${tier}' not found`);
+    }
+
+    // Build update object
+    const updateData: Record<string, unknown> = {};
+    if (dto['name'] !== undefined) updateData['name'] = dto['name'];
+    if (dto['description'] !== undefined) updateData['description'] = dto['description'];
+    if (dto['monthly_price_cents'] !== undefined) updateData['monthly_price_cents'] = dto['monthly_price_cents'];
+    if (dto['transaction_fee_percentage'] !== undefined) updateData['transaction_fee_percentage'] = dto['transaction_fee_percentage'];
+    if (dto['transaction_fee_fixed_cents'] !== undefined) updateData['transaction_fee_fixed_cents'] = dto['transaction_fee_fixed_cents'];
+    if (dto['custom_domains_limit'] !== undefined) updateData['custom_domains_limit'] = dto['custom_domains_limit'];
+    if (dto['attractions_limit'] !== undefined) updateData['attractions_limit'] = dto['attractions_limit'];
+    if (dto['staff_members_limit'] !== undefined) updateData['staff_members_limit'] = dto['staff_members_limit'];
+    if (dto['features'] !== undefined) updateData['features'] = dto['features'];
+    if (dto['is_active'] !== undefined) updateData['is_active'] = dto['is_active'];
+    if (dto['display_order'] !== undefined) updateData['display_order'] = dto['display_order'];
+    if (dto['metadata'] !== undefined) updateData['metadata'] = dto['metadata'];
+
+    const { data, error } = await this.supabase.adminClient
+      .from('subscription_tier_config')
+      .update(updateData)
+      .eq('tier', tier)
+      .select()
+      .single();
+
+    if (error) {
+      throw new BadRequestException(`Failed to update subscription tier: ${error.message}`);
+    }
+
+    // Log admin action
+    await this.supabase.adminClient.from('admin_audit_logs').insert({
+      admin_id: adminId,
+      action: 'subscription_tier.update',
+      target_type: 'subscription_tier',
+      target_id: tier,
+      details: {
+        previous: existing,
+        updates: dto,
+      },
+    });
+
+    return {
+      message: `Subscription tier '${tier}' updated successfully`,
+      tier: {
+        tier: data.tier,
+        name: data.name,
+        description: data.description,
+        monthlyPriceCents: data.monthly_price_cents,
+        transactionFeePercentage: Number(data.transaction_fee_percentage),
+        transactionFeeFixedCents: data.transaction_fee_fixed_cents,
+        limits: {
+          customDomains: data.custom_domains_limit,
+          attractions: data.attractions_limit,
+          staffMembers: data.staff_members_limit,
+        },
+        features: data.features,
+        isActive: data.is_active,
+        displayOrder: data.display_order,
+      },
+    };
   }
 }

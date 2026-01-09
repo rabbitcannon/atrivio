@@ -55,16 +55,56 @@ Multi-tenant SaaS for the attractions industry (haunted attractions, escape room
 | F9 Check-In | ✅ Complete | Barcode scan, capacity, waivers |
 | F10 Inventory | 🔲 Pending | Props, costumes, checkouts |
 
+## Subscription Tiers
+
+Organizations have subscription tiers that gate feature access via Stripe subscriptions.
+
+### Tier Configuration
+| Tier | Price | Attractions | Staff | Orders/month | Custom Domains |
+|------|-------|-------------|-------|--------------|----------------|
+| **Free** | $0 | 1 | 10 | 100 | 0 (subdomain only) |
+| **Pro** | $149 | 5 | 50 | 1,000 | 5 |
+| **Enterprise** | $499 | Unlimited | Unlimited | Unlimited | 10 |
+
+### Features by Tier
+| Feature | Free | Pro | Enterprise |
+|---------|------|-----|------------|
+| Ticketing & Orders | ✅ | ✅ | ✅ |
+| Check-In & Scanning | ✅ | ✅ | ✅ |
+| Time Tracking | ✅ | ✅ | ✅ |
+| Email Notifications | ✅ | ✅ | ✅ |
+| Staff Scheduling | ❌ | ✅ | ✅ |
+| Inventory Management | ❌ | ✅ | ✅ |
+| Advanced Analytics | ❌ | ✅ | ✅ |
+| Storefronts | ❌ | ✅ | ✅ |
+| Custom Domains | ❌ | ✅ | ✅ |
+| Virtual Queue | ❌ | ❌ | ✅ |
+| SMS Notifications | ❌ | ❌ | ✅ |
+| API Access | ❌ | ❌ | ✅ |
+
+### Demo Accounts
+Password for all test accounts: `password123`
+
+| Email | Organization | Tier | Role |
+|-------|--------------|------|------|
+| `admin@haunt.dev` | Platform | N/A | Super Admin |
+| `free@haunt.dev` | Spooky Hollow | Free | Owner |
+| `pro@haunt.dev` | Nightmare Manor | Pro | Owner |
+| `enterprise@haunt.dev` | Terror Collective | Enterprise | Owner |
+| `owner@haunt.dev` | Nightmare Manor | Pro | Owner |
+| `manager@haunt.dev` | Nightmare Manor | Pro | Manager |
+| `actor1@haunt.dev` | Nightmare Manor | Pro | Actor |
+
 ## Feature Flags
 
 The platform uses a tier-based feature flag system for plan-based access control.
 
-### Flag Tiers
-| Tier | Features | Description |
-|------|----------|-------------|
-| **basic** | ticketing, checkin, time_tracking, notifications | Core features, always enabled |
-| **pro** | scheduling, inventory, analytics_pro | Advanced operations |
-| **enterprise** | virtual_queue, sms_notifications, custom_domains | Premium features |
+### Flag Keys by Tier
+| Tier | Feature Keys |
+|------|--------------|
+| **free** | ticketing, checkin, time_tracking, notifications |
+| **pro** | + scheduling, inventory, analytics_pro, storefronts |
+| **enterprise** | + virtual_queue, sms_notifications, custom_domains |
 
 ### Per-Org Activation
 Feature flags are enabled per-organization via:

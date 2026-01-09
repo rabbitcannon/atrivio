@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FeaturesService } from '../../core/features/features.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
   InAppNotificationResponse,
@@ -24,7 +25,8 @@ export class NotificationsService {
 
   constructor(
     private supabase: SupabaseService,
-    private config: ConfigService
+    private config: ConfigService,
+    private featuresService: FeaturesService
   ) {
     // Check if providers are configured
     this.twilioConfigured = !!(
@@ -56,6 +58,16 @@ export class NotificationsService {
     body: string,
     orgId?: string
   ): Promise<{ success: boolean; messageId?: string }> {
+    // Check if org has SMS feature enabled (enterprise tier only)
+    if (orgId) {
+      const hasSmsFeature = await this.featuresService.isEnabled('sms_notifications', orgId);
+      if (!hasSmsFeature) {
+        throw new BadRequestException(
+          'SMS notifications are only available on the Enterprise plan. Please upgrade to send SMS messages.'
+        );
+      }
+    }
+
     if (!this.twilioConfigured) {
       this.logger.log(`[DEV SMS] To: ${to}, Body: ${body}`);
       return { success: true, messageId: `dev_${Date.now()}` };
