@@ -41,6 +41,10 @@ export {
 export { Input, type InputProps } from './input';
 export { Label } from './label';
 export {
+  NavigationProgress,
+  useNavigationProgress,
+} from './navigation-progress';
+export {
   Select,
   SelectContent,
   SelectGroup,
