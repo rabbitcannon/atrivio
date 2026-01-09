@@ -3,6 +3,10 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { getPublicPage } from '@/lib/api';
 
+// Disable caching for development
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -17,9 +21,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const page = await getPublicPage(identifier, slug);
   if (!page) return {};
 
+  // Use nested seo object (primary) or legacy flat properties (fallback)
+  const metaTitle = page.seo?.title || page.metaTitle || page.title;
+  const metaDescription = page.seo?.description || page.metaDescription;
+  const ogImageUrl = page.seo?.ogImageUrl;
+
   return {
-    title: page.metaTitle || page.title,
-    description: page.metaDescription,
+    title: metaTitle,
+    description: metaDescription,
+    openGraph: ogImageUrl ? {
+      images: [ogImageUrl],
+    } : undefined,
+    twitter: ogImageUrl ? {
+      card: 'summary_large_image',
+      images: [ogImageUrl],
+    } : undefined,
   };
 }
 

@@ -820,6 +820,7 @@ export async function createStorefrontPage(
     contentFormat?: string;
     metaTitle?: string;
     metaDescription?: string;
+    ogImageUrl?: string;
     featuredImageUrl?: string;
     status?: string;
     sortOrder?: number;
@@ -840,10 +841,11 @@ export async function createStorefrontPage(
   if (data.showInNav !== undefined) payload.show_in_nav = data.showInNav;
 
   // SEO fields are nested
-  if (data.metaTitle !== undefined || data.metaDescription !== undefined) {
+  if (data.metaTitle !== undefined || data.metaDescription !== undefined || data.ogImageUrl !== undefined) {
     payload.seo = {
       ...(data.metaTitle !== undefined && { title: data.metaTitle }),
       ...(data.metaDescription !== undefined && { description: data.metaDescription }),
+      ...(data.ogImageUrl !== undefined && { og_image_url: data.ogImageUrl }),
     };
   }
 
@@ -867,6 +869,7 @@ export async function updateStorefrontPage(
     contentFormat: string;
     metaTitle: string;
     metaDescription: string;
+    ogImageUrl: string;
     featuredImageUrl: string;
     status: string;
     sortOrder: number;
@@ -885,10 +888,11 @@ export async function updateStorefrontPage(
   if (data.showInNav !== undefined) payload.show_in_nav = data.showInNav;
 
   // SEO fields are nested
-  if (data.metaTitle !== undefined || data.metaDescription !== undefined) {
+  if (data.metaTitle !== undefined || data.metaDescription !== undefined || data.ogImageUrl !== undefined) {
     payload.seo = {
       ...(data.metaTitle !== undefined && { title: data.metaTitle }),
       ...(data.metaDescription !== undefined && { description: data.metaDescription }),
+      ...(data.ogImageUrl !== undefined && { og_image_url: data.ogImageUrl }),
     };
   }
 

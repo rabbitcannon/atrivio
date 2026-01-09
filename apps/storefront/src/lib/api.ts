@@ -78,9 +78,16 @@ export interface StorefrontPage {
   content: string;
   contentFormat: string;
   pageType: string;
-  metaTitle: string | null;
-  metaDescription: string | null;
   status: string;
+  showInNav?: boolean;
+  seo?: {
+    title: string | null;
+    description: string | null;
+    ogImageUrl: string | null;
+  };
+  // Legacy flat properties (may be removed)
+  metaTitle?: string | null;
+  metaDescription?: string | null;
 }
 
 export interface StorefrontFaq {

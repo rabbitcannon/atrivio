@@ -85,10 +85,12 @@ export default async function EditStorefrontPage({ params }: EditPageProps) {
       showInNav: data.showInNav,
       status: data.status,
       contentFormat: data.contentFormat,
+      // Always include SEO fields (even empty strings to allow clearing)
+      metaTitle: data.seo.title || '',
+      metaDescription: data.seo.description || '',
+      ogImageUrl: data.seo.ogImageUrl || '',
     };
     if (data.content) payload.content = data.content;
-    if (data.seo.title) payload.metaTitle = data.seo.title;
-    if (data.seo.description) payload.metaDescription = data.seo.description;
 
     await updateStorefrontPage(capturedOrgId, capturedAttractionId, capturedPageId, payload);
 

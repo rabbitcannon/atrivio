@@ -73,6 +73,7 @@ export default async function NewStorefrontPage({ params }: NewPageProps) {
     if (data.content) payload.content = data.content;
     if (data.seo.title) payload.metaTitle = data.seo.title;
     if (data.seo.description) payload.metaDescription = data.seo.description;
+    if (data.seo.ogImageUrl) payload.ogImageUrl = data.seo.ogImageUrl;
 
     // Create the page first
     const result = await createStorefrontPage(capturedOrgId, capturedAttractionId, payload);

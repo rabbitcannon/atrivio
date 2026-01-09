@@ -76,9 +76,23 @@ function getStorefrontRewrite(pathname: string, identifier: string): string | nu
     return `/s/${identifier}/checkout/success`;
   }
 
-  // Homepage on storefront domain → redirect to /tickets
+  // Homepage on storefront domain → main storefront page
   if (pathname === '/' || pathname === '') {
     return `/s/${identifier}`;
+  }
+
+  // Skip internal paths that shouldn't be treated as pages
+  const skipPaths = ['/_next', '/api', '/favicon.ico', '/__nextjs'];
+  if (skipPaths.some(p => pathname.startsWith(p))) {
+    return null;
+  }
+
+  // Any other path → treat as a custom page slug (e.g., /about → /s/{identifier}/about)
+  // Remove trailing slash and leading slash for the slug
+  const slug = pathname.replace(/^\/|\/$/g, '');
+  if (slug && !slug.includes('/')) {
+    // Only single-level paths (no nested paths like /foo/bar)
+    return `/s/${identifier}/${slug}`;
   }
 
   return null;

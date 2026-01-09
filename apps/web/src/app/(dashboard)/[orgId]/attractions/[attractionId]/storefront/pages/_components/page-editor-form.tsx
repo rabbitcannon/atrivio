@@ -39,6 +39,7 @@ export interface PageFormData {
   seo: {
     title: string;
     description: string;
+    ogImageUrl: string;
   };
 }
 
@@ -82,6 +83,7 @@ export function PageEditorForm({
   const [showInNav, setShowInNav] = useState(page?.showInNav ?? false);
   const [seoTitle, setSeoTitle] = useState(page?.seo?.title ?? '');
   const [seoDescription, setSeoDescription] = useState(page?.seo?.description ?? '');
+  const [seoOgImageUrl, setSeoOgImageUrl] = useState(page?.seo?.ogImageUrl ?? '');
 
   // Auto-generate slug from title for new pages
   const handleTitleChange = (newTitle: string) => {
@@ -109,6 +111,7 @@ export function PageEditorForm({
         seo: {
           title: seoTitle,
           description: seoDescription,
+          ogImageUrl: seoOgImageUrl,
         },
       });
       router.push(basePath);
@@ -242,6 +245,31 @@ export function PageEditorForm({
                 <p className="text-xs text-muted-foreground">
                   {seoDescription.length}/160 characters recommended
                 </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="seoOgImage">Social Share Image (OG Image)</Label>
+                <Input
+                  id="seoOgImage"
+                  type="url"
+                  value={seoOgImageUrl}
+                  onChange={(e) => setSeoOgImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Image shown when shared on Facebook, Twitter, Slack, etc. Recommended: 1200x630px
+                </p>
+                {seoOgImageUrl && (
+                  <div className="mt-2 rounded-md border overflow-hidden">
+                    <img
+                      src={seoOgImageUrl}
+                      alt="OG Image preview"
+                      className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
