@@ -85,6 +85,16 @@ class ThemeConfigDto {
   @IsString()
   textColor?: string;
 
+  @ApiPropertyOptional({ description: 'Header/navigation background color' })
+  @IsOptional()
+  @IsString()
+  headerBgColor?: string;
+
+  @ApiPropertyOptional({ description: 'Header/navigation text color' })
+  @IsOptional()
+  @IsString()
+  headerTextColor?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -571,6 +581,8 @@ export interface ThemeConfigResponse {
   accentColor: string | null;
   backgroundColor: string | null;
   textColor: string | null;
+  headerBgColor: string | null;
+  headerTextColor: string | null;
   fontHeading: string | null;
   fontBody: string | null;
   customCss: string | null;

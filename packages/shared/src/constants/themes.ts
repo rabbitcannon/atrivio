@@ -24,6 +24,10 @@ export interface ThemeColors {
   background: string;
   /** Main text color */
   text: string;
+  /** Header/navigation background color (optional, defaults to transparent) */
+  headerBg?: string;
+  /** Header/navigation text color (optional, defaults to text color) */
+  headerText?: string;
 }
 
 /**
@@ -107,6 +111,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#f59e0b', // Amber-500
       background: '#0a0a0a', // Near black
       text: '#f5f5f5', // Gray-100
+      headerBg: '#0a0a0a', // Same as background
+      headerText: '#f5f5f5', // Same as text
     },
     fonts: {
       heading: 'Inter',
@@ -129,6 +135,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#f59e0b', // Amber-500
       background: '#ffffff', // White
       text: '#1f2937', // Gray-800
+      headerBg: '#ffffff', // Same as background
+      headerText: '#1f2937', // Same as text
     },
     fonts: {
       heading: 'Inter',
@@ -155,6 +163,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#a3e635', // Lime-400 (toxic green)
       background: '#09090b', // Zinc-950
       text: '#e4e4e7', // Zinc-200
+      headerBg: '#18181b', // Slightly lighter than background
+      headerText: '#e4e4e7', // Same as text
     },
     fonts: {
       heading: 'Creepster',
@@ -177,6 +187,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#fbbf24', // Amber-400
       background: '#0c0a09', // Stone-950
       text: '#fafaf9', // Stone-50
+      headerBg: '#1c1917', // Secondary color for header
+      headerText: '#fafaf9', // Same as text
     },
     fonts: {
       heading: 'Nosifer',
@@ -203,6 +215,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#d97706', // Amber-600
       background: '#1c1917', // Stone-900
       text: '#fef3c7', // Amber-100
+      headerBg: '#292524', // Secondary color for header
+      headerText: '#fef3c7', // Same as text
     },
     fonts: {
       heading: 'Playfair Display',
@@ -225,6 +239,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#06b6d4', // Cyan-500
       background: '#020617', // Slate-950
       text: '#f8fafc', // Slate-50
+      headerBg: '#0f172a', // Secondary color for header
+      headerText: '#f8fafc', // Same as text
     },
     fonts: {
       heading: 'Montserrat',
@@ -247,6 +263,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#ca8a04', // Yellow-600 (lantern light)
       background: '#0f1a0a', // Deep forest
       text: '#d1fae5', // Emerald-100
+      headerBg: '#1a2e05', // Secondary color for header
+      headerText: '#d1fae5', // Same as text
     },
     fonts: {
       heading: 'Playfair Display',
@@ -269,6 +287,8 @@ export const THEME_PRESETS: Record<ThemePresetKey, ThemePreset> = {
       accent: '#fbbf24', // Amber-400 (gold)
       background: '#0f0d1a', // Deep purple-black
       text: '#ede9fe', // Violet-100
+      headerBg: '#1e1b4b', // Secondary color for header
+      headerText: '#ede9fe', // Same as text
     },
     fonts: {
       heading: 'Eater',

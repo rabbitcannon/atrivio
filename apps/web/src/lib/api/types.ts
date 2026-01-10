@@ -817,6 +817,8 @@ export interface StorefrontSettings {
     accentColor: string | null;
     backgroundColor: string | null;
     textColor: string | null;
+    headerBgColor: string | null;
+    headerTextColor: string | null;
     fontHeading: string | null;
     fontBody: string | null;
     customCss: string | null;

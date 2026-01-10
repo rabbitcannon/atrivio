@@ -99,6 +99,8 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
       accentColor: settings?.theme?.accentColor || defaultPreset.colors.accent,
       backgroundColor: settings?.theme?.backgroundColor || defaultPreset.colors.background,
       textColor: settings?.theme?.textColor || defaultPreset.colors.text,
+      headerBgColor: settings?.theme?.headerBgColor || '',
+      headerTextColor: settings?.theme?.headerTextColor || '',
       fontHeading: settings?.theme?.fontHeading || defaultPreset.fonts.heading,
       fontBody: settings?.theme?.fontBody || defaultPreset.fonts.body,
       customCss: settings?.theme?.customCss || '',
@@ -126,6 +128,8 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
         accentColor: preset.colors.accent,
         backgroundColor: preset.colors.background,
         textColor: preset.colors.text,
+        headerBgColor: preset.colors.headerBg || '',
+        headerTextColor: preset.colors.headerText || '',
         fontHeading: preset.fonts.heading,
         fontBody: preset.fonts.body,
         customCss: theme.customCss, // Preserve custom CSS
@@ -255,6 +259,8 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
         accentColor: theme.accentColor,
         backgroundColor: theme.backgroundColor,
         textColor: theme.textColor,
+        headerBgColor: theme.headerBgColor,
+        headerTextColor: theme.headerTextColor,
         fontHeading: theme.fontHeading,
         fontBody: theme.fontBody,
         customCss: theme.customCss,
@@ -508,18 +514,24 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   {/* Header preview */}
                   <div
                     className="px-4 py-3 border-b flex items-center justify-between"
-                    style={{ borderColor: `${theme.textColor}20` }}
+                    style={{
+                      backgroundColor: theme.headerBgColor || theme.backgroundColor,
+                      borderColor: `${theme.headerTextColor || theme.textColor}20`,
+                    }}
                   >
                     <span
                       className="text-lg font-bold"
                       style={{
-                        color: theme.primaryColor,
+                        color: theme.headerTextColor || theme.primaryColor,
                         fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
                       }}
                     >
                       Your Attraction
                     </span>
-                    <div className="flex gap-2 text-sm" style={{ color: theme.textColor }}>
+                    <div
+                      className="flex gap-2 text-sm"
+                      style={{ color: theme.headerTextColor || theme.textColor }}
+                    >
                       <span style={{ fontFamily: `'${theme.fontBody}', system-ui, sans-serif` }}>
                         Tickets
                       </span>
@@ -529,31 +541,51 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                     </div>
                   </div>
 
-                  {/* Content preview */}
-                  <div className="p-4 space-y-4">
-                    {/* Hero text */}
-                    <div className="text-center py-4">
+                  {/* Hero preview */}
+                  <div
+                    className="relative h-32 flex items-center justify-center"
+                    style={{
+                      backgroundColor: theme.secondaryColor,
+                      backgroundImage: hero.imageUrl ? `url(${hero.imageUrl})` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  >
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: hero.imageUrl
+                          ? `linear-gradient(to bottom, transparent 0%, ${theme.backgroundColor}dd 100%)`
+                          : 'none',
+                      }}
+                    />
+                    <div className="relative text-center px-4">
                       <h3
-                        className="text-2xl font-bold mb-2"
+                        className="text-2xl font-bold mb-1"
                         style={{
                           color: theme.textColor,
                           fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
+                          textShadow: hero.imageUrl ? '0 2px 4px rgba(0,0,0,0.5)' : 'none',
                         }}
                       >
-                        Face Your Fears
+                        {hero.title || 'Face Your Fears'}
                       </h3>
                       <p
                         className="text-sm"
                         style={{
                           color: theme.textColor,
-                          opacity: 0.7,
+                          opacity: 0.8,
                           fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
+                          textShadow: hero.imageUrl ? '0 1px 2px rgba(0,0,0,0.5)' : 'none',
                         }}
                       >
-                        A terrifying journey awaits in the darkness...
+                        {hero.subtitle || 'A terrifying journey awaits...'}
                       </p>
                     </div>
+                  </div>
 
+                  {/* Content preview */}
+                  <div className="p-4 space-y-4">
                     {/* Card preview */}
                     <div
                       className="rounded-lg p-3"
@@ -696,6 +728,57 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         onChange={(e) => updateThemeField('textColor', e.target.value)}
                         className="flex-1 font-mono text-sm"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Header/Navigation Colors */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Header / Navigation
+                  </h4>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="headerBgColor">Header Background</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          id="headerBgColor"
+                          value={theme.headerBgColor || theme.backgroundColor}
+                          onChange={(e) => updateThemeField('headerBgColor', e.target.value)}
+                          className="h-10 w-14 cursor-pointer rounded border"
+                        />
+                        <Input
+                          value={theme.headerBgColor}
+                          onChange={(e) => updateThemeField('headerBgColor', e.target.value)}
+                          placeholder={theme.backgroundColor}
+                          className="flex-1 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Leave empty to use page background
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="headerTextColor">Header Text</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          id="headerTextColor"
+                          value={theme.headerTextColor || theme.textColor}
+                          onChange={(e) => updateThemeField('headerTextColor', e.target.value)}
+                          className="h-10 w-14 cursor-pointer rounded border"
+                        />
+                        <Input
+                          value={theme.headerTextColor}
+                          onChange={(e) => updateThemeField('headerTextColor', e.target.value)}
+                          placeholder={theme.textColor}
+                          className="flex-1 font-mono text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Leave empty to use page text color
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -858,42 +941,6 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                     </p>
                   </div>
                 </div>
-                {hero.imageUrl && (
-                  <div className="relative h-48 rounded-lg overflow-hidden bg-muted">
-                    <img
-                      src={hero.imageUrl}
-                      alt="Hero preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div
-                      className="absolute inset-0 flex items-end p-4"
-                      style={{
-                        background: `linear-gradient(to top, ${theme.backgroundColor}ee, transparent)`,
-                      }}
-                    >
-                      <div>
-                        <h3
-                          className="text-xl font-bold"
-                          style={{
-                            color: theme.textColor,
-                            fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
-                          }}
-                        >
-                          {hero.title || 'Hero Title'}
-                        </h3>
-                        <p
-                          className="text-sm opacity-80"
-                          style={{
-                            color: theme.textColor,
-                            fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
-                          }}
-                        >
-                          {hero.subtitle || 'Hero Subtitle'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Custom CSS */}

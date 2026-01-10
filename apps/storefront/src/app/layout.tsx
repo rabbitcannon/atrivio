@@ -153,6 +153,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const primaryColor = settings.theme.primaryColor || '#dc2626';
   const secondaryColor = settings.theme.secondaryColor || '#1f2937';
   const accentColor = settings.theme.accentColor || '#f59e0b';
+  const headerBgColor = settings.theme.headerBgColor || bgColor;
+  const headerTextColor = settings.theme.headerTextColor || textColor;
   const isLight = isLightColor(bgColor);
 
   // Build Google Fonts URL for custom fonts
@@ -184,6 +186,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       --storefront-accent: ${accentColor};
       --storefront-background: ${bgColor};
       --storefront-text: ${textColor};
+      --storefront-header-bg: ${headerBgColor};
+      --storefront-header-text: ${headerTextColor};
 
       /* Base theme HSL - derived from storefront colors */
       --background: ${hexToHSL(bgColor)};

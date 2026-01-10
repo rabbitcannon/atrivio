@@ -96,6 +96,10 @@ export class StorefrontsService {
       if (dto.theme.backgroundColor !== undefined)
         updateData['background_color'] = dto.theme.backgroundColor;
       if (dto.theme.textColor !== undefined) updateData['text_color'] = dto.theme.textColor;
+      if (dto.theme.headerBgColor !== undefined)
+        updateData['header_bg_color'] = dto.theme.headerBgColor;
+      if (dto.theme.headerTextColor !== undefined)
+        updateData['header_text_color'] = dto.theme.headerTextColor;
       if (dto.theme.fontHeading !== undefined) updateData['font_heading'] = dto.theme.fontHeading;
       if (dto.theme.fontBody !== undefined) updateData['font_body'] = dto.theme.fontBody;
       if (dto.theme.customCss !== undefined) updateData['custom_css'] = dto.theme.customCss;
@@ -1338,6 +1342,8 @@ export class StorefrontsService {
         accentColor: row['accent_color'] as string | null,
         backgroundColor: row['background_color'] as string | null,
         textColor: row['text_color'] as string | null,
+        headerBgColor: row['header_bg_color'] as string | null,
+        headerTextColor: row['header_text_color'] as string | null,
         fontHeading: row['font_heading'] as string | null,
         fontBody: row['font_body'] as string | null,
         customCss: row['custom_css'] as string | null,

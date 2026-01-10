@@ -16,12 +16,20 @@ export function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className="sticky top-0 z-50 w-full border-b border-border/40 backdrop-blur"
+      style={{
+        backgroundColor: 'color-mix(in srgb, var(--storefront-header-bg) 95%, transparent)',
+      }}
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <StorefrontLink href="/" className="flex items-center gap-2">
-            <span className="text-xl font-heading font-bold text-storefront-primary">
+            <span
+              className="text-xl font-heading font-bold"
+              style={{ color: 'var(--storefront-header-text)' }}
+            >
               {attraction.name}
             </span>
           </StorefrontLink>
@@ -34,7 +42,8 @@ export function Header() {
                 href={link.url}
                 target={link.openInNewTab ? '_blank' : undefined}
                 rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="text-sm font-medium transition-colors hover:opacity-80"
+                style={{ color: 'var(--storefront-header-text)', opacity: 0.8 }}
               >
                 {link.label}
               </StorefrontLink>
@@ -51,7 +60,8 @@ export function Header() {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+            className="md:hidden p-2 transition-colors hover:opacity-80"
+            style={{ color: 'var(--storefront-header-text)' }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
@@ -73,7 +83,8 @@ export function Header() {
                 href={link.url}
                 target={link.openInNewTab ? '_blank' : undefined}
                 rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
-                className="px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="px-2 py-2 text-sm font-medium transition-colors hover:opacity-80"
+                style={{ color: 'var(--storefront-header-text)', opacity: 0.8 }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}

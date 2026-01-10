@@ -22,6 +22,8 @@ export interface StorefrontSettings {
     accentColor: string | null;
     backgroundColor: string | null;
     textColor: string | null;
+    headerBgColor: string | null;
+    headerTextColor: string | null;
     fontHeading: string;
     fontBody: string;
     customCss: string | null;
