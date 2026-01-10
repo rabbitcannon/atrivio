@@ -12,7 +12,6 @@ import {
   BarChart3,
   Eye,
   EyeOff,
-  Image,
   Loader2,
   Palette,
   RotateCcw,
@@ -159,19 +158,16 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
   // Get current preset for display
   const currentPreset = getThemePreset(theme.preset);
 
-  // Load Google Fonts for preview
+  // Load ALL Google Fonts for dropdown preview (runs once on mount)
   useEffect(() => {
-    const fontsToLoad = new Set([theme.fontHeading, theme.fontBody]);
     const displayFonts = ['Creepster', 'Nosifer', 'Eater', 'Butcherman', 'Metal Mania'];
 
-    const fontFamilies = Array.from(fontsToLoad)
-      .map((font) => {
-        if (displayFonts.includes(font)) {
-          return `family=${font.replace(/ /g, '+')}`;
-        }
-        return `family=${font.replace(/ /g, '+')}:wght@400;500;600;700`;
-      })
-      .join('&');
+    const fontFamilies = THEME_FONT_OPTIONS.map((font) => {
+      if (displayFonts.includes(font.value)) {
+        return `family=${font.value.replace(/ /g, '+')}`;
+      }
+      return `family=${font.value.replace(/ /g, '+')}:wght@400;500;600;700`;
+    }).join('&');
 
     const linkId = 'storefront-preview-fonts';
     let link = document.getElementById(linkId) as HTMLLinkElement | null;
@@ -181,10 +177,9 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
       link.id = linkId;
       link.rel = 'stylesheet';
       document.head.appendChild(link);
+      link.href = `https://fonts.googleapis.com/css2?${fontFamilies}&display=swap`;
     }
-
-    link.href = `https://fonts.googleapis.com/css2?${fontFamilies}&display=swap`;
-  }, [theme.fontHeading, theme.fontBody]);
+  }, []);
 
   // Hero state
   const [hero, setHero] = useState({
@@ -387,14 +382,10 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
       </div>
 
       <Tabs defaultValue="theme" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="theme" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             <span className="hidden sm:inline">Theme</span>
-          </TabsTrigger>
-          <TabsTrigger value="hero" className="flex items-center gap-2">
-            <Image className="h-4 w-4" />
-            <span className="hidden sm:inline">Hero</span>
           </TabsTrigger>
           <TabsTrigger value="seo" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
@@ -818,6 +809,93 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                 </div>
               </div>
 
+              {/* Hero Section */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium">Hero Section</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="heroTitle">Hero Title</Label>
+                    <Input
+                      id="heroTitle"
+                      value={hero.title}
+                      onChange={(e) => setHero({ ...hero, title: e.target.value })}
+                      placeholder="Face Your Fears"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="heroSubtitle">Hero Subtitle</Label>
+                    <Input
+                      id="heroSubtitle"
+                      value={hero.subtitle}
+                      onChange={(e) => setHero({ ...hero, subtitle: e.target.value })}
+                      placeholder="A terrifying journey awaits..."
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="heroImage">Hero Image URL</Label>
+                    <Input
+                      id="heroImage"
+                      value={hero.imageUrl}
+                      onChange={(e) => setHero({ ...hero, imageUrl: e.target.value })}
+                      placeholder="https://example.com/hero.jpg"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 1920x1080 or larger
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="heroVideo">Hero Video URL (optional)</Label>
+                    <Input
+                      id="heroVideo"
+                      value={hero.videoUrl}
+                      onChange={(e) => setHero({ ...hero, videoUrl: e.target.value })}
+                      placeholder="https://example.com/hero.mp4"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Background video for the hero
+                    </p>
+                  </div>
+                </div>
+                {hero.imageUrl && (
+                  <div className="relative h-48 rounded-lg overflow-hidden bg-muted">
+                    <img
+                      src={hero.imageUrl}
+                      alt="Hero preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div
+                      className="absolute inset-0 flex items-end p-4"
+                      style={{
+                        background: `linear-gradient(to top, ${theme.backgroundColor}ee, transparent)`,
+                      }}
+                    >
+                      <div>
+                        <h3
+                          className="text-xl font-bold"
+                          style={{
+                            color: theme.textColor,
+                            fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
+                          }}
+                        >
+                          {hero.title || 'Hero Title'}
+                        </h3>
+                        <p
+                          className="text-sm opacity-80"
+                          style={{
+                            color: theme.textColor,
+                            fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
+                          }}
+                        >
+                          {hero.subtitle || 'Hero Subtitle'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Custom CSS */}
               <div className="space-y-2">
                 <Label htmlFor="customCss">Custom CSS</Label>
@@ -833,80 +911,6 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   Advanced: Add custom CSS to override default styles.
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Hero Tab */}
-        <TabsContent value="hero">
-          <Card>
-            <CardHeader>
-              <CardTitle>Hero Section</CardTitle>
-              <CardDescription>Configure your homepage hero section</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="heroTitle">Hero Title</Label>
-                  <Input
-                    id="heroTitle"
-                    value={hero.title}
-                    onChange={(e) => setHero({ ...hero, title: e.target.value })}
-                    placeholder="Face Your Fears"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="heroSubtitle">Hero Subtitle</Label>
-                  <Input
-                    id="heroSubtitle"
-                    value={hero.subtitle}
-                    onChange={(e) => setHero({ ...hero, subtitle: e.target.value })}
-                    placeholder="A terrifying journey awaits..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="heroImage">Hero Image URL</Label>
-                <Input
-                  id="heroImage"
-                  value={hero.imageUrl}
-                  onChange={(e) => setHero({ ...hero, imageUrl: e.target.value })}
-                  placeholder="https://example.com/hero.jpg"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Recommended: 1920x1080 or larger. Use high-quality images.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="heroVideo">Hero Video URL (optional)</Label>
-                <Input
-                  id="heroVideo"
-                  value={hero.videoUrl}
-                  onChange={(e) => setHero({ ...hero, videoUrl: e.target.value })}
-                  placeholder="https://example.com/hero.mp4"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Optional: Add a background video for the hero section.
-                </p>
-              </div>
-              {hero.imageUrl && (
-                <div className="mt-4">
-                  <Label>Preview</Label>
-                  <div className="mt-2 relative h-48 rounded-lg overflow-hidden bg-muted">
-                    <img
-                      src={hero.imageUrl}
-                      alt="Hero preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                      <div className="text-white">
-                        <h3 className="text-xl font-bold">{hero.title || 'Hero Title'}</h3>
-                        <p className="text-sm opacity-80">{hero.subtitle || 'Hero Subtitle'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
