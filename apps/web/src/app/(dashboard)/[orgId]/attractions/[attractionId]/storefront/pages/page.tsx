@@ -1,8 +1,9 @@
-import { Archive, ArrowLeft, Edit, Eye, EyeOff, FileText, Globe, Plus } from 'lucide-react';
+import { Archive, Edit, Eye, EyeOff, FileText, Globe, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -56,6 +57,7 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
 
   let pages: StorefrontPage[] = [];
   let attractionSlug: string | undefined;
+  let attractionName = '';
 
   try {
     const [pagesResult, attractionResult] = await Promise.all([
@@ -64,6 +66,7 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
     ]);
     pages = pagesResult.data?.pages ?? [];
     attractionSlug = attractionResult.data?.slug;
+    attractionName = attractionResult.data?.name ?? '';
   } catch {
     // Feature might not be enabled
   }
@@ -94,29 +97,29 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
       : `http://localhost:3002/${slug}`;
   };
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'Pages' },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href={`${basePath}/storefront`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Storefront
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Pages</h1>
-          <p className="text-muted-foreground">Create and manage your storefront content pages.</p>
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Pages</h1>
+            <p className="text-muted-foreground">Create and manage your storefront content pages.</p>
+          </div>
+          <Link href={`${basePath}/storefront/pages/new`}>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Page
+            </Button>
+          </Link>
         </div>
-        <Link href={`${basePath}/storefront/pages/new`}>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Page
-          </Button>
-        </Link>
       </div>
 
       {/* Stats */}
@@ -218,14 +221,14 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
                           rel="noopener noreferrer"
                         >
                           <Button variant="ghost" size="sm">
-                            <Eye className="mr-2 h-4 w-4" />
+                            <Eye className="mr-1.5 h-4 w-4" />
                             View
                           </Button>
                         </a>
                       )}
                       <Link href={`${basePath}/storefront/pages/${page.id}/edit`}>
                         <Button variant="ghost" size="sm">
-                          <Edit className="mr-2 h-4 w-4" />
+                          <Edit className="mr-1.5 h-4 w-4" />
                           Edit
                         </Button>
                       </Link>

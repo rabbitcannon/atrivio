@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  ArrowLeft,
   CheckCircle2,
   Clock,
   Globe,
@@ -10,13 +9,14 @@ import {
   XCircle,
 } from 'lucide-react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   addStorefrontDomain,
   deleteStorefrontDomain,
+  getAttraction,
   getStorefrontDomainLimits,
   getStorefrontDomains,
   getStorefrontSettings,
@@ -67,16 +67,19 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
   let domains: StorefrontDomain[] = [];
   let _settings: StorefrontSettings | null = null;
   let domainLimits = { customDomainCount: 0, customDomainLimit: 0, remaining: 0 };
+  let attractionName = '';
 
   try {
-    const [domainsResult, settingsResult, limitsResult] = await Promise.all([
+    const [domainsResult, settingsResult, limitsResult, attractionResult] = await Promise.all([
       getStorefrontDomains(orgId, attractionId),
       getStorefrontSettings(orgId, attractionId),
       getStorefrontDomainLimits(orgId, attractionId),
+      getAttraction(orgId, attractionId),
     ]);
     domains = domainsResult.data?.domains ?? [];
     _settings = settingsResult.data?.settings ?? null;
     domainLimits = limitsResult.data?.limits ?? domainLimits;
+    attractionName = attractionResult.data?.name ?? '';
   } catch {
     // Feature might not be enabled
   }
@@ -162,37 +165,37 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
     }
   }
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'Domains' },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href={`${basePath}/storefront`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Storefront
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Domains</h1>
-          <p className="text-muted-foreground">Manage custom domains for your storefront.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          {canAddDomains && (
-            <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
-              <Link2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">
-                {domainLimits.customDomainCount} of {domainLimits.customDomainLimit}
-              </span>
-              <span className="text-sm text-muted-foreground">domains</span>
-            </div>
-          )}
-          {canAddDomains && !isAtLimit && <AddDomainDialog onAddDomain={handleAddDomain} />}
-          {canAddDomains && isAtLimit && (
-            <Badge variant="secondary">Domain limit reached</Badge>
-          )}
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Domains</h1>
+            <p className="text-muted-foreground">Manage custom domains for your storefront.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {canAddDomains && (
+              <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                <Link2 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  {domainLimits.customDomainCount} of {domainLimits.customDomainLimit}
+                </span>
+                <span className="text-sm text-muted-foreground">domains</span>
+              </div>
+            )}
+            {canAddDomains && !isAtLimit && <AddDomainDialog onAddDomain={handleAddDomain} />}
+            {canAddDomains && isAtLimit && (
+              <Badge variant="secondary">Domain limit reached</Badge>
+            )}
+          </div>
         </div>
       </div>
 

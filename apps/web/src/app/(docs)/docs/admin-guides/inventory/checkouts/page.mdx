@@ -1,0 +1,251 @@
+# Inventory Checkouts
+
+Track items checked out to staff members.
+
+## Overview
+
+Checkouts allow you to track which items are assigned to which staff members. This is essential for managing costumes, props, and equipment that staff use during their shifts.
+
+## Accessing Checkouts
+
+1. Navigate to **Inventory** in the sidebar
+2. Click **Checkouts** or go to the Checkouts section
+
+## Checkout List
+
+The checkouts list shows all active and recent checkouts:
+
+| Column | Description |
+|--------|-------------|
+| Item | Item name and SKU |
+| Staff | Staff member name |
+| Quantity | Number checked out |
+| Condition Out | Condition when checked out |
+| Checked Out | Date/time of checkout |
+| Due Date | Expected return date |
+| Status | Current checkout status |
+
+### Checkout Statuses
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| Active | Blue | Currently checked out |
+| Overdue | Red | Past due date |
+| Returned | Green | Item returned |
+
+## Creating a Checkout
+
+1. Click **New Checkout**
+2. Select the item
+3. Select the staff member
+4. Enter checkout details
+5. Click **Check Out**
+
+### Checkout Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Item | Yes | Item to check out |
+| Staff Member | Yes | Who is receiving the item |
+| Quantity | Yes | Number to check out |
+| Condition | Yes | Item condition at checkout |
+| Due Date | No | Expected return date |
+| Notes | No | Checkout notes |
+
+### Available Items
+
+Only items that:
+- Have "requires checkout" enabled (type setting)
+- Have available quantity > 0
+
+appear in the item dropdown.
+
+### Condition Options
+
+| Condition | Description |
+|-----------|-------------|
+| Excellent | Like new, no wear |
+| Good | Normal wear, fully functional |
+| Fair | Visible wear, still usable |
+| Poor | Significant wear, needs attention |
+
+## Processing a Return
+
+When staff return items:
+
+1. Find the checkout in the list
+2. Click **Return**
+3. Enter return details
+4. Click **Complete Return**
+
+### Return Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Quantity | Yes | Number being returned |
+| Condition In | Yes | Item condition at return |
+| Notes | No | Return notes, damage description |
+
+### Condition Tracking
+
+Compare condition out vs. condition in:
+
+| Scenario | Action |
+|----------|--------|
+| Same condition | Normal return |
+| Condition improved | Note the repair |
+| Condition worsened | Document damage |
+
+## Managing Overdue Checkouts
+
+Overdue checkouts appear in red and on the dashboard.
+
+### Following Up
+
+1. View overdue checkouts
+2. Contact staff member
+3. Process return or extend due date
+4. Document any issues
+
+### Preventing Overdues
+
+- Set realistic due dates
+- Send reminders before due date
+- Follow up promptly on overdues
+- Create clear checkout policies
+
+## Due Date Best Practices
+
+| Scenario | Suggested Due Date |
+|----------|-------------------|
+| Single shift | End of shift |
+| Weekend event | Day after event |
+| Season-long | Weekly check-in |
+| Long-term assignment | Monthly review |
+
+**No Due Date:** Leave blank for indefinite assignments, but review periodically.
+
+## Checkout Workflow
+
+### Standard Shift Checkout
+
+1. Staff arrives for shift
+2. Manager creates checkout
+3. Staff uses items during shift
+4. Staff returns items end of shift
+5. Manager processes return
+
+### Long-Term Assignment
+
+1. Item assigned to staff member
+2. Checkout created with extended due date
+3. Periodic condition checks
+4. Return when assignment ends
+
+### Event-Based Checkout
+
+1. Items prepared before event
+2. Bulk checkouts created
+3. Event takes place
+4. All items returned after event
+5. Condition documented
+
+## Partial Returns
+
+For checkouts of multiple items:
+
+1. Open the return dialog
+2. Enter the quantity being returned
+3. Remaining quantity stays checked out
+4. Complete return shows partial
+
+**Example:**
+- Checked out: 5 masks
+- Returning: 3 masks
+- Still checked out: 2 masks
+
+## Checkout Notes
+
+Use notes to document:
+
+**At Checkout:**
+- Special instructions
+- Size or fit notes
+- Known issues
+- Usage restrictions
+
+**At Return:**
+- Damage descriptions
+- Cleaning needed
+- Repair required
+- Condition changes
+
+## Filtering Checkouts
+
+| Filter | Shows |
+|--------|-------|
+| Active | Currently checked out |
+| Overdue | Past due date |
+| Returned | Completed returns |
+| All | Everything |
+
+## Searching Checkouts
+
+Search by:
+- Item name or SKU
+- Staff member name
+- Notes content
+
+## Checkout Policies
+
+### Suggested Policies
+
+| Policy | Description |
+|--------|-------------|
+| Condition check | Always document condition |
+| Due dates | Set for all checkouts |
+| Follow-up | Contact within 24h of due date |
+| Damage reporting | Document and notify manager |
+
+### Staff Responsibilities
+
+- Report damage immediately
+- Return items on time
+- Keep items in assigned condition
+- Communicate delays
+
+### Manager Responsibilities
+
+- Process checkouts/returns promptly
+- Follow up on overdues
+- Track condition changes
+- Maintain accurate records
+
+## Troubleshooting
+
+### Item Not Available
+
+- Check current quantity
+- Review active checkouts
+- Process outstanding returns
+- Adjust inventory if needed
+
+### Staff Not Listed
+
+- Verify staff is active
+- Check staff management
+- Ensure staff has proper role
+
+### Checkout Failed
+
+- Verify quantity available
+- Check required fields
+- Try refreshing the page
+- Contact support if persists
+
+## Next Steps
+
+- [Items](/docs/admin-guides/inventory/items) - Manage items
+- [Categories](/docs/admin-guides/inventory/categories) - Organize items
+- [Transactions](/docs/admin-guides/inventory/transactions) - View history
+- [Overview](/docs/admin-guides/inventory/overview) - Back to overview

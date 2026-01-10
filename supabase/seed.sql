@@ -2868,7 +2868,7 @@ Or apply in person at our hiring events (dates TBA).',
     ('f3000000-0000-0000-0000-000000000001', v_org_id, 'Home', 'home', NULL, NULL, v_mansion_id, 'header', 0, TRUE, FALSE),
     ('f3000000-0000-0000-0000-000000000002', v_org_id, 'Attractions', 'tickets', NULL, NULL, v_mansion_id, 'header', 1, TRUE, FALSE),
     ('f3000000-0000-0000-0000-000000000003', v_org_id, 'About', 'page', v_about_page_id, NULL, v_mansion_id, 'header', 2, TRUE, FALSE),
-    ('f3000000-0000-0000-0000-000000000004', v_org_id, 'FAQ', 'page', v_faq_page_id, NULL, v_mansion_id, 'header', 3, TRUE, FALSE),
+    ('f3000000-0000-0000-0000-000000000004', v_org_id, 'FAQ', 'faq', NULL, NULL, v_mansion_id, 'header', 3, TRUE, FALSE),
     ('f3000000-0000-0000-0000-000000000005', v_org_id, 'Buy Tickets', 'tickets', NULL, NULL, v_mansion_id, 'header', 4, TRUE, FALSE),
 
     -- Footer Navigation

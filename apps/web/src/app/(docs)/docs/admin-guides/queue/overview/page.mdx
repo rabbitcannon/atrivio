@@ -1,0 +1,157 @@
+# Virtual Queue Overview
+
+Manage guest wait times with virtual queue technology.
+
+## Overview
+
+The Virtual Queue system allows guests to reserve their place in line without physically waiting. Guests join the queue via their phone and receive notifications when it's their turn.
+
+**Note:** Virtual Queue is an Enterprise-tier feature.
+
+## Accessing Queue Management
+
+Navigate to **Queue** in the sidebar to access the virtual queue dashboard.
+
+## Dashboard
+
+The queue dashboard provides a real-time overview of queue activity.
+
+### Quick Stats
+
+| Metric | Description |
+|--------|-------------|
+| Currently Waiting | Number of guests in queue |
+| Avg Wait Time | Average wait time in minutes |
+| Served Today | Guests successfully checked in today |
+| Next Batch | Countdown to next batch call |
+
+### Queue Status
+
+The status badge shows the current queue state:
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| Active | Green | Queue is accepting guests |
+| Paused | Yellow | New entries paused, existing entries preserved |
+| Inactive | Gray | Queue is disabled |
+| Not Configured | Outline | Queue has not been set up yet |
+
+## Main Sections
+
+### Manage Queue
+
+View and manage individual queue entries:
+- See all guests currently in the queue
+- Filter by entry status
+- Manually call or check in guests
+- Mark entries as no-show
+
+[Learn more about queue management](/docs/admin-guides/queue/management)
+
+### Settings
+
+Configure queue behavior:
+- Enable or disable the queue
+- Set capacity and timing
+- Configure notifications
+- Set guest options
+
+[Learn more about queue settings](/docs/admin-guides/queue/settings)
+
+### Analytics
+
+Track queue performance:
+- Daily statistics
+- Hourly breakdown
+- Conversion rates
+- Performance insights
+
+[Learn more about queue analytics](/docs/admin-guides/queue/analytics)
+
+## How the Queue Works
+
+### Guest Experience
+
+1. Guest scans QR code or visits queue link
+2. Guest enters party size and contact info
+3. System assigns queue position and estimated wait time
+4. Guest receives SMS notification when their turn approaches
+5. Guest receives final call notification
+6. Guest proceeds to entrance within expiry window
+7. Staff scans ticket to check in guest
+
+### Staff Experience
+
+1. Monitor queue dashboard for current status
+2. System automatically calls batches at configured intervals
+3. Guests arrive and present their queue code
+4. Staff scans code or manually checks in guest
+5. View analytics to optimize queue settings
+
+## Entry Statuses
+
+Queue entries progress through these statuses:
+
+| Status | Description |
+|--------|-------------|
+| **Waiting** | Guest is in queue, waiting their turn |
+| **Notified** | Guest has been notified their turn is approaching |
+| **Called** | Guest has been called to proceed |
+| **Checked In** | Guest successfully arrived and was checked in |
+| **Expired** | Guest didn't arrive within the expiry window |
+| **Left** | Guest voluntarily left the queue |
+| **No Show** | Guest was called but marked as not arriving |
+
+## Queue Status Flow
+
+```
+Waiting → Notified → Called → Checked In
+                        ↓
+                  Expired / No Show
+```
+
+## Quick Actions
+
+From the dashboard, you can:
+
+- **Go to Manage** - View and manage queue entries
+- **Go to Settings** - Configure queue behavior
+- **View Analytics** - See performance data
+
+## Best Practices
+
+### Setting Up
+
+1. Configure capacity based on throughput
+2. Set appropriate batch intervals
+3. Test notification timing
+4. Train staff on check-in process
+
+### During Operation
+
+- Monitor the dashboard regularly
+- Adjust settings based on demand
+- Use pause feature during breaks
+- Check analytics for optimization opportunities
+
+### Guest Communication
+
+- Display QR codes prominently
+- Explain the process to guests
+- Provide estimated wait times
+- Send clear notification messages
+
+## Feature Availability
+
+| Feature | Enterprise |
+|---------|------------|
+| Virtual Queue | ✅ |
+| SMS Notifications | ✅ |
+| Queue Analytics | ✅ |
+| Custom Queue Settings | ✅ |
+
+## Next Steps
+
+- [Management](/docs/admin-guides/queue/management) - Manage queue entries
+- [Settings](/docs/admin-guides/queue/settings) - Configure the queue
+- [Analytics](/docs/admin-guides/queue/analytics) - View performance data

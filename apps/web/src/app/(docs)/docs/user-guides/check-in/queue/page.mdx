@@ -1,0 +1,230 @@
+# Guest Queue
+
+View pending arrivals and manage late guests.
+
+## Overview
+
+The Guest Queue shows all guests expected to arrive who haven't yet checked in. This includes guests arriving soon, those pending for later, and late arrivals who have passed their time slot.
+
+## Accessing the Queue
+
+1. Navigate to **Check-In** in the sidebar
+2. Click **Queue**
+3. Select your attraction from the dropdown
+
+## Queue Statistics
+
+At the top of the page, three summary cards show:
+
+| Card | Icon | Description |
+|------|------|-------------|
+| Arriving Soon | Clock (blue) | Guests expected in the next 30 minutes |
+| Pending Today | Users (gray) | All guests not yet checked in |
+| Late Arrivals | Warning (red) | Guests past their scheduled time |
+
+## Guest Statuses
+
+### Arriving Soon
+
+Guests with tickets for the next 30 minutes:
+- Blue "Arriving Soon" badge
+- Priority attention
+- Prepare for their arrival
+
+### Pending
+
+Guests with tickets for later today:
+- Gray "Pending" badge
+- Not yet at their time slot
+- Will move to "Arriving Soon" when within 30 minutes
+
+### Late
+
+Guests who have passed their time slot:
+- Red "Late" badge
+- May need special handling
+- Consider reaching out if possible
+
+## Queue Tabs
+
+Filter the queue by status:
+
+| Tab | Shows |
+|-----|-------|
+| All | All pending guests combined |
+| Arriving Soon | Only guests expected within 30 minutes |
+| Late | Only guests past their time slot |
+
+Each tab shows the count of guests in that category.
+
+## Guest Information
+
+Each guest entry displays:
+
+| Column | Description |
+|--------|-------------|
+| Guest | Name (or "Guest" if unknown) and ticket ID preview |
+| Time Slot | Scheduled arrival time or "General Admission" |
+| Status | Arriving Soon, Pending, or Late badge |
+| Actions | Check-In button |
+
+## Searching and Filtering
+
+### Search
+
+Use the search box to find guests by:
+- Guest name
+- Ticket ID
+
+Search is case-insensitive and matches partial text.
+
+### Status Filter
+
+Use the dropdown to filter by status:
+- All Status
+- Arriving Soon
+- Pending
+- Late
+
+Combines with search for precise filtering.
+
+## Manual Check-In
+
+Check in guests directly from the queue:
+
+1. Find the guest in the list
+2. Click the **Check In** button
+3. System validates the ticket
+4. Guest is removed from queue on success
+
+### Check-In Results
+
+| Result | Action |
+|--------|--------|
+| Success | Guest checked in, removed from queue |
+| Waiver Required | Guest must complete waiver first |
+| Failed | Error message displayed, guest remains in queue |
+
+## Auto-Refresh
+
+The queue automatically refreshes:
+- Every 30 seconds
+- Status updates automatically
+- No manual refresh needed
+
+You can also click **Refresh** to update immediately.
+
+## Attraction Selection
+
+The queue is scoped to one attraction:
+
+1. Select attraction from the dropdown
+2. Selection is saved for future visits
+3. Queue shows only that attraction's guests
+
+## Empty Queue States
+
+### No Guests in Queue
+
+When all guests have checked in:
+- "No guests in queue" message
+- "All guests have been checked in or no arrivals are expected"
+
+### No Matching Results
+
+When search/filter returns nothing:
+- Adjust your search terms
+- Change the status filter
+- Verify correct attraction selected
+
+## Queue Workflow
+
+### Managing Late Arrivals
+
+1. Review late arrivals list regularly
+2. Consider reaching out via notifications
+3. Check if they still plan to attend
+4. Update capacity planning accordingly
+
+### Preparing for Arrivals
+
+1. Monitor "Arriving Soon" count
+2. Ensure adequate staff at stations
+3. Address any waiver requirements
+4. Ready special accommodations if noted
+
+### Peak Time Management
+
+1. Watch pending counts increase
+2. Staff stations appropriately
+3. Monitor queue movement
+4. Adjust capacity if needed
+
+## Permissions
+
+| Role | View Queue | Manual Check-In |
+|------|------------|-----------------|
+| Owner | Yes | Yes |
+| Admin | Yes | Yes |
+| Manager | Yes | Yes |
+| Scanner | Yes | Yes |
+| Box Office | Yes | Yes |
+| Staff | No | No |
+
+## Best Practices
+
+### For Managers
+
+- Review queue regularly during operations
+- Monitor late arrivals for patterns
+- Adjust staffing based on pending counts
+- Document no-shows for analysis
+
+### For Scanners
+
+- Use queue for manual lookups
+- Check here if guest can't find ticket
+- Report unusual patterns to manager
+
+### Capacity Planning
+
+- High pending counts indicate upcoming busy period
+- Late arrivals affect capacity calculations
+- Consider no-show rates in planning
+
+## Troubleshooting
+
+### Queue Not Loading
+
+- Check internet connection
+- Verify attraction is selected
+- Refresh the page
+- Try a different browser
+
+### Guest Not in Queue
+
+- Verify correct attraction selected
+- Check if already checked in
+- Confirm ticket is for today
+- Search by ticket ID instead of name
+
+### Check-In Button Not Working
+
+- Ensure stable internet connection
+- Wait for any current operation to complete
+- Refresh and try again
+- Report persistent issues to admin
+
+### Data Seems Outdated
+
+- Click Refresh button manually
+- Check for auto-refresh indicator
+- Verify network connectivity
+- Clear browser cache if needed
+
+## Next Steps
+
+- [Scanning Tickets](/docs/user-guides/check-in/scanning-tickets) - Process check-ins
+- [Stations](/docs/user-guides/check-in/stations) - Manage entry points
+- [Reports](/docs/user-guides/check-in/reports) - View analytics
+- [Overview](/docs/user-guides/check-in/overview) - Back to overview

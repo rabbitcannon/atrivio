@@ -1,115 +1,278 @@
 # Ticket Types
 
-Configure and manage the types of tickets available for your attraction.
-
-![Ticket Types](/docs/screenshots/ticket-types.png)
+Configure and manage the types of tickets available for your attractions.
 
 ## Overview
 
-Ticket types define the different admission options guests can purchase for your attraction. Each type can have its own pricing, availability, and capacity settings.
+Ticket types define the different admission options guests can purchase for your attractions. Each type can have its own pricing, capacity settings, category assignment, and included amenities.
+
+## Accessing Ticket Types
+
+1. Navigate to **Ticketing** in the sidebar
+2. Click **Ticket Types**
+
+## Ticket Types List
+
+The list displays all configured ticket types:
+
+| Column | Description |
+|--------|-------------|
+| Name | Ticket name and description |
+| Category | Assigned category (if any) |
+| Attraction | Which attraction this ticket is for |
+| Price | Current price (with compare price if set) |
+| Sold | Number sold / capacity (if set) |
+| Status | Active or Inactive |
+| Actions | Edit, activate/deactivate, delete |
 
 ## Creating a Ticket Type
 
-1. Navigate to **Ticketing** in the sidebar
-2. Click **+ New Ticket Type**
-3. Fill in the details:
-   - **Name**: Display name (e.g., "General Admission")
-   - **Description**: What's included
-   - **Price**: Ticket price in dollars
-   - **Capacity**: Max tickets per time slot (optional)
-4. Configure additional settings
-5. Click **Save**
+1. Click **Add Ticket Type** button
+2. Fill in the ticket details
+3. Click **Create**
 
-## Ticket Type Settings
+### Ticket Type Fields
 
-### Basic Information
+| Field | Required | Description |
+|-------|----------|-------------|
+| Name | Yes | Display name (e.g., "General Admission") |
+| Description | No | What's included or details about the ticket |
+| Attraction | Yes | Which attraction this ticket is valid for |
+| Category | No | Organize tickets by category |
+| Price | Yes | Base ticket price in dollars |
+| Compare Price | No | Original price for strikethrough display |
+| Min Per Order | No | Minimum tickets per transaction |
+| Max Per Order | No | Maximum tickets per transaction |
+| Capacity | No | Total available tickets |
+| Includes | No | List of included items (one per line) |
 
-| Field | Description |
-|-------|-------------|
-| Name | Ticket name shown to customers |
-| Description | Details about the ticket |
-| Price | Base price before fees |
-| Active | Whether tickets can be purchased |
+### Pricing Fields
 
-### Availability Settings
+**Price**: The current selling price for the ticket.
 
-| Field | Description |
-|-------|-------------|
-| Valid Days | Which days this ticket is available |
-| Valid Times | Time slots when valid |
-| Start/End Date | Seasonal availability |
-| Max Per Order | Limit tickets per transaction |
+**Compare Price**: An optional higher price that will be shown with a strikethrough, creating a perception of value. Use for sales or promotions.
 
-### Capacity Management
+### Order Quantity Limits
 
-- **Unlimited**: No capacity restrictions
-- **Per Time Slot**: Limited availability per entry time
-- **Daily Cap**: Maximum sold per day
+**Min Per Order**: The minimum number of this ticket type that must be purchased in a single transaction. Useful for group tickets.
 
-## Common Ticket Types
+**Max Per Order**: The maximum number of this ticket type that can be purchased in a single transaction. Helps manage capacity.
 
-### General Admission
-Standard entry ticket at regular price.
+### Includes List
 
-### VIP / Fast Pass
-Premium tickets with benefits like:
-- Skip the line access
+Enter one item per line to describe what's included with the ticket:
+- Access to all attractions
+- Photo package
+- Souvenir item
 - Priority entry
-- Exclusive experiences
 
-### Group Tickets
-Discounted tickets for groups:
-- Minimum group size required
-- Bulk pricing available
+This list displays on the storefront to help guests understand the value.
 
-### Special Events
-Limited tickets for specific events:
-- Date-restricted
-- May include add-ons
+## Editing a Ticket Type
 
-## Managing Ticket Types
+1. Find the ticket type in the list
+2. Click the menu button (...)
+3. Select **Edit**
+4. Modify the desired fields
+5. Click **Save Changes**
 
-### Edit a Ticket Type
+Changes apply to future sales only. Existing tickets are not affected.
 
-1. Click on the ticket type
-2. Update the settings
-3. Save changes
+## Activating/Deactivating Ticket Types
 
-Changes apply to future sales only.
+### To Deactivate
 
-### Deactivate a Ticket Type
+1. Find the ticket type
+2. Click the menu button (...)
+3. Select **Deactivate**
 
-1. Open the ticket type
-2. Toggle **Active** to off
-3. Ticket will no longer be available for purchase
+Deactivated ticket types:
+- Cannot be purchased
+- Do not appear on storefront
+- Existing tickets remain valid
 
-Existing tickets remain valid.
+### To Activate
 
-### Delete a Ticket Type
+1. Find the deactivated ticket type
+2. Click the menu button (...)
+3. Select **Activate**
 
-Only delete if no tickets have been sold:
+The ticket type will immediately be available for purchase.
 
-1. Open the ticket type
-2. Click **Delete**
-3. Confirm deletion
+## Deleting a Ticket Type
+
+1. Find the ticket type
+2. Click the menu button (...)
+3. Select **Delete**
+4. Confirm the deletion
+
+**Note**: You cannot delete a ticket type that has been purchased. Deactivate it instead.
+
+## Categories
+
+Categories help organize your ticket types:
+- Group similar tickets together
+- Display category badges in the list
+- Can be filtered on storefront
+
+Categories are managed separately and assigned to ticket types.
+
+## Capacity Management
+
+### Unlimited Capacity
+
+Leave the capacity field empty for unlimited tickets.
+
+### Limited Capacity
+
+Set a specific number to limit total sales:
+- Sold count tracks purchases
+- Shows "X / Y" format (sold / capacity)
+- Cannot sell more than capacity
+
+When capacity is reached:
+- Ticket type shows as sold out
+- No additional purchases allowed
+- Consider creating a waitlist
 
 ## Pricing Strategies
 
-### Dynamic Pricing
+### Standard Pricing
 
-Adjust prices based on demand:
-- Weekend premium
-- Holiday pricing
-- Early bird discounts
+Set a single price for all guests.
 
 ### Tiered Pricing
 
-Different prices for different groups:
-- Adult vs. Child
-- Senior discounts
-- Student pricing
+Create multiple ticket types at different price points:
+
+| Ticket Type | Price | Description |
+|-------------|-------|-------------|
+| Child (3-12) | $15.00 | For children ages 3-12 |
+| Adult | $25.00 | Standard adult admission |
+| Senior (65+) | $20.00 | Senior discount |
+
+### Sale Pricing
+
+Use compare price for promotional pricing:
+
+| Price | Compare Price | Display |
+|-------|---------------|---------|
+| $19.99 | $29.99 | ~~$29.99~~ $19.99 |
+
+### VIP/Premium Tiers
+
+Create premium experiences with higher pricing:
+
+| Ticket Type | Price | Includes |
+|-------------|-------|----------|
+| General Admission | $25.00 | Standard entry |
+| VIP | $50.00 | Priority entry, exclusive areas, photo |
+| Ultimate | $100.00 | All VIP benefits plus meet & greet |
+
+## Ticket Type Examples
+
+### General Admission
+
+```
+Name: General Admission
+Description: Standard entry to all attraction areas
+Attraction: Nightmare Manor
+Price: $29.99
+Max Per Order: 10
+Includes:
+  - Full attraction access
+  - 2-3 hour experience
+```
+
+### Fast Pass
+
+```
+Name: Fast Pass
+Description: Skip the line with priority entry
+Attraction: Nightmare Manor
+Price: $49.99
+Compare Price: $59.99
+Capacity: 100
+Max Per Order: 4
+Includes:
+  - Priority entry (no wait)
+  - Full attraction access
+  - Exclusive photo opportunity
+```
+
+### Group Package
+
+```
+Name: Group Package (10+)
+Description: Discounted rate for groups of 10 or more
+Attraction: Nightmare Manor
+Price: $22.99
+Min Per Order: 10
+Max Per Order: 50
+Includes:
+  - Full attraction access
+  - Group coordinator
+  - Reserved entry time
+```
+
+## Permissions
+
+| Role | View | Create | Edit | Delete |
+|------|------|--------|------|--------|
+| Owner | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | No |
+| Box Office | Yes | No | No | No |
+
+## Best Practices
+
+### Naming
+
+- Use clear, descriptive names
+- Include age ranges if applicable
+- Mention key benefits (VIP, Fast Pass)
+
+### Descriptions
+
+- Keep descriptions concise
+- Highlight unique value
+- List key inclusions
+
+### Pricing
+
+- Research competitor pricing
+- Consider perceived value
+- Use compare prices strategically
+
+### Capacity
+
+- Set realistic limits
+- Monitor sales velocity
+- Adjust capacity as needed
+
+## Troubleshooting
+
+### Cannot Delete Ticket Type
+
+- Ticket type has been purchased
+- Deactivate instead of deleting
+- Historical data is preserved
+
+### Price Not Updating
+
+- Changes apply to new orders only
+- Refresh the page
+- Check for validation errors
+
+### Ticket Not Appearing on Storefront
+
+- Verify ticket is active
+- Check attraction is published
+- Confirm category is visible
 
 ## Next Steps
 
+- [Time Slots](/docs/user-guides/ticketing/time-slots) - Configure timed entry
 - [Promo Codes](/docs/user-guides/ticketing/promo-codes) - Create discount codes
-- [Orders](/docs/user-guides/ticketing/orders) - Manage ticket orders
+- [Orders](/docs/user-guides/ticketing/orders) - View ticket orders
+- [Overview](/docs/user-guides/ticketing/overview) - Back to overview

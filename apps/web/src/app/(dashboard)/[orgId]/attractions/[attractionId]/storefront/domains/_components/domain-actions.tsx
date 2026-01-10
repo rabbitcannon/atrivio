@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, RefreshCw, Star, Trash2 } from 'lucide-react';
+import { Loader2, MoreHorizontal, RefreshCw, Star, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
@@ -14,6 +14,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { DomainStatus } from '@/lib/api/types';
 
 interface DomainActionsProps {
@@ -38,14 +45,14 @@ export function DomainActions({
   onDelete,
 }: DomainActionsProps) {
   const router = useRouter();
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isSettingPrimary, setIsSettingPrimary] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleVerify = async () => {
-    setIsVerifying(true);
+    setIsLoading(true);
+    setLoadingAction('verify');
     setError(null);
     try {
       const result = await onVerify(domainId);
@@ -56,12 +63,14 @@ export function DomainActions({
     } catch {
       setError('Failed to verify domain');
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
   const handleSetPrimary = async () => {
-    setIsSettingPrimary(true);
+    setIsLoading(true);
+    setLoadingAction('primary');
     setError(null);
     try {
       const result = await onSetPrimary(domainId);
@@ -72,12 +81,14 @@ export function DomainActions({
     } catch {
       setError('Failed to set as primary');
     } finally {
-      setIsSettingPrimary(false);
+      setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
   const handleDelete = async () => {
-    setIsDeleting(true);
+    setIsLoading(true);
+    setLoadingAction('delete');
     setError(null);
     try {
       const result = await onDelete(domainId);
@@ -90,7 +101,8 @@ export function DomainActions({
     } catch {
       setError('Failed to delete domain');
     } finally {
-      setIsDeleting(false);
+      setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -103,47 +115,63 @@ export function DomainActions({
   const canSetPrimary = status === 'active' && !isPrimary;
   const canDelete = !isPrimary;
 
+  // If no actions available, don't render anything
+  if (!canVerify && !canSetPrimary && !canDelete) {
+    return null;
+  }
+
   return (
-    <div className="flex items-center gap-2">
+    <>
       {error && <p className="text-xs text-destructive mr-2">{error}</p>}
 
-      {canVerify && (
-        <Button variant="outline" size="sm" onClick={handleVerify} disabled={isVerifying}>
-          {isVerifying ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MoreHorizontal className="h-4 w-4" />
+            )}
+            <span className="sr-only">Domain actions</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {canVerify && (
+            <DropdownMenuItem onClick={handleVerify} disabled={isLoading}>
+              {loadingAction === 'verify' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              Verify
+            </DropdownMenuItem>
           )}
-          Verify DNS
-        </Button>
-      )}
 
-      {canSetPrimary && (
-        <Button variant="ghost" size="sm" onClick={handleSetPrimary} disabled={isSettingPrimary}>
-          {isSettingPrimary ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Star className="mr-2 h-4 w-4" />
+          {canSetPrimary && (
+            <DropdownMenuItem onClick={handleSetPrimary} disabled={isLoading}>
+              {loadingAction === 'primary' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Star className="mr-2 h-4 w-4" />
+              )}
+              Set Primary
+            </DropdownMenuItem>
           )}
-          Set Primary
-        </Button>
-      )}
 
-      {canDelete && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setDeleteDialogOpen(true)}
-          disabled={isDeleting}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          {isDeleting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4" />
+          {canDelete && (canVerify || canSetPrimary) && <DropdownMenuSeparator />}
+
+          {canDelete && (
+            <DropdownMenuItem
+              onClick={() => setDeleteDialogOpen(true)}
+              className="text-destructive focus:text-destructive"
+              disabled={isLoading}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
           )}
-        </Button>
-      )}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -155,22 +183,22 @@ export function DomainActions({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={isDeleting}
+              disabled={isLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {loadingAction === 'delete' ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
               ) : (
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-1.5 h-4 w-4" />
               )}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

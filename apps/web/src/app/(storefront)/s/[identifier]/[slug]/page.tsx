@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getPublicStorefront, getPublicStorefrontPage } from '@/lib/api';
-import type { StorefrontNavItem } from '@/lib/api/types';
+import { ChevronDown } from 'lucide-react';
+import { getPublicStorefront, getPublicStorefrontPage, getPublicStorefrontFaqs } from '@/lib/api';
+import type { StorefrontNavItem, StorefrontFaq } from '@/lib/api/types';
 import { PlateContentRenderer } from './_components/plate-content-renderer';
 
 interface StorefrontPageProps {
@@ -75,6 +76,15 @@ export default async function StorefrontCustomPage({ params }: StorefrontPagePro
     notFound();
   }
 
+  // Fetch FAQs if this is an FAQ-type page
+  let faqs: StorefrontFaq[] = [];
+  if (page.pageType === 'faq') {
+    const faqsResponse = await getPublicStorefrontFaqs(identifier);
+    if (faqsResponse.data?.faqs) {
+      faqs = faqsResponse.data.faqs;
+    }
+  }
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -107,9 +117,24 @@ export default async function StorefrontCustomPage({ params }: StorefrontPagePro
         <article className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-bold mb-8">{page.title}</h1>
 
-          {page.content ? (
-            <PlateContentRenderer content={page.content} />
-          ) : (
+          {page.content && (
+            <div className="mb-8">
+              <PlateContentRenderer content={page.content} />
+            </div>
+          )}
+
+          {/* Render FAQs for FAQ-type pages */}
+          {page.pageType === 'faq' && faqs.length > 0 && (
+            <FaqAccordion faqs={faqs} />
+          )}
+
+          {/* Empty state for FAQ pages with no FAQs */}
+          {page.pageType === 'faq' && faqs.length === 0 && !page.content && (
+            <p className="text-muted-foreground">No FAQs have been added yet.</p>
+          )}
+
+          {/* Empty state for non-FAQ pages */}
+          {page.pageType !== 'faq' && !page.content && (
             <p className="text-muted-foreground">This page has no content yet.</p>
           )}
         </article>
@@ -151,6 +176,8 @@ function NavLink({
     href = `/s/${identifier}`;
   } else if (item.linkType === 'tickets') {
     href = `/s/${identifier}`;
+  } else if (item.linkType === 'faq') {
+    href = `/s/${identifier}/faq`;
   } else if (item.linkType === 'external') {
     href = item.externalUrl || item.url || '#';
   } else if (item.linkType === 'page' && item.url) {
@@ -181,5 +208,55 @@ function NavLink({
     >
       {item.label}
     </Link>
+  );
+}
+
+// FAQ Accordion Component
+function FaqAccordion({ faqs }: { faqs: StorefrontFaq[] }) {
+  // Group FAQs by category
+  const groupedFaqs = faqs.reduce(
+    (acc, faq) => {
+      const category = faq.category || 'General';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(faq);
+      return acc;
+    },
+    {} as Record<string, StorefrontFaq[]>
+  );
+
+  const categories = Object.keys(groupedFaqs);
+
+  return (
+    <div className="space-y-8">
+      {categories.map((category) => (
+        <div key={category}>
+          {categories.length > 1 && (
+            <h2 className="text-2xl font-semibold mb-4">{category}</h2>
+          )}
+          <div className="space-y-3">
+            {groupedFaqs[category].map((faq) => (
+              <FaqItem key={faq.id} faq={faq} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Individual FAQ Item with accordion behavior
+function FaqItem({ faq }: { faq: StorefrontFaq }) {
+  return (
+    <details className="group border rounded-lg">
+      <summary className="flex cursor-pointer items-center justify-between gap-4 p-4 font-medium list-none">
+        <span>{faq.question}</span>
+        <ChevronDown className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="px-4 pb-4 text-muted-foreground">
+        <p className="whitespace-pre-wrap">{faq.answer}</p>
+      </div>
+    </details>
   );
 }

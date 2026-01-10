@@ -1,84 +1,249 @@
 # Time Reports
 
-View and export time tracking data for payroll and analysis.
+View and manage time entries for payroll and tracking.
 
 ## Overview
 
-Time reports provide detailed insights into staff hours worked, helping managers with payroll processing and scheduling optimization.
+Time reports provide detailed insights into staff hours worked. Managers can review entries, approve pending time, and track hours across different time periods.
 
-## Viewing Time Reports
-
-### Staff View
-
-Individual staff members can view:
-- Daily time entries
-- Weekly hour summaries
-- Pay period totals
+## Accessing Time Reports
 
 ### Manager View
 
-Managers and admins can access:
-- Team-wide time reports
-- Individual staff histories
-- Export options for payroll
+1. Navigate to **Staff** in the sidebar
+2. Click on a staff member
+3. Select the **Time** tab
 
-## Report Types
+This opens the Time Manager, showing all time entries for that staff member.
 
-### Daily Report
+## Time Summary Cards
 
-Shows all time entries for a specific date:
-- Clock in/out times
-- Break durations
-- Total hours worked
+The Time Manager displays summary statistics:
 
-### Weekly Summary
+| Card | Description |
+|------|-------------|
+| This Week | Hours worked in the current week |
+| This Month | Hours worked in the current month |
+| This Season | Total hours for the current season |
 
-Aggregated view of the week:
-- Daily totals
-- Weekly total hours
-- Overtime calculations (if applicable)
+These summaries help track hours against schedules and budgets.
 
-### Pay Period Report
+## Clock Status Card
 
-Comprehensive report for payroll:
-- All entries within the pay period
-- Total regular hours
-- Overtime hours (if configured)
-- Export to CSV/PDF
+Shows the staff member's current status:
 
-## Filtering & Sorting
+**When Clocked In:**
+- "Clocked in since [time] at [attraction]"
+- Clock Out button available
 
-Filter reports by:
-- **Date range**: Custom date selection
-- **Staff member**: Individual or team view
-- **Attraction**: Filter by work location
-- **Status**: Approved, pending, or flagged entries
+**When Clocked Out:**
+- "Not currently clocked in"
+- Clock In button available
 
-## Exporting Data
+## Time Entries Table
 
-Export time data for external payroll systems:
+The entries table displays all time records:
 
-1. Select your date range
-2. Choose the staff members to include
-3. Click **Export**
-4. Select format (CSV or PDF)
+| Column | Description |
+|--------|-------------|
+| Date | Date of the entry |
+| Attraction | Where the staff worked |
+| Clock In | Start time |
+| Clock Out | End time (or "-" if active) |
+| Break | Break time in minutes |
+| Hours | Total hours worked |
+| Status | Pending or Approved |
+| Actions | Approve button (managers only) |
 
-## Time Entry Corrections
+## Entry Statuses
 
-### Requesting Corrections
+| Status | Badge Color | Description |
+|--------|-------------|-------------|
+| Pending | Gray | Awaiting manager approval |
+| Approved | Green | Approved for payroll |
 
-Staff can request corrections for:
-- Missed clock in/out
-- Incorrect times
-- Break adjustments
+## Approving Time Entries
 
-### Approving Corrections
+Managers, admins, and HR can approve pending entries:
 
-Managers can:
-- Review correction requests
-- Approve or deny changes
-- Add notes for auditing
+1. Find an entry with "Pending" status
+2. Click the menu button (...)
+3. Select **Approve**
+4. Entry status changes to "Approved"
+
+### Approval Requirements
+
+- Entry must be complete (has clock out time)
+- User must have approval permissions
+- Entry must be in "Pending" status
+
+### Who Can Approve
+
+| Role | Can Approve |
+|------|-------------|
+| Owner | Yes |
+| Admin | Yes |
+| Manager | Yes |
+| HR | Yes |
+| Actor | No |
+| Scanner | No |
+| Box Office | No |
+
+## Clocking Staff In/Out
+
+Managers can clock staff in or out from this view:
+
+### Clock In (Admin)
+
+1. Click the **Clock In** button
+2. Select an attraction from the dropdown
+3. Click **Clock In**
+4. A new entry is created
+
+### Clock Out (Admin)
+
+1. Click the **Clock Out** button
+2. Enter break time (minutes)
+3. Add optional notes
+4. Click **Clock Out**
+5. Entry is completed
+
+## Break Time Management
+
+Break time is recorded when clocking out:
+
+| Field | Description |
+|-------|-------------|
+| Break Minutes | Time spent on break (unpaid) |
+| Notes | Optional notes about the shift |
+
+Breaks are subtracted from total hours worked.
+
+## Calculating Hours
+
+Total hours are calculated as:
+
+```
+Total Hours = (Clock Out - Clock In) - Break Time
+```
+
+For example:
+- Clock In: 6:00 PM
+- Clock Out: 11:00 PM
+- Break: 30 minutes
+- Total Hours: 4.5 hours
+
+## Viewing Historical Data
+
+The entries table shows recent time entries:
+- Sorted by date (most recent first)
+- Shows all entries for the selected staff member
+- Includes pending and approved entries
+
+## Common Workflows
+
+### End of Day Review
+
+1. Navigate to Staff > [Staff Member] > Time
+2. Review today's entries
+3. Approve completed shifts
+4. Note any missing clock-outs
+
+### Weekly Approval
+
+1. Review each staff member's time
+2. Check for pending entries
+3. Approve all completed shifts
+4. Follow up on missing entries
+
+### Payroll Processing
+
+1. Ensure all entries are approved
+2. Check summary cards for totals
+3. Export data as needed
+4. Verify against schedules
+
+## Understanding Summary Data
+
+### This Week Hours
+
+- Sunday through Saturday
+- Includes pending and approved entries
+- Updates in real-time
+
+### This Month Hours
+
+- First to last day of month
+- Cumulative total
+- Helps track against monthly budgets
+
+### This Season Hours
+
+- Based on current active season
+- Tracks seasonal employment
+- Useful for seasonal attractions
+
+## Permissions
+
+| Action | Required Role |
+|--------|---------------|
+| View own entries | Any staff |
+| View others' entries | Manager+ |
+| Clock in/out self | Any staff |
+| Clock in/out others | Manager+ |
+| Approve entries | Manager, Admin, HR, Owner |
+
+## Troubleshooting
+
+### No Entries Showing
+
+- Verify staff member has clocked in
+- Check date range
+- Confirm you have view permissions
+
+### Can't Approve Entry
+
+- Entry may still be active (no clock out)
+- Entry may already be approved
+- Verify you have approval permissions
+
+### Hours Look Incorrect
+
+- Check break time was entered correctly
+- Verify clock in/out times
+- Look for duplicate entries
+
+### Missing Clock Out
+
+- Entry shows "-" for clock out
+- Staff may have forgotten
+- Manager can close out manually
+
+## Best Practices
+
+### For Managers
+
+- Review time entries daily
+- Approve entries promptly
+- Address discrepancies immediately
+- Keep accurate records
+
+### For Accuracy
+
+- Verify attraction is correct
+- Check times match actual work
+- Ensure breaks are recorded
+- Review before approving
+
+### For Payroll
+
+- Approve all entries before payroll
+- Check totals against schedules
+- Document any corrections
+- Keep records for auditing
 
 ## Next Steps
 
 - [Clocking In/Out](/docs/user-guides/time-clock/clocking-in-out) - Learn the basics
+- [Staff Status](/docs/user-guides/time-clock/staff-status) - See who's working now
+- [Overview](/docs/user-guides/time-clock/overview) - Back to overview

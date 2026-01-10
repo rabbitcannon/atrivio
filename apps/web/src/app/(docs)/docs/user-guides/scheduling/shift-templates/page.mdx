@@ -2,81 +2,245 @@
 
 Create reusable shift patterns to speed up schedule creation.
 
-![Shift Templates](/docs/screenshots/shift-templates.png)
-
 ## Overview
 
-Shift templates allow you to define common shift patterns that can be quickly applied to your schedule, saving time when creating recurring shifts.
+Shift templates define common shift patterns that can be quickly applied to your schedule. Instead of creating each shift manually, templates let you generate multiple shifts at once with consistent settings.
+
+## Accessing Templates
+
+1. Navigate to **Schedule** in the sidebar
+2. Click **Templates**
+
+## Template List
+
+The templates list shows all defined templates:
+
+| Column | Description |
+|--------|-------------|
+| Name | Template name |
+| Day | Day of week for this template |
+| Time | Start and end times |
+| Role | Assigned schedule role |
+| Staff Needed | How many staff per shift |
+| Actions | Edit, delete, generate |
 
 ## Creating a Template
 
-1. Navigate to **Schedule** → **Templates**
-2. Click **+ New Template**
-3. Fill in the template details:
-   - **Name**: A descriptive name (e.g., "Evening Scare Actor")
-   - **Start Time**: Default start time
-   - **End Time**: Default end time
-   - **Position**: The role for this shift
-   - **Color**: Visual identifier on the calendar
-4. Click **Save Template**
+1. Click **Create Template**
+2. Fill in the template details
+3. Click **Create Template** to save
 
-## Template Settings
+### Template Fields
 
-| Setting | Description |
-|---------|-------------|
-| Name | Descriptive name for the template |
-| Start Time | Default shift start time |
-| End Time | Default shift end time |
-| Duration | Calculated automatically |
-| Position | Job role for this shift type |
-| Color | Calendar display color |
-| Notes | Default instructions |
+| Field | Required | Description |
+|-------|----------|-------------|
+| Name | Yes | Descriptive template name |
+| Day of Week | Yes | Which day this applies to |
+| Start Time | Yes | Shift start time |
+| End Time | Yes | Shift end time |
+| Role | Yes | Schedule role for shifts |
+| Staff Needed | Yes | Number of staff required |
+| Notes | No | Default notes for generated shifts |
 
-## Using Templates
+### Day of Week Options
 
-### Apply to Single Day
+| Value | Day |
+|-------|-----|
+| 0 | Sunday |
+| 1 | Monday |
+| 2 | Tuesday |
+| 3 | Wednesday |
+| 4 | Thursday |
+| 5 | Friday |
+| 6 | Saturday |
 
-1. Click on a date in the calendar
-2. Click **Use Template**
-3. Select the template
-4. Adjust details if needed
-5. Save the shift
+### Default Values
 
-### Apply to Multiple Days
+New templates default to:
+- **Day**: Friday
+- **Start Time**: 6:00 PM (18:00)
+- **End Time**: 11:00 PM (23:00)
+- **Staff Needed**: 1
 
-1. Select a date range
-2. Choose **Apply Template**
-3. Select the template
-4. Choose which days of the week
-5. Review and confirm
+## Editing a Template
 
-## Managing Templates
+1. Find the template in the list
+2. Click **Edit**
+3. Modify the desired fields
+4. Click **Save Changes**
 
-### Edit a Template
+**Note:** Changes to templates don't affect already-generated shifts.
 
-1. Go to **Schedule** → **Templates**
-2. Click the template to edit
-3. Update the settings
-4. Save changes
+## Deleting a Template
 
-Note: Changes to templates don't affect existing shifts.
+1. Find the template in the list
+2. Click **Delete**
+3. Confirm the deletion
 
-### Delete a Template
+Existing shifts created from this template are not deleted.
 
-1. Go to **Schedule** → **Templates**
-2. Click the delete icon on the template
-3. Confirm deletion
+## Generating Schedules
 
-Existing shifts created from this template remain unchanged.
+Use templates to generate shifts for a date range:
+
+1. Select the templates to use
+2. Choose the date range
+3. Review the shifts to be created
+4. Click **Generate**
+
+### Generation Options
+
+| Option | Description |
+|--------|-------------|
+| Date Range | Start and end dates |
+| Templates | Which templates to apply |
+| Skip Existing | Don't overwrite existing shifts |
+| Auto-Assign | Assign available staff automatically |
+
+## Template Examples
+
+### Evening Actor Shift
+
+```
+Name: Friday Night Actor
+Day: Friday
+Time: 6:00 PM - 11:00 PM
+Role: Actor
+Staff: 5
+Notes: Arrive 30 min early for makeup
+```
+
+### Weekend Box Office
+
+```
+Name: Weekend Box Office
+Day: Saturday
+Time: 5:00 PM - 10:00 PM
+Role: Box Office
+Staff: 2
+Notes: Cash drawer and tablet ready
+```
+
+### Full Weekend Coverage
+
+Create multiple templates for complete coverage:
+
+| Template Name | Day | Time | Role | Staff |
+|---------------|-----|------|------|-------|
+| Fri Night Actor | Friday | 6-11 PM | Actor | 5 |
+| Fri Night Scanner | Friday | 5:30-11 PM | Scanner | 2 |
+| Sat Night Actor | Saturday | 6-11 PM | Actor | 8 |
+| Sat Night Scanner | Saturday | 5:30-11 PM | Scanner | 3 |
+
+## Role Integration
+
+Templates use schedule roles:
+- Each template has one assigned role
+- Role determines shift color on calendar
+- Role skills can guide staff assignment
+
+[Learn more about roles](/docs/user-guides/scheduling/roles)
+
+## Staff Count Planning
+
+Set staff count based on:
+
+| Factor | Consideration |
+|--------|---------------|
+| Expected Attendance | More guests = more staff |
+| Role Requirements | Coverage needs per position |
+| Historical Data | What worked previously |
+| Safety Requirements | Minimum coverage rules |
+
+## Template Organization
+
+### Naming Conventions
+
+Use clear, consistent naming:
+- Include day: "Friday Night..."
+- Include role: "...Actor Shift"
+- Include time if relevant: "...Evening"
+
+**Good Names:**
+- "Friday Night Scare Actor"
+- "Weekend Box Office Evening"
+- "Saturday Scanner Team"
+
+**Poor Names:**
+- "Template 1"
+- "Shift"
+- "New"
+
+### Grouping by Day
+
+Organize templates by day of week for easy management.
+
+### Grouping by Event
+
+For special events, create dedicated templates:
+- "Halloween Weekend Actor"
+- "Private Event Security"
+- "Special Night Box Office"
+
+## Permissions
+
+| Role | View | Create | Edit | Delete | Generate |
+|------|------|--------|------|--------|----------|
+| Owner | Yes | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | Yes | Yes |
+| HR | Yes | Yes | Yes | No | Yes |
+| Staff | No | No | No | No | No |
 
 ## Best Practices
 
-1. **Name clearly**: Use descriptive names like "Weekend Night Shift" or "Box Office Morning"
-2. **Color code**: Use consistent colors for similar shift types
-3. **Include notes**: Add common instructions to templates
-4. **Review regularly**: Update templates as your operations change
+### Template Creation
+
+- Create templates for each regular shift type
+- Match templates to your weekly patterns
+- Set realistic staff counts
+- Include helpful notes
+
+### Template Maintenance
+
+- Review templates before each season
+- Update times if operating hours change
+- Adjust staff counts based on performance
+- Archive unused templates
+
+### Schedule Generation
+
+- Generate schedules 2-3 weeks ahead
+- Review generated shifts before publishing
+- Adjust individual shifts as needed
+- Fill gaps manually when templates don't fit
+
+## Troubleshooting
+
+### Template Not Saving
+
+- Ensure all required fields are complete
+- Verify role is selected
+- Check staff count is at least 1
+- Try refreshing the page
+
+### Shifts Not Generating
+
+- Verify date range is valid
+- Check templates are active
+- Ensure role exists and is active
+- Confirm attraction is selected
+
+### Wrong Number of Shifts
+
+- Check day of week settings
+- Verify date range is correct
+- Review template configuration
+- Ensure no date filters applied
 
 ## Next Steps
 
-- [Creating Shifts](/docs/user-guides/scheduling/creating-shifts) - Use templates to create shifts
-- [Availability](/docs/user-guides/scheduling/availability) - Manage when staff can work
+- [Shifts](/docs/user-guides/scheduling/shifts) - Manage generated shifts
+- [Roles](/docs/user-guides/scheduling/roles) - Configure schedule roles
+- [Availability](/docs/user-guides/scheduling/availability) - View staff availability
+- [Overview](/docs/user-guides/scheduling/overview) - Back to overview

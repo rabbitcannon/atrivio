@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Bell,
   BookOpen,
   ChevronRight,
   Home,
@@ -17,6 +18,9 @@ import {
   Store,
   Menu,
   X,
+  MapPin,
+  ListOrdered,
+  Package,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
@@ -53,9 +57,22 @@ const navigation: NavItem[] = [
         ],
       },
       {
+        title: 'Attractions',
+        icon: <MapPin className="h-4 w-4" />,
+        items: [
+          { title: 'Zones', href: '/docs/user-guides/attractions/zones' },
+          { title: 'Seasons', href: '/docs/user-guides/attractions/seasons' },
+        ],
+      },
+      {
         title: 'Staff Management',
         icon: <Users className="h-4 w-4" />,
         items: [
+          { title: 'Overview', href: '/docs/user-guides/staff/overview' },
+          { title: 'Profiles', href: '/docs/user-guides/staff/profiles' },
+          { title: 'Skills', href: '/docs/user-guides/staff/skills' },
+          { title: 'Certifications', href: '/docs/user-guides/staff/certifications' },
+          { title: 'Time History', href: '/docs/user-guides/staff/time-history' },
           { title: 'Adding Staff', href: '/docs/user-guides/staff/adding-staff' },
           { title: 'Roles & Permissions', href: '/docs/user-guides/staff/roles-permissions' },
         ],
@@ -64,24 +81,31 @@ const navigation: NavItem[] = [
         title: 'Time Clock',
         icon: <Clock className="h-4 w-4" />,
         items: [
+          { title: 'Overview', href: '/docs/user-guides/time-clock/overview' },
           { title: 'Clocking In/Out', href: '/docs/user-guides/time-clock/clocking-in-out' },
           { title: 'Time Reports', href: '/docs/user-guides/time-clock/time-reports' },
+          { title: 'Staff Status', href: '/docs/user-guides/time-clock/staff-status' },
         ],
       },
       {
         title: 'Scheduling',
         icon: <Calendar className="h-4 w-4" />,
         items: [
-          { title: 'Creating Shifts', href: '/docs/user-guides/scheduling/creating-shifts' },
+          { title: 'Overview', href: '/docs/user-guides/scheduling/overview' },
+          { title: 'Shifts', href: '/docs/user-guides/scheduling/shifts' },
           { title: 'Shift Templates', href: '/docs/user-guides/scheduling/shift-templates' },
           { title: 'Availability', href: '/docs/user-guides/scheduling/availability' },
+          { title: 'Swap Requests', href: '/docs/user-guides/scheduling/swaps' },
+          { title: 'Roles', href: '/docs/user-guides/scheduling/roles' },
         ],
       },
       {
         title: 'Ticketing',
         icon: <Ticket className="h-4 w-4" />,
         items: [
+          { title: 'Overview', href: '/docs/user-guides/ticketing/overview' },
           { title: 'Ticket Types', href: '/docs/user-guides/ticketing/ticket-types' },
+          { title: 'Time Slots', href: '/docs/user-guides/ticketing/time-slots' },
           { title: 'Promo Codes', href: '/docs/user-guides/ticketing/promo-codes' },
           { title: 'Orders', href: '/docs/user-guides/ticketing/orders' },
         ],
@@ -90,7 +114,11 @@ const navigation: NavItem[] = [
         title: 'Check-In',
         icon: <ScanLine className="h-4 w-4" />,
         items: [
+          { title: 'Overview', href: '/docs/user-guides/check-in/overview' },
           { title: 'Scanning Tickets', href: '/docs/user-guides/check-in/scanning-tickets' },
+          { title: 'Stations', href: '/docs/user-guides/check-in/stations' },
+          { title: 'Queue', href: '/docs/user-guides/check-in/queue' },
+          { title: 'Reports', href: '/docs/user-guides/check-in/reports' },
           { title: 'Walk-Up Guests', href: '/docs/user-guides/check-in/walk-up-guests' },
         ],
       },
@@ -122,7 +150,41 @@ const navigation: NavItem[] = [
         items: [
           { title: 'Setup', href: '/docs/admin-guides/storefront/setup' },
           { title: 'Pages', href: '/docs/admin-guides/storefront/pages' },
+          { title: 'Navigation', href: '/docs/admin-guides/storefront/navigation' },
+          { title: 'FAQs', href: '/docs/admin-guides/storefront/faqs' },
+          { title: 'Announcements', href: '/docs/admin-guides/storefront/announcements' },
           { title: 'Custom Domains', href: '/docs/admin-guides/storefront/custom-domains' },
+        ],
+      },
+      {
+        title: 'Notifications',
+        icon: <Bell className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/admin-guides/notifications/overview' },
+          { title: 'Templates', href: '/docs/admin-guides/notifications/templates' },
+          { title: 'Sending', href: '/docs/admin-guides/notifications/sending' },
+          { title: 'History', href: '/docs/admin-guides/notifications/history' },
+        ],
+      },
+      {
+        title: 'Virtual Queue',
+        icon: <ListOrdered className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/admin-guides/queue/overview' },
+          { title: 'Management', href: '/docs/admin-guides/queue/management' },
+          { title: 'Settings', href: '/docs/admin-guides/queue/settings' },
+          { title: 'Analytics', href: '/docs/admin-guides/queue/analytics' },
+        ],
+      },
+      {
+        title: 'Inventory',
+        icon: <Package className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/admin-guides/inventory/overview' },
+          { title: 'Items', href: '/docs/admin-guides/inventory/items' },
+          { title: 'Categories', href: '/docs/admin-guides/inventory/categories' },
+          { title: 'Checkouts', href: '/docs/admin-guides/inventory/checkouts' },
+          { title: 'Transactions', href: '/docs/admin-guides/inventory/transactions' },
         ],
       },
     ],

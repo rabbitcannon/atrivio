@@ -1,0 +1,215 @@
+# Queue Management
+
+View and manage individual queue entries.
+
+## Overview
+
+The queue management page shows all guests currently in the queue and allows you to take actions on individual entries.
+
+## Accessing Queue Management
+
+1. Navigate to **Queue** in the sidebar
+2. Click **Manage Queue** or go to the Manage tab
+
+## Queue Summary
+
+At the top of the page, you'll see current queue statistics:
+
+| Stat | Description |
+|------|-------------|
+| Waiting | Guests currently waiting in queue |
+| Called/Notified | Guests who have been notified or called |
+| Avg Wait | Average wait time for current guests |
+| Served Today | Guests successfully checked in today |
+
+## Filtering Entries
+
+Use the status filter buttons to view specific entry types:
+
+| Filter | Shows |
+|--------|-------|
+| All | All queue entries |
+| Waiting | Guests waiting their turn |
+| Called | Guests who have been called |
+| Checked In | Successfully checked in guests |
+| Expired | Entries that timed out |
+
+## Queue Entry Details
+
+Each queue entry displays:
+
+| Column | Description |
+|--------|-------------|
+| Position | Queue position number |
+| Code | Unique entry code for check-in |
+| Guest | Guest name (if provided) |
+| Party | Number of guests in the party |
+| Contact | Phone number or email |
+| Joined | When the guest joined the queue |
+| Wait Time | How long the guest has been waiting |
+| Status | Current entry status |
+
+## Entry Statuses
+
+### Active Statuses
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Waiting** | Blue | Guest is in queue, waiting |
+| **Notified** | Yellow | Guest notified their turn is coming |
+| **Called** | Green | Guest called to proceed |
+
+### Final Statuses
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Checked In** | Green ✓ | Guest successfully arrived |
+| **Expired** | Red | Entry timed out |
+| **Left** | Gray | Guest left the queue |
+| **No Show** | Red | Guest didn't arrive when called |
+
+## Managing Entries
+
+### Check In a Guest
+
+When a guest arrives:
+
+1. Find their entry in the list
+2. Click **Check In**
+3. Entry status changes to Checked In
+
+Alternatively, scan their queue code at the check-in station.
+
+### Call a Guest Manually
+
+To call a guest outside the automatic batch:
+
+1. Find the waiting entry
+2. Click **Call Guest**
+3. Guest receives notification
+4. Status changes to Called
+
+### Mark as No Show
+
+If a called guest doesn't arrive:
+
+1. Find the Called entry
+2. Click **No Show**
+3. Entry is marked and removed from active queue
+
+### Remove an Entry
+
+To remove a guest from the queue:
+
+1. Find the entry
+2. Click **Remove**
+3. Entry status changes to Left
+
+## Status Flow
+
+Understanding how entries move through statuses:
+
+```
+Joined Queue
+     ↓
+  Waiting (in queue, awaiting turn)
+     ↓
+  Notified (approaching turn, notified via SMS)
+     ↓
+  Called (turn arrived, must proceed)
+     ↓
+  ┌─────────────────┬────────────────┐
+  ↓                 ↓                ↓
+Checked In     Expired          No Show
+(success)    (didn't arrive)  (manually marked)
+```
+
+## Batch Processing
+
+The system automatically calls guests in batches:
+
+1. **Capacity Per Batch** determines how many guests are called at once
+2. **Batch Interval** sets time between automatic calls
+3. System notifies guests before their turn
+
+Manual calls do not affect the batch schedule.
+
+## Search and Filter
+
+### Finding a Specific Guest
+
+1. Use the search box
+2. Search by:
+   - Guest name
+   - Phone number
+   - Queue code
+
+### Viewing by Time
+
+Entries are sorted by join time (oldest first by default). The Wait Time column helps identify guests who have been waiting longest.
+
+## Handling Common Scenarios
+
+### Guest Can't Find Their Code
+
+1. Search by phone number
+2. Verify guest identity
+3. Manually check them in
+
+### Large Party Arriving
+
+1. Verify all party members are present
+2. Check in the entry
+3. Party size is recorded in analytics
+
+### Guest Needs More Time
+
+1. Find their Called entry
+2. The expiry timer continues
+3. Consider pausing the queue if needed
+
+### Wrong Contact Info
+
+1. Guest must rejoin with correct info
+2. Remove the old entry
+3. Direct guest to QR code to rejoin
+
+## Empty Queue State
+
+When the queue is empty:
+- Dashboard shows zero waiting
+- "No entries" message displays
+- Automatic batch calls pause until guests join
+
+## Real-Time Updates
+
+The queue management page updates in real-time:
+- New entries appear automatically
+- Status changes reflect immediately
+- Stats update as guests are processed
+
+## Best Practices
+
+### Efficient Processing
+
+- Process guests in order when possible
+- Use batch calls to manage flow
+- Check in guests promptly to maintain accuracy
+
+### Guest Experience
+
+- Be ready when guests arrive after being called
+- Have clear signage for queue check-in
+- Train staff on the check-in process
+
+### Monitoring
+
+- Watch for entries approaching expiry
+- Call additional guests during slow periods
+- Review analytics for optimization
+
+## Next Steps
+
+- [Settings](/docs/admin-guides/queue/settings) - Configure queue behavior
+- [Analytics](/docs/admin-guides/queue/analytics) - View performance metrics
+- [Overview](/docs/admin-guides/queue/overview) - Back to queue overview

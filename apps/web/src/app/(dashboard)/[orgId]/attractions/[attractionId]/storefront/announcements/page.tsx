@@ -2,7 +2,6 @@
 
 import {
   AlertTriangle,
-  ArrowLeft,
   Bell,
   Calendar,
   CheckCircle,
@@ -17,7 +16,6 @@ import {
   Tag,
   Trash2,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
@@ -31,6 +29,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -105,6 +104,7 @@ export default function StorefrontAnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<StorefrontAnnouncement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [resolvedOrgId, setResolvedOrgId] = useState<string | null>(null);
+  const [attractionName, setAttractionName] = useState('');
 
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -125,11 +125,20 @@ export default function StorefrontAnnouncementsPage() {
       if (orgId) {
         setResolvedOrgId(orgId);
         await loadAnnouncements(orgId);
+        // Load attraction name for breadcrumbs
+        try {
+          const attractionData = await apiClient.get<{ name: string }>(
+            `/organizations/${orgId}/attractions/${attractionId}`
+          );
+          setAttractionName(attractionData?.name ?? '');
+        } catch {
+          // Ignore - breadcrumb will show fallback
+        }
       }
       setIsLoading(false);
     }
     init();
-  }, [orgIdentifier, loadAnnouncements]);
+  }, [orgIdentifier, attractionId, loadAnnouncements]);
 
   async function loadAnnouncements(orgId: string) {
     try {
@@ -271,6 +280,13 @@ export default function StorefrontAnnouncementsPage() {
     (a) => a.startsAt && new Date(a.startsAt) > new Date()
   );
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'Announcements' },
+  ];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -281,27 +297,20 @@ export default function StorefrontAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href={`${basePath}/storefront`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Storefront
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Announcements</h1>
-          <p className="text-muted-foreground">
-            Create announcements and promotions for your storefront.
-          </p>
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Announcements</h1>
+            <p className="text-muted-foreground">
+              Create announcements and promotions for your storefront.
+            </p>
+          </div>
+          <Button onClick={openCreateDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Announcement
+          </Button>
         </div>
-        <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Announcement
-        </Button>
       </div>
 
       {/* Stats */}
@@ -405,49 +414,41 @@ export default function StorefrontAnnouncementsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(announcement)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(announcement)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleToggleActive(announcement)}>
-                              {announcement.isActive ? (
-                                <>
-                                  <PowerOff className="mr-2 h-4 w-4" />
-                                  Deactivate
-                                </>
-                              ) : (
-                                <>
-                                  <Power className="mr-2 h-4 w-4" />
-                                  Activate
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => setDeleteTarget(announcement)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Announcement actions</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEditDialog(announcement)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleToggleActive(announcement)}>
+                            {announcement.isActive ? (
+                              <>
+                                <PowerOff className="mr-2 h-4 w-4" />
+                                Deactivate
+                              </>
+                            ) : (
+                              <>
+                                <Power className="mr-2 h-4 w-4" />
+                                Activate
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setDeleteTarget(announcement)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 );

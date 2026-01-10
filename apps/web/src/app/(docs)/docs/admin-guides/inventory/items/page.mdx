@@ -1,0 +1,219 @@
+# Inventory Items
+
+Manage costumes, props, equipment, and supplies.
+
+## Overview
+
+Items are the core of your inventory system. Each item represents a unique product or asset that you track, whether it's a costume, prop, piece of equipment, or consumable supply.
+
+## Accessing Items
+
+1. Navigate to **Inventory** in the sidebar
+2. Click **Items** or go to the Items section
+
+## Item List
+
+The items list shows all inventory items with key information:
+
+| Column | Description |
+|--------|-------------|
+| SKU | Unique identifier code |
+| Name | Item display name |
+| Type | Costume, Prop, Equipment, or Supply |
+| Category | Assigned category (if any) |
+| Quantity | Current stock level |
+| Status | Stock status indicator |
+
+### Stock Status
+
+| Status | Color | Description |
+|--------|-------|-------------|
+| In Stock | Green | Quantity above minimum |
+| Low Stock | Orange | Quantity at or below minimum |
+| Out of Stock | Red | Quantity is zero |
+
+## Adding an Item
+
+1. Click **Add Item**
+2. Fill in required fields
+3. Configure optional fields
+4. Click **Add Item** to save
+
+### Required Fields
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| SKU | Unique identifier | MASK-001 |
+| Name | Display name | Zombie Mask |
+| Type | Item category type | Costume |
+| Quantity | Current stock | 5 |
+
+### Optional Fields
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Description | Item details | Full-head latex zombie mask |
+| Category | Organization category | Masks |
+| Attraction | Specific attraction | Haunted Mansion |
+| Min Quantity | Low stock threshold | 2 |
+| Max Quantity | Maximum stock limit | 10 |
+| Unit | Measurement unit | Each |
+| Cost | Price in cents | 1500 (= $15.00) |
+| Location | Storage location | Warehouse A, Shelf 3 |
+| Notes | Additional info | Fragile, handle with care |
+
+### Item Types
+
+| Type | Description | Checkout Required |
+|------|-------------|-------------------|
+| Costume | Clothing, masks, wigs, accessories | Yes |
+| Prop | Hand props, set decorations | Yes |
+| Equipment | Tools, electronics, machinery | Yes |
+| Supply | Consumables, makeup, batteries | No |
+
+**Checkout Required** means staff must formally check out the item before use.
+
+### Units
+
+| Unit | Use For |
+|------|---------|
+| Each | Individual items |
+| Set | Grouped items |
+| Pair | Two-item sets (gloves, shoes) |
+| Box | Boxed items |
+| Pack | Packaged items |
+| Gallon | Liquid supplies |
+| Bottle | Bottled items |
+
+## Editing an Item
+
+1. Find the item in the list
+2. Click **Edit**
+3. Modify the fields
+4. Click **Save Changes**
+
+## Adjusting Quantity
+
+To change an item's quantity:
+
+1. Find the item
+2. Click **Adjust Quantity**
+3. Select adjustment type
+4. Enter quantity to add or remove
+5. Add notes explaining the change
+6. Click **Adjust Quantity**
+
+### Adjustment Types
+
+| Type | Direction | Use For |
+|------|-----------|---------|
+| Purchase | Add | New stock received |
+| Adjustment | Add/Remove | Corrections, counts |
+| Damaged | Remove | Broken or unusable items |
+| Lost | Remove | Missing items |
+| Disposed | Remove | Thrown away items |
+
+### Adjustment Notes
+
+Always include notes explaining adjustments:
+- Purchase: Include order number or vendor
+- Adjustment: Explain the correction reason
+- Damaged: Describe the damage
+- Lost: Note when/where it went missing
+- Disposed: Reason for disposal
+
+## Filtering Items
+
+Use filters to find items:
+
+| Filter | Options |
+|--------|---------|
+| Type | Costume, Prop, Equipment, Supply |
+| Category | Any created category |
+| Status | In Stock, Low Stock, Out of Stock |
+| Attraction | Specific attraction or All |
+
+### Low Stock Filter
+
+The `filter=low-stock` parameter shows only items at or below their minimum quantity.
+
+## Searching Items
+
+Use the search box to find items by:
+- SKU
+- Name
+- Description
+
+## Deleting an Item
+
+1. Find the item
+2. Click **Delete**
+3. Confirm deletion
+
+**Warning:** Deleting an item also removes its transaction history. Consider setting quantity to zero instead if you want to keep records.
+
+## SKU Best Practices
+
+Create consistent SKU formats:
+
+| Type | Format | Example |
+|------|--------|---------|
+| Costumes | TYPE-### | COST-001, COST-042 |
+| Masks | MASK-### | MASK-001, MASK-012 |
+| Props | PROP-### | PROP-001, PROP-156 |
+| Equipment | EQUIP-### | EQUIP-001, EQUIP-023 |
+| Supplies | SUP-### | SUP-001, SUP-089 |
+
+Benefits:
+- Easy to reference verbally
+- Sortable in lists
+- Unique identification
+- Clear type indication
+
+## Location Management
+
+Use the Location field to track where items are stored:
+
+**Examples:**
+- Warehouse A, Shelf 3
+- Backstage Left Cabinet
+- Storage Room B, Bin 12
+- Costume Shop, Rack 4
+
+Consistent location formats help staff find items quickly.
+
+## Cost Tracking
+
+Costs are stored in cents (integers):
+- $15.00 = 1500
+- $1.50 = 150
+- $0.99 = 99
+
+This helps track:
+- Total inventory value
+- Replacement costs
+- Budget planning
+
+## Minimum Quantity Strategy
+
+Set minimum quantities based on:
+
+| Factor | Consideration |
+|--------|---------------|
+| Usage rate | How quickly items are used |
+| Lead time | How long to restock |
+| Criticality | How essential the item is |
+| Season | Peak vs. off-season needs |
+
+**Examples:**
+- High-use consumables: Min = 2-week supply
+- Replaceable props: Min = 1-2 backups
+- Critical equipment: Min = 1 spare
+- Seasonal items: Adjust before season
+
+## Next Steps
+
+- [Categories](/docs/admin-guides/inventory/categories) - Organize items
+- [Checkouts](/docs/admin-guides/inventory/checkouts) - Track staff usage
+- [Transactions](/docs/admin-guides/inventory/transactions) - View history
+- [Overview](/docs/admin-guides/inventory/overview) - Back to overview

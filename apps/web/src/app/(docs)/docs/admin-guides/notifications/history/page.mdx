@@ -1,0 +1,229 @@
+# Notification History
+
+Track sent notifications and monitor delivery status.
+
+## Overview
+
+The History page shows all notifications sent from your organization. Use it to:
+
+- **Track delivery status** of sent notifications
+- **Debug issues** with failed messages
+- **Audit communications** sent to staff and customers
+- **Monitor delivery rates** across channels
+
+## Accessing History
+
+1. Navigate to **Notifications** in the sidebar
+2. Click **History**
+
+## Filtering Notifications
+
+Filter by channel using the buttons at the top:
+
+| Filter | Shows |
+|--------|-------|
+| All Channels | All notifications |
+| Email | Email notifications only |
+| SMS | Text messages only |
+| Push | Push notifications only |
+
+## Notification Details
+
+Each notification row shows:
+
+| Column | Description |
+|--------|-------------|
+| Channel | Email, SMS, Push, or In-App |
+| Category | Notification category |
+| Recipient | Email address or phone number |
+| Content | Subject or message preview |
+| Status | Current delivery status |
+| Sent At | When the notification was sent |
+| Error | Error message if failed |
+
+## Delivery Statuses
+
+### Success Statuses
+
+| Status | Icon | Description |
+|--------|------|-------------|
+| **Delivered** | ✅ Green | Successfully delivered to recipient |
+| **Opened** | 👁 Green | Recipient opened the email |
+| **Clicked** | 🖱 Green | Recipient clicked a link |
+| **Sent** | ✓ Gray | Sent to provider, pending delivery |
+
+### In Progress Statuses
+
+| Status | Icon | Description |
+|--------|------|-------------|
+| **Pending** | ⏳ Gray | Waiting to be processed |
+| **Queued** | ⏳ Gray | In queue for delivery |
+
+### Error Statuses
+
+| Status | Icon | Description |
+|--------|------|-------------|
+| **Failed** | ❌ Red | Delivery failed |
+| **Bounced** | ⚠ Red | Email bounced back |
+| **Unsubscribed** | ✕ Gray | Recipient unsubscribed |
+
+## Understanding Status Flow
+
+### Email Status Flow
+
+```
+Pending → Queued → Sent → Delivered → Opened → Clicked
+                      ↓
+                   Failed/Bounced
+```
+
+### SMS Status Flow
+
+```
+Pending → Queued → Sent → Delivered
+                      ↓
+                   Failed
+```
+
+## Common Issues
+
+### Failed Notifications
+
+When a notification fails, check the Error column for details.
+
+**Common email errors:**
+- Invalid email address
+- Mailbox full
+- Domain not found
+- Blocked by recipient server
+
+**Common SMS errors:**
+- Invalid phone number
+- Number not reachable
+- Carrier blocked message
+- Insufficient credits
+
+### Bounced Emails
+
+Emails bounce when they can't be delivered:
+
+| Bounce Type | Cause | Action |
+|-------------|-------|--------|
+| Hard bounce | Invalid address | Remove from list |
+| Soft bounce | Temporary issue | May retry automatically |
+
+### Unsubscribed
+
+Recipient clicked unsubscribe link in a marketing email. They will not receive future marketing emails.
+
+## Reading the History Table
+
+### Recipient Column
+
+Shows who received the notification:
+- Email: `customer@example.com`
+- SMS: `+12025551234`
+
+### Content Column
+
+Shows a preview of the message:
+- Email: Subject line
+- SMS: First 50 characters of message
+
+### Sent At Column
+
+Timestamp when the notification was sent. Click to see full date and time.
+
+## Monitoring Delivery
+
+### Checking Recent Sends
+
+1. Go to History
+2. Look for Sent or Queued status
+3. Wait and refresh to see Delivered
+
+Delivery typically takes:
+- Email: Seconds to minutes
+- SMS: Seconds
+- Push: Seconds
+
+### Verifying Delivery
+
+For important notifications:
+1. Send the notification
+2. Wait 1-2 minutes
+3. Check History for Delivered status
+4. If Failed, check error and retry
+
+## Debugging Failed Notifications
+
+### Step 1: Check the Error
+
+Click on the notification row to see the full error message.
+
+### Step 2: Common Fixes
+
+| Error | Solution |
+|-------|----------|
+| Invalid email | Verify email address format |
+| Invalid phone | Use E.164 format (+1...) |
+| Authentication failed | Check API credentials |
+| Rate limited | Wait and retry |
+| Insufficient credits | Add credits to provider |
+
+### Step 3: Retry
+
+Fix the issue and send again from the Send page.
+
+## Analytics
+
+### Tracking Opens (Email)
+
+Email opens are tracked when recipients load images. Note:
+- Some email clients block tracking
+- Opens may not be 100% accurate
+- Focus on trends, not absolutes
+
+### Tracking Clicks (Email)
+
+Link clicks are tracked when recipients click links. Useful for:
+- Measuring engagement
+- Testing content effectiveness
+- Call-to-action performance
+
+## Best Practices
+
+### Regular Monitoring
+
+- Check History daily for failed notifications
+- Address bounces promptly
+- Monitor delivery rates over time
+
+### Maintaining Lists
+
+- Remove invalid emails/phones
+- Update changed contact info
+- Respect unsubscribes
+
+### Troubleshooting Process
+
+1. Check History for status
+2. Read error message
+3. Verify recipient info
+4. Check channel configuration
+5. Retry or contact support
+
+## Export and Reporting
+
+History data can be exported for:
+- Compliance audits
+- Delivery reports
+- Communication logs
+
+Contact your administrator for bulk export options.
+
+## Next Steps
+
+- [Overview](/docs/admin-guides/notifications/overview) - Back to notifications overview
+- [Templates](/docs/admin-guides/notifications/templates) - Manage templates
+- [Sending](/docs/admin-guides/notifications/sending) - Send new notifications

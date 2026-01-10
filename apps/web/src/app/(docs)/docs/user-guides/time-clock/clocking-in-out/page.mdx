@@ -2,68 +2,236 @@
 
 Learn how to use the time clock to track your work hours.
 
-![Time Clock](/docs/screenshots/time-clock.png)
-
 ## Overview
 
 The time clock allows staff members to clock in and out of their shifts. All time entries are tracked and can be reviewed by managers for payroll processing.
 
+## Accessing the Time Clock
+
+### Staff Portal (Mobile-Friendly)
+
+Access the dedicated time clock at:
+
+```
+https://app.atrivio.com/{your-org-slug}/time
+```
+
+This URL works great on mobile devices and provides the full time clock experience.
+
+### Dashboard Widget
+
+A Time Clock widget appears on your dashboard for quick access:
+- Shows your current status
+- One-click clock in/out
+- Link to full time clock
+
 ## How to Clock In
 
-1. Navigate to the **Time Clock** page from the sidebar
-2. Verify your current status shows "Clocked Out"
-3. Click the **Clock In** button
-4. Your session will begin and the timer will start
+### From the Staff Portal
+
+1. Navigate to your organization's time clock URL
+2. Sign in if prompted
+3. If you work at multiple attractions, select where you're working
+4. Click the **Clock In** button
+5. Your session begins and the timer starts
+
+### From the Dashboard
+
+1. Find the Time Clock widget on your dashboard
+2. Click the **Clock In** button
+3. You'll be clocked in to your primary attraction
+
+## Current Status Display
+
+When clocked in, you'll see:
+
+| Information | Description |
+|-------------|-------------|
+| Status | Green "Clocked In" badge |
+| Duration | Time elapsed since clock-in (e.g., "2h 30m") |
+| Location | The attraction you're working at |
+| Since | The time you clocked in |
+
+When clocked out:
+
+- Gray "Not clocked in" message
+- Clock In button available
 
 ## How to Clock Out
 
-1. Navigate to the **Time Clock** page
+1. Navigate to the time clock (portal or dashboard)
 2. Click the **Clock Out** button
-3. Review your session summary
-4. Your hours will be recorded for the shift
+3. Your time entry is recorded
 
-## Time Clock Features
+### From Staff Time History (Manager View)
 
-### Current Status Display
+When clocking out a staff member from the admin panel:
 
-The time clock shows:
-- Your current status (Clocked In / Clocked Out)
-- Current session duration
-- Today's total hours worked
+1. Enter any break time in minutes
+2. Add optional notes about the shift
+3. Click **Clock Out**
 
-### Break Management
+## Attraction Selection
 
-During your shift, you can:
-- Take scheduled breaks
-- Clock out for lunch
-- Resume your shift after breaks
+### Single Attraction
 
-### Location Verification
+If you're only assigned to one attraction:
+- That attraction is auto-selected
+- Just click Clock In
 
-If enabled by your organization:
-- GPS location may be recorded at clock in/out
-- You may need to be within a certain radius of your workplace
+### Multiple Attractions
 
-## Mobile Access
+If you work at multiple attractions:
+- A selection appears before clocking in
+- Choose where you're working today
+- Your primary attraction is pre-selected
 
-Access the time clock from your mobile device:
-1. Open your browser and navigate to the time clock URL
-2. The interface is fully responsive
-3. Clock in/out from anywhere (if location restrictions allow)
+### Primary Attraction
+
+One attraction can be set as your "Primary":
+- Automatically selected when clocking in
+- Shown with "Primary" label
+- Set by your manager in your staff profile
+
+## Break Time
+
+Break time can be recorded when clocking out:
+- Enter break minutes (default: 0)
+- Breaks are subtracted from total hours
+- Add notes if needed
+
+## Time Entry Details
+
+Each time entry records:
+
+| Field | Description |
+|-------|-------------|
+| Date | The date of the entry |
+| Attraction | Where you worked |
+| Clock In | When you started |
+| Clock Out | When you finished |
+| Break | Break time in minutes |
+| Total Hours | Calculated work time |
+| Status | Pending or Approved |
+
+## Entry Statuses
+
+| Status | Description |
+|--------|-------------|
+| Pending | Entry recorded, awaiting approval |
+| Approved | Entry approved by manager |
+
+Pending entries are reviewed and approved by managers for payroll.
+
+## Dashboard Widget
+
+The Time Clock widget on your dashboard shows:
+- Current clock status
+- Elapsed time if clocked in
+- Current attraction
+- Quick clock in/out buttons
+- Link to full time clock
+
+## Mobile Experience
+
+The staff portal is fully mobile-optimized:
+- Large tap targets for easy use
+- Bottom navigation for quick access
+- Works on any smartphone browser
+- No app installation required
+
+### Bottom Navigation Tabs
+
+| Tab | Description |
+|-----|-------------|
+| Clock | Main clock in/out screen |
+| Schedule | View your upcoming shifts |
+| Swaps | Manage swap requests |
+| Availability | Set your weekly availability |
+
+## Common Scenarios
+
+### Starting Your Shift
+
+1. Open the time clock on your phone
+2. Sign in if needed
+3. Select your attraction (if multiple)
+4. Tap **Clock In**
+5. You're on the clock!
+
+### Ending Your Shift
+
+1. Open the time clock
+2. Verify your elapsed time
+3. Tap **Clock Out**
+4. Your hours are recorded
+
+### Switching Attractions Mid-Shift
+
+If you need to move to a different attraction:
+1. Clock out of current attraction
+2. Clock back in at new attraction
+3. This creates separate time entries
+
+## Permissions
+
+| Action | Who Can Do It |
+|--------|---------------|
+| Clock self in/out | All staff members |
+| Clock others in/out | Owner, Admin, Manager, HR |
+| View own entries | All staff members |
+| Approve entries | Owner, Admin, Manager, HR |
 
 ## Troubleshooting
 
-### Can't clock in?
+### Can't Clock In
 
-- Ensure you're scheduled for a shift
-- Check if you're within the allowed clock-in window
-- Contact your manager if issues persist
+**"No attractions assigned"**
+- You need to be assigned to at least one attraction
+- Contact your manager to add you to an attraction
 
-### Forgot to clock out?
+**"Not a staff member"**
+- Your staff profile may not be set up
+- Contact your manager
 
-- Contact your manager to adjust your time entry
-- Time entries can be corrected by authorized staff
+### Already Clocked In
+
+- You can't clock in if already clocked in
+- Clock out first, then clock in again
+
+### Forgot to Clock Out
+
+- Contact your manager
+- They can close out your entry with the correct time
+- Time entries can be corrected in the admin panel
+
+### Wrong Attraction
+
+- Clock out immediately
+- Clock back in with correct attraction
+- Or contact manager to correct the entry
+
+## Best Practices
+
+### Accuracy
+
+- Clock in when you arrive, not before
+- Clock out when you leave, not after
+- Select the correct attraction
+
+### Breaks
+
+- If taking an unpaid break, record it at clock out
+- Be honest about break duration
+
+### Device
+
+- Bookmark the time clock URL on your phone
+- Enable notifications for shift reminders
+- Keep your phone charged during events
 
 ## Next Steps
 
 - [Time Reports](/docs/user-guides/time-clock/time-reports) - View your time history
+- [Staff Status](/docs/user-guides/time-clock/staff-status) - Manager view of who's working
+- [Overview](/docs/user-guides/time-clock/overview) - Back to overview

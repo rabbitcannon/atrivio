@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
   createStorefrontPage,
   getAttraction,
@@ -46,11 +47,15 @@ export default async function NewStorefrontPage({ params }: NewPageProps) {
   }
   const orgId: string = resolvedOrgId;
 
-  // Get attraction details for preview URL
+  const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
+
+  // Get attraction details for preview URL and breadcrumbs
   let attractionSlug: string | undefined;
+  let attractionName = '';
   try {
     const attractionResult = await getAttraction(orgId, attractionId);
     attractionSlug = attractionResult.data?.slug;
+    attractionName = attractionResult.data?.name ?? '';
   } catch {
     // Attraction not found
   }
@@ -104,8 +109,17 @@ export default async function NewStorefrontPage({ params }: NewPageProps) {
     }
   }
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'Pages', href: `${basePath}/storefront/pages` },
+    { label: 'New Page' },
+  ];
+
   return (
-    <div className="container py-6">
+    <div className="container py-6 space-y-6">
+      <Breadcrumb items={breadcrumbs} />
       <PageEditorForm
         orgId={orgIdentifier}
         attractionId={attractionId}

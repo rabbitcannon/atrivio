@@ -1,0 +1,296 @@
+# Swap Requests
+
+Review and manage shift swap, drop, and pickup requests from staff.
+
+## Overview
+
+The Swap Requests page allows managers to review and process staff requests to swap, drop, or pick up shifts. Staff can request changes to their schedule, and managers approve or reject these requests.
+
+## Accessing Swap Requests
+
+1. Navigate to **Schedule** in the sidebar
+2. Click **Swap Requests**
+
+## Request Types
+
+| Type | Icon | Description |
+|------|------|-------------|
+| Swap | Arrows | Exchange shifts with another staff member |
+| Drop | Arrow Down | Release a shift for others to pick up |
+| Pickup | Hand | Take an available or dropped shift |
+
+### Swap Requests
+
+Staff requests to trade shifts with a colleague:
+- Original staff gives up their shift
+- Another staff takes the shift
+- Both parties must agree
+- Manager approval required
+
+### Drop Requests
+
+Staff requests to release a shift:
+- Shift becomes available for pickup
+- Original staff is unassigned
+- Shift stays on schedule
+- Manager approval required
+
+### Pickup Requests
+
+Staff requests to take an available shift:
+- Staff claims an unassigned shift
+- Or picks up a dropped shift
+- Manager approval required
+
+## Request List
+
+The request list displays:
+
+| Column | Description |
+|--------|-------------|
+| Type | Swap, Drop, or Pickup icon |
+| Requester | Staff member making request |
+| Shift Details | Date, time, and role |
+| Status | Current request status |
+| Requested | When the request was submitted |
+| Actions | Approve or reject buttons |
+
+## Request Statuses
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| Pending | Yellow | Awaiting manager review |
+| Approved | Green | Request granted |
+| Rejected | Red | Request denied |
+| Canceled | Gray | Staff withdrew request |
+| Expired | Gray | Request timed out |
+
+## Filtering Requests
+
+### By Status
+
+| Filter | Shows |
+|--------|-------|
+| All | All requests |
+| Pending | Awaiting review |
+| Approved | Granted requests |
+| Rejected | Denied requests |
+| Canceled | Withdrawn requests |
+| Expired | Timed out requests |
+
+### By Type
+
+| Filter | Shows |
+|--------|-------|
+| All | All request types |
+| Swap | Shift exchanges |
+| Drop | Shift releases |
+| Pickup | Shift claims |
+
+## Approving a Request
+
+1. Find the pending request
+2. Review the shift details
+3. Click the **Approve** button (checkmark)
+4. Add optional notes
+5. Click **Approve** in the dialog
+
+### Approval Considerations
+
+Before approving, consider:
+- Will the shift still be covered?
+- Does the new staff have required skills?
+- Are there any scheduling conflicts?
+- Is the request reasonable?
+
+### After Approval
+
+- Shift assignment is updated automatically
+- Staff are notified of the change
+- Request moves to Approved status
+- Schedule reflects the change
+
+## Rejecting a Request
+
+1. Find the pending request
+2. Click the **Reject** button (X)
+3. Provide a reason (required)
+4. Click **Reject** in the dialog
+
+### Rejection Reasons
+
+Common reasons for rejection:
+- Coverage requirements not met
+- Conflict with other shifts
+- Too close to shift start time
+- Policy restrictions
+- Skill requirements
+
+### After Rejection
+
+- Original assignment remains
+- Staff is notified with reason
+- Request moves to Rejected status
+- Staff can submit new request
+
+## Request Details
+
+Click on a request to see full details:
+
+| Field | Description |
+|-------|-------------|
+| Request Type | Swap, Drop, or Pickup |
+| Requesting Staff | Who submitted the request |
+| Shift Date | Date of the shift |
+| Shift Time | Start and end times |
+| Role | Schedule role |
+| Reason | Staff's reason (if provided) |
+| Submitted | When request was made |
+
+## Staff Submitting Requests
+
+Staff can request changes from their schedule view:
+
+### To Swap a Shift
+
+1. Click on their assigned shift
+2. Select "Request Swap"
+3. Choose target staff (optional)
+4. Provide reason
+5. Submit request
+
+### To Drop a Shift
+
+1. Click on their assigned shift
+2. Select "Request Drop"
+3. Provide reason
+4. Submit request
+
+### To Pick Up a Shift
+
+1. View available shifts
+2. Click on open shift
+3. Select "Request Pickup"
+4. Submit request
+
+## Request Workflow
+
+### Swap Flow
+
+```
+Staff A requests swap
+      ↓
+Staff B accepts (if required)
+      ↓
+Manager reviews
+      ↓
+Approve → Shifts exchanged
+Reject → No change
+```
+
+### Drop Flow
+
+```
+Staff requests drop
+      ↓
+Manager reviews
+      ↓
+Approve → Shift becomes unassigned
+Reject → Staff keeps shift
+```
+
+### Pickup Flow
+
+```
+Staff requests pickup
+      ↓
+Manager reviews
+      ↓
+Approve → Staff assigned to shift
+Reject → Shift remains open
+```
+
+## Permissions
+
+| Role | View Requests | Approve/Reject | Submit Requests |
+|------|---------------|----------------|-----------------|
+| Owner | All | Yes | Yes |
+| Admin | All | Yes | Yes |
+| Manager | All | Yes | Yes |
+| HR | All | Yes | No |
+| Staff | Own | No | Yes |
+
+## Best Practices
+
+### For Managers
+
+- Review pending requests daily
+- Respond within 24-48 hours
+- Provide clear rejection reasons
+- Consider fairness in decisions
+- Document patterns
+
+### For Staff
+
+- Submit requests early
+- Provide clear reasons
+- Check availability before requesting
+- Follow up if no response
+- Accept decisions professionally
+
+### Request Policies
+
+Consider establishing policies for:
+- Minimum notice for requests
+- Maximum requests per period
+- Required approval for certain shifts
+- Peak period restrictions
+
+## Request Notifications
+
+The system sends notifications:
+
+| Event | Notified |
+|-------|----------|
+| New request submitted | Managers |
+| Request approved | Requesting staff |
+| Request rejected | Requesting staff |
+| Request canceled | Managers |
+| Request expired | Requesting staff |
+
+## Troubleshooting
+
+### Cannot Submit Request
+
+- Verify shift is assigned to you
+- Check request deadline hasn't passed
+- Ensure no pending request for same shift
+- Refresh and try again
+
+### Request Not Showing
+
+- Check status filter
+- Verify type filter
+- Confirm correct date range
+- Refresh the page
+
+### Approval Failed
+
+- Check for scheduling conflicts
+- Verify target staff availability
+- Ensure shift still exists
+- Contact admin if persists
+
+### Staff Not Receiving Notifications
+
+- Check notification settings
+- Verify email address
+- Check spam folder
+- Confirm notification preferences
+
+## Next Steps
+
+- [Shifts](/docs/user-guides/scheduling/shifts) - Manage shifts directly
+- [Availability](/docs/user-guides/scheduling/availability) - View staff availability
+- [Templates](/docs/user-guides/scheduling/templates) - Set up shift templates
+- [Overview](/docs/user-guides/scheduling/overview) - Back to overview

@@ -1,10 +1,11 @@
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { ZoneActions } from '@/components/features/attractions/zone-actions';
 import { ZoneForm } from '@/components/features/attractions/zone-form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAttraction, getAttractionZones, resolveOrgId } from '@/lib/api';
 
@@ -49,17 +50,18 @@ export default async function ZonesPage({ params }: ZonesPageProps) {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attraction.name, href: `/${orgIdentifier}/attractions/${attractionId}` },
+    { label: 'Zones' },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <a href={`/${orgIdentifier}/attractions/${attractionId}`}>
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back to attraction</span>
-          </a>
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">Zones</h1>
+      <div className="space-y-2">
+        <Breadcrumb items={breadcrumbs} />
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Zones</h1>
           <p className="text-muted-foreground">Manage zones and areas within {attraction.name}.</p>
         </div>
       </div>
@@ -88,7 +90,10 @@ export default async function ZonesPage({ params }: ZonesPageProps) {
                       </span>
                       <CardTitle className="text-base">{zone.name}</CardTitle>
                     </div>
-                    {zone.capacity && <Badge variant="outline">Cap: {zone.capacity}</Badge>}
+                    <div className="flex items-center gap-2">
+                      {zone.capacity && <Badge variant="outline">Cap: {zone.capacity}</Badge>}
+                      <ZoneActions zone={zone} orgId={orgId} attractionId={attractionId} />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">

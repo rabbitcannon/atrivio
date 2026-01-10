@@ -1,0 +1,173 @@
+# Check-In Overview
+
+Manage guest arrivals, scan tickets, and track attendance across your attractions.
+
+## Overview
+
+The Check-In module provides tools for efficiently processing guest arrivals at your attractions. From barcode scanning to queue management and analytics, everything you need to manage guest entry is available in one place.
+
+## Accessing Check-In
+
+1. Navigate to **Check-In** in the sidebar
+2. The main dashboard displays current day statistics
+
+## Dashboard
+
+The check-in dashboard provides a real-time overview of guest arrivals:
+
+### Quick Stats
+
+| Stat | Description |
+|------|-------------|
+| Checked In Today | Total guests who have checked in |
+| Expected Today | Total guests with tickets for today |
+| Capacity | Current vs. maximum capacity (percentage) |
+| Queue | Pending and late arrivals |
+
+### Navigation
+
+From the dashboard, access:
+
+| Area | Description |
+|------|-------------|
+| Scan Tickets | Barcode/QR scanning interface |
+| Stations | Manage check-in stations |
+| Queue | View pending arrivals and late guests |
+| Reports | Analytics and check-in statistics |
+
+## Key Features
+
+### Ticket Scanning
+
+- Barcode and QR code scanning support
+- Station-based tracking for multi-entry venues
+- Real-time validation and capacity updates
+- Waiver requirement handling
+
+### Check-In Stations
+
+- Create multiple entry points
+- Track check-ins per station
+- Device identification for hardware
+- Active/inactive status control
+
+### Guest Queue
+
+- View pending arrivals
+- Track late guests
+- "Arriving soon" notifications (within 30 min)
+- Manual check-in from queue
+
+### Reports & Analytics
+
+- Daily check-in statistics
+- Hourly distribution charts
+- Station performance comparison
+- Method breakdown (scan type analysis)
+- CSV export for external analysis
+
+## Attraction Selection
+
+All check-in features are scoped to a specific attraction:
+
+1. Select an attraction from the dropdown
+2. Your selection is saved for future visits
+3. Switch attractions at any time
+
+## Real-Time Updates
+
+The check-in system updates in real-time:
+
+- Dashboard stats refresh automatically
+- Queue data refreshes every 30 seconds
+- Capacity tracking updates with each scan
+
+## Workflow
+
+### Typical Check-In Flow
+
+```
+Guest arrives
+    ↓
+Staff scans ticket (or manual lookup)
+    ↓
+System validates ticket
+    ↓
+Waiver check (if required)
+    ↓
+Check-in confirmed
+    ↓
+Capacity updated
+```
+
+### Scan Results
+
+| Result | Description |
+|--------|-------------|
+| Success | Guest checked in, green confirmation |
+| Warning | Guest may need attention (e.g., waiver) |
+| Error | Invalid ticket, entry denied |
+
+## Permissions
+
+| Role | View | Scan | Stations | Reports |
+|------|------|------|----------|---------|
+| Owner | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | Yes |
+| Scanner | Yes | Yes | No | No |
+| Box Office | Yes | Yes | No | No |
+| Staff | No | No | No | No |
+
+## Best Practices
+
+### Before Opening
+
+1. Verify all stations are active
+2. Test scanner functionality
+3. Check capacity settings
+4. Review expected arrivals
+
+### During Operations
+
+1. Monitor queue for late arrivals
+2. Keep an eye on capacity percentage
+3. Address waiver requirements promptly
+4. Report any scanner issues immediately
+
+### After Closing
+
+1. Review daily reports
+2. Export data if needed
+3. Note any issues for follow-up
+4. Deactivate stations if appropriate
+
+## Troubleshooting
+
+### Scanner Not Working
+
+- Check browser permissions (camera access)
+- Verify good lighting conditions
+- Refresh the page
+- Try a different browser
+
+### Guest Not Found
+
+- Verify ticket code was entered correctly
+- Check if guest is in the queue
+- Confirm ticket is for correct date
+- Contact box office for assistance
+
+### Capacity Issues
+
+- Verify capacity settings are correct
+- Check for manual overrides
+- Review any bulk check-ins
+- Contact admin for adjustments
+
+## Next Steps
+
+- [Scanning Tickets](/docs/user-guides/check-in/scanning-tickets) - Learn to scan and validate tickets
+- [Stations](/docs/user-guides/check-in/stations) - Set up check-in stations
+- [Queue](/docs/user-guides/check-in/queue) - Manage pending arrivals
+- [Reports](/docs/user-guides/check-in/reports) - View analytics and statistics

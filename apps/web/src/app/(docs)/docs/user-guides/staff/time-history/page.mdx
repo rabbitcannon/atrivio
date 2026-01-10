@@ -1,0 +1,292 @@
+# Staff Time History
+
+View individual staff member's time tracking records and history.
+
+## Overview
+
+The Time History tab on a staff profile shows all clock-in and clock-out records for that individual. Managers can review time entries, verify hours, and approve timesheets from this view.
+
+## Accessing Time History
+
+1. Navigate to **Staff** in the sidebar
+2. Click on a staff member's name
+3. Select the **Time Tracking** tab
+
+## Time Entry List
+
+Each time entry displays:
+
+| Column | Description |
+|--------|-------------|
+| Date | Day the entry occurred |
+| Clock In | Time clocked in |
+| Clock Out | Time clocked out (if completed) |
+| Total Hours | Calculated hours worked |
+| Status | Entry approval status |
+| Notes | Any attached notes |
+| Actions | Edit, approve, or adjust |
+
+## Entry Status
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| Pending | Yellow | Awaiting review |
+| Approved | Green | Verified and approved |
+| Rejected | Red | Not approved |
+| In Progress | Blue | Currently clocked in |
+
+## Viewing Time Records
+
+### Date Range Filter
+
+Filter time entries by date range:
+
+1. Select start date
+2. Select end date
+3. View entries within range
+
+Common ranges:
+- Today
+- This Week
+- Last Week
+- This Pay Period
+- Custom Range
+
+### Status Filter
+
+Filter by approval status:
+- All entries
+- Pending review
+- Approved only
+- Rejected only
+
+## Time Entry Details
+
+Click on any entry to see full details:
+
+| Field | Description |
+|-------|-------------|
+| Clock In Time | Exact time with date |
+| Clock In Location | Where they clocked in |
+| Clock Out Time | Exact time with date |
+| Clock Out Location | Where they clocked out |
+| Duration | Total time worked |
+| Break Time | Any break deductions |
+| Notes | Staff or manager notes |
+| Approval Status | Current approval state |
+| Approved By | Who approved (if approved) |
+| Approved At | When approved |
+
+## Managing Time Entries
+
+### Editing an Entry
+
+Managers can edit time entries:
+
+1. Click **Edit** on the entry
+2. Adjust clock in or out time
+3. Add or modify notes
+4. Click **Save Changes**
+
+**Note:** All edits are logged for audit purposes.
+
+### Approving Entries
+
+Approve pending time entries:
+
+1. Review the entry details
+2. Click **Approve**
+3. Entry status changes to Approved
+
+### Rejecting Entries
+
+Reject invalid entries:
+
+1. Review the entry
+2. Click **Reject**
+3. Add reason for rejection
+4. Staff is notified of rejection
+
+### Adding Manual Entry
+
+Create a time entry manually:
+
+1. Click **Add Entry**
+2. Enter clock in date/time
+3. Enter clock out date/time
+4. Add notes explaining manual entry
+5. Click **Create Entry**
+
+Manual entries are flagged for review.
+
+## Time Summary
+
+The Time History tab includes summary statistics:
+
+| Metric | Description |
+|--------|-------------|
+| Total Hours | Sum of all hours in range |
+| Approved Hours | Hours approved for pay |
+| Pending Hours | Hours awaiting approval |
+| Average Daily | Average hours per day worked |
+
+### Weekly Summary
+
+View hours by week:
+- Week total
+- Days worked
+- Average per day
+- Overtime (if applicable)
+
+### Pay Period Summary
+
+View hours by pay period:
+- Regular hours
+- Overtime hours
+- Total hours
+- Pending vs. approved
+
+## Overtime Tracking
+
+The system tracks overtime based on your settings:
+
+| Type | Threshold | Rate |
+|------|-----------|------|
+| Daily | Over 8 hours | 1.5x |
+| Weekly | Over 40 hours | 1.5x |
+| Double | Over 12 daily | 2x |
+
+Overtime settings are configured at the organization level.
+
+## Export Options
+
+Export time history for:
+- Payroll processing
+- Individual records
+- Audit documentation
+
+Export formats:
+- CSV
+- PDF report
+
+## Approval Permissions
+
+| Role | View History | Edit Entries | Approve |
+|------|--------------|--------------|---------|
+| Owner | All staff | Yes | Yes |
+| Admin | All staff | Yes | Yes |
+| Manager | Team members | Yes | Yes |
+| HR | All staff | Yes | Yes |
+| Staff | Own only | No | No |
+
+## Approval Workflow
+
+### Standard Flow
+
+1. Staff clocks in/out
+2. Entry appears as Pending
+3. Manager reviews entry
+4. Manager approves or rejects
+5. Entry finalized for payroll
+
+### Auto-Approval Settings
+
+If enabled, entries matching these criteria auto-approve:
+- Within scheduled shift times
+- No anomalies detected
+- Under daily maximum hours
+
+## Common Scenarios
+
+### Missed Clock Out
+
+1. Find the entry with missing clock out
+2. Click **Edit**
+3. Add clock out time
+4. Note reason for manual edit
+5. Save and approve
+
+### Incorrect Clock In
+
+1. Locate the incorrect entry
+2. Click **Edit**
+3. Correct the clock in time
+4. Add note explaining correction
+5. Save changes
+
+### Forgot to Clock In
+
+1. Click **Add Entry**
+2. Enter actual work start time
+3. Enter end time when clocked out
+4. Add note: "Manual entry - forgot to clock in"
+5. Submit for approval
+
+### Split Shift
+
+For staff working split shifts:
+- Each segment is a separate entry
+- Total for day sums all entries
+- Approve each segment individually
+
+## Best Practices
+
+### Regular Review
+
+- Review pending entries daily
+- Approve entries before pay period ends
+- Follow up on anomalies promptly
+
+### Documentation
+
+- Always add notes for edits
+- Document reasons for rejections
+- Keep records of manual entries
+
+### Accuracy
+
+- Verify against schedules
+- Cross-check with supervisors
+- Investigate unusual patterns
+
+### Timeliness
+
+- Approve entries within 48 hours
+- Don't let pending entries accumulate
+- Process before payroll deadlines
+
+## Troubleshooting
+
+### Entry Not Showing
+
+- Check date range filter
+- Verify correct staff profile
+- Refresh the page
+- Check if entry was deleted
+
+### Cannot Edit Entry
+
+- Verify your role permissions
+- Check if entry is already approved
+- Locked entries may need admin
+
+### Hours Calculation Wrong
+
+- Check for overlapping entries
+- Verify break deductions
+- Review timezone settings
+- Contact support for discrepancies
+
+### Approval Not Working
+
+- Confirm pending status
+- Check your approval permissions
+- Ensure entry is complete
+- Try refreshing and retry
+
+## Next Steps
+
+- [Time Clock](/docs/user-guides/time-clock/clocking-in-out) - General time tracking
+- [Time Reports](/docs/user-guides/time-clock/time-reports) - Team reports
+- [Profiles](/docs/user-guides/staff/profiles) - Staff profile details
+- [Overview](/docs/user-guides/staff/overview) - Back to directory

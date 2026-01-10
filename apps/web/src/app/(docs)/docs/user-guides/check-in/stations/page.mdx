@@ -1,0 +1,228 @@
+# Check-In Stations
+
+Configure and manage multiple entry points for guest check-in.
+
+## Overview
+
+Check-in stations represent physical entry points at your attraction. Each station can be assigned to a specific location and tracks its own check-in statistics, helping you understand traffic flow and staff efficiency.
+
+## Accessing Stations
+
+1. Navigate to **Check-In** in the sidebar
+2. Click **Stations**
+3. Select your attraction from the dropdown
+
+## Station List
+
+The stations page displays all configured stations:
+
+| Column | Description |
+|--------|-------------|
+| Name | Station display name |
+| Location | Physical location description |
+| Device ID | Hardware identifier (if applicable) |
+| Status | Active (green) or Inactive (gray) |
+| Today's Count | Number of check-ins processed today |
+| Actions | Edit, toggle active, delete |
+
+## Summary Cards
+
+At the top of the page, summary cards show:
+
+| Card | Description |
+|------|-------------|
+| Total Stations | All configured stations |
+| Active Stations | Stations currently available |
+| Total Check-Ins Today | Combined count across all stations |
+
+## Creating a Station
+
+1. Click **Create Station** button
+2. Fill in the station details
+3. Click **Create** to save
+
+### Station Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Name | Yes | Station display name (e.g., "Main Entrance") |
+| Location | No | Physical location (e.g., "Building A, Gate 1") |
+| Device ID | No | Hardware identifier for kiosks/scanners |
+
+### Default Values
+
+New stations are created as:
+- **Active**: Yes (immediately available for use)
+- **Today's Count**: 0
+
+## Editing a Station
+
+1. Find the station in the list
+2. Click the **Edit** button (pencil icon)
+3. Modify the desired fields
+4. Click **Save Changes**
+
+Editable fields:
+- Name
+- Location
+- Device ID
+
+## Toggling Station Status
+
+### Activating a Station
+
+1. Find the inactive station
+2. Click **Activate** button
+3. Station becomes available for check-ins
+
+### Deactivating a Station
+
+1. Find the active station
+2. Click **Deactivate** button
+3. Station is hidden from scanner selection
+
+**Note**: Deactivating a station:
+- Hides it from the scanner interface
+- Preserves historical data
+- Does not delete any records
+
+## Deleting a Station
+
+1. Find the station in the list
+2. Click the **Delete** button (trash icon)
+3. Confirm the deletion
+
+**Warning**: Deleting a station:
+- Removes the station permanently
+- Historical check-in data is preserved
+- This action cannot be undone
+
+## Station Best Practices
+
+### Naming Conventions
+
+Use clear, consistent naming:
+- Include location: "Main Gate - North"
+- Include purpose: "VIP Entrance"
+- Keep names short but descriptive
+
+**Good Names:**
+- Main Entrance
+- North Gate
+- VIP Check-In
+- Building A - Entry 1
+
+**Poor Names:**
+- Station 1
+- New Station
+- Test
+
+### Location Descriptions
+
+Provide helpful context:
+- Building or area
+- Gate number
+- Nearby landmarks
+- Special notes
+
+**Examples:**
+- "Main building, front doors"
+- "North parking lot entrance"
+- "VIP tent, left side"
+
+### Device IDs
+
+Use for hardware tracking:
+- Scanner serial numbers
+- Tablet identifiers
+- Kiosk numbers
+
+This helps with:
+- Troubleshooting hardware issues
+- Tracking equipment location
+- Maintenance records
+
+## Using Stations
+
+### At the Scanner
+
+1. Open the scan interface
+2. Select your station from the dropdown
+3. Your selection is remembered
+
+### Station Assignment
+
+Consider assigning stations based on:
+- Physical location
+- Staff shifts
+- Traffic patterns
+- Special events
+
+### Multiple Attractions
+
+Each attraction has its own stations:
+- Switch attractions using the dropdown
+- Stations are scoped to the selected attraction
+- Staff should know their assigned attraction and station
+
+## Station Analytics
+
+Station data appears in reports:
+
+| Metric | Description |
+|--------|-------------|
+| Check-In Count | Total processed per station |
+| Percentage | Share of total check-ins |
+| Peak Times | Busiest periods per station |
+
+Use this data to:
+- Identify bottlenecks
+- Optimize staff placement
+- Plan capacity
+
+## Permissions
+
+| Role | View | Create | Edit | Delete |
+|------|------|--------|------|--------|
+| Owner | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | Yes |
+| Scanner | No | No | No | No |
+| Box Office | No | No | No | No |
+
+## Troubleshooting
+
+### Station Not Appearing in Scanner
+
+- Verify station is active
+- Check correct attraction is selected
+- Refresh the scanner page
+- Confirm station was saved successfully
+
+### Cannot Create Station
+
+- Ensure all required fields are filled
+- Check for duplicate names
+- Verify you have permission
+- Refresh and try again
+
+### Today's Count Not Updating
+
+- Allow a few seconds for sync
+- Refresh the stations page
+- Check if scans are processing correctly
+- Verify station is selected during scans
+
+### Device ID Issues
+
+- Use unique identifiers per device
+- Update if hardware changes
+- Keep a record of assignments
+- Remove ID if device is retired
+
+## Next Steps
+
+- [Scanning Tickets](/docs/user-guides/check-in/scanning-tickets) - Use stations for scanning
+- [Queue](/docs/user-guides/check-in/queue) - View pending arrivals
+- [Reports](/docs/user-guides/check-in/reports) - Analyze station performance
+- [Overview](/docs/user-guides/check-in/overview) - Back to overview

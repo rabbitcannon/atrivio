@@ -1,0 +1,268 @@
+# Queue Analytics
+
+Track queue performance and optimize operations.
+
+## Overview
+
+Queue Analytics provides insights into queue performance, guest behavior, and operational efficiency. Use this data to optimize your queue settings and improve guest experience.
+
+## Accessing Analytics
+
+1. Navigate to **Queue** in the sidebar
+2. Click **Analytics** or the Analytics tab
+
+## Date Selection
+
+View analytics for any date:
+- Default view shows today's data
+- Use the date picker to view historical data
+- All times shown in your local timezone
+
+## Today's Summary
+
+### Volume Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Total Joined** | Total guests who entered the queue |
+| **Served** | Guests successfully checked in |
+| **Expired/Left** | Guests who expired or left voluntarily |
+| **No Shows** | Guests who were called but didn't arrive |
+
+### Breakdown
+
+The Expired/Left metric shows:
+- **Expired**: Entries that timed out after being called
+- **Left**: Guests who voluntarily left the queue
+
+## Performance Metrics
+
+### Average Wait Time
+
+| Metric | Description |
+|--------|-------------|
+| Avg Wait Time | Average minutes from joining to check-in |
+
+**Good benchmarks:**
+- < 30 min: Excellent
+- 30-60 min: Good
+- 60-90 min: Acceptable
+- > 90 min: Consider increasing throughput
+
+### Maximum Wait Time
+
+| Metric | Description |
+|--------|-------------|
+| Max Wait Time | Longest wait experienced today |
+
+**Use this to:**
+- Set realistic expectations
+- Identify peak pressure times
+- Adjust max wait settings
+
+### Conversion Rate
+
+| Metric | Description |
+|--------|-------------|
+| Conversion Rate | Percentage of joiners who checked in |
+
+**Calculation:** `(Served / Total Joined) × 100`
+
+**Good benchmarks:**
+- > 90%: Excellent
+- 80-90%: Good
+- 70-80%: Review settings
+- < 70%: Investigate issues
+
+## Current Queue
+
+Real-time view of queue status:
+
+| Metric | Description |
+|--------|-------------|
+| Current Queue Size | Guests currently waiting |
+
+## Hourly Breakdown
+
+Detailed view of activity by hour:
+
+| Column | Description |
+|--------|-------------|
+| Hour | Time period (e.g., 7 PM, 8 PM) |
+| Joined | Guests who joined during this hour |
+| Served | Guests checked in during this hour |
+| Expired | Entries that expired during this hour |
+| Avg Wait | Average wait time for this hour |
+| Max Size | Peak queue size during this hour |
+
+### Using Hourly Data
+
+Identify patterns:
+- **Peak join times**: When most guests join
+- **Peak service times**: When most check-ins happen
+- **Bottleneck hours**: High expired count or wait times
+
+## Key Insights
+
+Automated insights based on your data:
+
+### Service Rate
+
+Shows your overall success:
+- Total guests served
+- Conversion rate percentage
+- Comparison to goals
+
+### Expired Entries Alert
+
+If you have expired entries:
+- Number of expired entries
+- Suggestion to adjust max wait time or notification timing
+
+### No Show Alert
+
+If you have no-shows:
+- Number of no-show guests
+- Suggestion to send reminder notifications
+
+### Wait Time Alert
+
+If average wait is high (> 60 min):
+- Current average wait
+- Suggestion to increase batch size or frequency
+
+## Understanding the Data
+
+### Why Guests Expire
+
+Common reasons:
+- Notification lead time too short
+- Guests wandered too far
+- Expiry window too short
+- Guests didn't see notification
+
+**Solutions:**
+- Increase notification lead time
+- Increase expiry window
+- Improve notification visibility
+- Add reminder notifications
+
+### Why Guests Leave
+
+Common reasons:
+- Wait time too long
+- Changed plans
+- Found alternative activity
+- Queue position not visible
+
+**Solutions:**
+- Reduce wait times
+- Provide accurate estimates
+- Keep guests informed
+- Offer queue status updates
+
+### Why No Shows Happen
+
+Common reasons:
+- Left the venue
+- Didn't receive notification
+- Couldn't find entrance
+- Technical issues
+
+**Solutions:**
+- Verify phone numbers
+- Check notification delivery
+- Improve wayfinding
+- Staff stationed at entrance
+
+## Using Analytics for Optimization
+
+### Daily Review
+
+1. Check conversion rate
+2. Review expired/no-show counts
+3. Identify peak hours
+4. Note average wait times
+
+### Weekly Analysis
+
+1. Compare daily trends
+2. Identify busy vs. slow days
+3. Correlate with events or weather
+4. Adjust settings for patterns
+
+### Setting Adjustments
+
+Based on analytics:
+
+| Issue | Adjustment |
+|-------|------------|
+| High expired count | Increase expiry time |
+| High no-show count | Earlier notification lead |
+| Long wait times | Increase batch size/frequency |
+| Low join count | Marketing, better QR placement |
+| Peak hour issues | Extra staff, faster processing |
+
+## Exporting Data
+
+Analytics data can be exported for:
+- Operational reporting
+- Trend analysis
+- Capacity planning
+- Performance reviews
+
+Contact your administrator for bulk export options.
+
+## Comparing Dates
+
+To compare performance:
+1. Note metrics for one date
+2. Switch to comparison date
+3. Compare key metrics
+4. Identify trends or anomalies
+
+## Best Practices
+
+### Daily Monitoring
+
+- Check analytics at end of each day
+- Note any unusual patterns
+- Document operational issues
+
+### Continuous Improvement
+
+- Make small setting adjustments
+- Monitor impact in analytics
+- Iterate based on data
+
+### Setting Goals
+
+- Target conversion rate (e.g., 85%)
+- Maximum acceptable wait time
+- Minimum guests served per hour
+
+## Troubleshooting
+
+### No Data Showing
+
+- Queue may not have been active
+- Check selected date
+- Verify queue was enabled
+
+### Unexpected Patterns
+
+- Check for operational issues
+- Review setting changes
+- Consider external factors
+
+### Data Not Updating
+
+- Refresh the page
+- Check queue status
+- Verify entries are being processed
+
+## Next Steps
+
+- [Settings](/docs/admin-guides/queue/settings) - Adjust based on insights
+- [Management](/docs/admin-guides/queue/management) - Manage queue entries
+- [Overview](/docs/admin-guides/queue/overview) - Back to queue overview

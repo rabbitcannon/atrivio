@@ -1,0 +1,299 @@
+# Time Slots
+
+Manage timed entry slots and capacity limits for your attractions.
+
+## Overview
+
+Time slots allow you to control guest entry by dividing your operating hours into specific time windows. Each slot can have its own capacity and pricing, helping you manage crowd flow and optimize revenue.
+
+## Accessing Time Slots
+
+1. Navigate to **Ticketing** in the sidebar
+2. Click **Time Slots**
+
+## Time Slots List
+
+The list displays slots for the selected date:
+
+| Column | Description |
+|--------|-------------|
+| Time | Start and end time of the slot |
+| Attraction | Which attraction the slot is for |
+| Label | Optional slot label (e.g., "Peak Hours") |
+| Capacity | Booked count / total capacity |
+| Price Modifier | Additional charge for this slot |
+| Status | Active or Inactive |
+| Actions | Activate/deactivate, delete |
+
+## Date Selection
+
+Use the date picker in the header to view slots for different dates:
+- Defaults to today's date
+- Shows slots for the selected date only
+- Slot count updates with date change
+
+## Creating Time Slots
+
+### Single Slot
+
+1. Click **Add Slot** button
+2. Fill in the slot details
+3. Click **Create**
+
+#### Single Slot Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Attraction | Yes | Which attraction this slot is for |
+| Date | Yes | Date of the slot |
+| Start Time | Yes | When the slot begins |
+| End Time | Yes | When the slot ends |
+| Capacity | No | Maximum guests (leave empty for unlimited) |
+| Price Modifier | No | Additional charge for this slot |
+| Label | No | Display label (e.g., "Prime Time") |
+
+### Bulk Create
+
+For creating multiple slots at once:
+
+1. Click **Bulk Create** button
+2. Configure the bulk settings
+3. Click **Create Slots**
+
+#### Bulk Create Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Attraction | Yes | Which attraction |
+| Start Date | Yes | First date for slots |
+| End Date | Yes | Last date for slots |
+| Start Time | Yes | When daily slots begin |
+| End Time | Yes | When daily slots end |
+| Interval | Yes | Slot duration (15, 30, 60, or 120 min) |
+| Days of Week | Yes | Which days to create slots |
+| Capacity | No | Capacity per slot |
+
+#### Days of Week
+
+Click day buttons to toggle which days receive slots:
+- Selected days are highlighted
+- Default: Friday and Saturday (Fri, Sat)
+- Multiple days can be selected
+
+#### Interval Options
+
+| Interval | Description |
+|----------|-------------|
+| 15 min | Four slots per hour |
+| 30 min | Two slots per hour |
+| 1 hour | One slot per hour |
+| 2 hours | One slot per two hours |
+
+### Bulk Create Example
+
+```
+Attraction: Nightmare Manor
+Start Date: October 1, 2024
+End Date: October 31, 2024
+Start Time: 6:00 PM
+End Time: 11:00 PM
+Interval: 30 min
+Days: Fri, Sat
+Capacity: 50
+
+Result: Creates 10 slots per night (6:00-6:30, 6:30-7:00, etc.)
+        for all Fridays and Saturdays in October
+```
+
+## Price Modifiers
+
+Add or subtract from the base ticket price for specific slots:
+
+| Modifier | Display | Effect |
+|----------|---------|--------|
+| +$5.00 | Green, +$5.00 | Adds $5 to ticket price |
+| -$5.00 | Red, -$5.00 | Subtracts $5 from ticket price |
+| $0.00 | — | No price change |
+
+### Use Cases
+
+- **Peak pricing**: Add premium for popular times
+- **Early bird**: Discount for first slots
+- **Late night**: Discount for final slots
+
+## Capacity Management
+
+### Unlimited Capacity
+
+Leave capacity empty for no limit:
+- Shows "Unlimited" in the list
+- Any number of guests can book
+
+### Limited Capacity
+
+Set a specific number:
+- Shows "X / Y" (booked / capacity)
+- Red text when capacity reached
+- Cannot overbook
+
+### Sold Out Behavior
+
+When a slot reaches capacity:
+- Cannot book more tickets for that slot
+- Guests see slot as unavailable
+- Consider adding more slots or increasing capacity
+
+## Activating/Deactivating Slots
+
+### To Deactivate
+
+1. Click the menu button (...)
+2. Select **Deactivate**
+
+Deactivated slots:
+- Not available for booking
+- Existing bookings remain valid
+- Can be reactivated
+
+### To Activate
+
+1. Click the menu button (...)
+2. Select **Activate**
+
+The slot becomes immediately bookable.
+
+## Deleting Time Slots
+
+1. Click the menu button (...)
+2. Select **Delete**
+3. Confirm the deletion
+
+**Note**: Cannot delete slots with existing bookings. Deactivate instead.
+
+## Time Format
+
+Times are displayed in 12-hour format:
+- 6:00 PM - 6:30 PM
+- 11:00 PM - 11:30 PM
+
+Enter times in 24-hour format in the form:
+- 18:00 = 6:00 PM
+- 23:00 = 11:00 PM
+
+## Slot Labels
+
+Optional labels help identify slot purposes:
+
+| Label | Use Case |
+|-------|----------|
+| Peak Hours | Premium pricing times |
+| Early Bird | Discounted early slots |
+| Final Entry | Last slot of the night |
+| VIP Only | Reserved for VIP tickets |
+
+Labels display in the list for easy identification.
+
+## Time Slot Examples
+
+### Standard Evening
+
+```
+Date: October 15, 2024
+Time: 7:00 PM - 7:30 PM
+Attraction: Nightmare Manor
+Capacity: 50
+Label: (none)
+Price Modifier: (none)
+```
+
+### Peak Time Premium
+
+```
+Date: October 31, 2024
+Time: 8:00 PM - 8:30 PM
+Attraction: Nightmare Manor
+Capacity: 75
+Label: Peak Hours
+Price Modifier: +$10.00
+```
+
+### Early Bird Discount
+
+```
+Date: October 15, 2024
+Time: 6:00 PM - 6:30 PM
+Attraction: Nightmare Manor
+Capacity: 40
+Label: Early Bird
+Price Modifier: -$5.00
+```
+
+## Permissions
+
+| Role | View | Create | Bulk Create | Delete |
+|------|------|--------|-------------|--------|
+| Owner | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | No |
+| Box Office | Yes | No | No | No |
+
+## Best Practices
+
+### Planning
+
+- Create slots well in advance
+- Use bulk create for efficiency
+- Plan for peak dates (weekends, holidays)
+
+### Capacity
+
+- Set realistic limits
+- Consider staff and safety requirements
+- Allow buffer between slots
+
+### Pricing
+
+- Use peak pricing strategically
+- Offer discounts for slow periods
+- Balance revenue and attendance
+
+### Management
+
+- Monitor booking velocity
+- Adjust capacity as needed
+- Deactivate rather than delete
+
+## Troubleshooting
+
+### Slots Not Appearing
+
+- Check date selection
+- Verify attraction is correct
+- Confirm slots were created
+- Refresh the page
+
+### Cannot Delete Slot
+
+- Slot has existing bookings
+- Deactivate instead of deleting
+- Historical data is preserved
+
+### Bulk Create Issues
+
+- Verify date range is valid
+- Check at least one day selected
+- Ensure attraction is selected
+- Review time range (start before end)
+
+### Capacity Confusion
+
+- Booked count may lag slightly
+- Refresh for latest numbers
+- Check for pending orders
+
+## Next Steps
+
+- [Ticket Types](/docs/user-guides/ticketing/ticket-types) - Configure ticket products
+- [Orders](/docs/user-guides/ticketing/orders) - View ticket orders
+- [Promo Codes](/docs/user-guides/ticketing/promo-codes) - Create discounts
+- [Overview](/docs/user-guides/ticketing/overview) - Back to overview

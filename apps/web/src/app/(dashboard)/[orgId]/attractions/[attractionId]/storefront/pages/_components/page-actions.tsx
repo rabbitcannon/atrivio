@@ -1,6 +1,14 @@
 'use client';
 
-import { Archive, Eye, EyeOff, Loader2, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  Eye,
+  EyeOff,
+  Loader2,
+  MoreHorizontal,
+  RotateCcw,
+  Trash2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
@@ -40,21 +48,25 @@ export function PageActions({
 }: PageActionsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const handleStatusChange = async (status: PageStatus) => {
+  const handleStatusChange = async (status: PageStatus, action: string) => {
     setIsLoading(true);
+    setLoadingAction(action);
     try {
       await onStatusChange(pageId, status);
       router.refresh();
     } catch (_error) {
     } finally {
       setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
   const handleDelete = async () => {
     setIsLoading(true);
+    setLoadingAction('delete');
     try {
       await onDelete(pageId);
       setDeleteDialogOpen(false);
@@ -62,6 +74,7 @@ export function PageActions({
     } catch (_error) {
     } finally {
       setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -69,43 +82,79 @@ export function PageActions({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" disabled={isLoading}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isLoading}>
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <MoreHorizontal className="h-4 w-4" />
             )}
+            <span className="sr-only">Page actions</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {currentStatus !== 'published' && (
-            <DropdownMenuItem onClick={() => handleStatusChange('published')}>
-              <Eye className="mr-2 h-4 w-4" />
+          {/* Publish/Unpublish */}
+          {currentStatus !== 'published' && currentStatus !== 'archived' && (
+            <DropdownMenuItem
+              onClick={() => handleStatusChange('published', 'publish')}
+              disabled={isLoading}
+            >
+              {loadingAction === 'publish' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Eye className="mr-2 h-4 w-4" />
+              )}
               Publish
             </DropdownMenuItem>
           )}
           {currentStatus === 'published' && (
-            <DropdownMenuItem onClick={() => handleStatusChange('draft')}>
-              <EyeOff className="mr-2 h-4 w-4" />
+            <DropdownMenuItem
+              onClick={() => handleStatusChange('draft', 'unpublish')}
+              disabled={isLoading}
+            >
+              {loadingAction === 'unpublish' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <EyeOff className="mr-2 h-4 w-4" />
+              )}
               Unpublish
             </DropdownMenuItem>
           )}
+          {currentStatus === 'archived' && (
+            <DropdownMenuItem
+              onClick={() => handleStatusChange('draft', 'restore')}
+              disabled={isLoading}
+            >
+              {loadingAction === 'restore' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RotateCcw className="mr-2 h-4 w-4" />
+              )}
+              Restore
+            </DropdownMenuItem>
+          )}
+
+          {/* Archive */}
           {currentStatus !== 'archived' && (
-            <DropdownMenuItem onClick={() => handleStatusChange('archived')}>
-              <Archive className="mr-2 h-4 w-4" />
+            <DropdownMenuItem
+              onClick={() => handleStatusChange('archived', 'archive')}
+              disabled={isLoading}
+            >
+              {loadingAction === 'archive' ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Archive className="mr-2 h-4 w-4" />
+              )}
               Archive
             </DropdownMenuItem>
           )}
-          {currentStatus === 'archived' && (
-            <DropdownMenuItem onClick={() => handleStatusChange('draft')}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Restore to Draft
-            </DropdownMenuItem>
-          )}
+
           <DropdownMenuSeparator />
+
+          {/* Delete */}
           <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
             onClick={() => setDeleteDialogOpen(true)}
+            className="text-destructive focus:text-destructive"
+            disabled={isLoading}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
@@ -128,10 +177,10 @@ export function PageActions({
               disabled={isLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {loadingAction === 'delete' ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
               ) : (
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-1.5 h-4 w-4" />
               )}
               Delete
             </AlertDialogAction>

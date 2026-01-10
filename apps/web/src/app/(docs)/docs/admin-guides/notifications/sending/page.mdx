@@ -1,0 +1,271 @@
+# Sending Notifications
+
+Send direct email and SMS notifications to recipients.
+
+## Overview
+
+The Send Notification page allows you to compose and send one-time notifications. For recurring or automated notifications, use templates instead.
+
+## Accessing Send
+
+1. Navigate to **Notifications** in the sidebar
+2. Click **Send Notification**
+
+## Composing a Notification
+
+### Step 1: Select Channel
+
+Choose how to deliver the notification:
+
+| Channel | Best For |
+|---------|----------|
+| **Email** | Detailed information, rich content |
+| **SMS** | Urgent alerts, short messages |
+
+### Step 2: Select Category
+
+Choose a category to organize the notification:
+
+| Category | Use For |
+|----------|---------|
+| Tickets | Order and ticket-related messages |
+| Queue | Virtual queue notifications |
+| Schedule | Staff scheduling messages |
+| Announcements | General announcements |
+| Marketing | Promotional content |
+| System | Account and system messages |
+
+### Step 3: Enter Recipient
+
+**For Email:**
+- Enter the recipient's email address
+- Example: `customer@example.com`
+
+**For SMS:**
+- Enter phone number in E.164 format
+- Include country code with + prefix
+- Example: `+12025551234`
+
+### Step 4: Compose Message
+
+**Email Notifications:**
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| Subject | Email subject line | Yes |
+| Message | Email body content | Yes |
+
+**SMS Notifications:**
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| Message | SMS text content | Yes |
+
+### Step 5: Send
+
+Click **Send Notification** to queue the message for delivery.
+
+## Email Notifications
+
+### Subject Line Tips
+
+- Keep under 50 characters
+- Be specific and descriptive
+- Avoid spam trigger words
+- Include relevant details
+
+**Good Examples:**
+- "Your tickets for October 15th"
+- "Shift reminder: Tomorrow at 6 PM"
+- "Order #1234 confirmed"
+
+**Avoid:**
+- "URGENT!!!"
+- "FREE tickets"
+- "Act now"
+
+### Message Body
+
+Email supports longer, formatted content:
+- Multiple paragraphs
+- Lists and details
+- Links (if HTML enabled)
+
+## SMS Notifications
+
+### Character Limits
+
+| Length | Result |
+|--------|--------|
+| 1-160 characters | Single SMS |
+| 161-320 characters | Split into 2 SMS |
+| 321-480 characters | Split into 3 SMS |
+
+A character counter shows your current length.
+
+### SMS Best Practices
+
+- **Front-load**: Put important info first
+- **Be concise**: Every character counts
+- **Identify yourself**: Include org name
+- **Call to action**: What should they do?
+
+**Good Example (142 chars):**
+```
+Nightmare Manor: Your queue spot is ready!
+Proceed to entrance within 10 mins or lose your place.
+Show this message at the door.
+```
+
+### Phone Number Format
+
+Use E.164 international format:
+- Start with `+`
+- Include country code
+- No spaces, dashes, or parentheses
+
+| Format | Correct? |
+|--------|----------|
+| `+12025551234` | ✅ Yes |
+| `+442071234567` | ✅ Yes |
+| `(202) 555-1234` | ❌ No |
+| `202-555-1234` | ❌ No |
+
+## After Sending
+
+### Success
+
+When a notification is sent successfully:
+- Confirmation message appears
+- Notification queued for delivery
+- Form resets for next message
+
+### Delivery
+
+Notifications are processed asynchronously:
+1. Message queued
+2. Sent to provider (SendGrid/Twilio)
+3. Delivered to recipient
+4. Status updated in history
+
+### Checking Status
+
+View delivery status in [Notification History](/docs/admin-guides/notifications/history).
+
+## Common Use Cases
+
+### Staff Schedule Change
+
+**Channel:** SMS (urgent)
+**Category:** Schedule
+
+```
+Nightmare Manor: Schedule update -
+Your shift on 10/15 moved to 5 PM.
+Reply CONFIRM to acknowledge.
+```
+
+### Customer Order Confirmation
+
+**Channel:** Email
+**Category:** Tickets
+**Subject:** Your tickets are confirmed!
+
+```
+Thank you for your purchase!
+
+Order #12345
+2x General Admission
+Date: October 15, 2024
+Time: 7:00 PM
+
+Your tickets are attached to this email.
+See you soon!
+```
+
+### Queue Notification
+
+**Channel:** SMS
+**Category:** Queue
+
+```
+Terror Collective: You're up!
+Group 47, proceed to Gate B now.
+Your window expires in 10 minutes.
+```
+
+### Event Reminder
+
+**Channel:** Email
+**Category:** Announcements
+**Subject:** See you tomorrow!
+
+```
+This is a reminder that your visit is tomorrow!
+
+Date: October 15, 2024
+Time: 7:00 PM
+Location: 123 Spooky Lane
+
+Tips:
+- Arrive 15 minutes early
+- Bring photo ID
+- Wear comfortable shoes
+```
+
+## Tips
+
+### Channel Requirements
+
+| Channel | Requirement |
+|---------|-------------|
+| Email | SendGrid API key in environment |
+| SMS | Twilio credentials in environment |
+
+If channels aren't configured, contact your administrator.
+
+### When to Use Templates
+
+Use the Send page for:
+- One-time messages
+- Quick announcements
+- Testing before creating templates
+
+Use templates for:
+- Recurring notifications
+- Automated messages
+- Consistent formatting
+
+### Bulk Sending
+
+The Send page is for single recipients. For bulk sending:
+- Use the API directly
+- Create automation workflows
+- Contact support for assistance
+
+## Troubleshooting
+
+### "Failed to send notification"
+
+- Check channel configuration
+- Verify recipient format
+- Try a different recipient to test
+
+### Email Not Received
+
+- Check spam folder
+- Verify email address
+- Check delivery status in history
+- May take a few minutes
+
+### SMS Not Received
+
+- Verify phone number format (+1...)
+- Check for carrier blocks
+- Verify Twilio is configured
+- Check history for errors
+
+## Next Steps
+
+- [Templates](/docs/admin-guides/notifications/templates) - Create reusable templates
+- [History](/docs/admin-guides/notifications/history) - Track delivery status

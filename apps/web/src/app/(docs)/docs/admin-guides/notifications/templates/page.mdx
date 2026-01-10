@@ -1,0 +1,238 @@
+# Notification Templates
+
+Create reusable templates for consistent, automated notifications.
+
+## Overview
+
+Templates define the structure and content of notifications. They allow you to:
+
+- **Maintain consistency** across similar notifications
+- **Use variables** for personalized content
+- **Automate messages** triggered by system events
+- **Manage content** without code changes
+
+## Accessing Templates
+
+1. Navigate to **Notifications** in the sidebar
+2. Click **Templates**
+
+## Template Types
+
+### System Templates
+
+Pre-built templates for common scenarios:
+- Order confirmations
+- Ticket delivery
+- Password resets
+- Account notifications
+
+System templates are marked with a "System" badge and cannot be deleted.
+
+### Custom Templates
+
+Create your own templates for:
+- Marketing campaigns
+- Custom announcements
+- Organization-specific messages
+
+## Template Channels
+
+Templates are organized by notification channel:
+
+| Channel | Icon | Use For |
+|---------|------|---------|
+| Email | ✉️ | Rich content with subject lines |
+| SMS | 💬 | Short text messages |
+| Push | 📱 | Mobile app notifications |
+| In-App | 🔔 | Dashboard notifications |
+
+Filter templates by channel using the tabs at the top.
+
+## Template Fields
+
+### Required Fields
+
+| Field | Description |
+|-------|-------------|
+| Name | Template identifier |
+| Channel | Email, SMS, Push, or In-App |
+| Body | Message content |
+
+### Optional Fields
+
+| Field | Description | Available For |
+|-------|-------------|---------------|
+| Subject | Email subject line | Email only |
+| Description | Internal notes about template | All |
+
+## Using Variables
+
+Templates support dynamic variables that are replaced with actual values when sent.
+
+### Variable Syntax
+
+Use double curly braces: `{{variable_name}}`
+
+### Common Variables
+
+| Variable | Description |
+|----------|-------------|
+| `{{first_name}}` | Recipient's first name |
+| `{{last_name}}` | Recipient's last name |
+| `{{order_number}}` | Order reference number |
+| `{{ticket_count}}` | Number of tickets |
+| `{{event_date}}` | Event date |
+| `{{event_time}}` | Event time |
+| `{{attraction_name}}` | Attraction name |
+| `{{org_name}}` | Organization name |
+
+### Example Template
+
+**Subject:** Your tickets for {{attraction_name}}
+
+**Body:**
+```
+Hi {{first_name}},
+
+Thank you for your purchase! Here are your ticket details:
+
+Order Number: {{order_number}}
+Tickets: {{ticket_count}}
+Date: {{event_date}}
+Time: {{event_time}}
+
+We look forward to seeing you!
+
+{{org_name}}
+```
+
+## Template Status
+
+Templates can be active or inactive:
+
+| Status | Badge | Behavior |
+|--------|-------|----------|
+| Active | Green | Available for sending |
+| Inactive | Outline | Disabled, not available |
+
+Inactive templates remain in your list but cannot be used for notifications.
+
+## Managing Templates
+
+### View Template
+
+Click on a template card to see:
+- Subject line (if email)
+- Body preview
+- Variables used
+
+### Create Template (Pro+)
+
+1. Click **Create Template**
+2. Select the channel
+3. Enter template details
+4. Add variables as needed
+5. Save
+
+### Edit Template
+
+1. Find the template
+2. Click **Edit**
+3. Update content
+4. Save changes
+
+### Deactivate Template
+
+1. Open template settings
+2. Toggle status to Inactive
+3. Template remains but cannot be used
+
+## Template Best Practices
+
+### Naming Conventions
+
+Use clear, descriptive names:
+- "Order Confirmation - Email"
+- "Shift Reminder - SMS"
+- "Queue Ready - Push"
+
+### Variable Usage
+
+- List all variables in the description
+- Test with sample data before using
+- Have fallback text for optional variables
+
+### Content Guidelines
+
+**Email:**
+- Keep subject lines under 50 characters
+- Use clear formatting
+- Include unsubscribe link for marketing
+
+**SMS:**
+- Stay under 160 characters
+- Front-load important information
+- Include identification (org name)
+
+**Push:**
+- Keep very short (50-100 characters)
+- Use action-oriented language
+- Make it scannable
+
+## System Template Examples
+
+### Order Confirmation (Email)
+
+**Subject:** Order #{{order_number}} Confirmed
+
+**Body:**
+```
+Your order has been confirmed!
+
+Order: #{{order_number}}
+Tickets: {{ticket_count}}
+Event: {{event_date}} at {{event_time}}
+
+Check your email for tickets.
+```
+
+### Queue Ready (SMS)
+
+**Body:**
+```
+{{attraction_name}}: Your group is ready!
+Please proceed to the entrance within 10 minutes.
+Position: {{queue_position}}
+```
+
+### Shift Reminder (Push)
+
+**Body:**
+```
+Reminder: You have a shift tomorrow at {{shift_time}}
+```
+
+## Troubleshooting
+
+### Variables Not Replacing
+
+- Check syntax: `{{variable}}` not `{variable}`
+- Verify variable name matches exactly
+- Ensure data is being passed when sending
+
+### Template Not Appearing
+
+- Check if template is Active
+- Verify the correct channel filter
+- Refresh the page
+
+### Email Formatting Issues
+
+- Test in multiple email clients
+- Keep HTML simple
+- Use inline styles
+
+## Next Steps
+
+- [Sending](/docs/admin-guides/notifications/sending) - Use templates to send notifications
+- [History](/docs/admin-guides/notifications/history) - View sent notifications

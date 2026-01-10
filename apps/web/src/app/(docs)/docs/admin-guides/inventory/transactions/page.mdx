@@ -1,0 +1,238 @@
+# Transaction History
+
+View all inventory movements and adjustments.
+
+## Overview
+
+Transaction History provides a complete audit trail of all inventory changes. Every quantity adjustment, checkout, and return is recorded with details about who made the change and why.
+
+## Accessing Transactions
+
+1. Navigate to **Inventory** in the sidebar
+2. Click **Transactions** or go to the Transactions section
+
+## Transaction List
+
+Each transaction shows:
+
+| Column | Description |
+|--------|-------------|
+| Date | When the transaction occurred |
+| Item | Affected item name and SKU |
+| Type | Transaction type |
+| Quantity | Amount changed (+/-) |
+| Staff | Staff member involved (if applicable) |
+| Notes | Transaction notes |
+| By | User who recorded the transaction |
+
+## Transaction Types
+
+### Quantity Adjustments
+
+| Type | Description | Quantity |
+|------|-------------|----------|
+| Purchase | New stock received | + (positive) |
+| Adjustment | Manual correction | +/- (either) |
+| Damaged | Item damaged | - (negative) |
+| Lost | Item lost | - (negative) |
+| Disposed | Item thrown away | - (negative) |
+
+### Checkout Transactions
+
+| Type | Description | Quantity |
+|------|-------------|----------|
+| Checkout | Item checked out to staff | - (negative) |
+| Return | Item returned from staff | + (positive) |
+
+## Reading Transactions
+
+### Positive Quantities
+
+Positive numbers mean inventory increased:
+- +5: Five items added
+- +1: One item added
+
+**Causes:** Purchase, positive adjustment, return
+
+### Negative Quantities
+
+Negative numbers mean inventory decreased:
+- -3: Three items removed
+- -1: One item removed
+
+**Causes:** Checkout, damaged, lost, disposed, negative adjustment
+
+## Filtering Transactions
+
+### By Type
+
+| Filter | Shows |
+|--------|-------|
+| All | All transactions |
+| Adjustments | Manual quantity changes |
+| Checkouts | Checkout/return records |
+| Purchases | New stock received |
+
+### By Item
+
+1. Use the item filter dropdown
+2. Select a specific item
+3. View only that item's transactions
+
+### By Date Range
+
+1. Set start date
+2. Set end date
+3. View transactions in range
+
+### By Staff
+
+Filter to see transactions involving a specific staff member.
+
+## Transaction Details
+
+Click a transaction to see:
+- Full notes and comments
+- Related checkout details
+- Condition information
+- Complete audit trail
+
+## Common Transaction Patterns
+
+### Restocking
+
+```
+Purchase: +10 items
+Notes: Order #12345 from Vendor ABC
+```
+
+### Inventory Count Correction
+
+```
+Adjustment: +2 items
+Notes: Physical count showed 15, system had 13
+```
+
+### Damaged Item
+
+```
+Damaged: -1 item
+Notes: Mask torn during performance, disposed
+```
+
+### Checkout Flow
+
+```
+Checkout: -1 item (Staff: John Doe)
+Notes: Shift assignment 10/15
+
+Return: +1 item (Staff: John Doe)
+Notes: Returned end of shift, good condition
+```
+
+## Using History for Auditing
+
+### Inventory Counts
+
+1. Filter by item
+2. Review all transactions
+3. Verify counts match physical inventory
+4. Create adjustment if needed
+
+### Staff Accountability
+
+1. Filter by staff member
+2. Review checkout history
+3. Check return patterns
+4. Identify any issues
+
+### Loss Investigation
+
+1. Filter by "Lost" type
+2. Review lost item reports
+3. Look for patterns
+4. Update procedures if needed
+
+### Purchase Verification
+
+1. Filter by "Purchase" type
+2. Match with purchase orders
+3. Verify quantities received
+4. Document discrepancies
+
+## Exporting Transactions
+
+Transaction data can be exported for:
+- Audit reports
+- Loss analysis
+- Cost tracking
+- Compliance documentation
+
+Contact your administrator for export options.
+
+## Best Practices
+
+### Recording Transactions
+
+- Always include descriptive notes
+- Reference related documents (PO#, report#)
+- Be specific about reasons
+- Record immediately, don't batch
+
+### Review Schedule
+
+| Frequency | Review |
+|-----------|--------|
+| Daily | Outstanding checkouts |
+| Weekly | Damaged/lost items |
+| Monthly | Full transaction review |
+| Seasonally | Comprehensive audit |
+
+### Note Writing
+
+**Good Notes:**
+- "PO #12345 from Halloween Mart, 10 zombie masks"
+- "Physical count correction, found 2 extra in storage room B"
+- "Mask #MASK-023 torn during 10/15 show, irreparable"
+
+**Poor Notes:**
+- "Added some"
+- "Fix"
+- "Gone"
+
+## Troubleshooting
+
+### Missing Transactions
+
+- Check date range filter
+- Clear all filters
+- Verify item exists
+- Refresh the page
+
+### Incorrect Transaction
+
+Transactions cannot be edited or deleted. Instead:
+1. Create a correcting adjustment
+2. Note the error in the adjustment notes
+3. Reference the incorrect transaction
+
+### Finding Old Transactions
+
+1. Extend date range
+2. Use specific filters
+3. Search by item
+4. Contact admin for archived data
+
+## Transaction Retention
+
+Transactions are retained:
+- Indefinitely for active items
+- With deleted items (maintains history)
+- For compliance and audit purposes
+
+## Next Steps
+
+- [Items](/docs/admin-guides/inventory/items) - Manage items
+- [Categories](/docs/admin-guides/inventory/categories) - Organize items
+- [Checkouts](/docs/admin-guides/inventory/checkouts) - Track usage
+- [Overview](/docs/admin-guides/inventory/overview) - Back to overview

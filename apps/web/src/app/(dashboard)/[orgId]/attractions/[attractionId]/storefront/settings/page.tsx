@@ -1,9 +1,10 @@
-import { ArrowLeft, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { StorefrontSettingsForm } from '@/components/features/storefronts/settings-form';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   getAttraction,
@@ -54,28 +55,28 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
     subdomainDomain?.domain ??
     `${attractionName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.haunt.dev`;
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'Settings' },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href={`${basePath}/storefront`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Storefront
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Storefront Settings</h1>
-          <p className="text-muted-foreground">
-            Configure your storefront&apos;s appearance and behavior.
-          </p>
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Storefront Settings</h1>
+            <p className="text-muted-foreground">
+              Configure your storefront&apos;s appearance and behavior.
+            </p>
+          </div>
+          <Badge variant={settings?.isPublished ? 'default' : 'secondary'}>
+            {settings?.isPublished ? 'Published' : 'Draft'}
+          </Badge>
         </div>
-        <Badge variant={settings?.isPublished ? 'default' : 'secondary'}>
-          {settings?.isPublished ? 'Published' : 'Draft'}
-        </Badge>
       </div>
 
       {/* Domain Info (read-only, configured elsewhere) */}

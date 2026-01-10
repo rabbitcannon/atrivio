@@ -1,0 +1,235 @@
+# Queue Settings
+
+Configure virtual queue behavior and guest experience.
+
+## Overview
+
+Queue settings control how the virtual queue operates, including capacity, timing, notifications, and guest options.
+
+## Accessing Settings
+
+1. Navigate to **Queue** in the sidebar
+2. Click **Settings** or the Settings tab
+
+## Queue Status Control
+
+### Enable Virtual Queue
+
+Toggle the queue on or off:
+
+| Setting | Description |
+|---------|-------------|
+| Enable Virtual Queue | When on, guests can join the queue |
+
+**Actions:**
+- **Enable Queue** - Activate the queue and start accepting guests
+- **Disable Queue** - Deactivate the queue completely
+
+### Pause Queue
+
+Temporarily stop accepting new guests:
+
+| Setting | Description |
+|---------|-------------|
+| Pause Queue | Stop new entries while preserving existing ones |
+
+Use pause when:
+- Taking a break
+- Handling an issue
+- Queue is too long
+- Need to catch up
+
+**Note:** Pausing does not affect guests already in the queue. They continue to be processed normally.
+
+## Capacity Settings
+
+Configure how many guests can be processed:
+
+### Guests Per Batch
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| Guests Per Batch | 10 | 1-100 | Number of guests called in each batch |
+
+**How to set:**
+- Match your attraction's throughput capacity
+- Account for no-shows (set slightly higher)
+- Consider party size averages
+
+### Batch Interval
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| Batch Interval | 15 min | 1-60 min | Time between automatic batch calls |
+
+**How to set:**
+- Based on average experience duration
+- Allow time for guests to arrive
+- Balance wait time vs. queue length
+
+### Maximum Queue Size
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| Max Queue Size | 500 | 1-10000 | Maximum parties in queue |
+
+When the queue reaches maximum size:
+- New guests see "Queue Full" message
+- Existing guests are not affected
+- Queue reopens when entries are processed
+
+### Maximum Wait Time
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| Max Wait Time | 120 min | 15-480 min | Entries expire after this time |
+
+**Purpose:**
+- Prevent stale entries
+- Ensure accurate wait estimates
+- Keep queue moving
+
+## Notification Settings
+
+Configure how guests are notified:
+
+### Notification Lead Time
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| Notification Lead | 10 min | 1-60 min | How early to send "approaching" notification |
+
+**Notification flow:**
+1. Guest receives "approaching" notification (lead time before their turn)
+2. Guest prepares to head to entrance
+3. Guest receives "called" notification
+4. Expiry timer starts
+
+### Expiry Time
+
+| Setting | Default | Range | Description |
+|---------|---------|-------|-------------|
+| Expiry Time | 15 min | 1-60 min | Window for guests to arrive after being called |
+
+**Balance:**
+- Too short: Guests can't reach entrance in time
+- Too long: Called guests block queue flow
+
+**Recommendation:** Consider distance from waiting areas to entrance.
+
+## Guest Options
+
+Configure guest experience settings:
+
+### Require Check-In
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Require Check-In | On | Guests must check in at entrance |
+
+When enabled:
+- Called guests must present their code
+- Staff scans or manually checks in
+- Entry marked complete only after check-in
+
+When disabled:
+- Entries automatically complete after expiry window
+- Less accurate tracking
+- Useful for self-service scenarios
+
+### Allow Rejoin
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Allow Rejoin | Off | Allow expired guests to rejoin |
+
+When enabled:
+- Guests whose entry expired can join again
+- They go to the back of the queue
+- Useful for forgiving policies
+
+When disabled:
+- Expired means done for the day
+- Encourages punctuality
+- Prevents queue gaming
+
+## Setting Recommendations
+
+### High-Volume Attractions
+
+| Setting | Recommendation |
+|---------|----------------|
+| Guests Per Batch | 15-25 |
+| Batch Interval | 10-15 min |
+| Max Queue Size | 500-1000 |
+| Notification Lead | 10-15 min |
+| Expiry Time | 15-20 min |
+
+### Intimate Experiences
+
+| Setting | Recommendation |
+|---------|----------------|
+| Guests Per Batch | 5-10 |
+| Batch Interval | 20-30 min |
+| Max Queue Size | 100-200 |
+| Notification Lead | 15-20 min |
+| Expiry Time | 20-30 min |
+
+### Busy Nights
+
+Consider:
+- Increasing batch size
+- Decreasing batch interval
+- Extending max queue size
+- Shortening expiry time
+
+## Saving Settings
+
+After making changes:
+
+1. Review all settings
+2. Click **Save Changes**
+3. Settings apply immediately
+
+**Note:** Changing settings does not affect guests already in the queue.
+
+## Testing Your Configuration
+
+Before going live:
+
+1. Enable the queue in test mode
+2. Join the queue yourself
+3. Verify notification timing
+4. Test the check-in process
+5. Review the analytics
+
+## Troubleshooting
+
+### Guests Missing Their Turn
+
+- Increase notification lead time
+- Increase expiry time
+- Verify notification delivery (check history)
+
+### Queue Too Long
+
+- Increase guests per batch
+- Decrease batch interval
+- Lower max queue size
+
+### Guests Arriving Too Early
+
+- Decrease notification lead time
+- Communicate expected wait after notification
+
+### Many Expired Entries
+
+- Increase expiry time
+- Consider allowing rejoin
+- Improve signage for queue location
+
+## Next Steps
+
+- [Management](/docs/admin-guides/queue/management) - Manage queue entries
+- [Analytics](/docs/admin-guides/queue/analytics) - Track performance
+- [Overview](/docs/admin-guides/queue/overview) - Back to queue overview

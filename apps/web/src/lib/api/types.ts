@@ -913,7 +913,7 @@ export interface StorefrontAnnouncement {
 export interface StorefrontNavItem {
   id: string;
   label: string;
-  linkType: 'home' | 'page' | 'external' | 'tickets';
+  linkType: 'home' | 'page' | 'external' | 'tickets' | 'faq';
   type?: 'page' | 'link' | 'dropdown'; // Alias for backwards compat
   pageId: string | null;
   externalUrl: string | null;

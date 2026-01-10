@@ -1,22 +1,13 @@
-import {
-  ArrowLeft,
-  Edit,
-  GripVertical,
-  HelpCircle,
-  MoreHorizontal,
-  Plus,
-  Star,
-  Tag,
-  Trash2,
-} from 'lucide-react';
+import { Star, Tag } from 'lucide-react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getStorefrontFaqs, resolveOrgId } from '@/lib/api';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getAttraction, getStorefrontFaqs, resolveOrgId } from '@/lib/api';
 import type { StorefrontFaq } from '@/lib/api/types';
+import { FaqHeaderActions } from './_components/faq-header-actions';
+import { FaqList } from './_components/faq-list';
 
 export const metadata: Metadata = {
   title: 'Storefront FAQs',
@@ -37,42 +28,44 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
   const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
 
   let faqs: StorefrontFaq[] = [];
+  let attractionName = '';
 
   try {
-    const faqsResult = await getStorefrontFaqs(orgId, attractionId);
+    const [faqsResult, attractionResult] = await Promise.all([
+      getStorefrontFaqs(orgId, attractionId),
+      getAttraction(orgId, attractionId),
+    ]);
     faqs = faqsResult.data?.faqs ?? [];
+    attractionName = attractionResult.data?.name ?? '';
   } catch {
     // Feature might not be enabled
   }
 
   // Get unique categories
   const categories = [...new Set(faqs.map((f) => f.category).filter(Boolean))];
-  const activeFaqs = faqs.filter((f) => f.isActive);
+  const publishedFaqs = faqs.filter((f) => f.isPublished);
   const featuredFaqs = faqs.filter((f) => f.isFeatured);
+
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'FAQs' },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href={`${basePath}/storefront`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Storefront
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">FAQs</h1>
-          <p className="text-muted-foreground">
-            Manage frequently asked questions for your storefront.
-          </p>
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">FAQs</h1>
+            <p className="text-muted-foreground">
+              Manage frequently asked questions for your storefront.
+            </p>
+          </div>
+          <FaqHeaderActions orgId={orgId} attractionId={attractionId} />
         </div>
-        <Button disabled>
-          <Plus className="mr-2 h-4 w-4" />
-          Add FAQ
-        </Button>
       </div>
 
       {/* Stats */}
@@ -83,21 +76,27 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{faqs.length}</div>
-            <p className="text-xs text-muted-foreground">{activeFaqs.length} active</p>
+            <p className="text-xs text-muted-foreground">{publishedFaqs.length} published</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Featured</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              Featured
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{featuredFaqs.length}</div>
-            <p className="text-xs text-muted-foreground">Highlighted on homepage</p>
+            <p className="text-xs text-muted-foreground">Highlighted on FAQ page</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Categories
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{categories.length}</div>
@@ -110,11 +109,9 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
       {categories.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium">Categories:</span>
-          <Badge variant="secondary" className="cursor-pointer">
-            All
-          </Badge>
+          <Badge variant="secondary">All</Badge>
           {categories.map((category) => (
-            <Badge key={category} variant="outline" className="cursor-pointer">
+            <Badge key={category} variant="outline">
               {category}
             </Badge>
           ))}
@@ -122,81 +119,7 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
       )}
 
       {/* FAQs List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5" />
-            All FAQs
-          </CardTitle>
-          <CardDescription>Drag to reorder. Featured FAQs appear on the homepage.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {faqs.length === 0 ? (
-            <div className="text-center py-12">
-              <HelpCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-semibold mb-2">No FAQs yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Add frequently asked questions to help your visitors.
-              </p>
-              <Button disabled>
-                <Plus className="mr-2 h-4 w-4" />
-                Add First FAQ
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {faqs.map((faq) => (
-                <div
-                  key={faq.id}
-                  className={`flex items-start gap-3 p-4 rounded-lg border ${
-                    !faq.isActive ? 'opacity-50' : ''
-                  }`}
-                >
-                  <div className="cursor-grab p-1 text-muted-foreground hover:text-foreground">
-                    <GripVertical className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium">{faq.question}</h4>
-                      {faq.isFeatured && (
-                        <Badge variant="outline" className="text-amber-600">
-                          <Star className="mr-1 h-3 w-3" />
-                          Featured
-                        </Badge>
-                      )}
-                      {!faq.isActive && <Badge variant="secondary">Inactive</Badge>}
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{faq.answer}</p>
-                    {faq.category && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs">
-                          <Tag className="mr-1 h-3 w-3" />
-                          {faq.category}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" disabled>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" disabled>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                    <Button variant="ghost" size="icon" disabled>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <p className="text-sm text-muted-foreground text-center">
-        FAQ management will be available in a future update.
-      </p>
+      <FaqList orgId={orgId} attractionId={attractionId} faqs={faqs} />
     </div>
   );
 }

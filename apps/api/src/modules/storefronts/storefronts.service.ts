@@ -1076,6 +1076,8 @@ export class StorefrontsService {
           return '/tickets';
         case 'attractions':
           return '/attractions';
+        case 'faq':
+          return '/faq';
         case 'external':
           return item.externalUrl || '#';
         case 'page':

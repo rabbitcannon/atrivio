@@ -1,0 +1,170 @@
+# Notifications Overview
+
+Send email, SMS, and in-app notifications to staff and customers.
+
+## Overview
+
+The notifications system allows you to communicate with staff and customers through multiple channels:
+
+- **Email**: Rich content via SendGrid
+- **SMS**: Text messages via Twilio
+- **Push**: Mobile app notifications
+- **In-App**: Real-time dashboard notifications
+
+## Accessing Notifications
+
+Navigate to **Notifications** in the sidebar to access the notification center.
+
+## Dashboard
+
+The notifications dashboard shows:
+
+### Quick Stats
+
+| Metric | Description |
+|--------|-------------|
+| Email Sent | Emails sent this month |
+| SMS Sent | Text messages sent this month |
+| Push Sent | Push notifications this month |
+| Templates | Active notification templates |
+
+### Channel Configuration
+
+View the status of notification integrations:
+
+| Channel | Provider | Configuration |
+|---------|----------|---------------|
+| Email | SendGrid | Requires `SENDGRID_API_KEY` |
+| SMS | Twilio | Requires `TWILIO_*` credentials |
+| In-App | Built-in | Always available |
+
+## Main Sections
+
+### Templates
+
+Manage reusable notification templates:
+- Create templates for common notifications
+- Use variables for dynamic content
+- System templates for automated messages
+
+[Learn more about templates](/docs/admin-guides/notifications/templates)
+
+### Send Notification
+
+Send one-time notifications:
+- Direct email or SMS
+- Choose recipient and compose message
+- Select notification category
+
+[Learn more about sending](/docs/admin-guides/notifications/sending)
+
+### History
+
+View sent notifications:
+- Track delivery status
+- Filter by channel or status
+- Debug failed deliveries
+
+[Learn more about history](/docs/admin-guides/notifications/history)
+
+## Notification Channels
+
+### Email
+
+Best for:
+- Detailed information
+- Order confirmations
+- Newsletters and marketing
+- Rich HTML content
+
+**Requirements:**
+- SendGrid API key configured
+- Verified sender domain
+
+### SMS
+
+Best for:
+- Urgent alerts
+- Short updates
+- Time-sensitive information
+- Queue notifications
+
+**Requirements:**
+- Twilio account credentials
+- Phone numbers in E.164 format (+1234567890)
+
+**Note:** Messages over 160 characters may be split into multiple SMS.
+
+### Push Notifications
+
+Best for:
+- Real-time alerts
+- App engagement
+- Staff shift reminders
+
+**Requirements:**
+- Mobile app installed
+- Push notifications enabled
+
+### In-App Notifications
+
+Best for:
+- Dashboard alerts
+- System messages
+- Non-urgent updates
+
+**Note:** Always available, no external configuration needed.
+
+## Notification Categories
+
+Organize notifications by purpose:
+
+| Category | Use For |
+|----------|---------|
+| **Tickets** | Order confirmations, ticket updates |
+| **Queue** | Virtual queue notifications |
+| **Schedule** | Shift reminders, schedule changes |
+| **Announcements** | General announcements |
+| **Marketing** | Promotional content |
+| **System** | Account and system alerts |
+
+## Feature Availability
+
+Notification features vary by subscription tier:
+
+| Feature | Free | Pro | Enterprise |
+|---------|------|-----|------------|
+| Email Notifications | ✅ | ✅ | ✅ |
+| In-App Notifications | ✅ | ✅ | ✅ |
+| SMS Notifications | ❌ | ❌ | ✅ |
+| Push Notifications | ❌ | ❌ | ✅ |
+| Custom Templates | ❌ | ✅ | ✅ |
+
+## Best Practices
+
+### Choosing the Right Channel
+
+- **Urgent**: Use SMS for time-sensitive information
+- **Detailed**: Use email for complex content
+- **Quick updates**: Use push or in-app
+- **Marketing**: Use email with unsubscribe options
+
+### Message Content
+
+- Keep SMS under 160 characters when possible
+- Use clear subject lines for email
+- Include relevant details (dates, times, order numbers)
+- Personalize with template variables
+
+### Timing
+
+- Avoid sending at odd hours
+- Consider timezone differences
+- Space out marketing messages
+- Send confirmations immediately
+
+## Next Steps
+
+- [Templates](/docs/admin-guides/notifications/templates) - Create notification templates
+- [Sending](/docs/admin-guides/notifications/sending) - Send notifications
+- [History](/docs/admin-guides/notifications/history) - View delivery status

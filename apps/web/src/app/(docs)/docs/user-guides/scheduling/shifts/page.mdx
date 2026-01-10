@@ -1,0 +1,262 @@
+# Managing Shifts
+
+Create, edit, and manage scheduled shifts for your team.
+
+## Overview
+
+Shifts are the core building blocks of your schedule. Each shift represents a work period with a specific date, time, role, and optionally assigned staff member.
+
+## Accessing Shifts
+
+1. Navigate to **Schedule** in the sidebar
+2. Click **All Shifts** to view the shift list
+
+## Shift List
+
+The shift list displays all scheduled shifts with key information:
+
+| Column | Description |
+|--------|-------------|
+| Date | Shift date |
+| Time | Start and end times |
+| Role | Assigned role with color indicator |
+| Staff | Assigned staff member (if any) |
+| Status | Current shift status |
+| Actions | Edit, delete, and quick actions |
+
+## Creating a Shift
+
+1. Click **Create Shift**
+2. Fill in the shift details
+3. Click **Create Shift** to save
+
+### Shift Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Date | Yes | The shift date |
+| Start Time | Yes | When the shift begins |
+| End Time | Yes | When the shift ends |
+| Role | Yes | Schedule role for this shift |
+| Staff | No | Assigned staff member |
+| Status | Yes | Shift status (default: Scheduled) |
+| Notes | No | Additional notes |
+
+### Default Values
+
+New shifts default to:
+- **Start Time**: 6:00 PM (18:00)
+- **End Time**: 11:00 PM (23:00)
+- **Status**: Scheduled
+- **Staff**: Unassigned
+
+## Shift Statuses
+
+| Status | Badge | Description | Staff Visibility |
+|--------|-------|-------------|------------------|
+| Draft | Gray | Work in progress | Hidden |
+| Scheduled | Blue | Planned shift | Hidden |
+| Published | Green | Ready for staff | Visible |
+| Confirmed | Purple | Staff acknowledged | Visible |
+| Canceled | Red | No longer active | Visible (marked) |
+
+### Status Workflow
+
+```
+Draft → Scheduled → Published → Confirmed
+                          ↓
+                      Canceled
+```
+
+1. **Draft**: Initial creation, still being planned
+2. **Scheduled**: Shift is planned but not shared
+3. **Published**: Staff can see and respond
+4. **Confirmed**: Staff has acknowledged
+5. **Canceled**: Shift was canceled
+
+## Editing a Shift
+
+1. Find the shift in the list
+2. Click **Edit**
+3. Modify the desired fields
+4. Click **Save Changes**
+
+### What Can Be Changed
+
+- Date and times
+- Role assignment
+- Staff assignment
+- Status
+- Notes
+
+### Restrictions
+
+- Confirmed shifts may require staff notification
+- Canceled shifts cannot be reactivated (create new)
+- Past shifts cannot be modified
+
+## Assigning Staff
+
+### During Creation
+
+1. Open the shift form
+2. Select a staff member from the dropdown
+3. Staff is assigned immediately
+
+### Unassigned Shifts
+
+Leave the Staff field empty to create an open shift that needs coverage.
+
+### Reassigning Staff
+
+1. Edit the shift
+2. Select a different staff member
+3. Save changes
+4. Previous assignee is notified (if published)
+
+## Shift Roles
+
+Each shift requires a role assignment. Roles:
+- Provide color coding for visual identification
+- Categorize shifts by function
+- Help staff understand expectations
+- Support filtering and reporting
+
+[Learn more about roles](/docs/user-guides/scheduling/roles)
+
+## Filtering Shifts
+
+### By Status
+
+View shifts in specific states:
+- All shifts
+- Draft only
+- Scheduled
+- Published
+- Confirmed
+- Canceled
+
+### By Role
+
+Filter to show only shifts for specific roles.
+
+### By Date Range
+
+Set start and end dates to view shifts within a period.
+
+### By Staff
+
+View shifts assigned to specific staff members.
+
+### Unassigned Only
+
+Toggle to show only shifts needing coverage.
+
+## Shift Notes
+
+Use notes to communicate:
+- Special instructions for the shift
+- Location details
+- Equipment requirements
+- Costume or uniform notes
+- Contact information
+
+## Bulk Operations
+
+### Creating Multiple Shifts
+
+For efficient schedule building:
+1. Use templates to generate shifts
+2. Copy existing shifts
+3. Generate from date range
+
+### Bulk Status Changes
+
+Select multiple shifts to:
+- Publish together
+- Cancel together
+- Update status in batch
+
+## Shift Duration
+
+The system calculates shift duration automatically:
+- Standard shifts: Based on start/end times
+- Overnight shifts: Handles day boundary crossing
+- Break deductions: Applied if configured
+
+## Overnight Shifts
+
+For shifts crossing midnight:
+- End time can be earlier than start time
+- System understands 11 PM to 3 AM is 4 hours
+- Displays correctly on calendar
+
+## Conflicts and Warnings
+
+The system may warn about:
+- Staff already assigned to overlapping shift
+- Staff unavailable on that day
+- Exceeding maximum hours
+- Missing role qualifications
+
+## Permissions
+
+| Role | View Shifts | Create | Edit | Delete | Assign |
+|------|-------------|--------|------|--------|--------|
+| Owner | All | Yes | Yes | Yes | Yes |
+| Admin | All | Yes | Yes | Yes | Yes |
+| Manager | All | Yes | Yes | Yes | Yes |
+| HR | All | Yes | Yes | No | Yes |
+| Staff | Own | No | No | No | No |
+
+## Best Practices
+
+### Shift Creation
+
+- Create shifts at least 2 weeks ahead
+- Start with templates for consistency
+- Review availability before assigning
+- Keep detailed notes for special shifts
+
+### Status Management
+
+- Use Draft for planning phases
+- Move to Scheduled when finalized
+- Publish with adequate notice
+- Track confirmations
+
+### Staff Assignment
+
+- Check availability first
+- Consider skill requirements
+- Balance hours across staff
+- Maintain backup options
+
+## Troubleshooting
+
+### Cannot Create Shift
+
+- Verify required fields are complete
+- Check date is valid
+- Ensure role is selected
+- Confirm permissions
+
+### Staff Not Available
+
+- Check staff availability settings
+- Verify no time-off requests
+- Confirm active employment status
+
+### Shift Not Showing
+
+- Check date range filter
+- Verify status filter
+- Refresh the page
+- Check attraction selection
+
+## Next Steps
+
+- [Calendar View](/docs/user-guides/scheduling/calendar) - Visual week view
+- [Templates](/docs/user-guides/scheduling/templates) - Create shift templates
+- [Availability](/docs/user-guides/scheduling/availability) - View staff availability
+- [Overview](/docs/user-guides/scheduling/overview) - Back to overview

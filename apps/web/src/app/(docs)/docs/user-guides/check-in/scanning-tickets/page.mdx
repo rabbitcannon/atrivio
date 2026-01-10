@@ -2,52 +2,137 @@
 
 Learn how to scan and validate guest tickets at entry points.
 
-![Check-In Interface](/docs/screenshots/check-in.png)
-
 ## Overview
 
 The check-in system allows staff to quickly validate tickets using barcode scanners or mobile devices. Each scan verifies the ticket and updates capacity tracking in real-time.
 
-## Getting Started
+## Accessing the Scanner
 
-### Access the Scanner
+1. Navigate to **Check-In** in the sidebar
+2. Click **Scan Tickets** (or navigate to /scan)
+3. Select your check-in station (if multiple exist)
 
-1. Navigate to **Check-In** → **Scan**
-2. Select your check-in station (if multiple)
-3. The scanner interface will open
+## Scanner Interface
 
-### Scanner Options
+### Main Components
 
-- **Camera Scan**: Use device camera to scan QR codes
-- **Manual Entry**: Type ticket code manually
-- **Hardware Scanner**: Connect USB barcode scanner
+| Component | Description |
+|-----------|-------------|
+| Attraction Selector | Choose which attraction to check into |
+| Station Selector | Select your check-in station |
+| Barcode Input | Enter or scan ticket barcodes |
+| Recent Scans | View last 10 scanned tickets |
+| Status Display | Shows scan result and guest info |
 
-## Scanning Process
+### Station Selection
 
-### Valid Ticket
+Selecting a station:
+1. Tracks which entry point processed the check-in
+2. Enables per-station reporting
+3. Helps identify busy entry points
 
-When a ticket scans successfully:
+## Scanning Methods
 
-1. ✅ Green confirmation appears
-2. Guest name displayed
-3. Ticket details shown
-4. Entry recorded automatically
+### Barcode Scan
 
-### Invalid Ticket
+The primary scanning method:
 
-If a ticket fails validation:
+1. Focus on the barcode input field
+2. Use hardware scanner or camera
+3. Barcode is automatically submitted
+4. Result displays immediately
 
-1. ❌ Red error displayed
-2. Error reason shown:
-   - Already used
-   - Wrong date/time
-   - Expired
-   - Not found
-3. Follow error handling procedures
+### Manual Lookup
+
+For damaged barcodes or manual entry:
+
+1. Type the ticket code manually
+2. Press Enter or click Scan
+3. System validates the code
+4. Result displays with guest information
+
+## Scan Status
+
+### Idle State
+
+Before any scan:
+- Input field ready
+- Placeholder shows "Scan barcode or enter ticket code"
+- Recent scans list may be empty
+
+### Scanning State
+
+During validation:
+- Loading indicator appears
+- Input is temporarily disabled
+- "Validating..." message shown
+
+### Success State
+
+When ticket is valid:
+- Green checkmark displayed
+- Guest name shown (if available)
+- Ticket type displayed
+- "Guest checked in successfully" message
+- Recent scans list updated
+
+### Error State
+
+When ticket is invalid:
+- Red error indicator
+- Error message displayed
+- Common errors:
+  - "Ticket not found"
+  - "Already checked in"
+  - "Wrong date/time"
+  - "Ticket cancelled"
+
+### Warning State
+
+When attention is needed:
+- Yellow warning indicator
+- Usually indicates waiver requirement
+- Staff must take additional action
+
+## Waiver Handling
+
+Some guests require a signed waiver:
+
+### Waiver Required
+
+When a guest needs a waiver:
+
+1. Scan shows warning state
+2. "Waiver Required" message appears
+3. Direct guest to complete waiver
+4. Re-scan after waiver is signed
+
+### Waiver Complete
+
+After waiver is signed:
+- Normal scan will succeed
+- Guest can proceed with entry
+- No additional action needed
+
+## Recent Scans
+
+The scan page shows the last 10 scans:
+
+| Column | Description |
+|--------|-------------|
+| Guest | Name or identifier |
+| Ticket | Ticket code (truncated) |
+| Time | When the scan occurred |
+| Status | Success, error, or warning |
+
+This helps:
+- Verify recent check-ins
+- Troubleshoot issues
+- Track busy periods
 
 ## Ticket Validation
 
-The system checks:
+The system validates:
 
 | Check | Description |
 |-------|-------------|
@@ -56,16 +141,18 @@ The system checks:
 | Correct Date | Valid for today's date |
 | Correct Time | Within valid time window |
 | Not Cancelled | Order wasn't refunded |
+| Waiver Status | Required waiver is signed |
 
-## Handling Issues
+## Handling Common Issues
 
 ### Already Scanned
 
 If ticket shows as used:
 
 1. Ask guest if they've entered before
-2. Check scan history for timestamp
-3. Contact supervisor if dispute
+2. Check recent scans for timestamp
+3. Verify it's the correct guest
+4. Contact supervisor if dispute
 
 ### Wrong Date
 
@@ -83,36 +170,64 @@ If ticket was refunded:
 2. Guest must purchase new ticket
 3. Direct to box office
 
-## Scanner Tips
+### Network Error
+
+If network issues occur:
+
+1. Check internet connection
+2. Refresh the page
+3. Try scanning again
+4. Contact IT if persistent
+
+## Scanner Best Practices
 
 ### Speed Tips
 
 - Keep scanner ready between guests
 - Good lighting helps camera scans
 - Hardware scanners are fastest
+- Pre-select your station
 
 ### Troubleshooting
 
-- **Camera not working**: Check browser permissions
-- **Slow scans**: Ensure good lighting
-- **Scanner disconnected**: Refresh page
+| Issue | Solution |
+|-------|----------|
+| Camera not working | Check browser permissions |
+| Slow scans | Ensure good lighting |
+| Scanner disconnected | Refresh page |
+| Can't select station | Verify stations are configured |
+
+### Shift Tips
+
+1. Test your scanner at shift start
+2. Know your station assignment
+3. Keep supervisor contact handy
+4. Note any recurring issues
 
 ## Capacity Tracking
 
 Each scan updates:
+
 - Current attendance count
 - Remaining capacity
 - Time slot availability
 
-View capacity status on the dashboard.
+The capacity percentage is visible on the main check-in dashboard.
 
-## Reporting
+## Permissions
 
-After your shift, view:
-- Total scans processed
-- Error rate
-- Peak check-in times
+| Role | Can Scan |
+|------|----------|
+| Owner | Yes |
+| Admin | Yes |
+| Manager | Yes |
+| Scanner | Yes |
+| Box Office | Yes |
+| Staff | No |
 
 ## Next Steps
 
+- [Stations](/docs/user-guides/check-in/stations) - Configure check-in stations
+- [Queue](/docs/user-guides/check-in/queue) - View pending arrivals
 - [Walk-Up Guests](/docs/user-guides/check-in/walk-up-guests) - Handle on-site purchases
+- [Reports](/docs/user-guides/check-in/reports) - View scan analytics

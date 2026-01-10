@@ -1,0 +1,237 @@
+# Inventory Categories
+
+Organize inventory items into hierarchical categories.
+
+## Overview
+
+Categories help you organize your inventory into logical groups. Create a hierarchy of categories to match how you think about your items.
+
+## Accessing Categories
+
+1. Navigate to **Inventory** in the sidebar
+2. Click **Categories** or go to the Categories section
+
+## Category List
+
+The categories list shows all categories with:
+
+| Column | Description |
+|--------|-------------|
+| Color | Visual indicator |
+| Name | Category name |
+| Parent | Parent category (if nested) |
+| Items | Number of items in category |
+
+## Creating a Category
+
+1. Click **Add Category**
+2. Enter category details
+3. Click **Add Category** to save
+
+### Category Fields
+
+| Field | Required | Description | Example |
+|-------|----------|-------------|---------|
+| Name | Yes | Category name | Costumes |
+| Description | No | Category details | All costume items including... |
+| Parent Category | No | Nest under another | None (top-level) |
+| Color | Yes | Visual indicator | Blue |
+| Sort Order | No | Display position | 0 |
+
+### Color Options
+
+| Color | Use For |
+|-------|---------|
+| Red | Urgent or special attention |
+| Orange | Warnings or seasonal |
+| Yellow | Highlighted items |
+| Green | Available or good condition |
+| Blue | General purpose |
+| Purple | Premium or special items |
+| Pink | Specific themes |
+| Gray | Inactive or archived |
+
+### Sort Order
+
+Lower numbers appear first:
+- Sort Order 0: Appears first
+- Sort Order 1: Appears second
+- Sort Order 10: Appears later
+
+## Building Category Hierarchies
+
+Categories can be nested to create a hierarchy:
+
+**Example Structure:**
+```
+Costumes (parent)
+├── Masks
+├── Clothing
+│   ├── Shirts
+│   └── Pants
+└── Accessories
+
+Props (parent)
+├── Hand Props
+├── Set Pieces
+└── Effects
+```
+
+### Creating Child Categories
+
+1. Click **Add Category**
+2. Select a **Parent Category**
+3. Fill in other details
+4. Save
+
+The new category appears under its parent.
+
+## Editing a Category
+
+1. Find the category in the list
+2. Click **Edit**
+3. Modify the details
+4. Click **Save Changes**
+
+### Changing Parent Category
+
+When you change a category's parent:
+- The category moves in the hierarchy
+- All items in the category remain assigned
+- Child categories stay with the moved category
+
+## Deleting a Category
+
+1. Find the category
+2. Click **Delete**
+3. Confirm deletion
+
+**Note:** Items in the deleted category become uncategorized. They are not deleted.
+
+## Assigning Items to Categories
+
+### When Adding Items
+
+1. Add a new item
+2. Select **Category** from the dropdown
+3. Complete item creation
+
+### When Editing Items
+
+1. Edit an existing item
+2. Change the **Category** field
+3. Save changes
+
+## Category Best Practices
+
+### Naming Conventions
+
+- Use clear, descriptive names
+- Keep names concise
+- Use plural forms (Masks, not Mask)
+- Be consistent across categories
+
+### Hierarchy Depth
+
+- Keep hierarchies shallow (2-3 levels max)
+- Too deep = hard to navigate
+- Too flat = not organized enough
+
+**Good:**
+```
+Costumes → Masks → Full Head
+```
+
+**Too Deep:**
+```
+Costumes → Headwear → Masks → Latex → Full Head → Zombie Style
+```
+
+### Organization Strategies
+
+**By Type:**
+```
+Costumes
+Props
+Equipment
+Supplies
+```
+
+**By Attraction:**
+```
+Haunted Mansion
+Zombie Outbreak
+Escape Room
+General
+```
+
+**By Department:**
+```
+Wardrobe
+Set Design
+Special Effects
+Operations
+```
+
+**Hybrid:**
+```
+Costumes
+├── Haunted Mansion
+├── Zombie Outbreak
+└── General
+
+Props
+├── Haunted Mansion
+├── Zombie Outbreak
+└── General
+```
+
+## Using Colors Effectively
+
+### By Status
+
+| Color | Meaning |
+|-------|---------|
+| Green | Active, available |
+| Orange | Needs attention |
+| Red | Critical, urgent |
+| Gray | Archived, inactive |
+
+### By Type
+
+| Color | Category Type |
+|-------|---------------|
+| Purple | Costumes |
+| Blue | Props |
+| Green | Equipment |
+| Yellow | Supplies |
+
+### By Priority
+
+| Color | Priority |
+|-------|----------|
+| Red | High priority |
+| Orange | Medium priority |
+| Blue | Normal |
+| Gray | Low priority |
+
+## Filtering by Category
+
+On the Items page:
+1. Use the Category filter dropdown
+2. Select a category
+3. View only items in that category
+
+## Uncategorized Items
+
+Items without a category:
+- Appear when filtering by "Uncategorized"
+- Should be assigned for better organization
+- Work fine but harder to find
+
+## Next Steps
+
+- [Items](/docs/admin-guides/inventory/items) - Manage items
+- [Checkouts](/docs/admin-guides/inventory/checkouts) - Track usage
+- [Transactions](/docs/admin-guides/inventory/transactions) - View history
+- [Overview](/docs/admin-guides/inventory/overview) - Back to overview

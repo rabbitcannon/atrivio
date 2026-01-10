@@ -1820,3 +1820,81 @@ export async function getActiveAnnouncements() {
 export async function dismissAnnouncement(announcementId: string) {
   return api.post<{ message: string }>(`/platform/announcements/${announcementId}/dismiss`, {});
 }
+
+// ===================== Storefront FAQs (Client) =====================
+
+export interface StorefrontFaqClient {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  sortOrder: number;
+  isPublished: boolean;
+  isFeatured?: boolean;
+}
+
+/**
+ * Create a FAQ (client-side)
+ */
+export async function createStorefrontFaqClient(
+  orgId: string,
+  attractionId: string,
+  data: {
+    question: string;
+    answer: string;
+    category?: string;
+  }
+) {
+  return api.post<{ faq: StorefrontFaqClient }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs`,
+    data
+  );
+}
+
+/**
+ * Update a FAQ (client-side)
+ */
+export async function updateStorefrontFaqClient(
+  orgId: string,
+  attractionId: string,
+  faqId: string,
+  data: Partial<{
+    question: string;
+    answer: string;
+    category: string;
+    isFeatured: boolean;
+    isActive: boolean;
+  }>
+) {
+  return api.patch<{ faq: StorefrontFaqClient }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`,
+    data
+  );
+}
+
+/**
+ * Delete a FAQ (client-side)
+ */
+export async function deleteStorefrontFaqClient(
+  orgId: string,
+  attractionId: string,
+  faqId: string
+) {
+  return api.delete<{ message: string }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/${faqId}`
+  );
+}
+
+/**
+ * Reorder FAQs (client-side)
+ */
+export async function reorderStorefrontFaqsClient(
+  orgId: string,
+  attractionId: string,
+  order: Array<{ id: string; sortOrder: number }>
+) {
+  return api.post<{ success: boolean }>(
+    `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/reorder`,
+    { order }
+  );
+}

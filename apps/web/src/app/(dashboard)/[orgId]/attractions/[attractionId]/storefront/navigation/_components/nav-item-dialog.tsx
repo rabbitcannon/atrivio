@@ -1,6 +1,6 @@
 'use client';
 
-import { ExternalLink, FileText, Home, Loader2, Plus, Ticket } from 'lucide-react';
+import { ExternalLink, FileText, HelpCircle, Home, Loader2, Plus, Ticket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import type { StorefrontNavItem, StorefrontPage } from '@/lib/api/types';
 
-export type NavItemType = 'home' | 'page' | 'tickets' | 'external';
+export type NavItemType = 'home' | 'page' | 'tickets' | 'faq' | 'external';
 export type NavPosition = 'header' | 'footer';
 
 export interface NavItemFormData {
@@ -42,18 +42,35 @@ interface NavItemDialogProps {
   existingItem?: StorefrontNavItem & { position: NavPosition };
   onSave: (data: NavItemFormData) => Promise<{ success: boolean; error?: string }>;
   trigger?: React.ReactNode;
+  /** Controlled mode: open state */
+  open?: boolean;
+  /** Controlled mode: open state change handler */
+  onOpenChange?: (open: boolean) => void;
 }
 
 const LINK_TYPES: { value: NavItemType; label: string; icon: typeof Home }[] = [
   { value: 'home', label: 'Home', icon: Home },
   { value: 'page', label: 'Page', icon: FileText },
   { value: 'tickets', label: 'Tickets', icon: Ticket },
+  { value: 'faq', label: 'FAQs', icon: HelpCircle },
   { value: 'external', label: 'External Link', icon: ExternalLink },
 ];
 
-export function NavItemDialog({ pages, existingItem, onSave, trigger }: NavItemDialogProps) {
+export function NavItemDialog({
+  pages,
+  existingItem,
+  onSave,
+  trigger,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: NavItemDialogProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Support both controlled and uncontrolled modes
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (controlledOnOpenChange ?? (() => {})) : setInternalOpen;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +120,8 @@ export function NavItemDialog({ pages, existingItem, onSave, trigger }: NavItemD
       setLabel('Home');
     } else if (value === 'tickets' && !label) {
       setLabel('Tickets');
+    } else if (value === 'faq' && !label) {
+      setLabel('FAQs');
     }
     // External links should open in new tab by default
     if (value === 'external') {
@@ -177,14 +196,16 @@ export function NavItemDialog({ pages, existingItem, onSave, trigger }: NavItemD
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Nav Item
-          </Button>
-        )}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Nav Item
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>

@@ -1,0 +1,269 @@
+# Check-In Reports
+
+Analytics and statistics for guest check-ins.
+
+## Overview
+
+Check-In Reports provide detailed analytics on guest arrivals, helping you understand traffic patterns, station performance, and operational efficiency. Use these insights to optimize staffing and improve guest experience.
+
+## Accessing Reports
+
+1. Navigate to **Check-In** in the sidebar
+2. Click **Reports**
+3. Select your attraction and date range
+
+## Filters
+
+### Attraction
+
+Select which attraction to view reports for:
+- All reports are scoped to one attraction
+- Change attractions using the dropdown
+
+### Date Range
+
+Choose the time period:
+
+| Option | Shows |
+|--------|-------|
+| Today | Current day's data |
+| Yesterday | Previous day's data |
+
+### Export
+
+Click **Export CSV** to download report data:
+- Summary statistics
+- Hourly breakdown
+- Station data
+- Method data
+
+## Overview Statistics
+
+Four summary cards display key metrics:
+
+### Total Checked In
+
+- Number of guests who checked in
+- Shows "of X expected" for context
+- Green checkmark icon
+
+### Check-In Rate
+
+- Percentage of expected guests who arrived
+- Visual progress bar
+- Trending indicator
+
+### Avg Check-In Time
+
+- Average seconds per check-in
+- Helps identify efficiency
+- Orange timer icon
+
+### Peak Hour
+
+- Busiest hour of the day
+- Plan staffing around this
+- Purple activity icon
+
+## Check-Ins by Station
+
+View performance by entry point:
+
+| Data | Description |
+|------|-------------|
+| Station Name | Entry point identifier |
+| Count | Number of check-ins |
+| Percentage | Share of total check-ins |
+| Progress Bar | Visual representation |
+
+Use this to:
+- Identify busy stations
+- Balance staff allocation
+- Detect underutilized entry points
+
+## Check-Ins by Method
+
+Understand how guests are being checked in:
+
+| Method | Description |
+|--------|-------------|
+| Barcode Scan | Hardware/camera scanner |
+| Manual Lookup | Staff typed ticket code |
+| QR Scan | QR code scanning |
+
+Each method shows:
+- Count of check-ins
+- Percentage of total
+- Visual progress bar
+
+## Hourly Distribution
+
+Visual chart showing check-ins throughout the day:
+
+### Chart Display
+
+- Vertical bars for each hour
+- Height proportional to check-in count
+- Count displayed above each bar
+- Hour label below each bar
+
+### Interpreting the Chart
+
+- Tall bars indicate busy periods
+- Peak hour is highlighted
+- Gaps may indicate slow periods
+- Pattern helps with staffing plans
+
+### No Data State
+
+If no check-ins occurred:
+- "No check-in data yet" message
+- Chart will populate as guests arrive
+
+## Quick Stats Summary
+
+Three additional summary cards:
+
+### Successful Check-Ins
+
+- Total completed check-ins
+- Green checkmark icon
+
+### Expected Remaining
+
+- Guests still pending
+- Calculated from expected minus checked in
+- Red X icon
+
+### Total Scans Today
+
+- All scan attempts
+- Orange clock icon
+
+## Using Report Data
+
+### Staffing Decisions
+
+- Staff more during peak hours
+- Reduce coverage during slow periods
+- Balance stations based on traffic
+
+### Operational Improvements
+
+- Identify slow check-in methods
+- Find bottleneck stations
+- Optimize guest flow
+
+### Capacity Planning
+
+- Compare expected vs. actual
+- Calculate no-show rates
+- Adjust future capacity
+
+### Performance Tracking
+
+- Monitor check-in speed
+- Track method efficiency
+- Compare station performance
+
+## Export Format
+
+CSV export includes:
+
+```
+Check-In Report, [date]
+
+Summary
+Total Checked In, [count]
+Total Expected, [count]
+Check-In Rate, [percentage]%
+Avg Check-In Time, [seconds]s
+
+By Hour
+Hour, Count
+6 AM, [count]
+7 AM, [count]
+...
+
+By Station
+Station, Count
+Main Entrance, [count]
+North Gate, [count]
+...
+
+By Method
+Method, Count
+barcode_scan, [count]
+manual_lookup, [count]
+...
+```
+
+## Permissions
+
+| Role | View Reports | Export |
+|------|--------------|--------|
+| Owner | Yes | Yes |
+| Admin | Yes | Yes |
+| Manager | Yes | Yes |
+| Scanner | No | No |
+| Box Office | No | No |
+
+## Best Practices
+
+### Daily Review
+
+1. Check yesterday's reports each morning
+2. Note peak times and patterns
+3. Compare to expectations
+4. Adjust today's plans accordingly
+
+### Weekly Analysis
+
+1. Compare day-over-day trends
+2. Identify recurring patterns
+3. Optimize staffing schedules
+4. Report findings to leadership
+
+### Performance Goals
+
+Consider tracking:
+- Average check-in time target (<30 seconds)
+- Check-in rate goal (>90% of expected)
+- Station balance (even distribution)
+
+## Troubleshooting
+
+### No Data Showing
+
+- Verify correct attraction selected
+- Check if date has any check-ins
+- Try different date range
+- Refresh the page
+
+### Export Not Working
+
+- Check browser allows downloads
+- Verify data exists to export
+- Try a different browser
+- Clear browser cache
+
+### Numbers Don't Match
+
+- Allow time for data sync
+- Refresh to get latest data
+- Compare with other views
+- Contact admin if persistent
+
+### Slow Loading
+
+- Large datasets may take time
+- Check internet connection
+- Try shorter date range
+- Refresh if stuck
+
+## Next Steps
+
+- [Overview](/docs/user-guides/check-in/overview) - Back to check-in overview
+- [Scanning Tickets](/docs/user-guides/check-in/scanning-tickets) - Process check-ins
+- [Stations](/docs/user-guides/check-in/stations) - Manage entry points
+- [Queue](/docs/user-guides/check-in/queue) - View pending arrivals

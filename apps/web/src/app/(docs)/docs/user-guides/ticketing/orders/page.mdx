@@ -1,135 +1,242 @@
 # Orders
 
-View and manage ticket orders for your attraction.
-
-![Orders List](/docs/screenshots/orders-list.png)
+View and manage ticket orders for your attractions.
 
 ## Overview
 
-The orders page provides a complete view of all ticket purchases, allowing you to track sales, process refunds, and manage customer orders.
+The orders page provides a complete view of all ticket purchases, allowing you to track sales, view order details, and process completions, cancellations, and refunds.
 
-## Viewing Orders
+## Accessing Orders
 
-### Order List
+1. Navigate to **Ticketing** in the sidebar
+2. Click **Orders**
 
-The main orders view shows:
-- Order number
-- Customer name
-- Order date
-- Total amount
-- Status (completed, refunded, pending)
+## Orders List
 
-### Filtering Orders
+The list displays all orders with key information:
 
-Filter by:
-- **Date range**: View specific time periods
-- **Status**: Completed, refunded, pending
-- **Ticket type**: Filter by product
-- **Payment method**: Card, cash, etc.
+| Column | Description |
+|--------|-------------|
+| Order | Order number (with promo badge if used) |
+| Customer | Email and name |
+| Attraction | Which attraction the order is for |
+| Total | Order total (with discount if applied) |
+| Status | Current order status |
+| Date | When the order was placed |
+| Actions | View details, complete, cancel, refund |
 
-### Searching Orders
+## Order Statuses
 
-Search by:
-- Order number
-- Customer email
-- Customer name
+| Status | Color | Description |
+|--------|-------|-------------|
+| Pending | Gray | Awaiting payment or manual completion |
+| Processing | Outline | Payment being processed |
+| Completed | Green | Payment successful, tickets generated |
+| Canceled | Red | Order canceled before completion |
+| Refunded | Red | Full refund processed |
 
-## Order Details
+## Searching Orders
 
-Click an order to view:
+### By Email
 
-### Order Information
-- Order number and date
-- Payment status
-- Payment method
-- Transaction ID
+Enter a customer email in the search box and click **Search** (or press Enter).
 
-### Customer Information
-- Name and email
+### By Status
+
+Use the status dropdown to filter:
+- All statuses
+- Pending
+- Processing
+- Completed
+- Canceled
+- Refunded
+
+## Viewing Order Details
+
+1. Find the order in the list
+2. Click the menu button (...)
+3. Select **View Details**
+
+### Order Details Dialog
+
+The details dialog shows comprehensive order information:
+
+#### Customer Information
+- Email address
+- Name (if provided)
 - Phone number (if provided)
-- Order history link
 
-### Ticket Details
-- Ticket type(s) purchased
-- Quantity of each
-- Unit price and subtotal
-- Event date/time
+#### Status
+Current order status with color badge.
 
-### Financial Summary
+#### Items Table
+| Column | Description |
+|--------|-------------|
+| Item | Ticket type name |
+| Time Slot | Date and time (if applicable) |
+| Qty | Quantity purchased |
+| Price | Unit price |
+| Total | Line item total |
+
+#### Financial Summary
 - Subtotal
-- Discounts applied
-- Fees
+- Discount (with promo code shown)
 - Total charged
 
-## Processing Refunds
+#### Tickets (for completed orders)
+List of generated tickets showing:
+- Barcode
+- Ticket type
+- Status (valid, used, voided)
 
-### Full Refund
+## Order Actions
 
-1. Open the order
-2. Click **Refund Order**
-3. Select **Full Refund**
-4. Add refund reason
-5. Confirm refund
+### Complete Order
 
-### Partial Refund
+For pending orders:
 
-1. Open the order
-2. Click **Refund Order**
-3. Select tickets to refund
-4. Enter refund amount
-5. Add reason
-6. Confirm
+1. Click the menu button (...)
+2. Select **Complete Order**
+3. Order is marked complete and tickets are generated
 
-### Refund Notes
+Use when manually confirming payment or for comp tickets.
 
-- Refunds process to original payment method
-- May take 5-10 business days to appear
-- Refunded tickets are invalidated
+### Cancel Order
 
-## Resending Tickets
+For pending or processing orders:
 
-If a customer needs their tickets again:
+1. Click the menu button (...)
+2. Select **Cancel**
+3. Confirm the cancellation
 
-1. Open the order
-2. Click **Resend Tickets**
-3. Confirm the email address
-4. Click **Send**
+Canceled orders:
+- Cannot be completed later
+- No tickets are generated
+- No charge is processed
 
-## Order Status
+### Refund Order
 
-| Status | Description |
-|--------|-------------|
-| Completed | Payment successful, tickets delivered |
-| Pending | Awaiting payment confirmation |
-| Refunded | Full refund processed |
-| Partially Refunded | Partial refund processed |
-| Cancelled | Order cancelled before completion |
+For completed orders:
 
-## Exporting Orders
+1. Click the menu button (...)
+2. Select **Refund**
+3. Confirm: "Refund order? This will void all tickets."
 
-Export order data for reporting:
+Refunded orders:
+- Funds returned to customer
+- All tickets are voided
+- Cannot be reversed
 
-1. Set your filters
-2. Click **Export**
-3. Choose format (CSV or Excel)
-4. Download the file
+## Promo Code Display
 
-Export includes:
-- Order details
-- Customer information
-- Payment data
-- Ticket information
+Orders using promo codes show:
+- Promo badge next to order number
+- Discount amount in green
+- Promo code name in details
 
-## Analytics
+## Pagination
 
-View order metrics:
-- Total revenue
-- Average order value
-- Orders by day/week/month
-- Top-selling ticket types
-- Promo code performance
+For large order volumes:
+- Navigate between pages using Previous/Next buttons
+- Page count shown: "Page X of Y"
+- 20 orders displayed per page
+
+## Ticket Information
+
+Completed orders show generated tickets:
+
+| Field | Description |
+|-------|-------------|
+| Barcode | Unique ticket identifier |
+| Type | Ticket type name |
+| Status | Valid, Used, or Voided |
+
+Ticket statuses:
+- **Valid**: Ready for use
+- **Used**: Already scanned at check-in
+- **Voided**: Canceled or refunded
+
+## Permissions
+
+| Role | View | Complete | Cancel | Refund |
+|------|------|----------|--------|--------|
+| Owner | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | No |
+| Box Office | Yes | No | No | No |
+
+## Best Practices
+
+### Order Monitoring
+
+- Check pending orders regularly
+- Complete legitimate orders promptly
+- Cancel suspicious orders quickly
+
+### Refund Processing
+
+- Process refunds within business policy
+- Document refund reasons
+- Verify customer identity if needed
+
+### Customer Communication
+
+- Respond to order inquiries promptly
+- Provide order numbers in communications
+- Direct customers to support for issues
+
+## Common Workflows
+
+### Walk-Up Sale
+
+1. Create order at box office
+2. Collect payment manually
+3. Click Complete Order
+4. Print or email tickets
+
+### Disputed Charge
+
+1. Find the order
+2. Review order details
+3. Verify with customer
+4. Process refund if appropriate
+
+### Event Cancellation
+
+1. Filter by event date
+2. Review affected orders
+3. Process refunds as needed
+4. Notify customers
+
+## Troubleshooting
+
+### Order Not Found
+
+- Check email spelling
+- Try different search terms
+- Clear filters and search again
+
+### Cannot Complete Order
+
+- Check payment status
+- Verify order is pending
+- Contact payment support
+
+### Cannot Refund Order
+
+- Check order is completed
+- Verify Stripe account status
+- Review order for prior refunds
+
+### Tickets Not Generating
+
+- Verify order was completed
+- Check ticket type is active
+- Review system logs
 
 ## Next Steps
 
-- [Ticket Types](/docs/user-guides/ticketing/ticket-types) - Manage your tickets
+- [Ticket Types](/docs/user-guides/ticketing/ticket-types) - Manage ticket products
+- [Time Slots](/docs/user-guides/ticketing/time-slots) - Configure timed entry
 - [Promo Codes](/docs/user-guides/ticketing/promo-codes) - Create discounts
+- [Overview](/docs/user-guides/ticketing/overview) - Back to overview

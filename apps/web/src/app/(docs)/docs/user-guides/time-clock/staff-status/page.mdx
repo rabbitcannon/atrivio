@@ -1,0 +1,238 @@
+# Staff Status
+
+Real-time view of who's currently working at your attractions.
+
+## Overview
+
+The Staff Status page provides managers with a live dashboard showing all staff members currently clocked in. Staff are grouped by attraction, making it easy to see coverage at a glance.
+
+## Accessing Staff Status
+
+Navigate to:
+
+```
+https://app.atrivio.com/{your-org-slug}/time/status
+```
+
+**Note:** This page requires manager-level permissions or higher.
+
+## Status Dashboard
+
+The dashboard shows:
+
+### Summary Card
+
+A summary card at the top displays:
+- Total number of staff currently working
+- Updates in real-time
+
+### Staff by Attraction
+
+Staff are grouped by their current attraction:
+
+| Information | Description |
+|-------------|-------------|
+| Attraction Name | Where staff are working |
+| Staff Count | Number of staff at that location |
+| Staff List | Names and durations |
+
+### Individual Staff Entry
+
+Each clocked-in staff member shows:
+
+| Field | Description |
+|-------|-------------|
+| Name | Staff member's full name |
+| Duration | Time since clock-in (e.g., "2h 30m") |
+| Since | The clock-in time |
+
+### Unassigned Staff
+
+Staff clocked in without an attraction assignment appear in a separate "No Attraction Assigned" section.
+
+## Auto-Refresh
+
+The page automatically refreshes every 30 seconds:
+- Staff list updates automatically
+- No manual refresh needed
+- Last update time shown in header
+
+### Manual Refresh
+
+Click the refresh button to manually update:
+- Located in the page header
+- Shows spinner while refreshing
+- Updates the "Updated at" timestamp
+
+## Visual Indicators
+
+### Status Summary
+
+- Large badge shows total clocked-in count
+- Easy to spot at a glance
+
+### By Attraction
+
+- Each attraction has its own card
+- Badge shows count per attraction
+- MapPin icon identifies location
+
+### Staff Entries
+
+- Displayed in rounded list items
+- Duration shown with timer icon
+- Time formatted as hours and minutes
+
+## Empty State
+
+When no one is clocked in:
+- Clock icon displayed
+- "No one is currently clocked in" message
+- Normal during off-hours
+
+## Permissions
+
+This page is restricted to management roles:
+
+| Role | Can Access |
+|------|------------|
+| Owner | Yes |
+| Admin | Yes |
+| Manager | Yes |
+| HR | Yes |
+| Actor | No |
+| Scanner | No |
+| Box Office | No |
+
+Non-managers will see an "Access Denied" message with a link back to the time clock.
+
+## Use Cases
+
+### Event Night Monitoring
+
+During an event:
+1. Open Staff Status on a tablet or monitor
+2. See real-time coverage at each attraction
+3. Identify understaffed areas quickly
+4. Make staffing adjustments as needed
+
+### Shift Handoff
+
+During shift changes:
+1. Monitor who's still working
+2. Ensure outgoing staff clock out
+3. Verify incoming staff clock in
+4. Confirm coverage levels
+
+### Emergency Headcount
+
+In case of emergency:
+1. Quickly see total staff on-site
+2. View breakdown by location
+3. Account for all working staff
+4. Use for evacuation or safety protocols
+
+### Remote Management
+
+For off-site managers:
+1. Access from any device
+2. Monitor in real-time
+3. Get alerts via auto-refresh
+4. Stay connected to operations
+
+## Common Scenarios
+
+### Staff Missing from List
+
+If a staff member doesn't appear:
+- They may not have clocked in
+- They may have clocked out early
+- Check with them directly
+- Review their time entries
+
+### Incorrect Attraction
+
+If staff shows at wrong location:
+- They selected wrong attraction at clock-in
+- They can clock out and back in
+- Manager can correct in time entries
+
+### Duration Seems Wrong
+
+If time doesn't look right:
+- Check clock-in time shown
+- May have forgotten to clock out previously
+- Review full time history
+
+## Best Practices
+
+### During Events
+
+- Keep status page open on a dedicated device
+- Monitor coverage levels regularly
+- Address gaps quickly
+- Use for staff communication
+
+### For Accountability
+
+- Check that all scheduled staff clock in
+- Verify start times match schedules
+- Follow up on late arrivals
+- Document attendance issues
+
+### For Safety
+
+- Know headcount at all times
+- Use for emergency accounting
+- Track staff across multiple attractions
+- Maintain awareness of who's on-site
+
+## Troubleshooting
+
+### Page Won't Load
+
+- Verify you have manager permissions
+- Check organization exists
+- Ensure you're logged in
+- Try refreshing the browser
+
+### Access Denied
+
+- Only managers+ can view this page
+- Contact your admin for access
+- Use regular time clock instead
+
+### Data Not Updating
+
+- Check the last update timestamp
+- Click manual refresh button
+- Verify internet connection
+- Page auto-refreshes every 30 seconds
+
+### Staff Count Incorrect
+
+- Some staff may have clocked out
+- Check for pending clock-ins
+- Staff may be at different attractions
+- Verify against schedules
+
+## Navigation
+
+From Staff Status, you can:
+- Return to main time clock
+- Access is via direct URL only
+- Use browser back button
+
+## Mobile Access
+
+The Staff Status page is mobile-friendly:
+- Works on tablets and phones
+- Touch-friendly interface
+- Auto-refresh works on mobile
+- Great for floor managers
+
+## Next Steps
+
+- [Clocking In/Out](/docs/user-guides/time-clock/clocking-in-out) - Learn the basics
+- [Time Reports](/docs/user-guides/time-clock/time-reports) - Review time entries
+- [Overview](/docs/user-guides/time-clock/overview) - Back to overview

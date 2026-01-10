@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Loader2, Trash2 } from 'lucide-react';
+import { Edit, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
@@ -14,6 +14,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { StorefrontNavItem, StorefrontPage } from '@/lib/api/types';
 import type { NavItemFormData, NavPosition } from './nav-item-dialog';
 import { NavItemDialog } from './nav-item-dialog';
@@ -35,6 +41,7 @@ export function NavigationActions({ item, pages, onEdit, onDelete }: NavigationA
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleEdit = async (
@@ -42,6 +49,7 @@ export function NavigationActions({ item, pages, onEdit, onDelete }: NavigationA
   ): Promise<{ success: boolean; error?: string }> => {
     const result = await onEdit(item, data);
     if (result.success) {
+      setEditDialogOpen(false);
       router.refresh();
     }
     return result;
@@ -66,30 +74,41 @@ export function NavigationActions({ item, pages, onEdit, onDelete }: NavigationA
   };
 
   return (
-    <div className="flex items-center gap-1">
-      {error && <p className="text-xs text-destructive mr-2">{error}</p>}
+    <>
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">Navigation item actions</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setDeleteDialogOpen(true)}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Edit Dialog */}
       <NavItemDialog
         pages={pages}
         existingItem={item}
         onSave={handleEdit}
-        trigger={
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Edit className="h-3 w-3" />
-          </Button>
-        }
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
       />
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setDeleteDialogOpen(true)}
-        disabled={isDeleting}
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-      >
-        {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
-      </Button>
-
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -107,15 +126,15 @@ export function NavigationActions({ item, pages, onEdit, onDelete }: NavigationA
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
               ) : (
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-1.5 h-4 w-4" />
               )}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

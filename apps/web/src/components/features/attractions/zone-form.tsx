@@ -27,6 +27,8 @@ interface ZoneFormProps {
     color?: string | null;
   };
   onSuccess?: () => void;
+  /** When true, renders without Card wrapper (for use in dialogs) */
+  compact?: boolean;
 }
 
 // Preset colors for zones
@@ -41,8 +43,9 @@ const presetColors = [
   { value: '#6B7280', label: 'Gray' },
 ];
 
-export function ZoneForm({ orgId, attractionId, zone, onSuccess }: ZoneFormProps) {
+export function ZoneForm({ orgId, attractionId, zone, onSuccess, compact = false }: ZoneFormProps) {
   const router = useRouter();
+  const formRef = React.useRef<HTMLFormElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
@@ -99,6 +102,10 @@ export function ZoneForm({ orgId, attractionId, zone, onSuccess }: ZoneFormProps
       }
 
       setSuccess('Zone created successfully');
+
+      // Reset form after successful creation
+      formRef.current?.reset();
+      setSelectedColor('#3B82F6');
     }
 
     setIsLoading(false);
@@ -110,11 +117,110 @@ export function ZoneForm({ orgId, attractionId, zone, onSuccess }: ZoneFormProps
       } else {
         router.refresh();
       }
+      // Clear success message after callback
+      setSuccess(null);
     }, 1000);
   }
 
+  const formContent = (
+    <>
+      {error && (
+        <div
+          className="rounded-md bg-destructive/15 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+      {success && (
+        <div
+          className="rounded-md bg-green-500/15 px-4 py-3 text-sm text-green-600 dark:text-green-400"
+          role="status"
+        >
+          {success}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="name">Zone Name</Label>
+        <Input
+          id="name"
+          name="name"
+          placeholder="Victorian Parlor"
+          defaultValue={zone?.name}
+          required
+          disabled={isLoading}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          name="description"
+          placeholder="Describe this zone..."
+          defaultValue={zone?.description || ''}
+          disabled={isLoading}
+          rows={2}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="capacity">Capacity</Label>
+        <Input
+          id="capacity"
+          name="capacity"
+          type="number"
+          min={0}
+          placeholder="10"
+          defaultValue={zone?.capacity ?? ''}
+          disabled={isLoading}
+        />
+        <p className="text-xs text-muted-foreground">
+          Maximum number of guests in this zone at once.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Color</Label>
+        <input type="hidden" name="color" value={selectedColor} />
+        <div className="flex flex-wrap gap-2">
+          {presetColors.map((preset) => (
+            <button
+              key={preset.value}
+              type="button"
+              onClick={() => setSelectedColor(preset.value)}
+              className={`h-8 w-8 rounded-full border-2 transition-all ${
+                selectedColor === preset.value
+                  ? 'border-foreground ring-2 ring-offset-2'
+                  : 'border-transparent hover:border-muted-foreground/50'
+              }`}
+              style={{ backgroundColor: preset.value }}
+              title={preset.label}
+              disabled={isLoading}
+            />
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Color for identifying this zone on maps and schedules.
+        </p>
+      </div>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+        {formContent}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Saving...' : isEditing ? 'Update Zone' : 'Add Zone'}
+        </Button>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
           <CardTitle>{isEditing ? 'Edit Zone' : 'Add Zone'}</CardTitle>
@@ -122,89 +228,7 @@ export function ZoneForm({ orgId, attractionId, zone, onSuccess }: ZoneFormProps
             {isEditing ? 'Update zone details.' : 'Create a new zone for this attraction.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {error && (
-            <div
-              className="rounded-md bg-destructive/15 px-4 py-3 text-sm text-destructive"
-              role="alert"
-            >
-              {error}
-            </div>
-          )}
-          {success && (
-            <div
-              className="rounded-md bg-green-500/15 px-4 py-3 text-sm text-green-600 dark:text-green-400"
-              role="status"
-            >
-              {success}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="name">Zone Name</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Victorian Parlor"
-              defaultValue={zone?.name}
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="Describe this zone..."
-              defaultValue={zone?.description || ''}
-              disabled={isLoading}
-              rows={2}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="capacity">Capacity</Label>
-            <Input
-              id="capacity"
-              name="capacity"
-              type="number"
-              min={0}
-              placeholder="10"
-              defaultValue={zone?.capacity ?? ''}
-              disabled={isLoading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Maximum number of guests in this zone at once.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Color</Label>
-            <input type="hidden" name="color" value={selectedColor} />
-            <div className="flex flex-wrap gap-2">
-              {presetColors.map((preset) => (
-                <button
-                  key={preset.value}
-                  type="button"
-                  onClick={() => setSelectedColor(preset.value)}
-                  className={`h-8 w-8 rounded-full border-2 transition-all ${
-                    selectedColor === preset.value
-                      ? 'border-foreground ring-2 ring-offset-2'
-                      : 'border-transparent hover:border-muted-foreground/50'
-                  }`}
-                  style={{ backgroundColor: preset.value }}
-                  title={preset.label}
-                  disabled={isLoading}
-                />
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Color for identifying this zone on maps and schedules.
-            </p>
-          </div>
-        </CardContent>
+        <CardContent className="space-y-4">{formContent}</CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Saving...' : isEditing ? 'Update Zone' : 'Add Zone'}

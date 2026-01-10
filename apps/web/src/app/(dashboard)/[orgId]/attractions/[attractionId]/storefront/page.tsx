@@ -16,9 +16,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  getAttraction,
   getStorefrontAnnouncements,
   getStorefrontDomains,
   getStorefrontFaqs,
@@ -92,7 +94,14 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
 
   const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
 
-  // Fetch storefront data
+  // Fetch attraction and storefront data
+  const attractionResult = await getAttraction(orgId, attractionId);
+  const attraction = attractionResult.data;
+
+  if (!attraction) {
+    notFound();
+  }
+
   let settings: StorefrontSettings | null = null;
   let pages: StorefrontPage[] = [];
   let domains: StorefrontDomain[] = [];
@@ -117,6 +126,12 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
   } catch {
     // Feature might not be enabled or no settings yet
   }
+
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attraction.name, href: basePath },
+    { label: 'Storefront' },
+  ];
 
   const publishedPages = pages.filter((p) => p.status === 'published');
   const activeDomains = domains.filter((d) => d.status === 'active');
@@ -150,24 +165,27 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Storefront</h1>
-          <p className="text-muted-foreground">
-            Manage your attraction&apos;s public-facing website and content.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {getStatusBadge()}
-          {previewUrl && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                <Eye className="mr-2 h-4 w-4" />
-                Preview
-                <ExternalLink className="ml-2 h-3 w-3" />
-              </a>
-            </Button>
-          )}
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Storefront</h1>
+            <p className="text-muted-foreground">
+              Manage your attraction&apos;s public-facing website and content.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {getStatusBadge()}
+            {previewUrl && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
+                  <ExternalLink className="ml-2 h-3 w-3" />
+                </a>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

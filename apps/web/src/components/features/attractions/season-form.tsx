@@ -34,6 +34,8 @@ interface SeasonFormProps {
     status?: 'upcoming' | 'active' | 'completed' | 'cancelled';
   };
   onSuccess?: () => void;
+  /** When true, renders without Card wrapper (for use in dialogs) */
+  bare?: boolean;
 }
 
 // Generate year options (current year - 1 to current year + 2)
@@ -49,7 +51,7 @@ const statusOptions = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
-export function SeasonForm({ orgId, attractionId, season, onSuccess }: SeasonFormProps) {
+export function SeasonForm({ orgId, attractionId, season, onSuccess, bare }: SeasonFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -135,6 +137,113 @@ export function SeasonForm({ orgId, attractionId, season, onSuccess }: SeasonFor
     }, 1000);
   }
 
+  const formContent = (
+    <>
+      {error && (
+        <div
+          className="rounded-md bg-destructive/15 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+      {success && (
+        <div
+          className="rounded-md bg-green-500/15 px-4 py-3 text-sm text-green-600 dark:text-green-400"
+          role="status"
+        >
+          {success}
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="name">Season Name</Label>
+          <Input
+            id="name"
+            name="name"
+            placeholder="Halloween 2024"
+            defaultValue={season?.name}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="year">Year</Label>
+          <Select name="year" defaultValue={defaultYear.toString()} disabled={isLoading}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="start_date">Start Date</Label>
+          <Input
+            id="start_date"
+            name="start_date"
+            type="date"
+            defaultValue={season?.start_date}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="end_date">End Date</Label>
+          <Input
+            id="end_date"
+            name="end_date"
+            type="date"
+            defaultValue={season?.end_date}
+            required
+            disabled={isLoading}
+          />
+        </div>
+      </div>
+
+      {isEditing && (
+        <div className="space-y-2">
+          <Label htmlFor="status">Status</Label>
+          <Select name="status" defaultValue={season?.status || 'upcoming'} disabled={isLoading}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? 'Saving...' : isEditing ? 'Update Season' : 'Add Season'}
+      </Button>
+    </>
+  );
+
+  if (bare) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {formContent}
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <Card>
@@ -146,107 +255,7 @@ export function SeasonForm({ orgId, attractionId, season, onSuccess }: SeasonFor
               : 'Create a new operating season for this attraction.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {error && (
-            <div
-              className="rounded-md bg-destructive/15 px-4 py-3 text-sm text-destructive"
-              role="alert"
-            >
-              {error}
-            </div>
-          )}
-          {success && (
-            <div
-              className="rounded-md bg-green-500/15 px-4 py-3 text-sm text-green-600 dark:text-green-400"
-              role="status"
-            >
-              {success}
-            </div>
-          )}
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">Season Name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Halloween 2024"
-                defaultValue={season?.name}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
-              <Select name="year" defaultValue={defaultYear.toString()} disabled={isLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="start_date">Start Date</Label>
-              <Input
-                id="start_date"
-                name="start_date"
-                type="date"
-                defaultValue={season?.start_date}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="end_date">End Date</Label>
-              <Input
-                id="end_date"
-                name="end_date"
-                type="date"
-                defaultValue={season?.end_date}
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                name="status"
-                defaultValue={season?.status || 'upcoming'}
-                disabled={isLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Saving...' : isEditing ? 'Update Season' : 'Add Season'}
-          </Button>
-        </CardFooter>
+        <CardContent className="space-y-4">{formContent}</CardContent>
       </Card>
     </form>
   );

@@ -1,5 +1,4 @@
 import {
-  ArrowLeft,
   ChevronDown,
   ExternalLink,
   FileText,
@@ -11,11 +10,12 @@ import {
   Ticket,
 } from 'lucide-react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  getAttraction,
   getStorefrontNavigation,
   getStorefrontPages,
   resolveOrgId,
@@ -127,14 +127,17 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
 
   let navigation: StorefrontNavigation = { header: [], footer: [] };
   let pages: StorefrontPage[] = [];
+  let attractionName = '';
 
   try {
-    const [navResult, pagesResult] = await Promise.all([
+    const [navResult, pagesResult, attractionResult] = await Promise.all([
       getStorefrontNavigation(orgId, attractionId),
       getStorefrontPages(orgId, attractionId),
+      getAttraction(orgId, attractionId),
     ]);
     navigation = navResult.data?.navigation ?? { header: [], footer: [] };
     pages = pagesResult.data?.pages ?? [];
+    attractionName = attractionResult.data?.name ?? '';
   } catch {
     // Feature might not be enabled
   }
@@ -320,24 +323,24 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
     }
   }
 
+  const breadcrumbs = [
+    { label: 'Attractions', href: `/${orgIdentifier}/attractions` },
+    { label: attractionName || 'Attraction', href: basePath },
+    { label: 'Storefront', href: `${basePath}/storefront` },
+    { label: 'Navigation' },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href={`${basePath}/storefront`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Storefront
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Navigation</h1>
-          <p className="text-muted-foreground">Configure header and footer navigation menus.</p>
+      <div className="space-y-4">
+        <Breadcrumb items={breadcrumbs} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Navigation</h1>
+            <p className="text-muted-foreground">Configure header and footer navigation menus.</p>
+          </div>
+          <NavItemDialog pages={pages} onSave={handleAddNavItem} />
         </div>
-        <NavItemDialog pages={pages} onSave={handleAddNavItem} />
       </div>
 
       {/* Stats */}

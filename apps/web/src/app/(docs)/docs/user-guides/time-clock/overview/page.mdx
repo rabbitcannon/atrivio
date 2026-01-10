@@ -1,0 +1,162 @@
+# Time Clock Overview
+
+Track staff work hours with a mobile-friendly time clock system.
+
+## Overview
+
+The Time Clock module provides comprehensive time tracking for your staff. Staff can clock in and out from their phones, view their schedules, set availability, and request shift changes. Managers can monitor who's currently working and approve time entries.
+
+## Accessing Time Clock
+
+### Staff Portal
+
+Staff access the time clock via a dedicated URL:
+
+```
+https://app.atrivio.com/{your-org-slug}/time
+```
+
+This mobile-friendly interface provides:
+- Clock in/out functionality
+- Schedule viewing
+- Availability management
+- Swap request management
+
+### Dashboard Widget
+
+Staff members also see a Time Clock widget on their dashboard for quick access to clock in/out.
+
+### Manager View
+
+Managers can access staff time history from:
+
+1. Navigate to **Staff** in the sidebar
+2. Click on a staff member
+3. Select the **Time** tab
+
+## Key Features
+
+### Clock In/Out
+
+Simple one-tap clocking:
+- Select your attraction when clocking in
+- View elapsed time while working
+- Clock out with optional break time entry
+
+### Schedule View
+
+Staff can view their upcoming shifts:
+- Grouped by date
+- Shows time, location, and role
+- Request swaps or drops directly
+
+### Availability
+
+Set weekly availability:
+- Available, Preferred, or Unavailable per day
+- Specify time windows for available days
+- Helps managers with scheduling
+
+### Swap Requests
+
+Request shift changes:
+- Swap shifts with coworkers
+- Drop shifts you can't work
+- View request status
+
+### Staff Status
+
+Managers can see who's currently working:
+- Real-time view of clocked-in staff
+- Grouped by attraction
+- Auto-refreshes every 30 seconds
+
+## Staff Portal Navigation
+
+The mobile interface has a bottom navigation bar:
+
+| Tab | Purpose |
+|-----|---------|
+| Clock | Clock in/out |
+| Schedule | View upcoming shifts |
+| Swaps | Manage swap requests |
+| Availability | Set weekly availability |
+
+## Time Entry Workflow
+
+```
+Staff clocks in
+    ↓
+Selects attraction
+    ↓
+Works shift
+    ↓
+Staff clocks out
+    ↓
+Entry created (pending)
+    ↓
+Manager approves
+    ↓
+Entry approved for payroll
+```
+
+## Time Summaries
+
+Track hours across different periods:
+
+| Period | Description |
+|--------|-------------|
+| This Week | Hours worked current week |
+| This Month | Hours worked current month |
+| This Season | Total hours for the season |
+
+## Permissions
+
+| Role | Clock In/Out | View Schedule | Set Availability | View Staff Status | Approve Entries |
+|------|--------------|---------------|------------------|-------------------|-----------------|
+| Owner | Yes | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes | Yes | Yes | Yes |
+| Manager | Yes | Yes | Yes | Yes | Yes |
+| HR | Yes | Yes | Yes | Yes | Yes |
+| Actor | Yes | Yes | Yes | No | No |
+| Scanner | Yes | Yes | Yes | No | No |
+
+## Best Practices
+
+### For Staff
+
+- Clock in as soon as you arrive
+- Select the correct attraction
+- Clock out before leaving
+- Keep your availability up to date
+
+### For Managers
+
+- Review pending time entries regularly
+- Approve entries promptly for payroll
+- Monitor the staff status page during events
+- Address clock-in issues quickly
+
+## Troubleshooting
+
+### Can't Clock In
+
+- Verify you're assigned to at least one attraction
+- Check you're a staff member of the organization
+- Ensure you're logged in
+
+### Wrong Attraction Selected
+
+- Clock out and clock back in
+- Contact your manager to correct the entry
+
+### Forgot to Clock Out
+
+- Contact your manager
+- They can close out your time entry
+
+## Next Steps
+
+- [Clocking In/Out](/docs/user-guides/time-clock/clocking-in-out) - Learn how to use the time clock
+- [Time Reports](/docs/user-guides/time-clock/time-reports) - View and manage time entries
+- [Staff Status](/docs/user-guides/time-clock/staff-status) - Monitor who's working

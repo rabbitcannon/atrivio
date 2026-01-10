@@ -1,0 +1,182 @@
+# Ticketing Overview
+
+Manage ticket types, time slots, orders, and promotions for your attractions.
+
+## Overview
+
+The Ticketing module provides comprehensive tools for selling and managing tickets to your attractions. Create ticket types with flexible pricing, configure timed entry slots, run promotional campaigns, and manage all orders in one place.
+
+## Accessing Ticketing
+
+1. Navigate to **Ticketing** in the sidebar
+2. The main dashboard displays quick stats and navigation
+
+## Dashboard
+
+The ticketing dashboard provides a snapshot of your sales activity:
+
+### Quick Stats
+
+| Stat | Description |
+|------|-------------|
+| Today's Sales | Tickets sold today |
+| Revenue | Revenue for the current week |
+| Ticket Types | Number of active ticket types |
+| Active Promos | Active promotional codes |
+
+### Navigation Areas
+
+| Area | Description |
+|------|-------------|
+| Ticket Types | Configure ticket products and pricing |
+| Time Slots | Manage timed entry and capacity |
+| Orders | View and manage ticket orders |
+| Promo Codes | Create and track discount codes |
+
+## Key Features
+
+### Ticket Types
+
+Define the products guests can purchase:
+- Set pricing and compare pricing (strikethrough)
+- Assign to attractions and categories
+- Control capacity limits
+- Specify min/max per order
+- List included amenities
+
+### Time Slots
+
+Manage timed entry for capacity control:
+- Create individual slots or bulk generate
+- Set capacity per slot
+- Apply price modifiers for peak times
+- Filter by date
+
+### Orders
+
+Track and manage all ticket purchases:
+- Search by customer email
+- Filter by status
+- View order details with tickets
+- Process completions, cancellations, and refunds
+
+### Promo Codes
+
+Run promotional campaigns:
+- Percentage or fixed discounts
+- Usage limits and expiration
+- Minimum order requirements
+- Track redemption statistics
+
+## Workflow
+
+### Setting Up Ticketing
+
+```
+Create Ticket Types
+    ↓
+Configure Time Slots (if timed entry)
+    ↓
+Set Up Promo Codes (optional)
+    ↓
+Connect to Storefront
+    ↓
+Start Selling
+```
+
+### Processing Orders
+
+```
+Guest purchases tickets
+    ↓
+Order created (pending)
+    ↓
+Payment processed
+    ↓
+Order completed
+    ↓
+Tickets generated and sent
+    ↓
+Guest checks in at event
+```
+
+## Integration with Other Features
+
+### Storefronts
+
+Ticket types are displayed on your storefront for guest purchases.
+
+### Check-In
+
+Generated tickets include barcodes that can be scanned at entry.
+
+### Payments
+
+Orders are processed through your Stripe Connect account.
+
+## Permissions
+
+| Role | Ticket Types | Time Slots | Orders | Promo Codes |
+|------|--------------|------------|--------|-------------|
+| Owner | Full | Full | Full | Full |
+| Admin | Full | Full | Full | Full |
+| Manager | View/Edit | View/Edit | View | View/Edit |
+| Box Office | View | View | View | View |
+
+## Best Practices
+
+### Ticket Types
+
+- Use clear, descriptive names
+- Set compare prices for perceived value
+- Include detailed descriptions
+- List what's included
+
+### Time Slots
+
+- Create slots in bulk for efficiency
+- Use price modifiers for peak times
+- Set appropriate capacity limits
+- Plan ahead for busy periods
+
+### Promo Codes
+
+- Use memorable, branded codes
+- Set expiration dates for urgency
+- Track performance by campaign
+- Limit usage to prevent abuse
+
+### Orders
+
+- Monitor pending orders
+- Process refunds promptly
+- Keep customer records accurate
+- Export data for reporting
+
+## Troubleshooting
+
+### Orders Not Processing
+
+- Check payment integration status
+- Verify Stripe account is connected
+- Review order error messages
+
+### Time Slots Not Appearing
+
+- Verify slots are active
+- Check date selection
+- Confirm slots exist for the selected date
+
+### Promo Code Not Working
+
+- Check code is active
+- Verify validity dates
+- Confirm usage limits not reached
+- Check minimum order requirements
+
+## Next Steps
+
+- [Ticket Types](/docs/user-guides/ticketing/ticket-types) - Configure ticket products
+- [Time Slots](/docs/user-guides/ticketing/time-slots) - Set up timed entry
+- [Orders](/docs/user-guides/ticketing/orders) - Manage ticket orders
+- [Promo Codes](/docs/user-guides/ticketing/promo-codes) - Create discount codes
