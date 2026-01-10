@@ -459,6 +459,11 @@ export class StorefrontsService {
     customDomainCount: number;
     customDomainLimit: number;
     remaining: number;
+    customDomainsByAttraction: Array<{
+      attractionId: string;
+      attractionName: string;
+      domains: string[];
+    }>;
   }> {
     // Get org's custom domain limit
     const { data: org } = await this.supabase.adminClient
@@ -469,19 +474,45 @@ export class StorefrontsService {
 
     const limit = org?.custom_domain_limit ?? 0;
 
-    // Count current custom domains for this org
-    const { count } = await this.supabase.adminClient
+    // Get custom domains with attraction info for this org
+    const { data: customDomains } = await this.supabase.adminClient
       .from('storefront_domains')
-      .select('id', { count: 'exact', head: true })
+      .select('domain, attraction_id, attractions!inner(name)')
       .eq('org_id', orgId)
       .eq('domain_type', 'custom');
 
-    const currentCount = count ?? 0;
+    const currentCount = customDomains?.length ?? 0;
+
+    // Group domains by attraction
+    const domainsByAttraction = new Map<
+      string,
+      { attractionName: string; domains: string[] }
+    >();
+
+    for (const d of customDomains ?? []) {
+      const attractionId = d.attraction_id;
+      // Supabase returns nested relation as object for !inner joins
+      const attraction = d.attractions as unknown as { name: string } | null;
+      const attractionName = attraction?.name ?? 'Unknown';
+      if (!domainsByAttraction.has(attractionId)) {
+        domainsByAttraction.set(attractionId, { attractionName, domains: [] });
+      }
+      domainsByAttraction.get(attractionId)!.domains.push(d.domain);
+    }
+
+    const customDomainsByAttraction = Array.from(
+      domainsByAttraction.entries()
+    ).map(([attractionId, { attractionName, domains }]) => ({
+      attractionId,
+      attractionName,
+      domains,
+    }));
 
     return {
       customDomainCount: currentCount,
       customDomainLimit: limit,
       remaining: limit - currentCount,
+      customDomainsByAttraction,
     };
   }
 

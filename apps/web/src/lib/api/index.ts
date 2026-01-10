@@ -982,6 +982,11 @@ export async function getStorefrontDomainLimits(orgId: string, attractionId: str
       customDomainCount: number;
       customDomainLimit: number;
       remaining: number;
+      customDomainsByAttraction: Array<{
+        attractionId: string;
+        attractionName: string;
+        domains: string[];
+      }>;
     };
   }>(`/organizations/${orgId}/attractions/${attractionId}/storefront/domains/limits`);
 }

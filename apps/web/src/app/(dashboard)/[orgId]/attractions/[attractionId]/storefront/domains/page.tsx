@@ -3,7 +3,7 @@ import {
   CheckCircle2,
   Clock,
   Globe,
-  Link2,
+  Link2 as Link2Icon,
   Shield,
   Star,
   XCircle,
@@ -28,6 +28,7 @@ import type { DomainStatus, StorefrontDomain, StorefrontSettings } from '@/lib/a
 import { siteConfig } from '@/lib/config';
 import { AddDomainDialog } from './_components/add-domain-dialog';
 import { DomainActions } from './_components/domain-actions';
+import { DomainLimitCounter } from './_components/domain-limit-counter';
 import { VerificationInstructions } from './_components/verification-instructions';
 
 export const metadata: Metadata = {
@@ -66,7 +67,16 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
 
   let domains: StorefrontDomain[] = [];
   let _settings: StorefrontSettings | null = null;
-  let domainLimits = { customDomainCount: 0, customDomainLimit: 0, remaining: 0 };
+  let domainLimits: {
+    customDomainCount: number;
+    customDomainLimit: number;
+    remaining: number;
+    customDomainsByAttraction: Array<{
+      attractionId: string;
+      attractionName: string;
+      domains: string[];
+    }>;
+  } = { customDomainCount: 0, customDomainLimit: 0, remaining: 0, customDomainsByAttraction: [] };
   let attractionName = '';
 
   try {
@@ -183,13 +193,11 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
           </div>
           <div className="flex items-center gap-4">
             {canAddDomains && (
-              <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
-                <Link2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  {domainLimits.customDomainCount} of {domainLimits.customDomainLimit}
-                </span>
-                <span className="text-sm text-muted-foreground">domains</span>
-              </div>
+              <DomainLimitCounter
+                customDomainCount={domainLimits.customDomainCount}
+                customDomainLimit={domainLimits.customDomainLimit}
+                customDomainsByAttraction={domainLimits.customDomainsByAttraction}
+              />
             )}
             {canAddDomains && !isAtLimit && <AddDomainDialog onAddDomain={handleAddDomain} />}
             {canAddDomains && isAtLimit && (
@@ -228,7 +236,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
+            <Link2Icon className="h-5 w-5" />
             Custom Domains
           </CardTitle>
           <CardDescription>Connect your own domain to your storefront</CardDescription>
@@ -236,7 +244,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
         <CardContent>
           {!canAddDomains ? (
             <div className="text-center py-12">
-              <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <Link2Icon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-semibold mb-2">Custom domains available on Pro plan</h3>
               <p className="text-muted-foreground mb-4">
                 Upgrade to Pro to connect your own domain to your storefront.
@@ -246,7 +254,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
             </div>
           ) : customDomains.length === 0 ? (
             <div className="text-center py-12">
-              <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <Link2Icon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-semibold mb-2">No custom domains</h3>
               <p className="text-muted-foreground mb-4">
                 Add a custom domain to use your own URL for your storefront.
