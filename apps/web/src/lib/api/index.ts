@@ -1152,7 +1152,7 @@ export async function getStorefrontNavigation(orgId: string, attractionId: strin
  */
 interface NavItemInput {
   label: string;
-  linkType: 'home' | 'page' | 'tickets' | 'external';
+  linkType: 'home' | 'page' | 'tickets' | 'faq' | 'external';
   pageId?: string;
   externalUrl?: string;
   openInNewTab?: boolean;
