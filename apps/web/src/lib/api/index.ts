@@ -1148,49 +1148,49 @@ export async function getStorefrontNavigation(orgId: string, attractionId: strin
 }
 
 /**
+ * Input type for navigation items (camelCase for frontend convenience)
+ */
+interface NavItemInput {
+  label: string;
+  linkType: 'home' | 'page' | 'tickets' | 'external';
+  pageId?: string;
+  externalUrl?: string;
+  openInNewTab?: boolean;
+}
+
+/**
+ * Transform navigation item from frontend format to API format (snake_case)
+ */
+function transformNavItem(item: NavItemInput) {
+  return {
+    label: item.label,
+    link_type: item.linkType,
+    page_id: item.pageId || undefined,
+    external_url: item.externalUrl || undefined,
+    open_in_new_tab: item.openInNewTab ?? false,
+  };
+}
+
+/**
  * Update storefront navigation
  */
 export async function updateStorefrontNavigation(
   orgId: string,
   attractionId: string,
   navigation: {
-    header?: Array<{
-      id?: string;
-      label: string;
-      type: 'page' | 'link' | 'dropdown';
-      pageId?: string;
-      url?: string;
-      openNewTab?: boolean;
-      children?: Array<{
-        id?: string;
-        label: string;
-        type: 'page' | 'link';
-        pageId?: string;
-        url?: string;
-        openNewTab?: boolean;
-      }>;
-    }>;
-    footer?: Array<{
-      id?: string;
-      label: string;
-      type: 'page' | 'link' | 'dropdown';
-      pageId?: string;
-      url?: string;
-      openNewTab?: boolean;
-      children?: Array<{
-        id?: string;
-        label: string;
-        type: 'page' | 'link';
-        pageId?: string;
-        url?: string;
-        openNewTab?: boolean;
-      }>;
-    }>;
+    header: NavItemInput[];
+    footer: NavItemInput[];
   }
 ) {
+  // Transform from frontend camelCase to API snake_case
+  const payload = {
+    header: navigation.header.map(transformNavItem),
+    footer: navigation.footer.map(transformNavItem),
+  };
+
   return serverApi.put<{ navigation: StorefrontNavigation }>(
     `/organizations/${orgId}/attractions/${attractionId}/storefront/navigation`,
-    navigation
+    payload
   );
 }
 

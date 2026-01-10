@@ -151,7 +151,7 @@ export default function AdminFeatureFlagsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Feature Flags</h1>
-          <p className="text-muted-foreground">Control feature rollouts across the platform</p>
+          <p className="text-muted-foreground">Manage tier-based feature access across the platform</p>
         </div>
         <Button onClick={() => setIsCreateOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -178,7 +178,7 @@ export default function AdminFeatureFlagsPage() {
               <TableRow>
                 <TableHead>Flag</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Rollout</TableHead>
+                <TableHead>Required Tier</TableHead>
                 <TableHead>Targeting</TableHead>
                 <TableHead>Last Updated</TableHead>
                 <TableHead className="w-12"></TableHead>
@@ -209,10 +209,20 @@ export default function AdminFeatureFlagsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {flag.rollout_percentage !== null ? (
-                      <Badge variant="outline">{flag.rollout_percentage}%</Badge>
+                    {flag.metadata?.tier ? (
+                      <Badge
+                        variant={
+                          flag.metadata.tier === 'enterprise'
+                            ? 'default'
+                            : flag.metadata.tier === 'pro'
+                              ? 'secondary'
+                              : 'outline'
+                        }
+                      >
+                        {String(flag.metadata.tier)}
+                      </Badge>
                     ) : (
-                      <span className="text-muted-foreground">-</span>
+                      <Badge variant="outline">free</Badge>
                     )}
                   </TableCell>
                   <TableCell>

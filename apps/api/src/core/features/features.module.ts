@@ -46,7 +46,7 @@ import { FeatureGuard } from './guards/feature.guard.js';
  *
  * - Super admins bypass all feature flag checks
  * - Flags are cached for 60 seconds to reduce DB calls
- * - The SQL function handles rollout_percentage and org/user allowlists
+ * - The SQL function handles tier-based access and org/user allowlists
  */
 @Global()
 @Module({

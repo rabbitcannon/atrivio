@@ -1159,9 +1159,9 @@ export class AdminService {
         name: f['name'],
         description: f['description'],
         enabled: f['enabled'],
-        rollout_percentage: f['rollout_percentage'],
         org_count: (f['org_ids'] as string[] | null)?.length || 0,
         user_count: (f['user_ids'] as string[] | null)?.length || 0,
+        metadata: f['metadata'] as Record<string, unknown> | null,
         updated_at: f['updated_at'],
       })),
     };
@@ -1189,7 +1189,6 @@ export class AdminService {
       name: data.name,
       description: data.description,
       enabled: data.enabled,
-      rollout_percentage: data.rollout_percentage,
       org_ids: data.org_ids || [],
       user_ids: data.user_ids || [],
       metadata: data.metadata || {},
@@ -1276,13 +1275,6 @@ export class AdminService {
     if (dto.enabled !== undefined) {
       updateData['enabled'] = dto.enabled;
       changes['enabled'] = { from: current.enabled, to: dto.enabled };
-    }
-    if (dto.rollout_percentage !== undefined) {
-      updateData['rollout_percentage'] = dto.rollout_percentage;
-      changes['rollout_percentage'] = {
-        from: current.rollout_percentage,
-        to: dto.rollout_percentage,
-      };
     }
     if (dto.org_ids !== undefined) {
       updateData['org_ids'] = dto.org_ids;

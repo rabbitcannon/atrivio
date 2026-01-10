@@ -7,7 +7,6 @@ export interface FeatureFlag {
   name: string;
   description: string | null;
   enabled: boolean;
-  rollout_percentage: number;
   org_ids: string[];
   user_ids: string[];
   metadata: Record<string, unknown>;
@@ -27,6 +26,7 @@ const TIER_FEATURES: Record<SubscriptionTier, string[]> = {
     'inventory',
     'analytics_pro',
     'storefronts',
+    'media_uploads',
   ],
   enterprise: [
     'ticketing',
@@ -37,6 +37,7 @@ const TIER_FEATURES: Record<SubscriptionTier, string[]> = {
     'inventory',
     'analytics_pro',
     'storefronts',
+    'media_uploads',
     'virtual_queue',
     'sms_notifications',
     'custom_domains',

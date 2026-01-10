@@ -10,8 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { type FeatureFlagDetail, getFeatureFlag, updateFeatureFlag } from '@/lib/api/admin';
@@ -41,8 +47,7 @@ export default function FeatureFlagDetailPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [enabled, setEnabled] = useState(false);
-  const [rolloutPercentage, setRolloutPercentage] = useState<number | null>(null);
-  const [useRollout, setUseRollout] = useState(false);
+  const [requiredTier, setRequiredTier] = useState<string>('free');
 
   const fetchFlag = useCallback(async () => {
     setIsLoading(true);
@@ -57,8 +62,7 @@ export default function FeatureFlagDetailPage() {
       setName(result.data.name);
       setDescription(result.data.description || '');
       setEnabled(result.data.enabled);
-      setRolloutPercentage(result.data.rollout_percentage);
-      setUseRollout(result.data.rollout_percentage !== null);
+      setRequiredTier((result.data.metadata?.tier as string) || 'free');
     }
     setIsLoading(false);
   }, [flagId]);
@@ -78,11 +82,11 @@ export default function FeatureFlagDetailPage() {
       name: string;
       description?: string;
       enabled: boolean;
-      rollout_percentage: number | null;
+      metadata?: Record<string, unknown>;
     } = {
       name: name.trim(),
       enabled,
-      rollout_percentage: useRollout ? rolloutPercentage : null,
+      metadata: { ...flag.metadata, tier: requiredTier },
     };
     if (description.trim()) {
       updateData.description = description.trim();
@@ -155,7 +159,7 @@ export default function FeatureFlagDetailPage() {
     name !== flag.name ||
     description !== (flag.description || '') ||
     enabled !== flag.enabled ||
-    (useRollout ? rolloutPercentage : null) !== flag.rollout_percentage;
+    requiredTier !== ((flag.metadata?.tier as string) || 'free');
 
   return (
     <div className="space-y-6">
@@ -252,51 +256,37 @@ export default function FeatureFlagDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Rollout Percentage */}
+        {/* Required Tier */}
         <Card>
           <CardHeader>
-            <CardTitle>Rollout Percentage</CardTitle>
-            <CardDescription>Gradually roll out to a percentage of users</CardDescription>
+            <CardTitle>Required Tier</CardTitle>
+            <CardDescription>Minimum subscription tier to access this feature</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={!useRollout}
-                  onChange={() => setUseRollout(false)}
-                  className="h-4 w-4"
-                />
-                <span>All users (when enabled)</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={useRollout}
-                  onChange={() => setUseRollout(true)}
-                  className="h-4 w-4"
-                />
-                <span>Percentage rollout</span>
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="tier">Minimum Tier</Label>
+              <Select value={requiredTier} onValueChange={setRequiredTier}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free (All users)</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Organizations on {requiredTier === 'free' ? 'any' : requiredTier + ' or higher'} tier
+                will have access to this feature.
+              </p>
             </div>
-
-            {useRollout && (
-              <div className="space-y-4 pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Rollout Percentage</span>
-                  <span className="text-2xl font-bold">{rolloutPercentage ?? 0}%</span>
-                </div>
-                <Slider
-                  value={[rolloutPercentage ?? 0]}
-                  onValueChange={(values: number[]) => setRolloutPercentage(values[0] ?? 0)}
-                  max={100}
-                  step={1}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {rolloutPercentage ?? 0}% of users will see this feature when enabled
-                </p>
-              </div>
-            )}
+            <div className="pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                <strong>Note:</strong> Changes to tier requirements update the{' '}
+                <code className="text-xs bg-muted px-1 py-0.5 rounded">get_tier_limits()</code>{' '}
+                function in the database. Make sure to sync with the migration files.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -100,9 +100,9 @@ export interface FeatureFlag {
   name: string;
   description: string | null;
   enabled: boolean;
-  rollout_percentage: number | null;
   org_count: number;
   user_count: number;
+  metadata?: Record<string, unknown>;
   updated_at: string;
 }
 
@@ -112,7 +112,6 @@ export interface FeatureFlagDetail {
   name: string;
   description: string | null;
   enabled: boolean;
-  rollout_percentage: number | null;
   org_ids: string[];
   user_ids: string[];
   metadata: Record<string, unknown>;
@@ -338,7 +337,6 @@ export async function updateFeatureFlag(
     name?: string;
     description?: string;
     enabled?: boolean;
-    rollout_percentage?: number | null;
     org_ids?: string[];
     user_ids?: string[];
     metadata?: Record<string, unknown>;

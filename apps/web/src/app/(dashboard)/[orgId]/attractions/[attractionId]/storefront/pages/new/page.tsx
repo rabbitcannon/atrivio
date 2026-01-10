@@ -21,20 +21,12 @@ interface NewPageProps {
 
 // Helper to convert StorefrontNavItem to API expected format
 function mapNavItemForApi(item: StorefrontNavItem) {
-  // Map linkType to the API's expected 'type' values
-  let type: 'page' | 'link' | 'dropdown' = 'link';
-  if (item.linkType === 'page') {
-    type = 'page';
-  } else if (item.linkType === 'external' || item.linkType === 'home' || item.linkType === 'tickets') {
-    type = 'link';
-  }
-
   return {
     label: item.label,
-    type,
+    linkType: item.linkType as 'home' | 'page' | 'tickets' | 'external',
     pageId: item.pageId ?? undefined,
-    url: item.externalUrl || item.url || (item.linkType === 'home' ? '/' : item.linkType === 'tickets' ? '/tickets' : undefined),
-    openNewTab: item.openInNewTab || item.openNewTab,
+    externalUrl: item.externalUrl || item.url,
+    openInNewTab: item.openInNewTab || item.openNewTab,
   };
 }
 
@@ -93,9 +85,9 @@ export default async function NewStorefrontPage({ params }: NewPageProps) {
         // Add new nav item for this page to header
         const newNavItem = {
           label: data.title,
-          type: 'page' as const,
+          linkType: 'page' as const,
           pageId: createdPage.id,
-          openNewTab: false,
+          openInNewTab: false,
         };
 
         await updateStorefrontNavigation(capturedOrgId, capturedAttractionId, {

@@ -54,17 +54,18 @@ Multi-tenant SaaS for the attractions industry (haunted attractions, escape room
 | F8 Ticketing | ✅ Complete | Ticket types, orders, promo codes |
 | F9 Check-In | ✅ Complete | Barcode scan, capacity, waivers |
 | F10 Inventory | 🔲 Pending | Props, costumes, checkouts |
+| F15 Media | ✅ Complete | Cloudflare R2 storage, tier-based limits |
 
 ## Subscription Tiers
 
 Organizations have subscription tiers that gate feature access via Stripe subscriptions.
 
 ### Tier Configuration
-| Tier | Price | Attractions | Staff | Orders/month | Custom Domains |
-|------|-------|-------------|-------|--------------|----------------|
-| **Free** | $0 | 1 | 10 | 100 | 0 (subdomain only) |
-| **Pro** | $149 | 5 | 50 | 1,000 | 5 |
-| **Enterprise** | $499 | Unlimited | Unlimited | Unlimited | 10 |
+| Tier | Price | Attractions | Staff | Orders/month | Custom Domains | Storage |
+|------|-------|-------------|-------|--------------|----------------|---------|
+| **Free** | $0 | 1 | 10 | 100 | 0 (subdomain only) | URL linking only |
+| **Pro** | $149 | 5 | 50 | 1,000 | 5 | 500 MB |
+| **Enterprise** | $499 | Unlimited | Unlimited | Unlimited | 10 | 5 GB |
 
 ### Features by Tier
 | Feature | Free | Pro | Enterprise |
@@ -73,13 +74,16 @@ Organizations have subscription tiers that gate feature access via Stripe subscr
 | Check-In & Scanning | ✅ | ✅ | ✅ |
 | Time Tracking | ✅ | ✅ | ✅ |
 | Email Notifications | ✅ | ✅ | ✅ |
+| Link External Images | ✅ | ✅ | ✅ |
 | Staff Scheduling | ❌ | ✅ | ✅ |
 | Inventory Management | ❌ | ✅ | ✅ |
 | Advanced Analytics | ❌ | ✅ | ✅ |
 | Storefronts | ❌ | ✅ | ✅ |
 | Custom Domains | ❌ | ✅ | ✅ |
+| Media Uploads (500MB) | ❌ | ✅ | ✅ |
 | Virtual Queue | ❌ | ❌ | ✅ |
 | SMS Notifications | ❌ | ❌ | ✅ |
+| Media Uploads (5GB) | ❌ | ❌ | ✅ |
 | API Access | ❌ | ❌ | ✅ |
 
 ### Demo Accounts
@@ -103,7 +107,7 @@ The platform uses a tier-based feature flag system for plan-based access control
 | Tier | Feature Keys |
 |------|--------------|
 | **free** | ticketing, checkin, time_tracking, notifications |
-| **pro** | + scheduling, inventory, analytics_pro, storefronts |
+| **pro** | + scheduling, inventory, analytics_pro, storefronts, media_uploads |
 | **enterprise** | + virtual_queue, sms_notifications, custom_domains |
 
 ### Per-Org Activation

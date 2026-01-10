@@ -32,8 +32,11 @@ import { StaffModule } from './modules/staff/staff.module.js';
 import { StorefrontsModule } from './modules/storefronts/storefronts.module.js';
 // Ticketing (F8 Ticketing)
 import { TicketingModule } from './modules/ticketing/ticketing.module.js';
+// Media (F15 Media)
+import { MediaModule } from './modules/media/media.module.js';
 // Shared modules
 import { DatabaseModule } from './shared/database/database.module.js';
+import { StorageModule } from './shared/storage/storage.module.js';
 
 // Future modules (to be implemented)
 // import { AuditModule } from './core/audit/audit.module.js';
@@ -52,6 +55,7 @@ import { DatabaseModule } from './shared/database/database.module.js';
 
     // Shared modules
     DatabaseModule,
+    StorageModule,
 
     // Metrics (global)
     MetricsModule,
@@ -91,6 +95,9 @@ import { DatabaseModule } from './shared/database/database.module.js';
 
     // Storefronts (F14 Storefronts)
     StorefrontsModule,
+
+    // Media (F15 Media)
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [

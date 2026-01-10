@@ -237,14 +237,6 @@ export class UpdateFeatureFlagDto {
   @IsOptional()
   enabled?: boolean;
 
-  @ApiPropertyOptional({ minimum: 0, maximum: 100 })
-  @IsInt()
-  @Min(0)
-  @Max(100)
-  @IsOptional()
-  @Type(() => Number)
-  rollout_percentage?: number;
-
   @ApiPropertyOptional({ type: [String], description: 'Organization IDs to enable for' })
   @IsArray()
   @IsUUID('4', { each: true })
@@ -257,7 +249,7 @@ export class UpdateFeatureFlagDto {
   @IsOptional()
   user_ids?: string[];
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Feature metadata including tier requirement' })
   @IsObject()
   @IsOptional()
   metadata?: Record<string, unknown>;

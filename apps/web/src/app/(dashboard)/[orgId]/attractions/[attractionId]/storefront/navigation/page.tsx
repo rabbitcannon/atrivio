@@ -115,6 +115,18 @@ function NavItemDisplay({ item, pages, position, onEdit, onDelete }: NavItemDisp
   );
 }
 
+// Helper to convert NavItemFormData to API expected format
+// Defined at module level so server actions can reference it without serialization issues
+function mapFormDataForApi(data: NavItemFormData) {
+  return {
+    label: data.label,
+    linkType: data.linkType as 'home' | 'page' | 'tickets' | 'external',
+    pageId: data.pageId,
+    externalUrl: data.externalUrl,
+    openInNewTab: data.openInNewTab,
+  };
+}
+
 export default async function StorefrontNavigationPage({ params }: NavigationPageProps) {
   const { orgId: orgIdentifier, attractionId } = await params;
 
@@ -152,31 +164,6 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
   // Capture values for server actions
   const capturedOrgId = orgId;
   const capturedAttractionId = attractionId;
-
-  // Helper to convert NavItemFormData to API expected format
-  function mapFormDataForApi(data: NavItemFormData) {
-    // Map linkType to the API's expected 'type' values
-    let type: 'page' | 'link' | 'dropdown' = 'link';
-    if (data.linkType === 'page') {
-      type = 'page';
-    } else if (
-      data.linkType === 'external' ||
-      data.linkType === 'home' ||
-      data.linkType === 'tickets'
-    ) {
-      type = 'link';
-    }
-
-    return {
-      label: data.label,
-      type,
-      pageId: data.pageId,
-      url:
-        data.externalUrl ||
-        (data.linkType === 'home' ? '/' : data.linkType === 'tickets' ? '/tickets' : undefined),
-      openNewTab: data.openInNewTab,
-    };
-  }
 
   // Server action: Add navigation item
   async function handleAddNavItem(
@@ -494,28 +481,12 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
 }
 
 // Helper to convert StorefrontNavItem to API expected format
-// The API client expects 'type' with values 'page' | 'link' | 'dropdown'
 function mapItemForApi(item: StorefrontNavItem) {
-  // Map linkType to the API's expected 'type' values
-  let type: 'page' | 'link' | 'dropdown' = 'link';
-  if (item.linkType === 'page') {
-    type = 'page';
-  } else if (
-    item.linkType === 'external' ||
-    item.linkType === 'home' ||
-    item.linkType === 'tickets'
-  ) {
-    type = 'link';
-  }
-
   return {
     label: item.label,
-    type,
+    linkType: item.linkType as 'home' | 'page' | 'tickets' | 'external',
     pageId: item.pageId ?? undefined,
-    url:
-      item.externalUrl ||
-      item.url ||
-      (item.linkType === 'home' ? '/' : item.linkType === 'tickets' ? '/tickets' : undefined),
-    openNewTab: item.openInNewTab || item.openNewTab,
+    externalUrl: item.externalUrl || item.url,
+    openInNewTab: item.openInNewTab || item.openNewTab,
   };
 }
