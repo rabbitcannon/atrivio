@@ -21,7 +21,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -158,6 +158,33 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
 
   // Get current preset for display
   const currentPreset = getThemePreset(theme.preset);
+
+  // Load Google Fonts for preview
+  useEffect(() => {
+    const fontsToLoad = new Set([theme.fontHeading, theme.fontBody]);
+    const displayFonts = ['Creepster', 'Nosifer', 'Eater', 'Butcherman', 'Metal Mania'];
+
+    const fontFamilies = Array.from(fontsToLoad)
+      .map((font) => {
+        if (displayFonts.includes(font)) {
+          return `family=${font.replace(/ /g, '+')}`;
+        }
+        return `family=${font.replace(/ /g, '+')}:wght@400;500;600;700`;
+      })
+      .join('&');
+
+    const linkId = 'storefront-preview-fonts';
+    let link = document.getElementById(linkId) as HTMLLinkElement | null;
+
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+
+    link.href = `https://fonts.googleapis.com/css2?${fontFamilies}&display=swap`;
+  }, [theme.fontHeading, theme.fontBody]);
 
   // Hero state
   const [hero, setHero] = useState({
@@ -484,50 +511,112 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
 
                 {/* Live Theme Preview */}
                 <div
-                  className="rounded-lg border p-4 transition-colors"
+                  className="rounded-lg border overflow-hidden transition-colors"
                   style={{ backgroundColor: theme.backgroundColor }}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <h4
-                        className="text-lg font-bold mb-1"
+                  {/* Header preview */}
+                  <div
+                    className="px-4 py-3 border-b flex items-center justify-between"
+                    style={{ borderColor: `${theme.textColor}20` }}
+                  >
+                    <span
+                      className="text-lg font-bold"
+                      style={{
+                        color: theme.primaryColor,
+                        fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
+                      }}
+                    >
+                      Your Attraction
+                    </span>
+                    <div className="flex gap-2 text-sm" style={{ color: theme.textColor }}>
+                      <span style={{ fontFamily: `'${theme.fontBody}', system-ui, sans-serif` }}>
+                        Tickets
+                      </span>
+                      <span style={{ fontFamily: `'${theme.fontBody}', system-ui, sans-serif` }}>
+                        FAQs
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Content preview */}
+                  <div className="p-4 space-y-4">
+                    {/* Hero text */}
+                    <div className="text-center py-4">
+                      <h3
+                        className="text-2xl font-bold mb-2"
                         style={{
                           color: theme.textColor,
                           fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
                         }}
                       >
-                        Preview Title
-                      </h4>
+                        Face Your Fears
+                      </h3>
                       <p
                         className="text-sm"
                         style={{
                           color: theme.textColor,
-                          opacity: 0.8,
+                          opacity: 0.7,
                           fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
                         }}
                       >
-                        This is how your storefront text will look.
+                        A terrifying journey awaits in the darkness...
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      <div
-                        className="px-4 py-2 rounded-md text-sm font-medium"
+
+                    {/* Card preview */}
+                    <div
+                      className="rounded-lg p-3"
+                      style={{ backgroundColor: theme.secondaryColor }}
+                    >
+                      <h4
+                        className="font-bold mb-1"
                         style={{
-                          backgroundColor: theme.primaryColor,
-                          color: '#ffffff',
+                          color: theme.textColor,
+                          fontFamily: `'${theme.fontHeading}', system-ui, sans-serif`,
                         }}
                       >
-                        Primary
-                      </div>
-                      <div
-                        className="px-4 py-2 rounded-md text-sm font-medium"
+                        General Admission
+                      </h4>
+                      <p
+                        className="text-sm mb-2"
                         style={{
-                          backgroundColor: theme.accentColor,
-                          color: '#000000',
+                          color: theme.textColor,
+                          opacity: 0.7,
+                          fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
                         }}
                       >
-                        Accent
+                        Standard entry to the haunted experience
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="font-bold"
+                          style={{
+                            color: theme.accentColor,
+                            fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
+                          }}
+                        >
+                          $29.99
+                        </span>
+                        <div
+                          className="px-3 py-1 rounded text-sm font-medium"
+                          style={{
+                            backgroundColor: theme.primaryColor,
+                            color: '#ffffff',
+                            fontFamily: `'${theme.fontBody}', system-ui, sans-serif`,
+                          }}
+                        >
+                          Buy Tickets
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Font labels */}
+                    <div
+                      className="flex justify-between text-xs pt-2 border-t"
+                      style={{ borderColor: `${theme.textColor}20`, color: theme.textColor, opacity: 0.5 }}
+                    >
+                      <span>Heading: {theme.fontHeading}</span>
+                      <span>Body: {theme.fontBody}</span>
                     </div>
                   </div>
                 </div>

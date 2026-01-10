@@ -155,6 +155,26 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const accentColor = settings.theme.accentColor || '#f59e0b';
   const isLight = isLightColor(bgColor);
 
+  // Build Google Fonts URL for custom fonts
+  const headingFont = settings.theme.fontHeading || 'Inter';
+  const bodyFont = settings.theme.fontBody || 'Inter';
+  const fontsToLoad = new Set([headingFont, bodyFont]);
+
+  // Build Google Fonts URL with proper weights
+  const fontFamilies = Array.from(fontsToLoad)
+    .map((font) => {
+      // Horror/display fonts don't need multiple weights
+      const displayFonts = ['Creepster', 'Nosifer', 'Eater', 'Butcherman', 'Metal Mania'];
+      if (displayFonts.includes(font)) {
+        return `family=${font.replace(/ /g, '+')}`;
+      }
+      // Regular fonts get multiple weights
+      return `family=${font.replace(/ /g, '+')}:wght@400;500;600;700`;
+    })
+    .join('&');
+
+  const googleFontsUrl = `https://fonts.googleapis.com/css2?${fontFamilies}&display=swap`;
+
   // Build CSS variables from storefront settings
   const themeStyles = `
     :root {
@@ -198,6 +218,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={themeClass}>
       <head>
+        {/* Load Google Fonts for custom typography */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href={googleFontsUrl} rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
         {settings.analytics?.googleAnalyticsId && (
           <>
