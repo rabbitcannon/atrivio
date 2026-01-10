@@ -157,6 +157,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const headerTextColor = settings.theme.headerTextColor || textColor;
   const isLight = isLightColor(bgColor);
 
+  // Background image settings
+  const backgroundImageUrl = settings.theme.backgroundImageUrl;
+  const backgroundPosition = settings.theme.backgroundPosition || 'center';
+  const backgroundSize = settings.theme.backgroundSize || 'cover';
+  const backgroundRepeat = settings.theme.backgroundRepeat || 'no-repeat';
+  const backgroundAttachment = settings.theme.backgroundAttachment || 'fixed';
+  const backgroundOverlay = settings.theme.backgroundOverlay;
+
   // Build Google Fonts URL for custom fonts
   const headingFont = settings.theme.fontHeading || 'Inter';
   const bodyFont = settings.theme.fontBody || 'Inter';
@@ -176,6 +184,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     .join('&');
 
   const googleFontsUrl = `https://fonts.googleapis.com/css2?${fontFamilies}&display=swap`;
+
+  // Convert background position from our format to CSS
+  const cssBackgroundPosition = backgroundPosition.replace('-', ' ');
 
   // Build CSS variables from storefront settings
   const themeStyles = `
@@ -210,6 +221,39 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       --font-heading: '${settings.theme.fontHeading || 'Inter'}', system-ui, sans-serif;
       --font-body: '${settings.theme.fontBody || 'Inter'}', system-ui, sans-serif;
     }
+
+    /* Background image styles */
+    ${
+      backgroundImageUrl
+        ? `
+    body {
+      background-image: url('${backgroundImageUrl}');
+      background-position: ${cssBackgroundPosition};
+      background-size: ${backgroundSize};
+      background-repeat: ${backgroundRepeat};
+      background-attachment: ${backgroundAttachment};
+      background-color: ${bgColor};
+    }
+    `
+        : ''
+    }
+
+    /* Background overlay for readability */
+    ${
+      backgroundImageUrl && backgroundOverlay
+        ? `
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: ${backgroundOverlay};
+      pointer-events: none;
+      z-index: -1;
+    }
+    `
+        : ''
+    }
+
     ${settings.theme.customCss || ''}
   `;
 

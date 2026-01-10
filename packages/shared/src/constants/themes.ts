@@ -41,6 +41,114 @@ export interface ThemeFonts {
 }
 
 /**
+ * Background image position options
+ */
+export type BackgroundPosition =
+  | 'center'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right';
+
+/**
+ * Background image size options
+ */
+export type BackgroundSize = 'cover' | 'contain' | 'auto';
+
+/**
+ * Background image repeat options
+ */
+export type BackgroundRepeat = 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
+
+/**
+ * Background image attachment options
+ */
+export type BackgroundAttachment = 'scroll' | 'fixed';
+
+/**
+ * Theme background image configuration
+ */
+export interface ThemeBackground {
+  /** URL to external background image */
+  imageUrl?: string | null;
+  /** CSS background-position */
+  position: BackgroundPosition;
+  /** CSS background-size */
+  size: BackgroundSize;
+  /** CSS background-repeat */
+  repeat: BackgroundRepeat;
+  /** CSS background-attachment (scroll or fixed) */
+  attachment: BackgroundAttachment;
+  /** Overlay color with opacity (e.g., "rgba(0,0,0,0.5)") */
+  overlay?: string | null;
+}
+
+/**
+ * Background position options for UI dropdowns
+ */
+export const BACKGROUND_POSITION_OPTIONS: {
+  value: BackgroundPosition;
+  label: string;
+}[] = [
+  { value: 'center', label: 'Center' },
+  { value: 'top', label: 'Top' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
+  { value: 'top-left', label: 'Top Left' },
+  { value: 'top-right', label: 'Top Right' },
+  { value: 'bottom-left', label: 'Bottom Left' },
+  { value: 'bottom-right', label: 'Bottom Right' },
+];
+
+/**
+ * Background size options for UI dropdowns
+ */
+export const BACKGROUND_SIZE_OPTIONS: { value: BackgroundSize; label: string }[] = [
+  { value: 'cover', label: 'Cover (fill entire area)' },
+  { value: 'contain', label: 'Contain (fit within area)' },
+  { value: 'auto', label: 'Auto (original size)' },
+];
+
+/**
+ * Background repeat options for UI dropdowns
+ */
+export const BACKGROUND_REPEAT_OPTIONS: { value: BackgroundRepeat; label: string }[] = [
+  { value: 'no-repeat', label: 'No Repeat' },
+  { value: 'repeat', label: 'Repeat (tile)' },
+  { value: 'repeat-x', label: 'Repeat Horizontally' },
+  { value: 'repeat-y', label: 'Repeat Vertically' },
+];
+
+/**
+ * Background attachment options for UI dropdowns
+ */
+export const BACKGROUND_ATTACHMENT_OPTIONS: {
+  value: BackgroundAttachment;
+  label: string;
+  description: string;
+}[] = [
+  { value: 'fixed', label: 'Fixed', description: 'Background stays in place while scrolling' },
+  { value: 'scroll', label: 'Scroll', description: 'Background scrolls with content' },
+];
+
+/**
+ * Default background configuration
+ */
+export const DEFAULT_BACKGROUND: ThemeBackground = {
+  imageUrl: null,
+  position: 'center',
+  size: 'cover',
+  repeat: 'no-repeat',
+  attachment: 'fixed',
+  overlay: null,
+};
+
+/**
  * Complete theme preset definition
  */
 export interface ThemePreset {

@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasBackgroundImage = !!storefront.settings.theme.backgroundImageUrl;
 
   // Form state
   const [email, setEmail] = useState('');
@@ -114,7 +115,7 @@ export default function CheckoutPage() {
               Back to tickets
             </Link>
 
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className={`rounded-xl border border-border p-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
               <h2 className="text-xl font-heading font-bold mb-6">Your Information</h2>
 
               <form onSubmit={handleCheckout} className="space-y-4">
@@ -218,7 +219,7 @@ export default function CheckoutPage() {
           {/* Order Summary - Sticky */}
           <div className="lg:col-span-1">
             <div className="sticky top-4">
-              <div className="rounded-xl border border-border bg-card p-6">
+              <div className={`rounded-xl border border-border p-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
                 <h3 className="flex items-center gap-2 text-lg font-heading font-bold mb-4">
                   <ShoppingCart className="h-5 w-5" />
                   Order Summary

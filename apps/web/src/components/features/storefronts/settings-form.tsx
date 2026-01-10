@@ -1,6 +1,10 @@
 'use client';
 
 import {
+  BACKGROUND_ATTACHMENT_OPTIONS,
+  BACKGROUND_POSITION_OPTIONS,
+  BACKGROUND_REPEAT_OPTIONS,
+  BACKGROUND_SIZE_OPTIONS,
   getDefaultTheme,
   getThemePreset,
   THEME_CATEGORIES,
@@ -12,12 +16,14 @@ import {
   BarChart3,
   Eye,
   EyeOff,
+  ImageIcon,
   Loader2,
   Palette,
   RotateCcw,
   Save,
   Search,
   Share2,
+  Trash2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -104,6 +110,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
       fontHeading: settings?.theme?.fontHeading || defaultPreset.fonts.heading,
       fontBody: settings?.theme?.fontBody || defaultPreset.fonts.body,
       customCss: settings?.theme?.customCss || '',
+      // Background image settings
+      backgroundImageUrl: settings?.theme?.backgroundImageUrl || '',
+      backgroundPosition: settings?.theme?.backgroundPosition || 'center',
+      backgroundSize: settings?.theme?.backgroundSize || 'cover',
+      backgroundRepeat: settings?.theme?.backgroundRepeat || 'no-repeat',
+      backgroundAttachment: settings?.theme?.backgroundAttachment || 'fixed',
+      backgroundOverlay: settings?.theme?.backgroundOverlay || '',
     };
   };
 
@@ -115,13 +128,14 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
 
   /**
    * Apply a theme preset - updates all colors and fonts
+   * Preserves background image and custom CSS
    */
   const applyPreset = useCallback(
     (presetKey: string) => {
       const preset = getThemePreset(presetKey);
       if (!preset) return;
 
-      setTheme({
+      setTheme((prev) => ({
         preset: presetKey,
         primaryColor: preset.colors.primary,
         secondaryColor: preset.colors.secondary,
@@ -132,8 +146,15 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
         headerTextColor: preset.colors.headerText || '',
         fontHeading: preset.fonts.heading,
         fontBody: preset.fonts.body,
-        customCss: theme.customCss, // Preserve custom CSS
-      });
+        customCss: prev.customCss, // Preserve custom CSS
+        // Preserve background image settings
+        backgroundImageUrl: prev.backgroundImageUrl,
+        backgroundPosition: prev.backgroundPosition,
+        backgroundSize: prev.backgroundSize,
+        backgroundRepeat: prev.backgroundRepeat,
+        backgroundAttachment: prev.backgroundAttachment,
+        backgroundOverlay: prev.backgroundOverlay,
+      }));
       setIsCustomized(false);
 
       toast({
@@ -141,7 +162,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
         description: 'Colors and fonts updated. Remember to save your changes.',
       });
     },
-    [theme.customCss, toast]
+    [toast]
   );
 
   /**
@@ -264,6 +285,13 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
         fontHeading: theme.fontHeading,
         fontBody: theme.fontBody,
         customCss: theme.customCss,
+        // Background image settings - allow null to clear
+        backgroundImageUrl: theme.backgroundImageUrl || null,
+        backgroundPosition: theme.backgroundPosition,
+        backgroundSize: theme.backgroundSize,
+        backgroundRepeat: theme.backgroundRepeat,
+        backgroundAttachment: theme.backgroundAttachment,
+        backgroundOverlay: theme.backgroundOverlay || null,
       });
       if (Object.keys(themeData).length > 0) payload['theme'] = themeData;
 
@@ -941,6 +969,174 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Background Image */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-medium">Background Image</h3>
+                  </div>
+                  {theme.backgroundImageUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => updateThemeField('backgroundImageUrl', '')}
+                      className="text-xs text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="mr-1 h-3 w-3" />
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Add a background image to your storefront. Free tiers can link external images.
+                  Pro and Enterprise tiers can upload images via the Media library.
+                </p>
+
+                {/* Background Image Preview */}
+                {theme.backgroundImageUrl && (
+                  <div
+                    className="rounded-lg border overflow-hidden h-32 relative"
+                    style={{
+                      backgroundImage: `url(${theme.backgroundImageUrl})`,
+                      backgroundPosition: theme.backgroundPosition.replace('-', ' '),
+                      backgroundSize: theme.backgroundSize,
+                      backgroundRepeat: theme.backgroundRepeat,
+                      backgroundColor: theme.backgroundColor,
+                    }}
+                  >
+                    {theme.backgroundOverlay && (
+                      <div
+                        className="absolute inset-0"
+                        style={{ background: theme.backgroundOverlay }}
+                      />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span
+                        className="text-sm font-medium px-3 py-1 rounded bg-black/50"
+                        style={{ color: theme.textColor }}
+                      >
+                        Preview
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="backgroundImageUrl">Image URL</Label>
+                  <Input
+                    id="backgroundImageUrl"
+                    value={theme.backgroundImageUrl}
+                    onChange={(e) => updateThemeField('backgroundImageUrl', e.target.value)}
+                    placeholder="https://example.com/background.jpg"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Link to an external image or use the Media library to upload one.
+                  </p>
+                </div>
+
+                {theme.backgroundImageUrl && (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="backgroundPosition">Position</Label>
+                        <Select
+                          value={theme.backgroundPosition}
+                          onValueChange={(v) => updateThemeField('backgroundPosition', v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BACKGROUND_POSITION_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="backgroundSize">Size</Label>
+                        <Select
+                          value={theme.backgroundSize}
+                          onValueChange={(v) => updateThemeField('backgroundSize', v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BACKGROUND_SIZE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="backgroundRepeat">Repeat</Label>
+                        <Select
+                          value={theme.backgroundRepeat}
+                          onValueChange={(v) => updateThemeField('backgroundRepeat', v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BACKGROUND_REPEAT_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="backgroundAttachment">Scroll Behavior</Label>
+                        <Select
+                          value={theme.backgroundAttachment}
+                          onValueChange={(v) => updateThemeField('backgroundAttachment', v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BACKGROUND_ATTACHMENT_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                <div>
+                                  <div>{opt.label}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {opt.description}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="backgroundOverlay">Overlay Color</Label>
+                      <Input
+                        id="backgroundOverlay"
+                        value={theme.backgroundOverlay}
+                        onChange={(e) => updateThemeField('backgroundOverlay', e.target.value)}
+                        placeholder="rgba(0, 0, 0, 0.5)"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Add a semi-transparent overlay for better text readability. Example:{' '}
+                        <code className="bg-muted px-1 rounded">rgba(0, 0, 0, 0.5)</code> for a
+                        50% black overlay.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Custom CSS */}

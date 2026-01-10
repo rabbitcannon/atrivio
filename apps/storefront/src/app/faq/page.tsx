@@ -30,6 +30,7 @@ export default async function FaqsPage() {
   }, {});
 
   const categories = Object.keys(categorizedFaqs);
+  const hasBackgroundImage = !!storefront.settings.theme.backgroundImageUrl;
 
   return (
     <div className="min-h-screen py-16">
@@ -51,7 +52,7 @@ export default async function FaqsPage() {
                 {categorizedFaqs[category]?.map((faq) => (
                   <details
                     key={faq.id}
-                    className="group border border-border rounded-lg overflow-hidden"
+                    className={`group border border-border rounded-lg overflow-hidden ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : ''}`}
                   >
                     <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors">
                       <span className="font-medium pr-4">{faq.question}</span>

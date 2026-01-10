@@ -8,6 +8,7 @@ export function Footer() {
   const { attraction, navigation, settings } = useStorefront();
   const footerLinks = navigation.footer || [];
   const { social } = settings;
+  const hasBackgroundImage = !!settings.theme.backgroundImageUrl;
 
   const socialLinks = [
     { name: 'Facebook', url: social.facebook, icon: Facebook },
@@ -17,7 +18,7 @@ export function Footer() {
   ].filter((s) => s.url);
 
   return (
-    <footer className="border-t border-border bg-card">
+    <footer className={`border-t border-border ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-3">
           {/* Brand */}

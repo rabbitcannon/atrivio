@@ -109,6 +109,48 @@ class ThemeConfigDto {
   @IsOptional()
   @IsString()
   customCss?: string;
+
+  @ApiPropertyOptional({ description: 'URL to background image (external link or uploaded file)' })
+  @IsOptional()
+  @IsString()
+  backgroundImageUrl?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'CSS background-position',
+    enum: ['center', 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
+  })
+  @IsOptional()
+  @IsString()
+  backgroundPosition?: string;
+
+  @ApiPropertyOptional({
+    description: 'CSS background-size',
+    enum: ['cover', 'contain', 'auto'],
+  })
+  @IsOptional()
+  @IsString()
+  backgroundSize?: string;
+
+  @ApiPropertyOptional({
+    description: 'CSS background-repeat',
+    enum: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'],
+  })
+  @IsOptional()
+  @IsString()
+  backgroundRepeat?: string;
+
+  @ApiPropertyOptional({
+    description: 'CSS background-attachment (scroll or fixed)',
+    enum: ['scroll', 'fixed'],
+  })
+  @IsOptional()
+  @IsString()
+  backgroundAttachment?: string;
+
+  @ApiPropertyOptional({ description: 'Overlay color with opacity (e.g., rgba(0,0,0,0.5))' })
+  @IsOptional()
+  @IsString()
+  backgroundOverlay?: string | null;
 }
 
 class SocialLinksDto {
@@ -586,6 +628,12 @@ export interface ThemeConfigResponse {
   fontHeading: string | null;
   fontBody: string | null;
   customCss: string | null;
+  backgroundImageUrl: string | null;
+  backgroundPosition: string | null;
+  backgroundSize: string | null;
+  backgroundRepeat: string | null;
+  backgroundAttachment: string | null;
+  backgroundOverlay: string | null;
 }
 
 export interface SocialConfigResponse {

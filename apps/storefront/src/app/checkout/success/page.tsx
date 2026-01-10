@@ -21,6 +21,7 @@ export default function CheckoutSuccessPage() {
   const storefront = useStorefront();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  const hasBackgroundImage = !!storefront.settings.theme.backgroundImageUrl;
 
   const [isVerifying, setIsVerifying] = useState(true);
   const [verifiedOrder, setVerifiedOrder] = useState<VerifiedOrder | null>(null);
@@ -104,7 +105,7 @@ export default function CheckoutSuccessPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-6 mb-6">
+            <div className={`rounded-xl border border-border p-6 mb-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
               <p className="text-center text-muted-foreground">{error}</p>
               <p className="mt-4 text-center text-sm text-muted-foreground">
                 If your payment was successful, you should receive a confirmation email shortly. If
@@ -115,7 +116,7 @@ export default function CheckoutSuccessPage() {
             <div className="flex justify-center">
               <Link
                 href="/tickets"
-                className="rounded-lg border border-border bg-card px-6 py-3 font-semibold hover:bg-muted transition-colors"
+                className={`rounded-lg border border-border px-6 py-3 font-semibold hover:bg-muted transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
               >
                 Return to Tickets
               </Link>
@@ -141,7 +142,7 @@ export default function CheckoutSuccessPage() {
           </div>
 
           {/* Order Info Card */}
-          <div className="rounded-xl border border-border bg-card p-6 mb-6">
+          <div className={`rounded-xl border border-border p-6 mb-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
             <h2 className="text-lg font-heading font-bold mb-1">Order Confirmation</h2>
             <p className="text-sm text-muted-foreground mb-4">{storefront.attraction.name}</p>
 
@@ -201,7 +202,7 @@ export default function CheckoutSuccessPage() {
           </div>
 
           {/* What's Next */}
-          <div className="rounded-xl border border-border bg-card p-6 mb-6">
+          <div className={`rounded-xl border border-border p-6 mb-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
             <h2 className="flex items-center gap-2 text-lg font-heading font-bold mb-4">
               <Calendar className="h-5 w-5" />
               What&apos;s Next?
@@ -234,7 +235,7 @@ export default function CheckoutSuccessPage() {
           <div className="flex justify-center">
             <Link
               href="/tickets"
-              className="rounded-lg border border-border bg-card px-6 py-3 font-semibold hover:bg-muted transition-colors"
+              className={`rounded-lg border border-border px-6 py-3 font-semibold hover:bg-muted transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
             >
               Buy More Tickets
             </Link>

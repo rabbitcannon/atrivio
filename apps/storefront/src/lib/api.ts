@@ -27,6 +27,12 @@ export interface StorefrontSettings {
     fontHeading: string;
     fontBody: string;
     customCss: string | null;
+    backgroundImageUrl: string | null;
+    backgroundPosition: string | null;
+    backgroundSize: string | null;
+    backgroundRepeat: string | null;
+    backgroundAttachment: string | null;
+    backgroundOverlay: string | null;
   };
   social: {
     facebook: string | null;

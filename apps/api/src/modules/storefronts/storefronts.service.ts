@@ -103,6 +103,19 @@ export class StorefrontsService {
       if (dto.theme.fontHeading !== undefined) updateData['font_heading'] = dto.theme.fontHeading;
       if (dto.theme.fontBody !== undefined) updateData['font_body'] = dto.theme.fontBody;
       if (dto.theme.customCss !== undefined) updateData['custom_css'] = dto.theme.customCss;
+      // Background image fields
+      if (dto.theme.backgroundImageUrl !== undefined)
+        updateData['background_image_url'] = dto.theme.backgroundImageUrl;
+      if (dto.theme.backgroundPosition !== undefined)
+        updateData['background_position'] = dto.theme.backgroundPosition;
+      if (dto.theme.backgroundSize !== undefined)
+        updateData['background_size'] = dto.theme.backgroundSize;
+      if (dto.theme.backgroundRepeat !== undefined)
+        updateData['background_repeat'] = dto.theme.backgroundRepeat;
+      if (dto.theme.backgroundAttachment !== undefined)
+        updateData['background_attachment'] = dto.theme.backgroundAttachment;
+      if (dto.theme.backgroundOverlay !== undefined)
+        updateData['background_overlay'] = dto.theme.backgroundOverlay;
     }
 
     // Map social fields
@@ -1347,6 +1360,12 @@ export class StorefrontsService {
         fontHeading: row['font_heading'] as string | null,
         fontBody: row['font_body'] as string | null,
         customCss: row['custom_css'] as string | null,
+        backgroundImageUrl: row['background_image_url'] as string | null,
+        backgroundPosition: row['background_position'] as string | null,
+        backgroundSize: row['background_size'] as string | null,
+        backgroundRepeat: row['background_repeat'] as string | null,
+        backgroundAttachment: row['background_attachment'] as string | null,
+        backgroundOverlay: row['background_overlay'] as string | null,
       },
       social: {
         facebook: row['social_facebook'] as string | null,

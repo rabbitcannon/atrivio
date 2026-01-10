@@ -20,6 +20,7 @@ export function TicketSelector({ ticketTypes }: TicketSelectorProps) {
   const router = useRouter();
   const storefront = useStorefront();
   const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
+  const hasBackgroundImage = !!storefront.settings.theme.backgroundImageUrl;
 
   const updateQuantity = (ticketType: StorefrontTicketType, delta: number) => {
     setCart((prev) => {
@@ -102,7 +103,7 @@ export function TicketSelector({ ticketTypes }: TicketSelectorProps) {
                         : isPopular
                           ? 'border-2 border-storefront-primary'
                           : 'border-border'
-                    } bg-card`}
+                    } ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
                   >
                     {isPopular && !isInCart && (
                       <div className="absolute top-0 right-0 bg-storefront-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
@@ -207,7 +208,7 @@ export function TicketSelector({ ticketTypes }: TicketSelectorProps) {
       {/* Cart Summary - Sticky on desktop */}
       <div className="lg:col-span-1">
         <div className="sticky top-4">
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className={`rounded-xl border border-border p-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
             <h3 className="flex items-center gap-2 text-lg font-heading font-bold mb-4">
               <ShoppingCart className="h-5 w-5" />
               Your Cart

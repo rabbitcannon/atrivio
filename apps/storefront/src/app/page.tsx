@@ -19,6 +19,9 @@ export default async function HomePage() {
   const { faqs } = await getPublicFaqs(identifier);
   const featuredFaqs = faqs.filter((f) => f.isFeatured).slice(0, 4);
 
+  // Check if there's a background image set
+  const hasBackgroundImage = !!settings.theme.backgroundImageUrl;
+
   return (
     <div>
       {/* Hero Section */}
@@ -32,7 +35,10 @@ export default async function HomePage() {
             priority
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        {/* Only show gradient overlay if there's a hero image, not for page background */}
+        {settings.hero.imageUrl && (
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        )}
 
         <div className="relative z-10 container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-4">
@@ -66,7 +72,7 @@ export default async function HomePage() {
 
       {/* Description Section */}
       {settings.description && (
-        <section className="py-16 bg-card">
+        <section className={`py-16 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
           <div className="container mx-auto px-4 max-w-3xl text-center">
             <p className="text-lg text-muted-foreground leading-relaxed">{settings.description}</p>
           </div>
@@ -79,7 +85,7 @@ export default async function HomePage() {
           <div className="grid gap-6 md:grid-cols-3">
             <Link
               href="/tickets"
-              className="group flex flex-col items-center p-8 rounded-xl border border-border bg-card hover:border-storefront-primary transition-colors"
+              className={`group flex flex-col items-center p-8 rounded-xl border border-border hover:border-storefront-primary transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
             >
               <div className="w-16 h-16 rounded-full bg-storefront-primary/10 flex items-center justify-center mb-4 group-hover:bg-storefront-primary/20 transition-colors">
                 <Ticket className="h-8 w-8 text-storefront-primary" />
@@ -92,7 +98,7 @@ export default async function HomePage() {
 
             <Link
               href="/faqs"
-              className="group flex flex-col items-center p-8 rounded-xl border border-border bg-card hover:border-storefront-primary transition-colors"
+              className={`group flex flex-col items-center p-8 rounded-xl border border-border hover:border-storefront-primary transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
             >
               <div className="w-16 h-16 rounded-full bg-storefront-primary/10 flex items-center justify-center mb-4 group-hover:bg-storefront-primary/20 transition-colors">
                 <HelpCircle className="h-8 w-8 text-storefront-primary" />
@@ -105,7 +111,7 @@ export default async function HomePage() {
 
             <Link
               href="/contact"
-              className="group flex flex-col items-center p-8 rounded-xl border border-border bg-card hover:border-storefront-primary transition-colors"
+              className={`group flex flex-col items-center p-8 rounded-xl border border-border hover:border-storefront-primary transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
             >
               <div className="w-16 h-16 rounded-full bg-storefront-primary/10 flex items-center justify-center mb-4 group-hover:bg-storefront-primary/20 transition-colors">
                 <MapPin className="h-8 w-8 text-storefront-primary" />
@@ -121,7 +127,7 @@ export default async function HomePage() {
 
       {/* Featured FAQs */}
       {featuredFaqs.length > 0 && (
-        <section className="py-16 bg-card">
+        <section className={`py-16 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-heading font-bold text-center mb-8">
               Frequently Asked Questions
@@ -130,7 +136,7 @@ export default async function HomePage() {
               {featuredFaqs.map((faq) => (
                 <details
                   key={faq.id}
-                  className="group border border-border rounded-lg overflow-hidden"
+                  className={`group border border-border rounded-lg overflow-hidden ${hasBackgroundImage ? 'bg-card/60' : ''}`}
                 >
                   <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors">
                     <span className="font-medium">{faq.question}</span>
