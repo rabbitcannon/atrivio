@@ -10,9 +10,11 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getNotificationTemplates, resolveOrgId } from '@/lib/api';
 import type { NotificationChannel, NotificationTemplate } from '@/lib/api/types';
@@ -121,7 +123,7 @@ export default async function TemplatesPage({ params, searchParams }: TemplatesP
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <AnimatedPageHeader className="flex items-center gap-4">
         <Link href={`/${orgIdentifier}/notifications`}>
           <Button variant="ghost" size="icon" aria-label="Back to notifications">
             <ArrowLeft className="h-4 w-4" />
@@ -133,9 +135,10 @@ export default async function TemplatesPage({ params, searchParams }: TemplatesP
             Manage templates for email, SMS, push, and in-app notifications.
           </p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
-      <Tabs defaultValue="all" className="space-y-4">
+      <FadeIn delay={0.1}>
+        <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">All ({templates.length})</TabsTrigger>
           {channels.map((ch) => {
@@ -187,7 +190,8 @@ export default async function TemplatesPage({ params, searchParams }: TemplatesP
             )}
           </TabsContent>
         ))}
-      </Tabs>
+        </Tabs>
+      </FadeIn>
     </div>
   );
 }

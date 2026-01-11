@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { StaffEditForm } from '@/components/features/staff/staff-edit-form';
+import { FadeIn } from '@/components/ui/motion';
 import { getStaffMember, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -33,12 +35,14 @@ export default async function EditStaffPage({ params }: EditStaffPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
+      <AnimatedPageHeader>
         <h1 className="text-3xl font-bold">Edit Staff Profile</h1>
         <p className="text-muted-foreground">Update profile for {staffName}.</p>
-      </div>
+      </AnimatedPageHeader>
 
-      <StaffEditForm orgId={orgId} staff={staff} />
+      <FadeIn delay={0.1}>
+        <StaffEditForm orgId={orgId} staff={staff} />
+      </FadeIn>
     </div>
   );
 }

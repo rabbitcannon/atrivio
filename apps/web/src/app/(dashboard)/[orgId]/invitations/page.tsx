@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { InviteMemberDialog } from '@/components/features/organizations/invite-member-dialog';
+import { FadeIn } from '@/components/ui/motion';
 import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -22,20 +24,22 @@ export default async function InvitationsPage({ params }: InvitationsPageProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Invitations</h1>
           <p className="text-muted-foreground">Invite new members to your organization.</p>
         </div>
         <InviteMemberDialog orgId={orgId} />
-      </div>
+      </AnimatedPageHeader>
 
       {/* Pending invitations list */}
-      <div className="rounded-lg border bg-card">
-        <div className="p-6">
-          <p className="text-sm text-muted-foreground">No pending invitations.</p>
+      <FadeIn delay={0.1}>
+        <div className="rounded-lg border bg-card">
+          <div className="p-6">
+            <p className="text-sm text-muted-foreground">No pending invitations.</p>
+          </div>
         </div>
-      </div>
+      </FadeIn>
     </div>
   );
 }

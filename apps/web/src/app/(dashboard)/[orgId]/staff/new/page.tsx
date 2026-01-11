@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { StaffForm } from '@/components/features/staff/staff-form';
+import { FadeIn } from '@/components/ui/motion';
 import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -22,14 +24,16 @@ export default async function NewStaffPage({ params }: NewStaffPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
+      <AnimatedPageHeader>
         <h1 className="text-3xl font-bold">Invite Staff Member</h1>
         <p className="text-muted-foreground">
           Send an invitation to add a new staff member to your organization.
         </p>
-      </div>
+      </AnimatedPageHeader>
 
-      <StaffForm orgId={orgId} />
+      <FadeIn delay={0.1}>
+        <StaffForm orgId={orgId} />
+      </FadeIn>
     </div>
   );
 }

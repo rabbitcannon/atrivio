@@ -1,11 +1,13 @@
 'use client';
 
 import { Calendar, Clock, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +42,315 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
 
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+/**
+ * Loading skeleton for time slots page
+ */
+function TimeSlotsLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-36 mb-2" />
+          <Skeleton className="h-5 w-72" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-5 w-28 mb-1" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+            <Skeleton className="h-10 w-40" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header with action buttons
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="flex items-center justify-between">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex items-center justify-between"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated table card
+ */
+function AnimatedTableCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated empty state
+ */
+function AnimatedEmptyState({
+  shouldReduceMotion,
+  onCreateClick,
+  onBulkClick,
+}: {
+  shouldReduceMotion: boolean | null;
+  onCreateClick: () => void;
+  onBulkClick: () => void;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No time slots for this date.</p>
+        <div className="flex gap-2 justify-center mt-4">
+          <Button variant="outline" onClick={onBulkClick}>
+            Bulk Create Slots
+          </Button>
+          <Button onClick={onCreateClick}>Create Single Slot</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-12 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        No time slots for this date.
+      </motion.p>
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+        className="flex gap-2 justify-center mt-4"
+      >
+        <Button variant="outline" onClick={onBulkClick}>
+          Bulk Create Slots
+        </Button>
+        <Button onClick={onCreateClick}>Create Single Slot</Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/**
+ * Table row content component
+ */
+function TimeSlotRow({
+  slot,
+  formatTime,
+  formatPrice,
+  handleToggleActive,
+  handleDelete,
+}: {
+  slot: TimeSlot;
+  formatTime: (time: string) => string;
+  formatPrice: (cents: number) => string;
+  handleToggleActive: (slot: TimeSlot) => void;
+  handleDelete: (slot: TimeSlot) => void;
+}) {
+  return (
+    <>
+      <TableCell className="font-medium">
+        {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+      </TableCell>
+      <TableCell>{slot.attraction?.name || '—'}</TableCell>
+      <TableCell>
+        {slot.label || <span className="text-muted-foreground">—</span>}
+      </TableCell>
+      <TableCell className="text-right">
+        {slot.capacity ? (
+          <span
+            className={slot.booked_count >= slot.capacity ? 'text-destructive' : ''}
+          >
+            {slot.booked_count} / {slot.capacity}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">Unlimited</span>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        {slot.price_modifier !== 0 ? (
+          <span
+            className={slot.price_modifier > 0 ? 'text-green-600' : 'text-red-600'}
+          >
+            {formatPrice(slot.price_modifier)}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge variant={slot.is_active ? 'default' : 'secondary'}>
+          {slot.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleToggleActive(slot)}>
+              {slot.is_active ? 'Deactivate' : 'Activate'}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(slot)}
+              className="text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+    </>
+  );
+}
+
+/**
+ * Animated table row
+ */
+function AnimatedTimeSlotRow({
+  slot,
+  index,
+  formatTime,
+  formatPrice,
+  handleToggleActive,
+  handleDelete,
+  shouldReduceMotion,
+}: {
+  slot: TimeSlot;
+  index: number;
+  formatTime: (time: string) => string;
+  formatPrice: (cents: number) => string;
+  handleToggleActive: (slot: TimeSlot) => void;
+  handleDelete: (slot: TimeSlot) => void;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <TableRow>
+        <TimeSlotRow
+          slot={slot}
+          formatTime={formatTime}
+          formatPrice={formatPrice}
+          handleToggleActive={handleToggleActive}
+          handleDelete={handleDelete}
+        />
+      </TableRow>
+    );
+  }
+
+  return (
+    <motion.tr
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.25,
+        ease: EASE,
+        delay: index * 0.03,
+      }}
+      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+    >
+      <TimeSlotRow
+        slot={slot}
+        formatTime={formatTime}
+        formatPrice={formatPrice}
+        handleToggleActive={handleToggleActive}
+        handleDelete={handleDelete}
+      />
+    </motion.tr>
+  );
+}
+
 interface TimeSlot {
   id: string;
   date: string;
@@ -62,6 +373,7 @@ export default function TimeSlotsPage() {
   const params = useParams();
   const orgIdentifier = params['orgId'] as string;
   const { toast } = useToast();
+  const shouldReduceMotion = useReducedMotion();
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [attractions, setAttractions] = useState<Attraction[]>([]);
@@ -94,6 +406,25 @@ export default function TimeSlotsPage() {
     daysOfWeek: [5, 6], // Fri, Sat by default
   });
 
+  const loadTimeSlots = useCallback(async (orgId: string, date?: string) => {
+    try {
+      const dateFilter = date || selectedDate;
+      const response = await apiClient.get<{ data: TimeSlot[] }>(
+        `/organizations/${orgId}/time-slots?date=${dateFilter}&includeInactive=true`
+      );
+      setTimeSlots(response?.data || []);
+    } catch (_error) {}
+  }, [selectedDate]);
+
+  const loadAttractions = useCallback(async (orgId: string) => {
+    try {
+      const response = await apiClient.get<{ data: Attraction[] }>(
+        `/organizations/${orgId}/attractions`
+      );
+      setAttractions(response?.data || []);
+    } catch (_error) {}
+  }, []);
+
   useEffect(() => {
     async function init() {
       const orgId = await resolveOrgId(orgIdentifier);
@@ -105,25 +436,6 @@ export default function TimeSlotsPage() {
     }
     init();
   }, [orgIdentifier, loadAttractions, loadTimeSlots]);
-
-  async function loadTimeSlots(orgId: string, date?: string) {
-    try {
-      const dateFilter = date || selectedDate;
-      const response = await apiClient.get<{ data: TimeSlot[] }>(
-        `/organizations/${orgId}/time-slots?date=${dateFilter}&includeInactive=true`
-      );
-      setTimeSlots(response?.data || []);
-    } catch (_error) {}
-  }
-
-  async function loadAttractions(orgId: string) {
-    try {
-      const response = await apiClient.get<{ data: Attraction[] }>(
-        `/organizations/${orgId}/attractions`
-      );
-      setAttractions(response?.data || []);
-    } catch (_error) {}
-  }
 
   function formatTime(time: string): string {
     const [hours, minutes] = time.split(':');
@@ -280,16 +592,12 @@ export default function TimeSlotsPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <TimeSlotsLoadingSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <div>
           <h1 className="text-3xl font-bold">Time Slots</h1>
           <p className="text-muted-foreground">Manage timed entry slots and capacity limits.</p>
@@ -304,9 +612,9 @@ export default function TimeSlotsPage() {
             Add Slot
           </Button>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
-      <Card>
+      <AnimatedTableCard shouldReduceMotion={shouldReduceMotion}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -331,16 +639,11 @@ export default function TimeSlotsPage() {
         </CardHeader>
         <CardContent>
           {timeSlots.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No time slots for this date.</p>
-              <div className="flex gap-2 justify-center mt-4">
-                <Button variant="outline" onClick={openBulkDialog}>
-                  Bulk Create Slots
-                </Button>
-                <Button onClick={openCreateDialog}>Create Single Slot</Button>
-              </div>
-            </div>
+            <AnimatedEmptyState
+              shouldReduceMotion={shouldReduceMotion}
+              onCreateClick={openCreateDialog}
+              onBulkClick={openBulkDialog}
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -355,70 +658,23 @@ export default function TimeSlotsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {timeSlots.map((slot) => (
-                  <TableRow key={slot.id}>
-                    <TableCell className="font-medium">
-                      {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
-                    </TableCell>
-                    <TableCell>{slot.attraction?.name || '—'}</TableCell>
-                    <TableCell>
-                      {slot.label || <span className="text-muted-foreground">—</span>}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {slot.capacity ? (
-                        <span
-                          className={slot.booked_count >= slot.capacity ? 'text-destructive' : ''}
-                        >
-                          {slot.booked_count} / {slot.capacity}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">Unlimited</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {slot.price_modifier !== 0 ? (
-                        <span
-                          className={slot.price_modifier > 0 ? 'text-green-600' : 'text-red-600'}
-                        >
-                          {formatPrice(slot.price_modifier)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={slot.is_active ? 'default' : 'secondary'}>
-                        {slot.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleToggleActive(slot)}>
-                            {slot.is_active ? 'Deactivate' : 'Activate'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(slot)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                {timeSlots.map((slot, index) => (
+                  <AnimatedTimeSlotRow
+                    key={slot.id}
+                    slot={slot}
+                    index={index}
+                    formatTime={formatTime}
+                    formatPrice={formatPrice}
+                    handleToggleActive={handleToggleActive}
+                    handleDelete={handleDelete}
+                    shouldReduceMotion={shouldReduceMotion}
+                  />
                 ))}
               </TableBody>
             </Table>
           )}
         </CardContent>
-      </Card>
+      </AnimatedTableCard>
 
       {/* Single Slot Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

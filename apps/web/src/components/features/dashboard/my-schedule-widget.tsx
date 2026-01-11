@@ -9,6 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMySchedules, type Schedule, type ScheduleStatus } from '@/lib/api/client';
+import {
+  AnimatedEmptyState,
+  AnimatedListItem,
+  LoadingTransition,
+} from './animated-dashboard';
 
 interface MyScheduleWidgetProps {
   orgId: string;
@@ -87,59 +92,35 @@ export function MyScheduleWidget({ orgId, orgSlug }: MyScheduleWidgetProps) {
     fetchSchedules();
   }, [orgId]);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="h-4 w-4" />
-            My Schedule
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const skeletonContent = (
+    <div className="space-y-2">
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
+    </div>
+  );
 
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="h-4 w-4" />
-            My Schedule
-          </CardTitle>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/${orgSlug}/time/schedule`}>
-              <ExternalLink className="h-3 w-3" />
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {error && (
-          <Alert variant="destructive" className="py-2">
-            <AlertCircle className="h-3 w-3" />
-            <AlertDescription className="text-xs">{error}</AlertDescription>
-          </Alert>
-        )}
+  const mainContent = (
+    <div className="space-y-3">
+      {error && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-3 w-3" />
+          <AlertDescription className="text-xs">{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {!error && schedules.length === 0 && (
-          <div className="rounded-lg border bg-muted/50 p-4 text-center">
-            <Calendar className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-2 text-sm text-muted-foreground">No upcoming shifts</p>
-          </div>
-        )}
+      {!error && schedules.length === 0 && (
+        <AnimatedEmptyState
+          icon={<Calendar className="h-8 w-8" />}
+          title="No upcoming shifts"
+          description="Check back later for your schedule"
+          className="py-4"
+        />
+      )}
 
-        {schedules.map((schedule) => (
+      {schedules.map((schedule, index) => (
+        <AnimatedListItem key={schedule.id} index={index} staggerDelay={0.08}>
           <div
-            key={schedule.id}
-            className={`rounded-lg border p-3 ${isToday(schedule.date) ? 'border-primary bg-primary/5' : ''}`}
+            className={`rounded-lg border p-3 transition-colors ${isToday(schedule.date) ? 'border-primary bg-primary/5' : 'hover:bg-muted/30'}`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
@@ -178,13 +159,36 @@ export function MyScheduleWidget({ orgId, orgSlug }: MyScheduleWidgetProps) {
               </div>
             </div>
           </div>
-        ))}
+        </AnimatedListItem>
+      ))}
 
-        {schedules.length > 0 && (
-          <Button variant="outline" size="sm" className="w-full" asChild>
-            <Link href={`/${orgSlug}/time/schedule`}>View All Shifts</Link>
+      {schedules.length > 0 && (
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={`/${orgSlug}/time/schedule`}>View All Shifts</Link>
+        </Button>
+      )}
+    </div>
+  );
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Calendar className="h-4 w-4" />
+            My Schedule
+          </CardTitle>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/${orgSlug}/time/schedule`}>
+              <ExternalLink className="h-3 w-3" />
+            </Link>
           </Button>
-        )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <LoadingTransition isLoading={isLoading} skeleton={skeletonContent}>
+          {mainContent}
+        </LoadingTransition>
       </CardContent>
     </Card>
   );

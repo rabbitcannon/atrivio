@@ -16,8 +16,9 @@ import {
   Tag,
   Trash2,
 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,6 +74,150 @@ const TYPE_CONFIG: Record<
   promo: { label: 'Promotion', variant: 'outline', icon: Tag },
 };
 
+// Animation constants
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+// Animation components
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: ReactNode;
+  shouldReduceMotion: boolean;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="space-y-4">{children}</div>;
+  }
+  return (
+    <motion.div
+      className="space-y-4"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedStatsGrid({
+  children,
+  shouldReduceMotion,
+}: {
+  children: ReactNode;
+  shouldReduceMotion: boolean;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="grid gap-4 md:grid-cols-3">{children}</div>;
+  }
+  return (
+    <motion.div
+      className="grid gap-4 md:grid-cols-3"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedStatCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: ReactNode;
+  shouldReduceMotion: boolean;
+}) {
+  if (shouldReduceMotion) {
+    return <>{children}</>;
+  }
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 15 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedCard({
+  children,
+  shouldReduceMotion,
+  delay = 0.15,
+}: {
+  children: ReactNode;
+  shouldReduceMotion: boolean;
+  delay?: number;
+}) {
+  if (shouldReduceMotion) {
+    return <>{children}</>;
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedAnnouncementRow({
+  children,
+  shouldReduceMotion,
+  index,
+}: {
+  children: ReactNode;
+  shouldReduceMotion: boolean;
+  index: number;
+}) {
+  if (shouldReduceMotion) {
+    return <>{children}</>;
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, ease: EASE, delay: 0.2 + index * 0.05 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedEmptyState({
+  children,
+  shouldReduceMotion,
+}: {
+  children: ReactNode;
+  shouldReduceMotion: boolean;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="text-center py-12">{children}</div>;
+  }
+  return (
+    <motion.div
+      className="text-center py-12"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.2 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 interface FormData {
   title: string;
   content: string;
@@ -100,6 +245,7 @@ export default function StorefrontAnnouncementsPage() {
   const orgIdentifier = params['orgId'] as string;
   const attractionId = params['attractionId'] as string;
   const { toast } = useToast();
+  const shouldReduceMotion = useReducedMotion() ?? false;
 
   const [announcements, setAnnouncements] = useState<StorefrontAnnouncement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -297,7 +443,7 @@ export default function StorefrontAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <Breadcrumb items={breadcrumbs} />
         <div className="flex items-center justify-between">
           <div>
@@ -311,73 +457,84 @@ export default function StorefrontAnnouncementsPage() {
             Create Announcement
           </Button>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeAnnouncements.length}</div>
-            <p className="text-xs text-muted-foreground">Currently showing</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{scheduledAnnouncements.length}</div>
-            <p className="text-xs text-muted-foreground">Future announcements</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{announcements.length}</div>
-            <p className="text-xs text-muted-foreground">All announcements</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AnimatedStatsGrid shouldReduceMotion={shouldReduceMotion}>
+        <AnimatedStatCard shouldReduceMotion={shouldReduceMotion}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Active</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeAnnouncements.length}</div>
+              <p className="text-xs text-muted-foreground">Currently showing</p>
+            </CardContent>
+          </Card>
+        </AnimatedStatCard>
+        <AnimatedStatCard shouldReduceMotion={shouldReduceMotion}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{scheduledAnnouncements.length}</div>
+              <p className="text-xs text-muted-foreground">Future announcements</p>
+            </CardContent>
+          </Card>
+        </AnimatedStatCard>
+        <AnimatedStatCard shouldReduceMotion={shouldReduceMotion}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{announcements.length}</div>
+              <p className="text-xs text-muted-foreground">All announcements</p>
+            </CardContent>
+          </Card>
+        </AnimatedStatCard>
+      </AnimatedStatsGrid>
 
       {/* Announcements List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5" />
-            All Announcements
-          </CardTitle>
-          <CardDescription>{announcements.length} total announcements</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {announcements.length === 0 ? (
-            <div className="text-center py-12">
-              <Megaphone className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-semibold mb-2">No announcements yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Create announcements to inform your visitors about news, promotions, or alerts.
-              </p>
-              <Button onClick={openCreateDialog}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create First Announcement
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {announcements.map((announcement) => {
-                const typeConfig = TYPE_CONFIG[announcement.type] || TYPE_CONFIG.info;
-                const TypeIcon = typeConfig.icon;
-                const currentlyActive = isCurrentlyActive(announcement);
+      <AnimatedCard shouldReduceMotion={shouldReduceMotion} delay={0.15}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5" />
+              All Announcements
+            </CardTitle>
+            <CardDescription>{announcements.length} total announcements</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {announcements.length === 0 ? (
+              <AnimatedEmptyState shouldReduceMotion={shouldReduceMotion}>
+                <Megaphone className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-semibold mb-2">No announcements yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create announcements to inform your visitors about news, promotions, or alerts.
+                </p>
+                <Button onClick={openCreateDialog}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create First Announcement
+                </Button>
+              </AnimatedEmptyState>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map((announcement, index) => {
+                  const typeConfig = TYPE_CONFIG[announcement.type] || TYPE_CONFIG.info;
+                  const TypeIcon = typeConfig.icon;
+                  const currentlyActive = isCurrentlyActive(announcement);
 
-                return (
-                  <div
-                    key={announcement.id}
-                    className={`p-4 rounded-lg border ${!currentlyActive ? 'opacity-60' : ''}`}
-                  >
+                  return (
+                    <AnimatedAnnouncementRow
+                      key={announcement.id}
+                      shouldReduceMotion={shouldReduceMotion}
+                      index={index}
+                    >
+                      <div
+                        className={`p-4 rounded-lg border ${!currentlyActive ? 'opacity-60' : ''}`}
+                      >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
                         <div className="p-2 bg-muted rounded-lg">
@@ -449,14 +606,16 @@ export default function StorefrontAnnouncementsPage() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
+                  </AnimatedAnnouncementRow>
                 );
               })}
             </div>
           )}
         </CardContent>
       </Card>
+    </AnimatedCard>
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

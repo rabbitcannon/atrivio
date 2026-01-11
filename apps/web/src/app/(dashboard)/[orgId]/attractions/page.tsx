@@ -1,7 +1,12 @@
 import { AlertCircle, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { AttractionCard } from '@/components/features/attractions/attraction-card';
+import {
+  AnimatedAttractionsEmpty,
+  AnimatedAttractionsGrid,
+  AnimatedPageHeader,
+  AttractionCard,
+} from '@/components/features/attractions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { getAttractions, resolveOrgId } from '@/lib/api';
@@ -30,7 +35,7 @@ export default async function AttractionsPage({ params }: AttractionsPageProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Attractions</h1>
           <p className="text-muted-foreground">Manage your attractions, zones, and seasons.</p>
@@ -41,7 +46,7 @@ export default async function AttractionsPage({ params }: AttractionsPageProps) 
             Add Attraction
           </a>
         </Button>
-      </div>
+      </AnimatedPageHeader>
 
       {error && (
         <Alert variant="destructive">
@@ -55,7 +60,7 @@ export default async function AttractionsPage({ params }: AttractionsPageProps) 
 
       {/* Attractions Grid */}
       {attractions.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <AnimatedAttractionsGrid>
           {attractions.map((attraction) => (
             <AttractionCard
               key={attraction.id}
@@ -70,22 +75,11 @@ export default async function AttractionsPage({ params }: AttractionsPageProps) 
               orgId={orgIdentifier}
             />
           ))}
-        </div>
+        </AnimatedAttractionsGrid>
       )}
 
       {!error && attractions.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-12 text-center">
-          <h3 className="text-lg font-medium">No attractions yet</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Get started by creating your first attraction.
-          </p>
-          <Button asChild className="mt-4">
-            <a href={`/${orgIdentifier}/attractions/new`}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Attraction
-            </a>
-          </Button>
-        </div>
+        <AnimatedAttractionsEmpty orgId={orgIdentifier} />
       )}
     </div>
   );

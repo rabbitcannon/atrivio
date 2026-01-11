@@ -4,8 +4,10 @@ import { ArrowLeft, Mail, MessageSquare, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -105,7 +107,7 @@ export default function SendNotificationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <AnimatedPageHeader className="flex items-center gap-4">
         <Link href={`/${orgId}/notifications`}>
           <Button variant="ghost" size="icon" aria-label="Back to notifications">
             <ArrowLeft className="h-4 w-4" />
@@ -115,9 +117,10 @@ export default function SendNotificationPage() {
           <h1 className="text-3xl font-bold">Send Notification</h1>
           <p className="text-muted-foreground">Send a direct email or SMS notification.</p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
-      <Card className="max-w-2xl">
+      <FadeIn delay={0.1}>
+        <Card className="max-w-2xl">
         <CardHeader>
           <CardTitle>Compose Notification</CardTitle>
           <CardDescription>
@@ -241,29 +244,32 @@ export default function SendNotificationPage() {
             </div>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </FadeIn>
 
       {/* Tips */}
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-lg">Tips</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            <strong>Email:</strong> Requires SendGrid API key configured in environment variables.
-          </p>
-          <p>
-            <strong>SMS:</strong> Requires Twilio credentials configured in environment variables.
-          </p>
-          <p>
-            <strong>Templates:</strong> For repeated notifications, create a template for
-            consistency.
-          </p>
-          <p>
-            <strong>Bulk sending:</strong> Use the API directly for sending to multiple recipients.
-          </p>
-        </CardContent>
-      </Card>
+      <FadeIn delay={0.15}>
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <CardTitle className="text-lg">Tips</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              <strong>Email:</strong> Requires SendGrid API key configured in environment variables.
+            </p>
+            <p>
+              <strong>SMS:</strong> Requires Twilio credentials configured in environment variables.
+            </p>
+            <p>
+              <strong>Templates:</strong> For repeated notifications, create a template for
+              consistency.
+            </p>
+            <p>
+              <strong>Bulk sending:</strong> Use the API directly for sending to multiple recipients.
+            </p>
+          </CardContent>
+        </Card>
+      </FadeIn>
     </div>
   );
 }

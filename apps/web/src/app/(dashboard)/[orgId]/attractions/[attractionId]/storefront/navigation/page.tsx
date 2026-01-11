@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import {
   getAttraction,
   getStorefrontNavigation,
@@ -321,44 +323,51 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
     <div className="space-y-6">
       <div className="space-y-4">
         <Breadcrumb items={breadcrumbs} />
-        <div className="flex items-center justify-between">
+        <AnimatedPageHeader className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Navigation</h1>
             <p className="text-muted-foreground">Configure header and footer navigation menus.</p>
           </div>
           <NavItemDialog pages={pages} onSave={handleAddNavItem} />
-        </div>
+        </AnimatedPageHeader>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Header Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{headerItems.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Footer Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{footerItems.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Dropdown Children</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalDropdownItems}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <StaggerContainer className="grid gap-4 md:grid-cols-3" staggerDelay={0.05} delayChildren={0.1}>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Header Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{headerItems.length}</div>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Footer Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{footerItems.length}</div>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Dropdown Children</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalDropdownItems}</div>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+      </StaggerContainer>
 
       {/* Header Navigation */}
+      <FadeIn delay={0.15}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -407,8 +416,10 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
           )}
         </CardContent>
       </Card>
+      </FadeIn>
 
       {/* Footer Navigation */}
+      <FadeIn delay={0.2}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -455,8 +466,10 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
           )}
         </CardContent>
       </Card>
+      </FadeIn>
 
       {/* Tips */}
+      <FadeIn delay={0.25}>
       <Card>
         <CardHeader>
           <CardTitle>Navigation Tips</CardTitle>
@@ -476,6 +489,7 @@ export default async function StorefrontNavigationPage({ params }: NavigationPag
           </p>
         </CardContent>
       </Card>
+      </FadeIn>
     </div>
   );
 }

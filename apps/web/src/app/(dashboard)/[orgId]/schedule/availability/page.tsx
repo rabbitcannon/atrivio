@@ -1,29 +1,76 @@
+'use client';
+
 import { ArrowLeft } from 'lucide-react';
-import type { Metadata } from 'next';
+import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { AvailabilityMatrix } from '@/components/features/scheduling';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId } from '@/lib/api';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const metadata: Metadata = {
-  title: 'Staff Availability',
-};
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
 
-interface AvailabilityPageProps {
-  params: Promise<{ orgId: string }>;
-}
-
-export default async function AvailabilityPage({ params }: AvailabilityPageProps) {
-  const { orgId: orgIdentifier } = await params;
-
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
-    notFound();
-  }
-
+/**
+ * Loading skeleton for availability page
+ */
+function AvailabilityPageLoadingSkeleton() {
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <div>
+          <Skeleton className="h-9 w-44 mb-2" />
+          <Skeleton className="h-5 w-72" />
+        </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-6 w-40" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-10" />
+              <Skeleton className="h-10 w-10" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-8 gap-2">
+              <Skeleton className="h-10 w-full" />
+              {[...Array(7)].map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="grid grid-cols-8 gap-2">
+                <Skeleton className="h-12 w-full" />
+                {[...Array(7)].map((_, j) => (
+                  <Skeleton key={j} className="h-12 w-full" />
+                ))}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header with back button
+ */
+function AnimatedPageHeader({
+  orgIdentifier,
+  shouldReduceMotion,
+}: {
+  orgIdentifier: string;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return (
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href={`/${orgIdentifier}/schedule`}>
@@ -35,8 +82,71 @@ export default async function AvailabilityPage({ params }: AvailabilityPageProps
           <p className="text-muted-foreground">View team availability and time-off requests.</p>
         </div>
       </div>
+    );
+  }
 
-      <AvailabilityMatrix orgId={orgId} />
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex items-center gap-4"
+    >
+      <Button variant="ghost" size="icon" asChild>
+        <Link href={`/${orgIdentifier}/schedule`}>
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+      </Button>
+      <div>
+        <h1 className="text-3xl font-bold">Staff Availability</h1>
+        <p className="text-muted-foreground">View team availability and time-off requests.</p>
+      </div>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated content wrapper
+ */
+function AnimatedContent({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <>{children}</>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export default function AvailabilityPage() {
+  const params = useParams();
+  const shouldReduceMotion = useReducedMotion();
+  const orgIdentifier = params['orgId'] as string;
+
+  return (
+    <div className="space-y-6">
+      <AnimatedPageHeader
+        orgIdentifier={orgIdentifier}
+        shouldReduceMotion={shouldReduceMotion}
+      />
+
+      <AnimatedContent shouldReduceMotion={shouldReduceMotion}>
+        <Suspense fallback={<AvailabilityPageLoadingSkeleton />}>
+          <AvailabilityMatrix orgId={orgIdentifier} />
+        </Suspense>
+      </AnimatedContent>
     </div>
   );
 }

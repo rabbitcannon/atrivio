@@ -2,10 +2,12 @@ import { Globe } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { StorefrontSettingsForm } from '@/components/features/storefronts/settings-form';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import {
   getAttraction,
   getStorefrontDomains,
@@ -66,7 +68,7 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
     <div className="space-y-6">
       <div className="space-y-4">
         <Breadcrumb items={breadcrumbs} />
-        <div className="flex items-center justify-between">
+        <AnimatedPageHeader className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Storefront Settings</h1>
             <p className="text-muted-foreground">
@@ -76,11 +78,12 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
           <Badge variant={settings?.isPublished ? 'default' : 'secondary'}>
             {settings?.isPublished ? 'Published' : 'Draft'}
           </Badge>
-        </div>
+        </AnimatedPageHeader>
       </div>
 
       {/* Domain Info (read-only, configured elsewhere) */}
-      <Card>
+      <FadeIn delay={0.1}>
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
@@ -115,10 +118,13 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
             section.
           </p>
         </CardContent>
-      </Card>
+        </Card>
+      </FadeIn>
 
       {/* Editable Settings Form */}
-      <StorefrontSettingsForm orgId={orgId} attractionId={attractionId} settings={settings} />
+      <FadeIn delay={0.15}>
+        <StorefrontSettingsForm orgId={orgId} attractionId={attractionId} settings={settings} />
+      </FadeIn>
     </div>
   );
 }

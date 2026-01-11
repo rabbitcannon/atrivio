@@ -1,10 +1,12 @@
 import { AlertCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { SeasonForm } from '@/components/features/attractions/season-form';
 import { SeasonsList } from '@/components/features/attractions/seasons-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { FadeIn } from '@/components/ui/motion';
 import { getAttraction, getAttractionSeasons, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -58,25 +60,27 @@ export default async function SeasonsPage({ params }: SeasonsPageProps) {
     <div className="space-y-6">
       <div className="space-y-2">
         <Breadcrumb items={breadcrumbs} />
-        <div>
+        <AnimatedPageHeader>
           <h1 className="text-3xl font-bold tracking-tight">Seasons</h1>
           <p className="text-muted-foreground">Manage operating seasons for {attraction.name}.</p>
-        </div>
+        </AnimatedPageHeader>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Season List */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">All Seasons ({seasons.length})</h2>
-          <SeasonsList orgId={orgId} attractionId={attractionId} seasons={seasons} />
-        </div>
+      <FadeIn delay={0.1}>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Season List */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">All Seasons ({seasons.length})</h2>
+            <SeasonsList orgId={orgId} attractionId={attractionId} seasons={seasons} />
+          </div>
 
-        {/* Add Season Form */}
-        <div>
-          <h2 className="mb-4 text-lg font-semibold">Add Season</h2>
-          <SeasonForm orgId={orgId} attractionId={attractionId} />
+          {/* Add Season Form */}
+          <div>
+            <h2 className="mb-4 text-lg font-semibold">Add Season</h2>
+            <SeasonForm orgId={orgId} attractionId={attractionId} />
+          </div>
         </div>
-      </div>
+      </FadeIn>
     </div>
   );
 }

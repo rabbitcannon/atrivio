@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { FadeIn } from '@/components/ui/motion';
 import {
   getAttraction,
   getStorefrontNavigation,
@@ -141,13 +143,19 @@ export default async function EditStorefrontPage({ params }: EditPageProps) {
   return (
     <div className="container py-6 space-y-6">
       <Breadcrumb items={breadcrumbs} />
-      <PageEditorForm
-        orgId={orgIdentifier}
-        attractionId={attractionId}
-        attractionSlug={attractionSlug}
-        page={page}
-        onSave={handleSave}
-      />
+      <AnimatedPageHeader>
+        <h1 className="text-3xl font-bold tracking-tight">Edit Page</h1>
+        <p className="text-muted-foreground">Update the content and settings for this page.</p>
+      </AnimatedPageHeader>
+      <FadeIn delay={0.1}>
+        <PageEditorForm
+          orgId={orgIdentifier}
+          attractionId={attractionId}
+          attractionSlug={attractionSlug}
+          page={page}
+          onSave={handleSave}
+        />
+      </FadeIn>
     </div>
   );
 }

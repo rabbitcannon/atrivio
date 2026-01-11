@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMyTimeStatus, getStaffMember, getTimeEntries } from '@/lib/api/client';
+import { AnimatedNumber, LoadingTransition } from './animated-dashboard';
 
 interface MyHoursWidgetProps {
   orgId: string;
@@ -102,23 +103,103 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
     fetchHours();
   }, [orgId]);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4" />
-            My Hours
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-20 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
   const estimatedPay = hourlyRate && totalHours > 0 ? Math.round(hourlyRate * totalHours) : null;
+
+  const skeletonContent = <Skeleton className="h-20 w-full" />;
+
+  const mainContent = (
+    <div className="space-y-4">
+      {error && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-3 w-3" />
+          <AlertDescription className="text-xs">{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {!error && (
+        <>
+          {/* Hours This Week */}
+          <div className="rounded-lg border bg-muted/50 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">This Week</p>
+                <p className="text-2xl font-bold mt-1">
+                  {totalHours > 0 ? (
+                    <>
+                      <AnimatedNumber
+                        value={Math.floor(totalHours)}
+                        duration={0.8}
+                        formatFn={(v) => Math.round(v).toString()}
+                      />
+                      h
+                      {totalHours % 1 > 0 && (
+                        <>
+                          {' '}
+                          <AnimatedNumber
+                            value={Math.round((totalHours % 1) * 60)}
+                            duration={0.8}
+                            formatFn={(v) => Math.round(v).toString()}
+                          />
+                          m
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    '0h'
+                  )}
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-muted-foreground" />
+            </div>
+            {pendingApproval > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {pendingApproval} {pendingApproval === 1 ? 'entry' : 'entries'} pending approval
+              </p>
+            )}
+          </div>
+
+          {/* Estimated Pay */}
+          {estimatedPay !== null && (
+            <div className="rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-green-600 dark:text-green-400 uppercase tracking-wide">
+                    Estimated Pay
+                  </p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300 mt-1">
+                    $
+                    <AnimatedNumber
+                      value={estimatedPay / 100}
+                      duration={1}
+                      formatFn={(v) => v.toFixed(2)}
+                    />
+                  </p>
+                </div>
+                <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
+              </div>
+              {hourlyRate && (
+                <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-2">
+                  {formatMoney(hourlyRate)}/hr × {formatHours(totalHours)}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* No pay rate set */}
+          {hourlyRate === null && totalHours > 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              Pay rate not set. Contact your manager.
+            </p>
+          )}
+
+          {/* No hours this week */}
+          {totalHours === 0 && (
+            <p className="text-xs text-muted-foreground text-center">No hours logged this week</p>
+          )}
+        </>
+      )}
+    </div>
+  );
 
   return (
     <Card>
@@ -135,69 +216,10 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {error && (
-          <Alert variant="destructive" className="py-2">
-            <AlertCircle className="h-3 w-3" />
-            <AlertDescription className="text-xs">{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {!error && (
-          <>
-            {/* Hours This Week */}
-            <div className="rounded-lg border bg-muted/50 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">This Week</p>
-                  <p className="text-2xl font-bold mt-1">
-                    {totalHours > 0 ? formatHours(totalHours) : '0h'}
-                  </p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-muted-foreground" />
-              </div>
-              {pendingApproval > 0 && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  {pendingApproval} {pendingApproval === 1 ? 'entry' : 'entries'} pending approval
-                </p>
-              )}
-            </div>
-
-            {/* Estimated Pay */}
-            {estimatedPay !== null && (
-              <div className="rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-green-600 dark:text-green-400 uppercase tracking-wide">
-                      Estimated Pay
-                    </p>
-                    <p className="text-2xl font-bold text-green-700 dark:text-green-300 mt-1">
-                      {formatMoney(estimatedPay)}
-                    </p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
-                {hourlyRate && (
-                  <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-2">
-                    {formatMoney(hourlyRate)}/hr × {formatHours(totalHours)}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* No pay rate set */}
-            {hourlyRate === null && totalHours > 0 && (
-              <p className="text-xs text-muted-foreground text-center">
-                Pay rate not set. Contact your manager.
-              </p>
-            )}
-
-            {/* No hours this week */}
-            {totalHours === 0 && (
-              <p className="text-xs text-muted-foreground text-center">No hours logged this week</p>
-            )}
-          </>
-        )}
+      <CardContent>
+        <LoadingTransition isLoading={isLoading} skeleton={skeletonContent}>
+          {mainContent}
+        </LoadingTransition>
       </CardContent>
     </Card>
   );

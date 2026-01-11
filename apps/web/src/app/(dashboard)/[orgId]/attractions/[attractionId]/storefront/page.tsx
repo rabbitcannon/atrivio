@@ -15,10 +15,12 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import {
   getAttraction,
   getStorefrontAnnouncements,
@@ -167,7 +169,7 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
     <div className="space-y-6">
       <div className="space-y-4">
         <Breadcrumb items={breadcrumbs} />
-        <div className="flex items-center justify-between">
+        <AnimatedPageHeader className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Storefront</h1>
             <p className="text-muted-foreground">
@@ -186,54 +188,62 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
               </Button>
             )}
           </div>
-        </div>
+        </AnimatedPageHeader>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Pages</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publishedPages.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {pages.length} total ({pages.length - publishedPages.length} drafts)
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Domains</CardTitle>
-            <Link2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeDomains.length}</div>
-            <p className="text-xs text-muted-foreground">Active domains</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">FAQs</CardTitle>
-            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeFaqs.length}</div>
-            <p className="text-xs text-muted-foreground">Active questions</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Announcements</CardTitle>
-            <Megaphone className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeAnnouncements.length}</div>
-            <p className="text-xs text-muted-foreground">Active announcements</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StaggerContainer className="grid gap-4 md:grid-cols-4" staggerDelay={0.05} delayChildren={0.1}>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Pages</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{publishedPages.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {pages.length} total ({pages.length - publishedPages.length} drafts)
+              </p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Domains</CardTitle>
+              <Link2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeDomains.length}</div>
+              <p className="text-xs text-muted-foreground">Active domains</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">FAQs</CardTitle>
+              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeFaqs.length}</div>
+              <p className="text-xs text-muted-foreground">Active questions</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Announcements</CardTitle>
+              <Megaphone className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeAnnouncements.length}</div>
+              <p className="text-xs text-muted-foreground">Active announcements</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+      </StaggerContainer>
 
       {/* Status Banner */}
       {settings && (
@@ -307,25 +317,28 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
       )}
 
       {/* Navigation Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <StaggerContainer className="grid gap-4 md:grid-cols-3" staggerDelay={0.06} delayChildren={0.15}>
         {NAV_ITEMS.map((item) => (
-          <Link key={item.href} href={`${basePath}/${item.href}`}>
-            <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <item.icon className="h-5 w-5" />
-                  {item.title}
-                </CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
+          <StaggerItem key={item.href}>
+            <Link href={`${basePath}/${item.href}`} className="block h-full">
+              <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <item.icon className="h-5 w-5" />
+                    {item.title}
+                  </CardTitle>
+                  <CardDescription>{item.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerContainer>
 
       {/* Domain Status */}
       {domains.length > 0 && (
-        <Card>
+        <FadeIn delay={0.2}>
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
@@ -372,7 +385,8 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
               )}
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </FadeIn>
       )}
     </div>
   );

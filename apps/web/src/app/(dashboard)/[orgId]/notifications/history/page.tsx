@@ -15,9 +15,11 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import {
   Table,
   TableBody,
@@ -131,7 +133,7 @@ export default async function HistoryPage({ params, searchParams }: HistoryPageP
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <AnimatedPageHeader className="flex items-center gap-4">
         <Link href={`/${orgIdentifier}/notifications`}>
           <Button variant="ghost" size="icon" aria-label="Back to notifications">
             <ArrowLeft className="h-4 w-4" />
@@ -143,10 +145,11 @@ export default async function HistoryPage({ params, searchParams }: HistoryPageP
             View sent notifications and their delivery status.
           </p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Filters */}
-      <Card>
+      <FadeIn delay={0.1}>
+        <Card>
         <CardHeader>
           <CardTitle className="text-lg">Filters</CardTitle>
         </CardHeader>
@@ -176,10 +179,12 @@ export default async function HistoryPage({ params, searchParams }: HistoryPageP
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </FadeIn>
 
       {/* History Table */}
-      <Card>
+      <FadeIn delay={0.15}>
+        <Card>
         <CardHeader>
           <CardTitle>Recent Notifications</CardTitle>
           <CardDescription>
@@ -221,7 +226,8 @@ export default async function HistoryPage({ params, searchParams }: HistoryPageP
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </FadeIn>
     </div>
   );
 }

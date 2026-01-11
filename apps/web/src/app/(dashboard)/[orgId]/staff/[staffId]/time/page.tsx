@@ -1,8 +1,10 @@
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { TimeManager } from '@/components/features/staff/time-manager';
 import { Button } from '@/components/ui/button';
+import { FadeIn } from '@/components/ui/motion';
 import { getStaffMember, resolveOrgId } from '@/lib/api';
 import { createClient } from '@/lib/supabase/server';
 
@@ -51,7 +53,7 @@ export default async function TimePage({ params }: TimePageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <AnimatedPageHeader className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <a href={`/${orgIdentifier}/staff/${staffId}`}>
             <ArrowLeft className="h-4 w-4" />
@@ -62,14 +64,16 @@ export default async function TimePage({ params }: TimePageProps) {
           <h1 className="text-3xl font-bold">Time Tracking</h1>
           <p className="text-muted-foreground">View and manage time entries.</p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
-      <TimeManager
-        orgId={orgId}
-        staffId={staffId}
-        timeSummary={timeSummary}
-        canApprove={canApprove}
-      />
+      <FadeIn delay={0.1}>
+        <TimeManager
+          orgId={orgId}
+          staffId={staffId}
+          timeSummary={timeSummary}
+          canApprove={canApprove}
+        />
+      </FadeIn>
     </div>
   );
 }

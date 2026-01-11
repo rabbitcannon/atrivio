@@ -12,8 +12,9 @@ import {
   PowerOff,
   Trash2,
 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -64,10 +66,367 @@ import {
 } from '@/lib/api/client';
 import type { AttractionListItem, CheckInStation, CreateStationRequest } from '@/lib/api/types';
 
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+/**
+ * Loading skeleton for stations page
+ */
+function StationsPageLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Skeleton className="h-9 w-48 mb-2" />
+          <Skeleton className="h-5 w-80" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-10 w-[200px]" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-5" />
+            <Skeleton className="h-6 w-36" />
+          </div>
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Station</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Device ID</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Today&apos;s Count</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[1, 2, 3, 4].map((i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-5 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-28" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-20" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-5 w-8 ml-auto" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
+                      <Skeleton className="h-6 w-10" />
+                      <Skeleton className="h-8 w-8" />
+                      <Skeleton className="h-8 w-8" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated table card
+ */
+function AnimatedTableCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated table row
+ */
+function AnimatedStationRow({
+  station,
+  index,
+  shouldReduceMotion,
+  onToggleActive,
+  onEdit,
+  onDelete,
+}: {
+  station: CheckInStation;
+  index: number;
+  shouldReduceMotion: boolean | null;
+  onToggleActive: (station: CheckInStation) => void;
+  onEdit: (station: CheckInStation) => void;
+  onDelete: (station: CheckInStation) => void;
+}) {
+  const content = (
+    <>
+      <TableCell className="font-medium">{station.name}</TableCell>
+      <TableCell>
+        {station.location ? (
+          <div className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {station.location}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">--</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <code className="text-xs bg-muted px-1 py-0.5 rounded">{station.deviceId || '--'}</code>
+      </TableCell>
+      <TableCell>
+        <Badge variant={station.isActive ? 'default' : 'secondary'} className="gap-1">
+          {station.isActive ? (
+            <>
+              <Power className="h-3 w-3" /> Active
+            </>
+          ) : (
+            <>
+              <PowerOff className="h-3 w-3" /> Inactive
+            </>
+          )}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right font-mono">{station.todayCount ?? 0}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-2">
+          <Switch checked={station.isActive} onCheckedChange={() => onToggleActive(station)} />
+          <Button variant="ghost" size="icon" onClick={() => onEdit(station)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => onDelete(station)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </TableCell>
+    </>
+  );
+
+  if (shouldReduceMotion) {
+    return <TableRow>{content}</TableRow>;
+  }
+
+  return (
+    <motion.tr
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, ease: EASE, delay: index * 0.03 }}
+      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+    >
+      {content}
+    </motion.tr>
+  );
+}
+
+/**
+ * Animated empty state
+ */
+function AnimatedEmptyState({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <MonitorSmartphone className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p className="text-lg font-medium">No stations configured</p>
+        <p className="text-sm">Add a check-in station to start scanning tickets.</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-8 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <MonitorSmartphone className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+        className="text-lg font-medium"
+      >
+        No stations configured
+      </motion.p>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+        className="text-sm"
+      >
+        Add a check-in station to start scanning tickets.
+      </motion.p>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated no attractions state
+ */
+function AnimatedNoAttractions({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Check-In Stations</h1>
+          <p className="text-muted-foreground">
+            Manage check-in stations and devices for your attractions.
+          </p>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Attractions Found</h3>
+            <p className="text-muted-foreground text-center">
+              Create an attraction first to manage check-in stations.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE }}
+      >
+        <h1 className="text-3xl font-bold">Check-In Stations</h1>
+        <p className="text-muted-foreground">
+          Manage check-in stations and devices for your attractions.
+        </p>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+      >
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 15,
+                delay: 0.2,
+              }}
+            >
+              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+            </motion.div>
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: EASE, delay: 0.3 }}
+              className="text-lg font-medium mb-2"
+            >
+              No Attractions Found
+            </motion.h3>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: EASE, delay: 0.4 }}
+              className="text-muted-foreground text-center"
+            >
+              Create an attraction first to manage check-in stations.
+            </motion.p>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}
+
 function StationsPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const shouldReduceMotion = useReducedMotion();
   const orgId = params['orgId'] as string;
 
   // Get attractionId from URL or localStorage
@@ -133,30 +492,32 @@ function StationsPageContent() {
   }, [orgId, urlAttractionId, toast]);
 
   // Load stations when attraction changes
-  useEffect(() => {
+  const loadStations = useCallback(async () => {
     if (!selectedAttractionId) return;
 
-    localStorage.setItem(`check-in-attraction-${orgId}`, selectedAttractionId);
-
-    async function loadStations() {
-      setIsLoadingStations(true);
-      try {
-        const result = await listStations(orgId, selectedAttractionId!);
-        if (result.data?.stations) {
-          setStations(result.data.stations);
-        }
-      } catch (_error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to load stations',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoadingStations(false);
+    setIsLoadingStations(true);
+    try {
+      const result = await listStations(orgId, selectedAttractionId);
+      if (result.data?.stations) {
+        setStations(result.data.stations);
       }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load stations',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingStations(false);
     }
-    loadStations();
   }, [orgId, selectedAttractionId, toast]);
+
+  useEffect(() => {
+    if (selectedAttractionId) {
+      localStorage.setItem(`check-in-attraction-${orgId}`, selectedAttractionId);
+      loadStations();
+    }
+  }, [selectedAttractionId, orgId, loadStations]);
 
   const handleAttractionChange = (attractionId: string) => {
     setSelectedAttractionId(attractionId);
@@ -179,10 +540,7 @@ function StationsPageContent() {
           description: `${newStation.name} has been created.`,
         });
         // Refresh stations list
-        const stationsResult = await listStations(orgId, selectedAttractionId);
-        if (stationsResult.data?.stations) {
-          setStations(stationsResult.data.stations);
-        }
+        await loadStations();
         setCreateDialogOpen(false);
         setNewStation({ name: '', location: '', deviceId: '' });
       }
@@ -224,10 +582,7 @@ function StationsPageContent() {
           description: `${editForm.name} has been updated.`,
         });
         // Refresh stations list
-        const stationsResult = await listStations(orgId, selectedAttractionId);
-        if (stationsResult.data?.stations) {
-          setStations(stationsResult.data.stations);
-        }
+        await loadStations();
         setEditDialogOpen(false);
         setEditingStation(null);
       }
@@ -301,38 +656,16 @@ function StationsPageContent() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <StationsPageLoadingSkeleton />;
   }
 
   if (attractions.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Check-In Stations</h1>
-          <p className="text-muted-foreground">
-            Manage check-in stations and devices for your attractions.
-          </p>
-        </div>
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Attractions Found</h3>
-            <p className="text-muted-foreground text-center">
-              Create an attraction first to manage check-in stations.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <AnimatedNoAttractions shouldReduceMotion={shouldReduceMotion} />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <div>
           <h1 className="text-3xl font-bold">Check-In Stations</h1>
           <p className="text-muted-foreground">
@@ -411,10 +744,10 @@ function StationsPageContent() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Stations List */}
-      <Card>
+      <AnimatedTableCard shouldReduceMotion={shouldReduceMotion}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MonitorSmartphone className="h-5 w-5" />
@@ -430,11 +763,7 @@ function StationsPageContent() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : stations.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <MonitorSmartphone className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No stations configured</p>
-              <p className="text-sm">Add a check-in station to start scanning tickets.</p>
-            </div>
+            <AnimatedEmptyState shouldReduceMotion={shouldReduceMotion} />
           ) : (
             <Table>
               <TableHeader>
@@ -448,69 +777,22 @@ function StationsPageContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {stations.map((station) => (
-                  <TableRow key={station.id}>
-                    <TableCell className="font-medium">{station.name}</TableCell>
-                    <TableCell>
-                      {station.location ? (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {station.location}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">--</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                        {station.deviceId || '--'}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={station.isActive ? 'default' : 'secondary'} className="gap-1">
-                        {station.isActive ? (
-                          <>
-                            <Power className="h-3 w-3" /> Active
-                          </>
-                        ) : (
-                          <>
-                            <PowerOff className="h-3 w-3" /> Inactive
-                          </>
-                        )}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {station.todayCount ?? 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Switch
-                          checked={station.isActive}
-                          onCheckedChange={() => handleToggleActive(station)}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditClick(station)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteClick(station)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                {stations.map((station, index) => (
+                  <AnimatedStationRow
+                    key={station.id}
+                    station={station}
+                    index={index}
+                    shouldReduceMotion={shouldReduceMotion}
+                    onToggleActive={handleToggleActive}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                  />
                 ))}
               </TableBody>
             </Table>
           )}
         </CardContent>
-      </Card>
+      </AnimatedTableCard>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -596,13 +878,7 @@ function StationsPageContent() {
 
 export default function StationsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      }
-    >
+    <Suspense fallback={<StationsPageLoadingSkeleton />}>
       <StationsPageContent />
     </Suspense>
   );

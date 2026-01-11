@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { AttractionForm } from '@/components/features/attractions/attraction-form';
+import { FadeIn } from '@/components/ui/motion';
 import { getAttractionTypes, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -25,12 +27,14 @@ export default async function NewAttractionPage({ params }: NewAttractionPagePro
 
   return (
     <div className="space-y-6">
-      <div>
+      <AnimatedPageHeader>
         <h1 className="text-3xl font-bold">Create Attraction</h1>
         <p className="text-muted-foreground">Add a new attraction to your organization.</p>
-      </div>
+      </AnimatedPageHeader>
 
-      <AttractionForm orgId={orgId} attractionTypes={attractionTypes} />
+      <FadeIn delay={0.1}>
+        <AttractionForm orgId={orgId} attractionTypes={attractionTypes} />
+      </FadeIn>
     </div>
   );
 }

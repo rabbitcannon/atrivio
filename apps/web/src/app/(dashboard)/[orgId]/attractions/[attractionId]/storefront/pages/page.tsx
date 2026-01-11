@@ -2,10 +2,12 @@ import { Archive, Edit, Eye, EyeOff, FileText, Globe, Plus } from 'lucide-react'
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import {
   deleteStorefrontPage,
   getAttraction,
@@ -108,7 +110,7 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
     <div className="space-y-6">
       <div className="space-y-4">
         <Breadcrumb items={breadcrumbs} />
-        <div className="flex items-center justify-between">
+        <AnimatedPageHeader className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Pages</h1>
             <p className="text-muted-foreground">Create and manage your storefront content pages.</p>
@@ -119,38 +121,45 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
               Create Page
             </Button>
           </Link>
-        </div>
+        </AnimatedPageHeader>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publishedPages.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{draftPages.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Archived</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{archivedPages.length}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <StaggerContainer className="grid gap-4 md:grid-cols-3" staggerDelay={0.05} delayChildren={0.1}>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Published</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{publishedPages.length}</div>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{draftPages.length}</div>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Archived</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{archivedPages.length}</div>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+      </StaggerContainer>
 
       {/* Pages List */}
+      <FadeIn delay={0.15}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -247,6 +256,7 @@ export default async function StorefrontPagesPage({ params }: PagesPageProps) {
           )}
         </CardContent>
       </Card>
+      </FadeIn>
     </div>
   );
 }

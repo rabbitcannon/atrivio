@@ -1,8 +1,9 @@
 'use client';
 
-import { Loader2, MoreHorizontal, Package, Pencil, Plus, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Package, Pencil, Plus, Trash2 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -40,6 +42,305 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
+
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+/**
+ * Loading skeleton for ticket types page
+ */
+function TicketTypesLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-40 mb-2" />
+          <Skeleton className="h-5 w-80" />
+        </div>
+        <Skeleton className="h-10 w-36" />
+      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-5 w-36 mb-1" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header with action button
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="flex items-center justify-between">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex items-center justify-between"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated table card
+ */
+function AnimatedTableCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated empty state
+ */
+function AnimatedEmptyState({
+  shouldReduceMotion,
+  onCreateClick,
+}: {
+  shouldReduceMotion: boolean | null;
+  onCreateClick: () => void;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No ticket types configured yet.</p>
+        <Button variant="outline" className="mt-4" onClick={onCreateClick}>
+          Create Your First Ticket Type
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-12 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        No ticket types configured yet.
+      </motion.p>
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        <Button variant="outline" className="mt-4" onClick={onCreateClick}>
+          Create Your First Ticket Type
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/**
+ * Table row content component
+ */
+function TicketTypeRow({
+  type,
+  formatPrice,
+  openEditDialog,
+  handleToggleActive,
+  handleDelete,
+}: {
+  type: TicketType;
+  formatPrice: (cents: number) => string;
+  openEditDialog: (type: TicketType) => void;
+  handleToggleActive: (type: TicketType) => void;
+  handleDelete: (type: TicketType) => void;
+}) {
+  return (
+    <>
+      <TableCell>
+        <div className="font-medium">{type.name}</div>
+        {type.description && (
+          <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+            {type.description}
+          </div>
+        )}
+      </TableCell>
+      <TableCell>
+        {type.category ? (
+          <Badge variant="outline">{type.category.name}</Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+      <TableCell>{type.attraction?.name || '—'}</TableCell>
+      <TableCell className="text-right">
+        <div className="font-medium">{formatPrice(type.price)}</div>
+        {type.compare_price && (
+          <div className="text-sm text-muted-foreground line-through">
+            {formatPrice(type.compare_price)}
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        {type.capacity ? (
+          <span>
+            {type.sold_count} / {type.capacity}
+          </span>
+        ) : (
+          type.sold_count
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge variant={type.is_active ? 'default' : 'secondary'}>
+          {type.is_active ? 'Active' : 'Inactive'}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => openEditDialog(type)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleToggleActive(type)}>
+              {type.is_active ? 'Deactivate' : 'Activate'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(type)} className="text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+    </>
+  );
+}
+
+/**
+ * Animated table row
+ */
+function AnimatedTicketTypeRow({
+  type,
+  index,
+  formatPrice,
+  openEditDialog,
+  handleToggleActive,
+  handleDelete,
+  shouldReduceMotion,
+}: {
+  type: TicketType;
+  index: number;
+  formatPrice: (cents: number) => string;
+  openEditDialog: (type: TicketType) => void;
+  handleToggleActive: (type: TicketType) => void;
+  handleDelete: (type: TicketType) => void;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <TableRow>
+        <TicketTypeRow
+          type={type}
+          formatPrice={formatPrice}
+          openEditDialog={openEditDialog}
+          handleToggleActive={handleToggleActive}
+          handleDelete={handleDelete}
+        />
+      </TableRow>
+    );
+  }
+
+  return (
+    <motion.tr
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.25,
+        ease: EASE,
+        delay: index * 0.03,
+      }}
+      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+    >
+      <TicketTypeRow
+        type={type}
+        formatPrice={formatPrice}
+        openEditDialog={openEditDialog}
+        handleToggleActive={handleToggleActive}
+        handleDelete={handleDelete}
+      />
+    </motion.tr>
+  );
+}
 
 interface TicketCategory {
   id: string;
@@ -73,6 +374,7 @@ export default function TicketTypesPage() {
   const params = useParams();
   const orgIdentifier = params['orgId'] as string;
   const { toast } = useToast();
+  const shouldReduceMotion = useReducedMotion();
 
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
   const [categories, setCategories] = useState<TicketCategory[]>([]);
@@ -97,6 +399,33 @@ export default function TicketTypesPage() {
     includes: '',
   });
 
+  const loadTicketTypes = useCallback(async (orgId: string) => {
+    try {
+      const response = await apiClient.get<{ data: TicketType[] }>(
+        `/organizations/${orgId}/ticket-types?includeInactive=true`
+      );
+      setTicketTypes(response?.data || []);
+    } catch (_error) {}
+  }, []);
+
+  const loadCategories = useCallback(async (orgId: string) => {
+    try {
+      const response = await apiClient.get<{ data: TicketCategory[] }>(
+        `/organizations/${orgId}/ticket-categories`
+      );
+      setCategories(response?.data || []);
+    } catch (_error) {}
+  }, []);
+
+  const loadAttractions = useCallback(async (orgId: string) => {
+    try {
+      const response = await apiClient.get<{ data: Attraction[] }>(
+        `/organizations/${orgId}/attractions`
+      );
+      setAttractions(response?.data || []);
+    } catch (_error) {}
+  }, []);
+
   useEffect(() => {
     async function init() {
       const orgId = await resolveOrgId(orgIdentifier);
@@ -108,33 +437,6 @@ export default function TicketTypesPage() {
     }
     init();
   }, [orgIdentifier, loadAttractions, loadCategories, loadTicketTypes]);
-
-  async function loadTicketTypes(orgId: string) {
-    try {
-      const response = await apiClient.get<{ data: TicketType[] }>(
-        `/organizations/${orgId}/ticket-types?includeInactive=true`
-      );
-      setTicketTypes(response?.data || []);
-    } catch (_error) {}
-  }
-
-  async function loadCategories(orgId: string) {
-    try {
-      const response = await apiClient.get<{ data: TicketCategory[] }>(
-        `/organizations/${orgId}/ticket-categories`
-      );
-      setCategories(response?.data || []);
-    } catch (_error) {}
-  }
-
-  async function loadAttractions(orgId: string) {
-    try {
-      const response = await apiClient.get<{ data: Attraction[] }>(
-        `/organizations/${orgId}/attractions`
-      );
-      setAttractions(response?.data || []);
-    } catch (_error) {}
-  }
 
   function formatPrice(cents: number): string {
     return `$${(cents / 100).toFixed(2)}`;
@@ -257,16 +559,12 @@ export default function TicketTypesPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <TicketTypesLoadingSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <div>
           <h1 className="text-3xl font-bold">Ticket Types</h1>
           <p className="text-muted-foreground">
@@ -277,9 +575,9 @@ export default function TicketTypesPage() {
           <Plus className="h-4 w-4 mr-2" />
           Add Ticket Type
         </Button>
-      </div>
+      </AnimatedPageHeader>
 
-      <Card>
+      <AnimatedTableCard shouldReduceMotion={shouldReduceMotion}>
         <CardHeader>
           <CardTitle>All Ticket Types</CardTitle>
           <CardDescription>
@@ -288,13 +586,10 @@ export default function TicketTypesPage() {
         </CardHeader>
         <CardContent>
           {ticketTypes.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No ticket types configured yet.</p>
-              <Button variant="outline" className="mt-4" onClick={openCreateDialog}>
-                Create Your First Ticket Type
-              </Button>
-            </div>
+            <AnimatedEmptyState
+              shouldReduceMotion={shouldReduceMotion}
+              onCreateClick={openCreateDialog}
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -309,78 +604,23 @@ export default function TicketTypesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ticketTypes.map((type) => (
-                  <TableRow key={type.id}>
-                    <TableCell>
-                      <div className="font-medium">{type.name}</div>
-                      {type.description && (
-                        <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                          {type.description}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {type.category ? (
-                        <Badge variant="outline">{type.category.name}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{type.attraction?.name || '—'}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="font-medium">{formatPrice(type.price)}</div>
-                      {type.compare_price && (
-                        <div className="text-sm text-muted-foreground line-through">
-                          {formatPrice(type.compare_price)}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {type.capacity ? (
-                        <span>
-                          {type.sold_count} / {type.capacity}
-                        </span>
-                      ) : (
-                        type.sold_count
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={type.is_active ? 'default' : 'secondary'}>
-                        {type.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditDialog(type)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleActive(type)}>
-                            {type.is_active ? 'Deactivate' : 'Activate'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(type)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                {ticketTypes.map((type, index) => (
+                  <AnimatedTicketTypeRow
+                    key={type.id}
+                    type={type}
+                    index={index}
+                    formatPrice={formatPrice}
+                    openEditDialog={openEditDialog}
+                    handleToggleActive={handleToggleActive}
+                    handleDelete={handleDelete}
+                    shouldReduceMotion={shouldReduceMotion}
+                  />
                 ))}
               </TableBody>
             </Table>
           )}
         </CardContent>
-      </Card>
+      </AnimatedTableCard>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">

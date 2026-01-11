@@ -1,8 +1,9 @@
 'use client';
 
 import { Copy, MoreHorizontal, Pencil, Percent, Plus, Trash2 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -40,6 +42,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
+
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface PromoCode {
   id: string;
@@ -55,6 +60,418 @@ interface PromoCode {
   valid_from: string | null;
   valid_until: string | null;
   is_active: boolean;
+}
+
+/**
+ * Loading skeleton for promo codes page
+ */
+function PromoCodesLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-40 mb-2" />
+          <Skeleton className="h-5 w-72" />
+        </div>
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex gap-4 py-3">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-8 w-8" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header with fade-down effect
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="flex items-center justify-between">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex items-center justify-between"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated table card container
+ */
+function AnimatedTableCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated empty state with bouncing icon
+ */
+function AnimatedEmptyState({
+  shouldReduceMotion,
+  onCreateClick,
+}: {
+  shouldReduceMotion: boolean | null;
+  onCreateClick: () => void;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Percent className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No promo codes created yet.</p>
+        <Button variant="outline" className="mt-4" onClick={onCreateClick}>
+          Create Your First Promo Code
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-12 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <Percent className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        No promo codes created yet.
+      </motion.p>
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        <Button variant="outline" className="mt-4" onClick={onCreateClick}>
+          Create Your First Promo Code
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/**
+ * Promo code row props interface
+ */
+interface PromoRowProps {
+  code: PromoCode;
+  formatDiscount: (code: PromoCode) => string;
+  formatDate: (dateStr: string | null) => string;
+  isExpired: (code: PromoCode) => boolean;
+  isNotYetValid: (code: PromoCode) => boolean;
+  copyToClipboard: (code: string) => void;
+  openEditDialog: (code: PromoCode) => void;
+  handleToggleActive: (code: PromoCode) => void;
+  handleDelete: (code: PromoCode) => void;
+}
+
+/**
+ * Static promo row (for reduced motion)
+ */
+function PromoRow({
+  code,
+  formatDiscount,
+  formatDate,
+  isExpired,
+  isNotYetValid,
+  copyToClipboard,
+  openEditDialog,
+  handleToggleActive,
+  handleDelete,
+}: PromoRowProps) {
+  return (
+    <TableRow>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-medium">{code.code}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => copyToClipboard(code.code)}
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+        </div>
+        {code.description && (
+          <div className="text-sm text-muted-foreground">{code.description}</div>
+        )}
+      </TableCell>
+      <TableCell>
+        <div className="font-medium">{formatDiscount(code)}</div>
+        {code.min_order_amount && (
+          <div className="text-sm text-muted-foreground">
+            Min: ${(code.min_order_amount / 100).toFixed(2)}
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        {code.max_uses ? (
+          <span className={code.times_used >= code.max_uses ? 'text-destructive' : ''}>
+            {code.times_used} / {code.max_uses}
+          </span>
+        ) : (
+          <span>{code.times_used}</span>
+        )}
+      </TableCell>
+      <TableCell className="text-sm">
+        {code.valid_from || code.valid_until ? (
+          <>
+            {formatDate(code.valid_from)} - {formatDate(code.valid_until)}
+          </>
+        ) : (
+          <span className="text-muted-foreground">Always valid</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <PromoStatusBadge
+          code={code}
+          isExpired={isExpired}
+          isNotYetValid={isNotYetValid}
+        />
+      </TableCell>
+      <TableCell>
+        <PromoRowActions
+          code={code}
+          openEditDialog={openEditDialog}
+          handleToggleActive={handleToggleActive}
+          handleDelete={handleDelete}
+        />
+      </TableCell>
+    </TableRow>
+  );
+}
+
+/**
+ * Animated promo row with fade + slide
+ */
+function AnimatedPromoRow({
+  code,
+  formatDiscount,
+  formatDate,
+  isExpired,
+  isNotYetValid,
+  copyToClipboard,
+  openEditDialog,
+  handleToggleActive,
+  handleDelete,
+}: PromoRowProps) {
+  return (
+    <motion.tr
+      variants={{
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: 0.25,
+            ease: EASE,
+          },
+        },
+      }}
+      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+    >
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-medium">{code.code}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => copyToClipboard(code.code)}
+          >
+            <Copy className="h-3 w-3" />
+          </Button>
+        </div>
+        {code.description && (
+          <div className="text-sm text-muted-foreground">{code.description}</div>
+        )}
+      </TableCell>
+      <TableCell>
+        <div className="font-medium">{formatDiscount(code)}</div>
+        {code.min_order_amount && (
+          <div className="text-sm text-muted-foreground">
+            Min: ${(code.min_order_amount / 100).toFixed(2)}
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        {code.max_uses ? (
+          <span className={code.times_used >= code.max_uses ? 'text-destructive' : ''}>
+            {code.times_used} / {code.max_uses}
+          </span>
+        ) : (
+          <span>{code.times_used}</span>
+        )}
+      </TableCell>
+      <TableCell className="text-sm">
+        {code.valid_from || code.valid_until ? (
+          <>
+            {formatDate(code.valid_from)} - {formatDate(code.valid_until)}
+          </>
+        ) : (
+          <span className="text-muted-foreground">Always valid</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <PromoStatusBadge
+          code={code}
+          isExpired={isExpired}
+          isNotYetValid={isNotYetValid}
+        />
+      </TableCell>
+      <TableCell>
+        <PromoRowActions
+          code={code}
+          openEditDialog={openEditDialog}
+          handleToggleActive={handleToggleActive}
+          handleDelete={handleDelete}
+        />
+      </TableCell>
+    </motion.tr>
+  );
+}
+
+/**
+ * Promo code status badge
+ */
+function PromoStatusBadge({
+  code,
+  isExpired,
+  isNotYetValid,
+}: {
+  code: PromoCode;
+  isExpired: (code: PromoCode) => boolean;
+  isNotYetValid: (code: PromoCode) => boolean;
+}) {
+  if (!code.is_active) {
+    return <Badge variant="secondary">Inactive</Badge>;
+  }
+  if (isExpired(code)) {
+    return <Badge variant="destructive">Expired</Badge>;
+  }
+  if (isNotYetValid(code)) {
+    return <Badge variant="outline">Scheduled</Badge>;
+  }
+  if (code.max_uses && code.times_used >= code.max_uses) {
+    return <Badge variant="destructive">Exhausted</Badge>;
+  }
+  return <Badge variant="default">Active</Badge>;
+}
+
+/**
+ * Promo row dropdown actions
+ */
+function PromoRowActions({
+  code,
+  openEditDialog,
+  handleToggleActive,
+  handleDelete,
+}: {
+  code: PromoCode;
+  openEditDialog: (code: PromoCode) => void;
+  handleToggleActive: (code: PromoCode) => void;
+  handleDelete: (code: PromoCode) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => openEditDialog(code)}>
+          <Pencil className="h-4 w-4 mr-2" />
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleToggleActive(code)}>
+          {code.is_active ? 'Deactivate' : 'Activate'}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleDelete(code)} className="text-destructive">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 export default function PromoCodesPage() {
@@ -82,6 +499,15 @@ export default function PromoCodesPage() {
     validUntil: '',
   });
 
+  const loadPromoCodes = useCallback(async (orgId: string) => {
+    try {
+      const response = await apiClient.get<{ data: PromoCode[] }>(
+        `/organizations/${orgId}/promo-codes?includeInactive=true`
+      );
+      setPromoCodes(response?.data || []);
+    } catch (_error) {}
+  }, []);
+
   useEffect(() => {
     async function init() {
       const orgId = await resolveOrgId(orgIdentifier);
@@ -93,15 +519,6 @@ export default function PromoCodesPage() {
     }
     init();
   }, [orgIdentifier, loadPromoCodes]);
-
-  async function loadPromoCodes(orgId: string) {
-    try {
-      const response = await apiClient.get<{ data: PromoCode[] }>(
-        `/organizations/${orgId}/promo-codes?includeInactive=true`
-      );
-      setPromoCodes(response?.data || []);
-    } catch (_error) {}
-  }
 
   function formatDiscount(code: PromoCode): string {
     if (code.discount_type === 'percentage') {
@@ -264,17 +681,15 @@ export default function PromoCodesPage() {
     toast({ title: `Copied "${code}" to clipboard` });
   }
 
+  const shouldReduceMotion = useReducedMotion();
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <PromoCodesLoadingSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <div>
           <h1 className="text-3xl font-bold">Promo Codes</h1>
           <p className="text-muted-foreground">Create and manage promotional discount codes.</p>
@@ -283,9 +698,9 @@ export default function PromoCodesPage() {
           <Plus className="h-4 w-4 mr-2" />
           Create Promo Code
         </Button>
-      </div>
+      </AnimatedPageHeader>
 
-      <Card>
+      <AnimatedTableCard shouldReduceMotion={shouldReduceMotion}>
         <CardHeader>
           <CardTitle>All Promo Codes</CardTitle>
           <CardDescription>
@@ -294,13 +709,10 @@ export default function PromoCodesPage() {
         </CardHeader>
         <CardContent>
           {promoCodes.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Percent className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No promo codes created yet.</p>
-              <Button variant="outline" className="mt-4" onClick={openCreateDialog}>
-                Create Your First Promo Code
-              </Button>
-            </div>
+            <AnimatedEmptyState
+              shouldReduceMotion={shouldReduceMotion}
+              onCreateClick={openCreateDialog}
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -313,98 +725,59 @@ export default function PromoCodesPage() {
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {promoCodes.map((code) => (
-                  <TableRow key={code.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-medium">{code.code}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => copyToClipboard(code.code)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      {code.description && (
-                        <div className="text-sm text-muted-foreground">{code.description}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{formatDiscount(code)}</div>
-                      {code.min_order_amount && (
-                        <div className="text-sm text-muted-foreground">
-                          Min: ${(code.min_order_amount / 100).toFixed(2)}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {code.max_uses ? (
-                        <span
-                          className={code.times_used >= code.max_uses ? 'text-destructive' : ''}
-                        >
-                          {code.times_used} / {code.max_uses}
-                        </span>
-                      ) : (
-                        <span>{code.times_used}</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {code.valid_from || code.valid_until ? (
-                        <>
-                          {formatDate(code.valid_from)} - {formatDate(code.valid_until)}
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">Always valid</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {!code.is_active ? (
-                        <Badge variant="secondary">Inactive</Badge>
-                      ) : isExpired(code) ? (
-                        <Badge variant="destructive">Expired</Badge>
-                      ) : isNotYetValid(code) ? (
-                        <Badge variant="outline">Scheduled</Badge>
-                      ) : code.max_uses && code.times_used >= code.max_uses ? (
-                        <Badge variant="destructive">Exhausted</Badge>
-                      ) : (
-                        <Badge variant="default">Active</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditDialog(code)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleActive(code)}>
-                            {code.is_active ? 'Deactivate' : 'Activate'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(code)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+              {shouldReduceMotion ? (
+                <TableBody>
+                  {promoCodes.map((code) => (
+                    <PromoRow
+                      key={code.id}
+                      code={code}
+                      formatDiscount={formatDiscount}
+                      formatDate={formatDate}
+                      isExpired={isExpired}
+                      isNotYetValid={isNotYetValid}
+                      copyToClipboard={copyToClipboard}
+                      openEditDialog={openEditDialog}
+                      handleToggleActive={handleToggleActive}
+                      handleDelete={handleDelete}
+                    />
+                  ))}
+                </TableBody>
+              ) : (
+                <motion.tbody
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.04,
+                        delayChildren: 0.1,
+                      },
+                    },
+                  }}
+                  className="[&_tr:last-child]:border-0"
+                >
+                  {promoCodes.map((code) => (
+                    <AnimatedPromoRow
+                      key={code.id}
+                      code={code}
+                      formatDiscount={formatDiscount}
+                      formatDate={formatDate}
+                      isExpired={isExpired}
+                      isNotYetValid={isNotYetValid}
+                      copyToClipboard={copyToClipboard}
+                      openEditDialog={openEditDialog}
+                      handleToggleActive={handleToggleActive}
+                      handleDelete={handleDelete}
+                    />
+                  ))}
+                </motion.tbody>
+              )}
             </Table>
           )}
         </CardContent>
-      </Card>
+      </AnimatedTableCard>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">

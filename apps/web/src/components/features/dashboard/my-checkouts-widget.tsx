@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMyTimeStatus, getStaffCheckouts, type InventoryCheckout } from '@/lib/api/client';
+import { AnimatedEmptyState, AnimatedListItem, LoadingTransition } from './animated-dashboard';
 
 interface MyCheckoutsWidgetProps {
   orgId: string;
@@ -90,85 +91,56 @@ export function MyCheckoutsWidget({ orgId, orgSlug }: MyCheckoutsWidgetProps) {
     fetchCheckouts();
   }, [orgId]);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Package className="h-4 w-4" />
-            My Items
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Count overdue items
   const overdueCount = checkouts.filter((c) => isOverdue(c.due_date)).length;
 
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Package className="h-4 w-4" />
-            My Items
-            {checkouts.length > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {checkouts.length}
-              </Badge>
-            )}
-          </CardTitle>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/${orgSlug}/inventory/checkouts`}>
-              <ExternalLink className="h-3 w-3" />
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {error && (
-          <Alert variant="destructive" className="py-2">
-            <AlertCircle className="h-3 w-3" />
-            <AlertDescription className="text-xs">{error}</AlertDescription>
-          </Alert>
-        )}
+  const skeletonContent = (
+    <div className="space-y-2">
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-12 w-full" />
+    </div>
+  );
 
-        {!error && checkouts.length === 0 && (
-          <div className="rounded-lg border bg-muted/50 p-4 text-center">
-            <CheckCircle2 className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-2 text-sm text-muted-foreground">No items checked out</p>
-          </div>
-        )}
+  const mainContent = (
+    <div className="space-y-3">
+      {error && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-3 w-3" />
+          <AlertDescription className="text-xs">{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {overdueCount > 0 && (
-          <Alert variant="destructive" className="py-2">
-            <AlertTriangle className="h-3 w-3" />
-            <AlertDescription className="text-xs">
-              {overdueCount} {overdueCount === 1 ? 'item' : 'items'} overdue
-            </AlertDescription>
-          </Alert>
-        )}
+      {!error && checkouts.length === 0 && (
+        <AnimatedEmptyState
+          icon={<CheckCircle2 className="h-8 w-8" />}
+          title="No items checked out"
+          description="You're all clear!"
+          className="py-4"
+        />
+      )}
 
-        {checkouts.map((checkout) => {
-          const overdue = isOverdue(checkout.due_date);
-          const dueSoon = isDueSoon(checkout.due_date);
+      {overdueCount > 0 && (
+        <Alert variant="destructive" className="py-2">
+          <AlertTriangle className="h-3 w-3" />
+          <AlertDescription className="text-xs">
+            {overdueCount} {overdueCount === 1 ? 'item' : 'items'} overdue
+          </AlertDescription>
+        </Alert>
+      )}
 
-          return (
+      {checkouts.map((checkout, index) => {
+        const overdue = isOverdue(checkout.due_date);
+        const dueSoon = isDueSoon(checkout.due_date);
+
+        return (
+          <AnimatedListItem key={checkout.id} index={index} staggerDelay={0.06}>
             <div
-              key={checkout.id}
-              className={`rounded-lg border p-3 ${
+              className={`rounded-lg border p-3 transition-colors ${
                 overdue
                   ? 'border-destructive bg-destructive/5'
                   : dueSoon
                     ? 'border-yellow-500 bg-yellow-500/5'
-                    : ''
+                    : 'hover:bg-muted/30'
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -200,14 +172,42 @@ export function MyCheckoutsWidget({ orgId, orgSlug }: MyCheckoutsWidgetProps) {
                 </div>
               </div>
             </div>
-          );
-        })}
+          </AnimatedListItem>
+        );
+      })}
 
-        {checkouts.length > 0 && (
-          <Button variant="outline" size="sm" className="w-full" asChild>
-            <Link href={`/${orgSlug}/inventory/checkouts`}>View All Items</Link>
+      {checkouts.length > 0 && (
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={`/${orgSlug}/inventory/checkouts`}>View All Items</Link>
+        </Button>
+      )}
+    </div>
+  );
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Package className="h-4 w-4" />
+            My Items
+            {checkouts.length > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {checkouts.length}
+              </Badge>
+            )}
+          </CardTitle>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/${orgSlug}/inventory/checkouts`}>
+              <ExternalLink className="h-3 w-3" />
+            </Link>
           </Button>
-        )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <LoadingTransition isLoading={isLoading} skeleton={skeletonContent}>
+          {mainContent}
+        </LoadingTransition>
       </CardContent>
     </Card>
   );

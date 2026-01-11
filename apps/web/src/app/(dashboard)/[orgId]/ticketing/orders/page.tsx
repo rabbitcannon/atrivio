@@ -1,8 +1,9 @@
 'use client';
 
 import { Eye, MoreHorizontal, RefreshCw, Search, ShoppingCart, XCircle } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -38,6 +40,9 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { apiClientDirect as apiClient, resolveOrgId } from '@/lib/api/client';
+
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface OrderItem {
   id: string;
@@ -85,6 +90,364 @@ const STATUS_COLORS: Record<string, 'default' | 'secondary' | 'destructive' | 'o
   refunded: 'destructive',
 };
 
+/**
+ * Loading skeleton for orders page
+ */
+function OrdersLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <Skeleton className="h-9 w-32 mb-2" />
+        <Skeleton className="h-5 w-64" />
+      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex gap-4">
+            <Skeleton className="flex-1 h-10" />
+            <Skeleton className="w-[180px] h-10" />
+            <Skeleton className="w-24 h-10" />
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-4 py-3">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-8 w-8" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header with fade-down effect
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated filter card
+ */
+function AnimatedFilterCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated table card container
+ */
+function AnimatedTableCard({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.2 }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated empty state with bouncing icon
+ */
+function AnimatedEmptyState({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No orders found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-12 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        No orders found.
+      </motion.p>
+    </motion.div>
+  );
+}
+
+/**
+ * Order row props interface
+ */
+interface OrderRowProps {
+  order: Order;
+  formatPrice: (cents: number) => string;
+  formatDate: (dateStr: string) => string;
+  viewOrderDetails: (order: Order) => void;
+  handleCompleteOrder: (order: Order) => void;
+  handleCancelOrder: (order: Order) => void;
+  handleRefundOrder: (order: Order) => void;
+}
+
+/**
+ * Static order row (for reduced motion)
+ */
+function OrderRow({
+  order,
+  formatPrice,
+  formatDate,
+  viewOrderDetails,
+  handleCompleteOrder,
+  handleCancelOrder,
+  handleRefundOrder,
+}: OrderRowProps) {
+  return (
+    <TableRow>
+      <TableCell className="font-medium">
+        {order.order_number}
+        {order.promo && (
+          <Badge variant="outline" className="ml-2 text-xs">
+            {order.promo.code}
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell>
+        <div>{order.customer_email}</div>
+        {order.customer_name && (
+          <div className="text-sm text-muted-foreground">{order.customer_name}</div>
+        )}
+      </TableCell>
+      <TableCell>{order.attraction?.name || '—'}</TableCell>
+      <TableCell className="text-right">
+        <div className="font-medium">{formatPrice(order.total)}</div>
+        {order.discount_amount > 0 && (
+          <div className="text-sm text-green-600">-{formatPrice(order.discount_amount)}</div>
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge variant={STATUS_COLORS[order.status] || 'secondary'}>{order.status}</Badge>
+      </TableCell>
+      <TableCell className="text-sm">{formatDate(order.created_at)}</TableCell>
+      <TableCell>
+        <OrderRowActions
+          order={order}
+          viewOrderDetails={viewOrderDetails}
+          handleCompleteOrder={handleCompleteOrder}
+          handleCancelOrder={handleCancelOrder}
+          handleRefundOrder={handleRefundOrder}
+        />
+      </TableCell>
+    </TableRow>
+  );
+}
+
+/**
+ * Animated order row with fade + slide
+ */
+function AnimatedOrderRow({
+  order,
+  formatPrice,
+  formatDate,
+  viewOrderDetails,
+  handleCompleteOrder,
+  handleCancelOrder,
+  handleRefundOrder,
+}: OrderRowProps) {
+  return (
+    <motion.tr
+      variants={{
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: 0.25,
+            ease: EASE,
+          },
+        },
+      }}
+      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+    >
+      <TableCell className="font-medium">
+        {order.order_number}
+        {order.promo && (
+          <Badge variant="outline" className="ml-2 text-xs">
+            {order.promo.code}
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell>
+        <div>{order.customer_email}</div>
+        {order.customer_name && (
+          <div className="text-sm text-muted-foreground">{order.customer_name}</div>
+        )}
+      </TableCell>
+      <TableCell>{order.attraction?.name || '—'}</TableCell>
+      <TableCell className="text-right">
+        <div className="font-medium">{formatPrice(order.total)}</div>
+        {order.discount_amount > 0 && (
+          <div className="text-sm text-green-600">-{formatPrice(order.discount_amount)}</div>
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge variant={STATUS_COLORS[order.status] || 'secondary'}>{order.status}</Badge>
+      </TableCell>
+      <TableCell className="text-sm">{formatDate(order.created_at)}</TableCell>
+      <TableCell>
+        <OrderRowActions
+          order={order}
+          viewOrderDetails={viewOrderDetails}
+          handleCompleteOrder={handleCompleteOrder}
+          handleCancelOrder={handleCancelOrder}
+          handleRefundOrder={handleRefundOrder}
+        />
+      </TableCell>
+    </motion.tr>
+  );
+}
+
+/**
+ * Order row dropdown actions
+ */
+function OrderRowActions({
+  order,
+  viewOrderDetails,
+  handleCompleteOrder,
+  handleCancelOrder,
+  handleRefundOrder,
+}: {
+  order: Order;
+  viewOrderDetails: (order: Order) => void;
+  handleCompleteOrder: (order: Order) => void;
+  handleCancelOrder: (order: Order) => void;
+  handleRefundOrder: (order: Order) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => viewOrderDetails(order)}>
+          <Eye className="h-4 w-4 mr-2" />
+          View Details
+        </DropdownMenuItem>
+        {order.status === 'pending' && (
+          <DropdownMenuItem onClick={() => handleCompleteOrder(order)}>
+            Complete Order
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        {['pending', 'processing'].includes(order.status) && (
+          <DropdownMenuItem onClick={() => handleCancelOrder(order)} className="text-destructive">
+            <XCircle className="h-4 w-4 mr-2" />
+            Cancel
+          </DropdownMenuItem>
+        )}
+        {order.status === 'completed' && (
+          <DropdownMenuItem onClick={() => handleRefundOrder(order)} className="text-destructive">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refund
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export default function OrdersPage() {
   const params = useParams();
   const orgIdentifier = params['orgId'] as string;
@@ -106,19 +469,7 @@ export default function OrdersPage() {
     totalPages: 0,
   });
 
-  useEffect(() => {
-    async function init() {
-      const orgId = await resolveOrgId(orgIdentifier);
-      if (orgId) {
-        setResolvedOrgId(orgId);
-        await loadOrders(orgId);
-      }
-      setIsLoading(false);
-    }
-    init();
-  }, [orgIdentifier, loadOrders]);
-
-  async function loadOrders(orgId: string, page = 1) {
+  const loadOrders = useCallback(async (orgId: string, page = 1) => {
     try {
       const params = new URLSearchParams({
         page: String(page),
@@ -137,7 +488,19 @@ export default function OrdersPage() {
         setPagination(response.pagination);
       }
     } catch (_error) {}
-  }
+  }, [pagination.limit, searchEmail, statusFilter]);
+
+  useEffect(() => {
+    async function init() {
+      const orgId = await resolveOrgId(orgIdentifier);
+      if (orgId) {
+        setResolvedOrgId(orgId);
+        await loadOrders(orgId);
+      }
+      setIsLoading(false);
+    }
+    init();
+  }, [orgIdentifier, loadOrders]);
 
   async function handleSearch() {
     if (resolvedOrgId) {
@@ -237,23 +600,21 @@ export default function OrdersPage() {
     return `${h12}:${minutes} ${ampm}`;
   }
 
+  const shouldReduceMotion = useReducedMotion();
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <OrdersLoadingSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div>
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <h1 className="text-3xl font-bold">Orders</h1>
         <p className="text-muted-foreground">View and manage ticket orders.</p>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Filters */}
-      <Card>
+      <AnimatedFilterCard shouldReduceMotion={shouldReduceMotion}>
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1">
@@ -283,10 +644,10 @@ export default function OrdersPage() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </AnimatedFilterCard>
 
       {/* Orders Table */}
-      <Card>
+      <AnimatedTableCard shouldReduceMotion={shouldReduceMotion}>
         <CardHeader>
           <CardTitle>Orders</CardTitle>
           <CardDescription>
@@ -295,10 +656,7 @@ export default function OrdersPage() {
         </CardHeader>
         <CardContent>
           {orders.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No orders found.</p>
-            </div>
+            <AnimatedEmptyState shouldReduceMotion={shouldReduceMotion} />
           ) : (
             <>
               <Table>
@@ -313,80 +671,51 @@ export default function OrdersPage() {
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">
-                        {order.order_number}
-                        {order.promo && (
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {order.promo.code}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div>{order.customer_email}</div>
-                        {order.customer_name && (
-                          <div className="text-sm text-muted-foreground">{order.customer_name}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>{order.attraction?.name || '—'}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="font-medium">{formatPrice(order.total)}</div>
-                        {order.discount_amount > 0 && (
-                          <div className="text-sm text-green-600">
-                            -{formatPrice(order.discount_amount)}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={STATUS_COLORS[order.status] || 'secondary'}>
-                          {order.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">{formatDate(order.created_at)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => viewOrderDetails(order)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            {order.status === 'pending' && (
-                              <DropdownMenuItem onClick={() => handleCompleteOrder(order)}>
-                                Complete Order
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {['pending', 'processing'].includes(order.status) && (
-                              <DropdownMenuItem
-                                onClick={() => handleCancelOrder(order)}
-                                className="text-destructive"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Cancel
-                              </DropdownMenuItem>
-                            )}
-                            {order.status === 'completed' && (
-                              <DropdownMenuItem
-                                onClick={() => handleRefundOrder(order)}
-                                className="text-destructive"
-                              >
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Refund
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
+                {shouldReduceMotion ? (
+                  <TableBody>
+                    {orders.map((order) => (
+                      <OrderRow
+                        key={order.id}
+                        order={order}
+                        formatPrice={formatPrice}
+                        formatDate={formatDate}
+                        viewOrderDetails={viewOrderDetails}
+                        handleCompleteOrder={handleCompleteOrder}
+                        handleCancelOrder={handleCancelOrder}
+                        handleRefundOrder={handleRefundOrder}
+                      />
+                    ))}
+                  </TableBody>
+                ) : (
+                  <motion.tbody
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.03,
+                          delayChildren: 0.1,
+                        },
+                      },
+                    }}
+                    className="[&_tr:last-child]:border-0"
+                  >
+                    {orders.map((order) => (
+                      <AnimatedOrderRow
+                        key={order.id}
+                        order={order}
+                        formatPrice={formatPrice}
+                        formatDate={formatDate}
+                        viewOrderDetails={viewOrderDetails}
+                        handleCompleteOrder={handleCompleteOrder}
+                        handleCancelOrder={handleCancelOrder}
+                        handleRefundOrder={handleRefundOrder}
+                      />
+                    ))}
+                  </motion.tbody>
+                )}
               </Table>
 
               {/* Pagination */}
@@ -422,7 +751,7 @@ export default function OrdersPage() {
             </>
           )}
         </CardContent>
-      </Card>
+      </AnimatedTableCard>
 
       {/* Order Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>

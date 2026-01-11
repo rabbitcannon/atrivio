@@ -1,9 +1,11 @@
 import { Star, Tag } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { getAttraction, getStorefrontFaqs, resolveOrgId } from '@/lib/api';
 import type { StorefrontFaq } from '@/lib/api/types';
 import { FaqHeaderActions } from './_components/faq-header-actions';
@@ -57,7 +59,7 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
     <div className="space-y-6">
       <div className="space-y-4">
         <Breadcrumb items={breadcrumbs} />
-        <div className="flex items-center justify-between">
+        <AnimatedPageHeader className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">FAQs</h1>
             <p className="text-muted-foreground">
@@ -65,61 +67,71 @@ export default async function StorefrontFaqsPage({ params }: FaqsPageProps) {
             </p>
           </div>
           <FaqHeaderActions orgId={orgId} attractionId={attractionId} />
-        </div>
+        </AnimatedPageHeader>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total FAQs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{faqs.length}</div>
-            <p className="text-xs text-muted-foreground">{publishedFaqs.length} published</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Star className="h-4 w-4" />
-              Featured
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{featuredFaqs.length}</div>
-            <p className="text-xs text-muted-foreground">Highlighted on FAQ page</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Categories
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{categories.length}</div>
-            <p className="text-xs text-muted-foreground">Unique categories</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StaggerContainer className="grid gap-4 md:grid-cols-3" staggerDelay={0.05} delayChildren={0.1}>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total FAQs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{faqs.length}</div>
+              <p className="text-xs text-muted-foreground">{publishedFaqs.length} published</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Star className="h-4 w-4" />
+                Featured
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{featuredFaqs.length}</div>
+              <p className="text-xs text-muted-foreground">Highlighted on FAQ page</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Categories
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{categories.length}</div>
+              <p className="text-xs text-muted-foreground">Unique categories</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+      </StaggerContainer>
 
       {/* Category Filter */}
       {categories.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium">Categories:</span>
-          <Badge variant="secondary">All</Badge>
-          {categories.map((category) => (
-            <Badge key={category} variant="outline">
-              {category}
-            </Badge>
-          ))}
-        </div>
+        <FadeIn delay={0.15}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium">Categories:</span>
+            <Badge variant="secondary">All</Badge>
+            {categories.map((category) => (
+              <Badge key={category} variant="outline">
+                {category}
+              </Badge>
+            ))}
+          </div>
+        </FadeIn>
       )}
 
       {/* FAQs List */}
-      <FaqList orgId={orgId} attractionId={attractionId} faqs={faqs} />
+      <FadeIn delay={0.2}>
+        <FaqList orgId={orgId} attractionId={attractionId} faqs={faqs} />
+      </FadeIn>
     </div>
   );
 }

@@ -2,10 +2,12 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { QueueSettingsForm } from '@/components/features/queue/queue-settings-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import { getAttractions, getQueueConfig, resolveOrgId } from '@/lib/api';
 import type { QueueConfig } from '@/lib/api/types';
 
@@ -65,7 +67,7 @@ export default async function QueueSettingsPage({ params }: QueueSettingsPagePro
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href={`/${orgIdentifier}/queue`}>
             <Button variant="ghost" size="sm">
@@ -83,14 +85,16 @@ export default async function QueueSettingsPage({ params }: QueueSettingsPagePro
             {isActive ? (isPaused ? 'Paused' : 'Active') : 'Inactive'}
           </Badge>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
-      <QueueSettingsForm
-        orgId={orgId}
-        attractionId={primaryAttraction.id}
-        attractionName={primaryAttraction.name}
-        initialConfig={queueConfig}
-      />
+      <FadeIn delay={0.1}>
+        <QueueSettingsForm
+          orgId={orgId}
+          attractionId={primaryAttraction.id}
+          attractionName={primaryAttraction.name}
+          initialConfig={queueConfig}
+        />
+      </FadeIn>
     </div>
   );
 }

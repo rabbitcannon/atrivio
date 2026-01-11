@@ -12,8 +12,10 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { getAttractions, getQueueConfig, getQueueEntries, resolveOrgId } from '@/lib/api';
 import type { QueueConfig, QueueEntriesResponse } from '@/lib/api/types';
 
@@ -91,114 +93,125 @@ export default async function QueuePage({ params }: QueuePageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Virtual Queue</h1>
           <p className="text-muted-foreground">Manage virtual queues for your attractions.</p>
         </div>
         <div className="flex items-center gap-2">{getStatusBadge()}</div>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Currently Waiting</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{queueSummary?.totalWaiting ?? '--'}</div>
-            <p className="text-xs text-muted-foreground">Guests in queue</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Wait Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {queueSummary?.avgWaitMinutes != null
-                ? `${Math.round(queueSummary.avgWaitMinutes)} min`
-                : '--'}
-            </div>
-            <p className="text-xs text-muted-foreground">Current estimate</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Served Today</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{queueSummary?.totalServedToday ?? '--'}</div>
-            <p className="text-xs text-muted-foreground">Guests processed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Next Batch</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {queueSummary?.nextBatchTime
-                ? new Date(queueSummary.nextBatchTime).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                : '--'}
-            </div>
-            <p className="text-xs text-muted-foreground">Estimated time</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StaggerContainer className="grid gap-4 md:grid-cols-4" staggerDelay={0.05} delayChildren={0.1}>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Currently Waiting</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{queueSummary?.totalWaiting ?? '--'}</div>
+              <p className="text-xs text-muted-foreground">Guests in queue</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Avg Wait Time</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {queueSummary?.avgWaitMinutes != null
+                  ? `${Math.round(queueSummary.avgWaitMinutes)} min`
+                  : '--'}
+              </div>
+              <p className="text-xs text-muted-foreground">Current estimate</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Served Today</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{queueSummary?.totalServedToday ?? '--'}</div>
+              <p className="text-xs text-muted-foreground">Guests processed</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+        <StaggerItem>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Next Batch</CardTitle>
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {queueSummary?.nextBatchTime
+                  ? new Date(queueSummary.nextBatchTime).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : '--'}
+              </div>
+              <p className="text-xs text-muted-foreground">Estimated time</p>
+            </CardContent>
+          </Card>
+        </StaggerItem>
+      </StaggerContainer>
 
       {/* Queue Status Banner */}
       {queueConfig && (
-        <Card className={isPaused ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20' : ''}>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              {isPaused ? (
-                <>
-                  <Pause className="h-8 w-8 text-amber-600" />
-                  <div>
-                    <h3 className="font-semibold">Queue is Paused</h3>
-                    <p className="text-sm text-muted-foreground">
-                      New guests cannot join. Existing entries are preserved.
-                    </p>
-                  </div>
-                </>
-              ) : isActive ? (
-                <>
-                  <Play className="h-8 w-8 text-green-600" />
-                  <div>
-                    <h3 className="font-semibold">Queue is Active</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Accepting new guests. Batch size: {queueConfig.capacity_per_batch} every{' '}
-                      {queueConfig.batch_interval_minutes} minutes.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="h-8 w-8 text-muted-foreground" />
-                  <div>
-                    <h3 className="font-semibold">Queue is Inactive</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Enable the queue in settings to start accepting guests.
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <FadeIn delay={0.15}>
+          <Card className={isPaused ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20' : ''}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                {isPaused ? (
+                  <>
+                    <Pause className="h-8 w-8 text-amber-600" />
+                    <div>
+                      <h3 className="font-semibold">Queue is Paused</h3>
+                      <p className="text-sm text-muted-foreground">
+                        New guests cannot join. Existing entries are preserved.
+                      </p>
+                    </div>
+                  </>
+                ) : isActive ? (
+                  <>
+                    <Play className="h-8 w-8 text-green-600" />
+                    <div>
+                      <h3 className="font-semibold">Queue is Active</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Accepting new guests. Batch size: {queueConfig.capacity_per_batch} every{' '}
+                        {queueConfig.batch_interval_minutes} minutes.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-8 w-8 text-muted-foreground" />
+                    <div>
+                      <h3 className="font-semibold">Queue is Inactive</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Enable the queue in settings to start accepting guests.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </FadeIn>
       )}
 
       {/* No Queue Configured */}
       {!queueConfig && primaryAttraction && (
-        <Card className="border-dashed">
+        <FadeIn delay={0.15}>
+          <Card className="border-dashed">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <AlertCircle className="h-8 w-8 text-muted-foreground" />
@@ -216,48 +229,53 @@ export default async function QueuePage({ params }: QueuePageProps) {
               </Link>
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </FadeIn>
       )}
 
       {/* No Attractions */}
       {!primaryAttraction && (
-        <Card className="border-dashed">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <AlertCircle className="h-8 w-8 text-muted-foreground" />
-              <div>
-                <h3 className="font-semibold">No Attractions Found</h3>
-                <p className="text-sm text-muted-foreground">
-                  Create an attraction first to enable virtual queue management.
-                </p>
+        <FadeIn delay={0.15}>
+          <Card className="border-dashed">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <AlertCircle className="h-8 w-8 text-muted-foreground" />
+                <div>
+                  <h3 className="font-semibold">No Attractions Found</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Create an attraction first to enable virtual queue management.
+                  </p>
+                </div>
+                <Link
+                  href={`/${orgIdentifier}/attractions`}
+                  className="ml-auto text-sm font-medium text-primary hover:underline"
+                >
+                  Manage Attractions
+                </Link>
               </div>
-              <Link
-                href={`/${orgIdentifier}/attractions`}
-                className="ml-auto text-sm font-medium text-primary hover:underline"
-              >
-                Manage Attractions
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </FadeIn>
       )}
 
       {/* Navigation Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {NAV_ITEMS.map((item) => (
-          <Link key={item.href} href={`/${orgIdentifier}${item.href}`}>
-            <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <item.icon className="h-5 w-5" />
-                  {item.title}
-                </CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      <FadeIn delay={0.2}>
+        <div className="grid gap-4 md:grid-cols-3">
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.href} href={`/${orgIdentifier}${item.href}`}>
+              <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <item.icon className="h-5 w-5" />
+                    {item.title}
+                  </CardTitle>
+                  <CardDescription>{item.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </FadeIn>
     </div>
   );
 }

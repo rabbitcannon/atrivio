@@ -10,9 +10,11 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import {
   addStorefrontDomain,
   deleteStorefrontDomain,
@@ -186,7 +188,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
     <div className="space-y-6">
       <div className="space-y-4">
         <Breadcrumb items={breadcrumbs} />
-        <div className="flex items-center justify-between">
+        <AnimatedPageHeader className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Domains</h1>
             <p className="text-muted-foreground">Manage custom domains for your storefront.</p>
@@ -204,11 +206,12 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
               <Badge variant="secondary">Domain limit reached</Badge>
             )}
           </div>
-        </div>
+        </AnimatedPageHeader>
       </div>
 
       {/* Default Subdomain */}
       {defaultSubdomain && (
+        <FadeIn delay={0.1}>
         <Card className="border-primary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -230,9 +233,11 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
             </div>
           </CardContent>
         </Card>
+        </FadeIn>
       )}
 
       {/* Custom Domains */}
+      <FadeIn delay={0.15}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -327,9 +332,11 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
           )}
         </CardContent>
       </Card>
+      </FadeIn>
 
       {/* DNS Instructions - only show when relevant and user can add domains */}
       {canAddDomains && showInstructions && (
+        <FadeIn delay={0.2}>
         <Card>
           <CardHeader>
             <CardTitle>How to Connect a Custom Domain</CardTitle>
@@ -364,6 +371,7 @@ export default async function StorefrontDomainsPage({ params }: DomainsPageProps
             </p>
           </CardContent>
         </Card>
+        </FadeIn>
       )}
     </div>
   );

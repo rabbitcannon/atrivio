@@ -13,6 +13,7 @@ import {
   User,
   XCircle,
 } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
@@ -28,9 +29,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getAttractions, listStations, scanCheckIn } from '@/lib/api/client';
 import type { AttractionListItem, CheckInScanResponse, CheckInStation } from '@/lib/api/types';
 import { cn } from '@/lib/utils/cn';
+
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
 
 type ScanStatus = 'idle' | 'scanning' | 'success' | 'error' | 'warning';
 
@@ -42,6 +47,339 @@ interface RecentScan {
   errorCode?: string;
   errorMessage?: string;
   timestamp: Date;
+}
+
+/**
+ * Loading skeleton for scan page
+ */
+function ScanPageLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <div>
+          <Skeleton className="h-9 w-40 mb-2" />
+          <Skeleton className="h-5 w-64" />
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Skeleton className="h-20" />
+        <Skeleton className="h-20" />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-64" />
+        <Skeleton className="h-64" />
+      </div>
+      <Skeleton className="h-48" />
+    </div>
+  );
+}
+
+/**
+ * Animated page header with fade-down effect
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="flex items-center gap-4">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex items-center gap-4"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated selectors section
+ */
+function AnimatedSelectorsSection({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="grid gap-4 sm:grid-cols-2">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.1 }}
+      className="grid gap-4 sm:grid-cols-2"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated card container
+ */
+function AnimatedCard({
+  children,
+  shouldReduceMotion,
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+  delay?: number;
+  className?: string;
+}) {
+  if (shouldReduceMotion) {
+    return <Card className={className}>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay }}
+    >
+      <Card className={className}>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated result card with status-based animations
+ */
+function AnimatedResultCard({
+  children,
+  shouldReduceMotion,
+  status,
+  statusColor,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+  status: ScanStatus;
+  statusColor: string;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <Card className={cn('lg:col-span-1 transition-all duration-300 border-2', statusColor)}>
+        {children}
+      </Card>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay: 0.3 }}
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={status}
+          initial={{ scale: status !== 'idle' ? 0.98 : 1 }}
+          animate={{ scale: 1 }}
+          transition={{
+            type: 'spring',
+            stiffness: 400,
+            damping: 25,
+          }}
+        >
+          <Card className={cn('lg:col-span-1 transition-all duration-300 border-2', statusColor)}>
+            {children}
+          </Card>
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated empty state for recent scans
+ */
+function AnimatedEmptyScans({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <QrCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No scans yet this session.</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-8 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <QrCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+      >
+        No scans yet this session.
+      </motion.p>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated recent scan item
+ */
+function AnimatedScanItem({
+  scan,
+  index,
+  shouldReduceMotion,
+}: {
+  scan: RecentScan;
+  index: number;
+  shouldReduceMotion: boolean | null;
+}) {
+  const content = (
+    <div
+      className={cn(
+        'flex items-center justify-between p-3 rounded-lg border',
+        scan.success
+          ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+          : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+      )}
+    >
+      <div className="flex items-center gap-3">
+        {scan.success ? (
+          <CheckCircle2 className="h-5 w-5 text-green-500" />
+        ) : (
+          <XCircle className="h-5 w-5 text-red-500" />
+        )}
+        <div>
+          {scan.success ? (
+            <>
+              <p className="font-medium">{scan.customerName || 'Guest'}</p>
+              <p className="text-sm text-muted-foreground">
+                {scan.ticketType} - #{scan.ticketNumber}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-red-700 dark:text-red-300">{scan.errorCode}</p>
+              <p className="text-sm text-muted-foreground">{scan.errorMessage}</p>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">{scan.timestamp.toLocaleTimeString()}</span>
+        <Badge variant={scan.success ? 'default' : 'destructive'}>
+          {scan.success ? 'Success' : 'Failed'}
+        </Badge>
+      </div>
+    </div>
+  );
+
+  if (shouldReduceMotion) {
+    return content;
+  }
+
+  // Only animate new items (index 0)
+  if (index === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: -20, scale: 0.95 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{
+          duration: 0.3,
+          ease: EASE,
+        }}
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return content;
+}
+
+/**
+ * Animated status icon with pulse effect
+ */
+function AnimatedStatusIcon({
+  status,
+  shouldReduceMotion,
+}: {
+  status: ScanStatus;
+  shouldReduceMotion: boolean | null;
+}) {
+  const getIcon = () => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle2 className="h-16 w-16 text-green-500" />;
+      case 'error':
+        return <XCircle className="h-16 w-16 text-red-500" />;
+      case 'warning':
+        return <FileWarning className="h-16 w-16 text-yellow-500" />;
+      case 'scanning':
+        return <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />;
+      default:
+        return <QrCode className="h-16 w-16 text-muted-foreground" />;
+    }
+  };
+
+  if (shouldReduceMotion || status === 'idle' || status === 'scanning') {
+    return getIcon();
+  }
+
+  return (
+    <motion.div
+      key={status}
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 15,
+      }}
+    >
+      {getIcon()}
+    </motion.div>
+  );
 }
 
 function ScanPageContent() {
@@ -248,33 +586,16 @@ function ScanPageContent() {
     }
   };
 
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle2 className="h-16 w-16 text-green-500" />;
-      case 'error':
-        return <XCircle className="h-16 w-16 text-red-500" />;
-      case 'warning':
-        return <FileWarning className="h-16 w-16 text-yellow-500" />;
-      case 'scanning':
-        return <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />;
-      default:
-        return <QrCode className="h-16 w-16 text-muted-foreground" />;
-    }
-  };
+  const shouldReduceMotion = useReducedMotion();
 
   if (isLoadingAttractions) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <ScanPageLoadingSkeleton />;
   }
 
   if (attractions.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
+        <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
           <Link href={`/${orgId}/check-in`}>
             <Button variant="ghost" size="icon" aria-label="Back to check-in">
               <ArrowLeft className="h-4 w-4" />
@@ -284,14 +605,14 @@ function ScanPageContent() {
             <h1 className="text-3xl font-bold">Scan Tickets</h1>
             <p className="text-muted-foreground">No attractions available</p>
           </div>
-        </div>
+        </AnimatedPageHeader>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <Link href={`/${orgId}/check-in`}>
           <Button variant="ghost" size="icon" aria-label="Back to check-in">
             <ArrowLeft className="h-4 w-4" />
@@ -301,10 +622,10 @@ function ScanPageContent() {
           <h1 className="text-3xl font-bold">Scan Tickets</h1>
           <p className="text-muted-foreground">Scan barcodes or QR codes to check in guests.</p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Attraction & Station Selection */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <AnimatedSelectorsSection shouldReduceMotion={shouldReduceMotion}>
         <div className="space-y-2">
           <Label>Attraction</Label>
           <Select value={attractionId ?? ''} onValueChange={setAttractionId}>
@@ -341,11 +662,11 @@ function ScanPageContent() {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </AnimatedSelectorsSection>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Scan Input Card */}
-        <Card className="lg:col-span-1">
+        <AnimatedCard shouldReduceMotion={shouldReduceMotion} delay={0.2} className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Scan className="h-5 w-5" />
@@ -389,18 +710,20 @@ function ScanPageContent() {
               </Button>
             </form>
           </CardContent>
-        </Card>
+        </AnimatedCard>
 
         {/* Result Display Card */}
-        <Card
-          className={cn('lg:col-span-1 transition-all duration-300 border-2', getStatusColor())}
+        <AnimatedResultCard
+          shouldReduceMotion={shouldReduceMotion}
+          status={status}
+          statusColor={getStatusColor()}
         >
           <CardHeader>
             <CardTitle>Scan Result</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-8 space-y-4">
-              {getStatusIcon()}
+              <AnimatedStatusIcon status={status} shouldReduceMotion={shouldReduceMotion} />
               {status === 'idle' ? (
                 <p className="text-muted-foreground text-center">
                   Ready to scan. Enter a ticket code to check in a guest.
@@ -489,11 +812,11 @@ function ScanPageContent() {
               )}
             </div>
           </CardContent>
-        </Card>
+        </AnimatedResultCard>
       </div>
 
       {/* Recent Scans */}
-      <Card>
+      <AnimatedCard shouldReduceMotion={shouldReduceMotion} delay={0.4}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
@@ -505,73 +828,28 @@ function ScanPageContent() {
         </CardHeader>
         <CardContent>
           {recentScans.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <QrCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No scans yet this session.</p>
-            </div>
+            <AnimatedEmptyScans shouldReduceMotion={shouldReduceMotion} />
           ) : (
             <div className="space-y-2">
               {recentScans.map((scan, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    'flex items-center justify-between p-3 rounded-lg border',
-                    scan.success
-                      ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
-                      : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    {scan.success ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-500" />
-                    )}
-                    <div>
-                      {scan.success ? (
-                        <>
-                          <p className="font-medium">{scan.customerName || 'Guest'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {scan.ticketType} - #{scan.ticketNumber}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-medium text-red-700 dark:text-red-300">
-                            {scan.errorCode}
-                          </p>
-                          <p className="text-sm text-muted-foreground">{scan.errorMessage}</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      {scan.timestamp.toLocaleTimeString()}
-                    </span>
-                    <Badge variant={scan.success ? 'default' : 'destructive'}>
-                      {scan.success ? 'Success' : 'Failed'}
-                    </Badge>
-                  </div>
-                </div>
+                <AnimatedScanItem
+                  key={`${scan.timestamp.getTime()}-${index}`}
+                  scan={scan}
+                  index={index}
+                  shouldReduceMotion={shouldReduceMotion}
+                />
               ))}
             </div>
           )}
         </CardContent>
-      </Card>
+      </AnimatedCard>
     </div>
   );
 }
 
 export default function ScanPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      }
-    >
+    <Suspense fallback={<ScanPageLoadingSkeleton />}>
       <ScanPageContent />
     </Suspense>
   );

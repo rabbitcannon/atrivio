@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { MembersTable } from '@/components/features/organizations/members-table';
+import { FadeIn } from '@/components/ui/motion';
 import { resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -22,14 +24,16 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Members</h1>
           <p className="text-muted-foreground">Manage organization members and their roles.</p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
-      <MembersTable orgId={orgId} />
+      <FadeIn delay={0.1}>
+        <MembersTable orgId={orgId} />
+      </FadeIn>
     </div>
   );
 }

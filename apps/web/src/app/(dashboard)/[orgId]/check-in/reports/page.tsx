@@ -14,9 +14,10 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -28,12 +29,392 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getAttractions, getCheckInStats, listCheckIns } from '@/lib/api/client';
 import type { AttractionListItem, CheckInStats } from '@/lib/api/types';
+
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+/**
+ * Loading skeleton for reports page
+ */
+function ReportsPageLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <div className="flex-1">
+          <Skeleton className="h-9 w-48 mb-2" />
+          <Skeleton className="h-5 w-72" />
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader className="pb-2">
+              <Skeleton className="h-4 w-28" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-16 mb-1" />
+              <Skeleton className="h-3 w-24" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {[1, 2].map((i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-52" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-32" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-5 w-56" />
+          <Skeleton className="h-4 w-40" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-48" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Animated page header with back button
+ */
+function AnimatedPageHeader({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="flex items-center gap-4">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      className="flex items-center gap-4"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated filters section
+ */
+function AnimatedFiltersSection({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="grid gap-4 sm:grid-cols-3">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: EASE, delay: 0.1 }}
+      className="grid gap-4 sm:grid-cols-3"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated stats grid with staggered cards
+ */
+function AnimatedStatsGrid({
+  children,
+  shouldReduceMotion,
+  columns = 4,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+  columns?: 3 | 4;
+}) {
+  const gridClass =
+    columns === 3 ? 'grid gap-4 md:grid-cols-3' : 'grid gap-4 md:grid-cols-2 lg:grid-cols-4';
+
+  if (shouldReduceMotion) {
+    return <div className={gridClass}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.06,
+            delayChildren: 0.15,
+          },
+        },
+      }}
+      className={gridClass}
+    >
+      {React.Children.map(children, (child) => (
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 12, scale: 0.95 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              transition: { duration: 0.3, ease: EASE },
+            },
+          }}
+        >
+          {child}
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated two-column card grid
+ */
+function AnimatedCardGrid({
+  children,
+  shouldReduceMotion,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return <div className="grid gap-6 lg:grid-cols-2">{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.25,
+          },
+        },
+      }}
+      className="grid gap-6 lg:grid-cols-2"
+    >
+      {React.Children.map(children, (child) => (
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 12 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: { duration: 0.35, ease: EASE },
+            },
+          }}
+        >
+          {child}
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+/**
+ * Animated single card
+ */
+function AnimatedCard({
+  children,
+  shouldReduceMotion,
+  delay = 0.35,
+}: {
+  children: React.ReactNode;
+  shouldReduceMotion: boolean | null;
+  delay?: number;
+}) {
+  if (shouldReduceMotion) {
+    return <Card>{children}</Card>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE, delay }}
+    >
+      <Card>{children}</Card>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated chart bar for hourly distribution
+ */
+function AnimatedChartBar({
+  hour,
+  count,
+  height,
+  index,
+  shouldReduceMotion,
+}: {
+  hour: string;
+  count: number;
+  height: number;
+  index: number;
+  shouldReduceMotion: boolean | null;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="flex-1 flex flex-col items-center gap-1">
+        <span className="text-xs text-muted-foreground">{count}</span>
+        <div
+          className="w-full bg-primary rounded-t transition-all"
+          style={{ height: `${height}%`, minHeight: count > 0 ? '4px' : '0' }}
+        />
+        <span className="text-xs text-muted-foreground">{hour}</span>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, delay: index * 0.02 }}
+      className="flex-1 flex flex-col items-center gap-1"
+    >
+      <span className="text-xs text-muted-foreground">{count}</span>
+      <motion.div
+        initial={{ height: 0 }}
+        animate={{ height: `${height}%` }}
+        transition={{
+          duration: 0.5,
+          ease: EASE,
+          delay: 0.3 + index * 0.02,
+        }}
+        className="w-full bg-primary rounded-t"
+        style={{ minHeight: count > 0 ? '4px' : '0' }}
+      />
+      <span className="text-xs text-muted-foreground">{hour}</span>
+    </motion.div>
+  );
+}
+
+/**
+ * Animated empty state
+ */
+function AnimatedEmptyState({
+  shouldReduceMotion,
+  icon: Icon,
+  title,
+  description,
+}: {
+  shouldReduceMotion: boolean | null;
+  icon: React.ElementType;
+  title: string;
+  description?: string;
+}) {
+  if (shouldReduceMotion) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <Icon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p className="text-lg font-medium">{title}</p>
+        {description && <p className="text-sm">{description}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1,
+          },
+        },
+      }}
+      className="text-center py-8 text-muted-foreground"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, scale: 0.5, y: 10 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+              type: 'spring',
+              stiffness: 300,
+              damping: 15,
+            },
+          },
+        }}
+      >
+        <Icon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      </motion.div>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 10 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+        }}
+        className="text-lg font-medium"
+      >
+        {title}
+      </motion.p>
+      {description && (
+        <motion.p
+          variants={{
+            hidden: { opacity: 0, y: 10 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } },
+          }}
+          className="text-sm"
+        >
+          {description}
+        </motion.p>
+      )}
+    </motion.div>
+  );
+}
 
 function ReportsPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const shouldReduceMotion = useReducedMotion();
   const orgId = params['orgId'] as string;
   const attractionIdFromUrl = searchParams.get('attractionId');
 
@@ -168,7 +549,7 @@ function ReportsPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <AnimatedPageHeader shouldReduceMotion={shouldReduceMotion}>
         <Link href={`/${orgId}/check-in`}>
           <Button variant="ghost" size="icon" aria-label="Back to check-in">
             <ArrowLeft className="h-4 w-4" />
@@ -178,10 +559,10 @@ function ReportsPageContent() {
           <h1 className="text-3xl font-bold">Check-In Reports</h1>
           <p className="text-muted-foreground">Analytics and statistics for guest check-ins.</p>
         </div>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Filters */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <AnimatedFiltersSection shouldReduceMotion={shouldReduceMotion}>
         <div className="space-y-2">
           <Label>Attraction</Label>
           <Select value={attractionId ?? ''} onValueChange={setAttractionId}>
@@ -216,7 +597,7 @@ function ReportsPageContent() {
             Export CSV
           </Button>
         </div>
-      </div>
+      </AnimatedFiltersSection>
 
       {isLoadingStats ? (
         <div className="flex items-center justify-center py-12">
@@ -225,7 +606,7 @@ function ReportsPageContent() {
       ) : (
         <>
           {/* Overview Stats */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <AnimatedStatsGrid shouldReduceMotion={shouldReduceMotion} columns={4}>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Checked In</CardTitle>
@@ -272,9 +653,9 @@ function ReportsPageContent() {
                 <p className="text-xs text-muted-foreground">Busiest time</p>
               </CardContent>
             </Card>
-          </div>
+          </AnimatedStatsGrid>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <AnimatedCardGrid shouldReduceMotion={shouldReduceMotion}>
             {/* Check-ins by Station */}
             <Card>
               <CardHeader>
@@ -286,10 +667,11 @@ function ReportsPageContent() {
               </CardHeader>
               <CardContent>
                 {!stats?.byStation || stats.byStation.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No station data available</p>
-                  </div>
+                  <AnimatedEmptyState
+                    shouldReduceMotion={shouldReduceMotion}
+                    icon={Clock}
+                    title="No station data available"
+                  />
                 ) : (
                   <div className="space-y-4">
                     {stats.byStation.map((station) => {
@@ -323,10 +705,11 @@ function ReportsPageContent() {
               </CardHeader>
               <CardContent>
                 {!stats?.byMethod || stats.byMethod.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No method data available</p>
-                  </div>
+                  <AnimatedEmptyState
+                    shouldReduceMotion={shouldReduceMotion}
+                    icon={BarChart3}
+                    title="No method data available"
+                  />
                 ) : (
                   <div className="space-y-4">
                     {stats.byMethod.map((method) => {
@@ -351,10 +734,10 @@ function ReportsPageContent() {
                 )}
               </CardContent>
             </Card>
-          </div>
+          </AnimatedCardGrid>
 
           {/* Hourly Distribution */}
-          <Card>
+          <AnimatedCard shouldReduceMotion={shouldReduceMotion} delay={0.4}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
@@ -364,36 +747,35 @@ function ReportsPageContent() {
             </CardHeader>
             <CardContent>
               {!stats?.byHour || stats.byHour.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">No check-in data yet</p>
-                  <p className="text-sm">
-                    Check-in data will appear here once guests start arriving.
-                  </p>
-                </div>
+                <AnimatedEmptyState
+                  shouldReduceMotion={shouldReduceMotion}
+                  icon={Activity}
+                  title="No check-in data yet"
+                  description="Check-in data will appear here once guests start arriving."
+                />
               ) : (
                 <div className="flex items-end justify-between h-48 gap-1">
-                  {stats.byHour.map((hour) => {
+                  {stats.byHour.map((hour, index) => {
                     const maxCount = Math.max(...stats.byHour.map((h) => h.count), 1);
                     const height = maxCount > 0 ? (hour.count / maxCount) * 100 : 0;
                     return (
-                      <div key={hour.hour} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-xs text-muted-foreground">{hour.count}</span>
-                        <div
-                          className="w-full bg-primary rounded-t transition-all"
-                          style={{ height: `${height}%`, minHeight: hour.count > 0 ? '4px' : '0' }}
-                        />
-                        <span className="text-xs text-muted-foreground">{hour.hour}</span>
-                      </div>
+                      <AnimatedChartBar
+                        key={hour.hour}
+                        hour={hour.hour}
+                        count={hour.count}
+                        height={height}
+                        index={index}
+                        shouldReduceMotion={shouldReduceMotion}
+                      />
                     );
                   })}
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AnimatedCard>
 
           {/* Quick Stats Summary */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <AnimatedStatsGrid shouldReduceMotion={shouldReduceMotion} columns={3}>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -432,7 +814,7 @@ function ReportsPageContent() {
                 <p className="text-xs text-muted-foreground">All scan attempts</p>
               </CardContent>
             </Card>
-          </div>
+          </AnimatedStatsGrid>
         </>
       )}
     </div>
@@ -441,13 +823,7 @@ function ReportsPageContent() {
 
 export default function ReportsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      }
-    >
+    <Suspense fallback={<ReportsPageLoadingSkeleton />}>
       <ReportsPageContent />
     </Suspense>
   );

@@ -12,10 +12,12 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/motion';
 import {
   Table,
   TableBody,
@@ -186,14 +188,15 @@ export default async function PayoutsPage({ params }: PayoutsPageProps) {
         </Button>
       </div>
 
-      <div>
+      <AnimatedPageHeader>
         <h1 className="text-3xl font-bold">Payouts</h1>
         <p className="text-muted-foreground">
           View payout history and upcoming transfers to your bank.
         </p>
-      </div>
+      </AnimatedPageHeader>
 
-      <Card>
+      <FadeIn delay={0.1}>
+        <Card>
         <CardHeader>
           <CardTitle>Payout History</CardTitle>
           <CardDescription>{total} total payouts</CardDescription>
@@ -265,7 +268,8 @@ export default async function PayoutsPage({ params }: PayoutsPageProps) {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </FadeIn>
     </div>
   );
 }

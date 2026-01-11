@@ -13,6 +13,7 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { AutoSyncStatus } from '@/components/features/payments/auto-sync-status';
 import { RefreshStatusButton } from '@/components/features/payments/refresh-status-button';
 import { StripeConnectButton } from '@/components/features/payments/stripe-connect-button';
@@ -21,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { Separator } from '@/components/ui/separator';
 import { getPaymentStatus, getTransactionSummary, resolveOrgId } from '@/lib/api';
 
@@ -120,175 +122,187 @@ export default async function PaymentsPage({ params }: PaymentsPageProps) {
         <AutoSyncStatus orgId={orgId} currentStatus={accountStatus?.status ?? null} />
       )}
 
-      <div>
+      <AnimatedPageHeader>
         <h1 className="text-3xl font-bold">Payments</h1>
         <p className="text-muted-foreground">
           Manage your Stripe Connect account and view financial data.
         </p>
-      </div>
+      </AnimatedPageHeader>
 
       {/* Stripe Account Status */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {getStatusIcon(accountStatus?.status ?? null)}
-              <div>
-                <CardTitle>Stripe Account</CardTitle>
-                <CardDescription>
-                  {isConnected
-                    ? accountStatus?.business_name || 'Connected account'
-                    : 'Connect your Stripe account to accept payments'}
-                </CardDescription>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {accountStatus?.status && (
-                <Badge
-                  variant={getStatusBadgeVariant(accountStatus.status)}
-                  className={getStatusBadgeClassName(accountStatus.status)}
-                >
-                  {accountStatus.status.charAt(0).toUpperCase() + accountStatus.status.slice(1)}
-                </Badge>
-              )}
-              {isConnected && !isActive && <RefreshStatusButton orgId={orgId} />}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {!isConnected ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Connect your organization to Stripe to start accepting payments from customers.
-                Stripe handles all payment processing, security, and compliance.
-              </p>
-              <StripeConnectButton orgId={orgId} mode="connect" />
-            </div>
-          ) : accountStatus?.needs_onboarding ? (
-            <div className="space-y-4">
-              <Alert>
-                <Clock className="h-4 w-4" />
-                <AlertTitle>Complete your setup</AlertTitle>
-                <AlertDescription>
-                  Your Stripe account setup is incomplete. Complete the onboarding process to start
-                  accepting payments.
-                </AlertDescription>
-              </Alert>
-              <StripeConnectButton orgId={orgId} mode="onboarding" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">
-                    {accountStatus?.charges_enabled ? 'Accepting payments' : 'Payments disabled'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">
-                    {accountStatus?.payouts_enabled ? 'Payouts enabled' : 'Payouts disabled'}
-                  </span>
+      <FadeIn delay={0.1}>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {getStatusIcon(accountStatus?.status ?? null)}
+                <div>
+                  <CardTitle>Stripe Account</CardTitle>
+                  <CardDescription>
+                    {isConnected
+                      ? accountStatus?.business_name || 'Connected account'
+                      : 'Connect your Stripe account to accept payments'}
+                  </CardDescription>
                 </div>
               </div>
-              <Separator />
-              <div className="flex gap-2">
-                <StripeConnectButton orgId={orgId} mode="dashboard" variant="outline" />
-                <SyncTransactionsButton orgId={orgId} />
+              <div className="flex items-center gap-2">
+                {accountStatus?.status && (
+                  <Badge
+                    variant={getStatusBadgeVariant(accountStatus.status)}
+                    className={getStatusBadgeClassName(accountStatus.status)}
+                  >
+                    {accountStatus.status.charAt(0).toUpperCase() + accountStatus.status.slice(1)}
+                  </Badge>
+                )}
+                {isConnected && !isActive && <RefreshStatusButton orgId={orgId} />}
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {!isConnected ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Connect your organization to Stripe to start accepting payments from customers.
+                  Stripe handles all payment processing, security, and compliance.
+                </p>
+                <StripeConnectButton orgId={orgId} mode="connect" />
+              </div>
+            ) : accountStatus?.needs_onboarding ? (
+              <div className="space-y-4">
+                <Alert>
+                  <Clock className="h-4 w-4" />
+                  <AlertTitle>Complete your setup</AlertTitle>
+                  <AlertDescription>
+                    Your Stripe account setup is incomplete. Complete the onboarding process to start
+                    accepting payments.
+                  </AlertDescription>
+                </Alert>
+                <StripeConnectButton orgId={orgId} mode="onboarding" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">
+                      {accountStatus?.charges_enabled ? 'Accepting payments' : 'Payments disabled'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">
+                      {accountStatus?.payouts_enabled ? 'Payouts enabled' : 'Payouts disabled'}
+                    </span>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex gap-2">
+                  <StripeConnectButton orgId={orgId} mode="dashboard" variant="outline" />
+                  <SyncTransactionsButton orgId={orgId} />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </FadeIn>
 
       {/* Revenue Summary - Only show if connected and active */}
       {isActive && summary && (
         <>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(summary.total_charges)}</div>
-                <p className="text-xs text-muted-foreground">Gross charges collected</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Net Revenue</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(summary.net_revenue)}</div>
-                <p className="text-xs text-muted-foreground">After fees & refunds</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Refunds</CardTitle>
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(summary.total_refunds)}</div>
-                <p className="text-xs text-muted-foreground">Refunded to customers</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-                <Wallet className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{summary.transaction_count}</div>
-                <p className="text-xs text-muted-foreground">Total processed</p>
-              </CardContent>
-            </Card>
-          </div>
+          <StaggerContainer className="grid gap-4 md:grid-cols-4" staggerDelay={0.05} delayChildren={0.15}>
+            <StaggerItem>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(summary.total_charges)}</div>
+                  <p className="text-xs text-muted-foreground">Gross charges collected</p>
+                </CardContent>
+              </Card>
+            </StaggerItem>
+            <StaggerItem>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Net Revenue</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(summary.net_revenue)}</div>
+                  <p className="text-xs text-muted-foreground">After fees & refunds</p>
+                </CardContent>
+              </Card>
+            </StaggerItem>
+            <StaggerItem>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Refunds</CardTitle>
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(summary.total_refunds)}</div>
+                  <p className="text-xs text-muted-foreground">Refunded to customers</p>
+                </CardContent>
+              </Card>
+            </StaggerItem>
+            <StaggerItem>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Transactions</CardTitle>
+                  <Wallet className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{summary.transaction_count}</div>
+                  <p className="text-xs text-muted-foreground">Total processed</p>
+                </CardContent>
+              </Card>
+            </StaggerItem>
+          </StaggerContainer>
 
           {/* Quick Links */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ArrowUpDown className="h-5 w-5" />
-                  Transactions
-                </CardTitle>
-                <CardDescription>
-                  View all payment transactions, charges, and refunds
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={`/${orgIdentifier}/payments/transactions`}>
-                    View Transactions
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5" />
-                  Payouts
-                </CardTitle>
-                <CardDescription>
-                  View payout history and upcoming transfers to your bank
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={`/${orgIdentifier}/payments/payouts`}>
-                    View Payouts
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <FadeIn delay={0.3}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ArrowUpDown className="h-5 w-5" />
+                    Transactions
+                  </CardTitle>
+                  <CardDescription>
+                    View all payment transactions, charges, and refunds
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/${orgIdentifier}/payments/transactions`}>
+                      View Transactions
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5" />
+                    Payouts
+                  </CardTitle>
+                  <CardDescription>
+                    View payout history and upcoming transfers to your bank
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/${orgIdentifier}/payments/payouts`}>
+                      View Payouts
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </FadeIn>
         </>
       )}
     </div>

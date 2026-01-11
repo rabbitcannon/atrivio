@@ -1,12 +1,14 @@
 import { Award, Clock, FileText, Settings } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { CertificationList } from '@/components/features/staff/certification-list';
 import { SkillBadges } from '@/components/features/staff/skill-badges';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getStaffMember, resolveOrgId } from '@/lib/api';
 
@@ -55,7 +57,7 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarFallback className="text-lg">
@@ -81,135 +83,153 @@ export default async function StaffDetailPage({ params }: StaffDetailPageProps) 
             Edit
           </a>
         </Button>
-      </div>
+      </AnimatedPageHeader>
 
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
-          <TabsTrigger value="certifications">Certifications</TabsTrigger>
-          <TabsTrigger value="time">Time Tracking</TabsTrigger>
-        </TabsList>
+      <FadeIn delay={0.1}>
+        <Tabs defaultValue="overview">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="skills">Skills</TabsTrigger>
+            <TabsTrigger value="certifications">Certifications</TabsTrigger>
+            <TabsTrigger value="time">Time Tracking</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Role</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold capitalize">{staff.role}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Hire Date</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {staff.hire_date ? new Date(staff.hire_date).toLocaleDateString() : 'Not set'}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Employment</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-lg font-bold capitalize">
-                  {staff.employment_type?.replace('_', ' ') || 'Not set'}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <TabsContent value="overview" className="space-y-4">
+            <StaggerContainer className="grid gap-4 md:grid-cols-3" staggerDelay={0.06} delayChildren={0.1}>
+              <StaggerItem>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Role</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold capitalize">{staff.role}</div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Hire Date</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {staff.hire_date ? new Date(staff.hire_date).toLocaleDateString() : 'Not set'}
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Employment</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-lg font-bold capitalize">
+                      {staff.employment_type?.replace('_', ' ') || 'Not set'}
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            </StaggerContainer>
 
-          {/* Quick Info */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Skills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SkillBadges skills={skills} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Certifications</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CertificationList certifications={certifications} />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+            {/* Quick Info */}
+            <StaggerContainer className="grid gap-4 md:grid-cols-2" staggerDelay={0.08} delayChildren={0.2}>
+              <StaggerItem>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Skills</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <SkillBadges skills={skills} />
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+              <StaggerItem>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Certifications</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CertificationList certifications={certifications} />
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            </StaggerContainer>
+          </TabsContent>
 
-        <TabsContent value="skills">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Skills & Abilities</CardTitle>
-                  <CardDescription>Manage skills for this staff member.</CardDescription>
-                </div>
-                <Button asChild>
-                  <a href={`/${orgIdentifier}/staff/${staffId}/skills`}>
-                    <Award className="mr-2 h-4 w-4" />
-                    Manage Skills
-                  </a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <SkillBadges skills={skills} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="skills">
+            <FadeIn delay={0.05}>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Skills & Abilities</CardTitle>
+                      <CardDescription>Manage skills for this staff member.</CardDescription>
+                    </div>
+                    <Button asChild>
+                      <a href={`/${orgIdentifier}/staff/${staffId}/skills`}>
+                        <Award className="mr-2 h-4 w-4" />
+                        Manage Skills
+                      </a>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <SkillBadges skills={skills} />
+                </CardContent>
+              </Card>
+            </FadeIn>
+          </TabsContent>
 
-        <TabsContent value="certifications">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Certifications</CardTitle>
-                  <CardDescription>Track certifications and expiry dates.</CardDescription>
-                </div>
-                <Button asChild>
-                  <a href={`/${orgIdentifier}/staff/${staffId}/certifications`}>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Manage Certifications
-                  </a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CertificationList certifications={certifications} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="certifications">
+            <FadeIn delay={0.05}>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Certifications</CardTitle>
+                      <CardDescription>Track certifications and expiry dates.</CardDescription>
+                    </div>
+                    <Button asChild>
+                      <a href={`/${orgIdentifier}/staff/${staffId}/certifications`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Manage Certifications
+                      </a>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CertificationList certifications={certifications} />
+                </CardContent>
+              </Card>
+            </FadeIn>
+          </TabsContent>
 
-        <TabsContent value="time">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Time Tracking</CardTitle>
-                  <CardDescription>View and manage time entries.</CardDescription>
-                </div>
-                <Button asChild>
-                  <a href={`/${orgIdentifier}/staff/${staffId}/time`}>
-                    <Clock className="mr-2 h-4 w-4" />
-                    View All Time
-                  </a>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">No recent time entries.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="time">
+            <FadeIn delay={0.05}>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Time Tracking</CardTitle>
+                      <CardDescription>View and manage time entries.</CardDescription>
+                    </div>
+                    <Button asChild>
+                      <a href={`/${orgIdentifier}/staff/${staffId}/time`}>
+                        <Clock className="mr-2 h-4 w-4" />
+                        View All Time
+                      </a>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">No recent time entries.</p>
+                </CardContent>
+              </Card>
+            </FadeIn>
+          </TabsContent>
+        </Tabs>
+      </FadeIn>
     </div>
   );
 }

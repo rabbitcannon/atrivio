@@ -1,8 +1,10 @@
 import { AlertCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { OrgSettingsForm } from '@/components/features/organizations/org-settings-form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FadeIn } from '@/components/ui/motion';
 import { getOrganization, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
@@ -42,12 +44,14 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
+      <AnimatedPageHeader>
         <h1 className="text-3xl font-bold">Organization Settings</h1>
         <p className="text-muted-foreground">Manage your organization details and preferences.</p>
-      </div>
+      </AnimatedPageHeader>
 
-      <OrgSettingsForm orgId={orgId} organization={result.data} />
+      <FadeIn delay={0.1}>
+        <OrgSettingsForm orgId={orgId} organization={result.data} />
+      </FadeIn>
     </div>
   );
 }

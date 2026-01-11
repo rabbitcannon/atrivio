@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AnimatedPageHeader } from '@/components/features/attractions';
 import { StaffTable } from '@/components/features/staff/staff-table';
 import { Button } from '@/components/ui/button';
 import { resolveOrgId } from '@/lib/api';
@@ -24,7 +25,7 @@ export default async function StaffPage({ params }: StaffPageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedPageHeader className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Staff</h1>
           <p className="text-muted-foreground">
@@ -37,7 +38,7 @@ export default async function StaffPage({ params }: StaffPageProps) {
             Add Staff
           </a>
         </Button>
-      </div>
+      </AnimatedPageHeader>
 
       <StaffTable orgId={orgId} />
     </div>
