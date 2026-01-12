@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * Documentation Screenshot Automation
@@ -10,6 +11,8 @@ import path from 'path';
  * Run: pnpm --filter @atrivio/web screenshots
  */
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const SCREENSHOT_DIR = path.join(__dirname, '../../public/docs/screenshots');
 
 // Test account credentials from seed data

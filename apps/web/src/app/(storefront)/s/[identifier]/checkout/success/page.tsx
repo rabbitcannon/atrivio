@@ -22,7 +22,7 @@ export default async function SuccessPage({ params, searchParams }: SuccessPageP
     return path;
   };
 
-  const ticketsUrl = buildUrl('/tickets');
+  const ticketsUrl = buildUrl(`/s/${identifier}`);
 
   const storefrontResponse = await getPublicStorefront(identifier);
   if (storefrontResponse.error || !storefrontResponse.data) {

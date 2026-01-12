@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Loader2, ShoppingCart, CreditCard } from 'lucide-react';
 import Link from 'next/link';
-import { createCheckoutSession } from '@/lib/api';
+import { createCheckoutSession } from '@/lib/api/public';
 import { formatCurrency } from '@atrivio/shared/utils/money';
 
 interface CartItem {
@@ -47,7 +47,7 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
   };
 
   // Get the tickets URL (main storefront page)
-  const ticketsUrl = buildUrl('/tickets');
+  const ticketsUrl = buildUrl(`/s/${identifier}`);
 
   // Load cart from sessionStorage
   useEffect(() => {
@@ -78,8 +78,8 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
       const origin = window.location.origin;
       const storefrontParam = searchParams.get('storefront');
       const queryString = storefrontParam ? `?storefront=${storefrontParam}` : '';
-      const successUrl = `${origin}/checkout/success${queryString}`;
-      const cancelUrl = `${origin}/checkout${queryString}`;
+      const successUrl = `${origin}/s/${identifier}/checkout/success${queryString}`;
+      const cancelUrl = `${origin}/s/${identifier}/checkout${queryString}`;
 
       const session = await createCheckoutSession(identifier, {
         customerEmail: email,

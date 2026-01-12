@@ -22,6 +22,13 @@ export async function createClient() {
 
   const cookieStore = await cookies();
 
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    const allCookies = cookieStore.getAll();
+    const authCookies = allCookies.filter(c => c.name.includes('auth'));
+    console.log('[createClient] Auth cookies found:', authCookies.map(c => c.name));
+  }
+
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {

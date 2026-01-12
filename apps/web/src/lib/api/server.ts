@@ -23,6 +23,13 @@ export async function apiServer<T>(
 ): Promise<ApiResponse<T>> {
   const session = await getSession();
 
+  // Debug logging for auth issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[apiServer] Endpoint:', endpoint);
+    console.log('[apiServer] Session exists:', !!session);
+    console.log('[apiServer] Has access_token:', !!session?.access_token);
+  }
+
   const headers: HeadersInit = {
     // Only set Content-Type for requests with a body
     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
@@ -31,6 +38,21 @@ export async function apiServer<T>(
 
   if (session?.access_token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${session.access_token}`;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[apiServer] Auth header set with token (first 20 chars):', session.access_token.substring(0, 20));
+    }
+  } else if (process.env.NODE_ENV === 'development') {
+    console.warn('[apiServer] No access token - request will be unauthenticated');
+  }
+
+  // Log full request details
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[apiServer] Full URL:', `${API_BASE_URL}${endpoint}`);
+    console.log('[apiServer] Method:', options.method || 'GET');
+    console.log('[apiServer] Headers:', JSON.stringify(headers, null, 2));
+    if (options.body) {
+      console.log('[apiServer] Body:', options.body);
+    }
   }
 
   try {
@@ -46,6 +68,9 @@ export async function apiServer<T>(
         message: 'An unexpected error occurred',
         statusCode: response.status,
       }));
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[apiServer] API error:', response.status, error);
+      }
       return { data: null, error };
     }
 

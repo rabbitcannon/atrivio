@@ -1343,12 +1343,12 @@ ON CONFLICT (key) DO UPDATE SET
 -- F6: STRIPE CONNECT DATA
 -- ============================================================================
 
--- Stripe accounts for organizations (using valid hex UUIDs: 6s = stripe accounts)
--- NOTE: No seeded Stripe account - organizations must complete Stripe onboarding
--- to connect a real Stripe account. Transactions come from real Stripe webhooks.
+-- Stripe accounts for organizations
+-- Using a test Stripe Connect account for E2E testing on Nightmare Manor
+INSERT INTO stripe_accounts (org_id, stripe_account_id, status, type, charges_enabled, payouts_enabled, details_submitted, country, default_currency) VALUES
+  ('b0000000-0000-0000-0000-000000000001', 'acct_1SkcdWK2s9JgslzO', 'active', 'express', TRUE, TRUE, TRUE, 'US', 'usd');
 
 -- NOTE: No seeded payouts - payouts come from real Stripe webhooks
-
 -- NOTE: No seeded transactions - transactions come from real Stripe webhooks
 -- NOTE: No seeded webhooks - webhook records come from real Stripe events
 

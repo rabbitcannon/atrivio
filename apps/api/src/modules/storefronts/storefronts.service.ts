@@ -313,7 +313,7 @@ export class StorefrontsService {
       content_format: dto.content_format || 'markdown',
       page_type: dto.page_type || 'custom',
       show_in_nav: dto.show_in_nav ?? false,
-      status: 'draft',
+      status: dto.status || 'draft',
       created_by: userId,
     };
 

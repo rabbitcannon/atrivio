@@ -783,7 +783,7 @@ export interface PreferencesResponse {
 // These types match the API response format (camelCase)
 // ============================================================================
 
-export type ContentFormat = 'markdown' | 'html' | 'plain' | 'richtext';
+export type ContentFormat = 'markdown' | 'html' | 'blocks';
 export type PageType =
   | 'home'
   | 'about'

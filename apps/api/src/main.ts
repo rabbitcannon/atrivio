@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,6 +11,15 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({ logger: true }),
     { rawBody: true } // Enable raw body for webhook signature verification
+  );
+
+  // Global validation pipe for class-validator
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true, // Strip properties not in DTO
+      forbidNonWhitelisted: false, // Don't error on extra properties, just strip them
+    })
   );
 
   // Global prefix for all routes

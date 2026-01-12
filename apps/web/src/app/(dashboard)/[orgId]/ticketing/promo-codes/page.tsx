@@ -501,10 +501,11 @@ export default function PromoCodesPage() {
 
   const loadPromoCodes = useCallback(async (orgId: string) => {
     try {
-      const response = await apiClient.get<{ data: PromoCode[] }>(
+      // apiClientDirect returns data directly, not wrapped
+      const response = await apiClient.get<PromoCode[]>(
         `/organizations/${orgId}/promo-codes?includeInactive=true`
       );
-      setPromoCodes(response?.data || []);
+      setPromoCodes(response || []);
     } catch (_error) {}
   }, []);
 
@@ -598,7 +599,8 @@ export default function PromoCodesPage() {
     const payload = {
       code: formData.code.toUpperCase(),
       description: formData.description || undefined,
-      discountType: formData.discountType,
+      // Map 'fixed' to 'fixed_amount' for API (API uses snake_case enum)
+      discountType: formData.discountType === 'fixed' ? 'fixed_amount' : formData.discountType,
       discountValue:
         formData.discountType === 'percentage'
           ? parseInt(formData.discountValue, 10)

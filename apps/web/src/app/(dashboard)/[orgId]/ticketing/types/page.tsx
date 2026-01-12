@@ -401,28 +401,32 @@ export default function TicketTypesPage() {
 
   const loadTicketTypes = useCallback(async (orgId: string) => {
     try {
-      const response = await apiClient.get<{ data: TicketType[] }>(
+      // API returns array directly, not wrapped in { data: [...] }
+      const ticketTypes = await apiClient.get<TicketType[]>(
         `/organizations/${orgId}/ticket-types?includeInactive=true`
       );
-      setTicketTypes(response?.data || []);
+      setTicketTypes(Array.isArray(ticketTypes) ? ticketTypes : []);
     } catch (_error) {}
   }, []);
 
   const loadCategories = useCallback(async (orgId: string) => {
     try {
-      const response = await apiClient.get<{ data: TicketCategory[] }>(
+      // API returns array directly
+      const categories = await apiClient.get<TicketCategory[]>(
         `/organizations/${orgId}/ticket-categories`
       );
-      setCategories(response?.data || []);
+      setCategories(Array.isArray(categories) ? categories : []);
     } catch (_error) {}
   }, []);
 
   const loadAttractions = useCallback(async (orgId: string) => {
     try {
+      // API returns { data: [...] } wrapped format
       const response = await apiClient.get<{ data: Attraction[] }>(
         `/organizations/${orgId}/attractions`
       );
-      setAttractions(response?.data || []);
+      const attractions = response?.data;
+      setAttractions(Array.isArray(attractions) ? attractions : []);
     } catch (_error) {}
   }, []);
 

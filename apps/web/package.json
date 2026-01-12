@@ -13,8 +13,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "screenshots": "playwright test --config=playwright.config.ts e2e/screenshots"
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:all": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:e2e:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:e2e:headed": "playwright test --project=chromium --headed",
+    "test:e2e:debug": "playwright test --project=chromium --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "screenshots": "playwright test --project=screenshots"
   },
   "dependencies": {
     "@ariakit/react": "^0.4.20",

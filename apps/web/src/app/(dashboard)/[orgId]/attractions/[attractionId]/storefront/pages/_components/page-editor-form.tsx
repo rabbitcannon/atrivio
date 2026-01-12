@@ -3,6 +3,7 @@
 import { ArrowLeft, Eye, Loader2, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { PageContentEditor } from '@/components/editor/page-content-editor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,29 +19,20 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { ContentFormat, PageStatus, PageType, StorefrontPage } from '@/lib/api/types';
+import { createPageAction, updatePageAction } from '../new/actions';
+import type { PageFormData } from './types';
+
+// Re-export for backwards compatibility
+export type { PageFormData } from './types';
 
 interface PageEditorFormProps {
   orgId: string;
+  orgSlug?: string;
   attractionId: string;
   attractionSlug?: string | undefined;
   page?: StorefrontPage;
-  onSave: (data: PageFormData) => Promise<void>;
+  onSave?: (data: PageFormData) => Promise<void>;
   isNew?: boolean;
-}
-
-export interface PageFormData {
-  slug: string;
-  title: string;
-  content: string;
-  contentFormat: ContentFormat;
-  pageType: PageType;
-  status: PageStatus;
-  showInNav: boolean;
-  seo: {
-    title: string;
-    description: string;
-    ogImageUrl: string;
-  };
 }
 
 const PAGE_TYPES: { value: PageType; label: string }[] = [
@@ -62,6 +54,7 @@ const STATUS_OPTIONS: { value: PageStatus; label: string }[] = [
 
 export function PageEditorForm({
   orgId,
+  orgSlug,
   attractionId,
   attractionSlug,
   page,
@@ -69,7 +62,9 @@ export function PageEditorForm({
   isNew = false,
 }: PageEditorFormProps) {
   const router = useRouter();
-  const basePath = `/${orgId}/attractions/${attractionId}/storefront/pages`;
+  // Use orgSlug for URLs (human-readable), orgId for API calls (UUID)
+  const urlOrgId = orgSlug || orgId;
+  const basePath = `/${urlOrgId}/attractions/${attractionId}/storefront/pages`;
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -77,7 +72,7 @@ export function PageEditorForm({
   const [title, setTitle] = useState(page?.title ?? '');
   const [slug, setSlug] = useState(page?.slug ?? '');
   const [content, setContent] = useState(page?.content ?? '');
-  const [contentFormat] = useState<ContentFormat>(page?.contentFormat ?? 'richtext');
+  const [contentFormat] = useState<ContentFormat>(page?.contentFormat ?? 'html');
   const [pageType, setPageType] = useState<PageType>(page?.pageType ?? 'custom');
   const [status, setStatus] = useState<PageStatus>(page?.status ?? 'draft');
   const [showInNav, setShowInNav] = useState(page?.showInNav ?? false);
@@ -100,7 +95,7 @@ export function PageEditorForm({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await onSave({
+      const formData: PageFormData = {
         slug,
         title,
         content,
@@ -113,10 +108,24 @@ export function PageEditorForm({
           description: seoDescription,
           ogImageUrl: seoOgImageUrl,
         },
-      });
+      };
+
+      // Call the server action directly from this client component
+      if (isNew) {
+        await createPageAction(orgId, attractionId, formData);
+      } else if (page?.id) {
+        await updatePageAction(orgId, attractionId, page.id, formData);
+      } else if (onSave) {
+        // Fallback to onSave prop if provided
+        await onSave(formData);
+      }
+
       router.push(basePath);
       router.refresh();
-    } catch (_error) {
+    } catch (error) {
+      console.error('Failed to save page:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save page';
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }

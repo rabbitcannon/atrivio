@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,39 @@ export function StorefrontTickets({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
+
+  // Restore cart from sessionStorage on mount
+  useEffect(() => {
+    const savedCart = sessionStorage.getItem(`cart-${identifier}`);
+    if (savedCart) {
+      try {
+        const cartData = JSON.parse(savedCart) as Array<{
+          ticketTypeId: string;
+          ticketTypeName: string;
+          price: number;
+          quantity: number;
+        }>;
+
+        const restoredCart = new Map<string, CartItem>();
+        cartData.forEach((item) => {
+          // Find the matching ticket type from props to get full data
+          const ticketType = ticketTypes.find((t) => t.id === item.ticketTypeId);
+          if (ticketType) {
+            restoredCart.set(item.ticketTypeId, {
+              ticketType,
+              quantity: item.quantity,
+            });
+          }
+        });
+
+        if (restoredCart.size > 0) {
+          setCart(restoredCart);
+        }
+      } catch {
+        // Invalid cart data, ignore
+      }
+    }
+  }, [identifier, ticketTypes]);
 
   // Build URL helper that preserves storefront query param for local dev
   const buildUrl = (path: string) => {
@@ -75,7 +108,7 @@ export function StorefrontTickets({
       quantity: item.quantity,
     }));
     sessionStorage.setItem(`cart-${identifier}`, JSON.stringify(cartData));
-    router.push(buildUrl('/checkout'));
+    router.push(buildUrl(`/s/${identifier}/checkout`));
   };
 
   // Group tickets by category

@@ -2,7 +2,7 @@
 // Storefront Types
 // =============================================================================
 
-export type ContentFormat = 'markdown' | 'html' | 'plain';
+export type ContentFormat = 'markdown' | 'html' | 'blocks';
 export type PageType =
   | 'home'
   | 'about'
@@ -343,6 +343,11 @@ export class CreatePageDto {
   @IsOptional()
   @IsString()
   page_type?: PageType;
+
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'], description: 'Status is accepted but always defaults to draft for new pages' })
+  @IsOptional()
+  @IsString()
+  status?: PageStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
