@@ -2,7 +2,19 @@ import { Calendar, HelpCircle, MapPin, Ticket } from 'lucide-react';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPublicFaqs, getPublicStorefront } from '@/lib/api';
+import { getPublicFaqs, getPublicStorefront, getPublicTicketTypes } from '@/lib/api';
+
+/**
+ * Format cents to currency string
+ */
+function formatPrice(cents: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
 
 export default async function HomePage() {
   const headersList = await headers();
@@ -13,14 +25,28 @@ export default async function HomePage() {
   const storefront = await getPublicStorefront(identifier);
   if (!storefront) return null;
 
-  const { attraction, settings } = storefront;
+  const { attraction, settings, contact } = storefront;
 
-  // Fetch FAQs separately (API doesn't include them in main response)
-  const { faqs } = await getPublicFaqs(identifier);
+  // Fetch additional data in parallel
+  const [{ faqs }, { ticketTypes }] = await Promise.all([
+    getPublicFaqs(identifier),
+    getPublicTicketTypes(identifier),
+  ]);
+
+  // Check if address is visible and has data
+  const hasVisibleAddress = contact.showAddress && contact.address;
+
+  // Check what sections to show (respect feature toggles)
+  const showFaqCard = settings.features.showFaq && faqs.length > 0;
+  const showTicketsCard = settings.features.showTickets !== false && ticketTypes.length > 0;
   const featuredFaqs = faqs.filter((f) => f.isFeatured).slice(0, 4);
 
   // Check if there's a background image set
   const hasBackgroundImage = !!settings.theme.backgroundImageUrl;
+
+  // Calculate how many cards we have for grid layout
+  const cardCount = [showTicketsCard, showFaqCard, hasVisibleAddress].filter(Boolean).length;
+  const gridCols = cardCount === 1 ? 'md:grid-cols-1 max-w-md' : cardCount === 2 ? 'md:grid-cols-2 max-w-3xl' : 'md:grid-cols-3';
 
   return (
     <div>
@@ -79,54 +105,131 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Quick Links */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-6 md:grid-cols-3">
-            <Link
-              href="/tickets"
-              className={`group flex flex-col items-center p-8 rounded-xl border border-border hover:border-storefront-primary transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
-            >
-              <div className="w-16 h-16 rounded-full bg-storefront-primary/10 flex items-center justify-center mb-4 group-hover:bg-storefront-primary/20 transition-colors">
-                <Ticket className="h-8 w-8 text-storefront-primary" />
-              </div>
-              <h3 className="text-xl font-heading font-bold mb-2">Get Tickets</h3>
-              <p className="text-sm text-muted-foreground text-center">
-                Purchase tickets online and skip the line
-              </p>
-            </Link>
+      {/* Quick Links - Equal Height Cards */}
+      {cardCount > 0 && (
+        <section className="py-16">
+          <div className={`container mx-auto px-4 ${gridCols === 'md:grid-cols-1 max-w-md' || gridCols === 'md:grid-cols-2 max-w-3xl' ? '' : ''}`}>
+            <div className={`grid gap-6 ${gridCols} mx-auto`}>
+              {/* Tickets Card */}
+              {showTicketsCard && (
+                <Link
+                  href="/tickets"
+                  className={`group flex flex-col rounded-xl border border-border hover:border-storefront-primary transition-colors overflow-hidden ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
+                >
+                  {/* Header with icon */}
+                  <div className="p-6 flex items-center gap-4 border-b border-border">
+                    <div className="w-12 h-12 rounded-full bg-storefront-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-storefront-primary/20 transition-colors">
+                      <Ticket className="h-6 w-6 text-storefront-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-heading font-bold">Get Tickets</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {ticketTypes.length} ticket type{ticketTypes.length !== 1 ? 's' : ''} available
+                      </p>
+                    </div>
+                  </div>
+                  {/* Ticket types preview */}
+                  <div className="p-4 flex-1">
+                    <ul className="space-y-2">
+                      {ticketTypes.slice(0, 3).map((ticket) => (
+                        <li key={ticket.id} className="flex justify-between items-center text-sm">
+                          <span className="truncate mr-2">{ticket.name}</span>
+                          <span className="font-semibold text-storefront-primary whitespace-nowrap">
+                            {formatPrice(ticket.price)}
+                          </span>
+                        </li>
+                      ))}
+                      {ticketTypes.length > 3 && (
+                        <li className="text-sm text-muted-foreground">
+                          +{ticketTypes.length - 3} more...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </Link>
+              )}
 
-            <Link
-              href="/faqs"
-              className={`group flex flex-col items-center p-8 rounded-xl border border-border hover:border-storefront-primary transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
-            >
-              <div className="w-16 h-16 rounded-full bg-storefront-primary/10 flex items-center justify-center mb-4 group-hover:bg-storefront-primary/20 transition-colors">
-                <HelpCircle className="h-8 w-8 text-storefront-primary" />
-              </div>
-              <h3 className="text-xl font-heading font-bold mb-2">FAQs</h3>
-              <p className="text-sm text-muted-foreground text-center">
-                Get answers to common questions
-              </p>
-            </Link>
+              {/* FAQ Card */}
+              {showFaqCard && (
+                <Link
+                  href="/faqs"
+                  className={`group flex flex-col rounded-xl border border-border hover:border-storefront-primary transition-colors overflow-hidden ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
+                >
+                  {/* Header with icon */}
+                  <div className="p-6 flex items-center gap-4 border-b border-border">
+                    <div className="w-12 h-12 rounded-full bg-storefront-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-storefront-primary/20 transition-colors">
+                      <HelpCircle className="h-6 w-6 text-storefront-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-heading font-bold">FAQs</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {faqs.length} question{faqs.length !== 1 ? 's' : ''} answered
+                      </p>
+                    </div>
+                  </div>
+                  {/* FAQ preview */}
+                  <div className="p-4 flex-1">
+                    <ul className="space-y-2">
+                      {faqs.slice(0, 3).map((faq) => (
+                        <li key={faq.id} className="text-sm truncate text-muted-foreground">
+                          • {faq.question}
+                        </li>
+                      ))}
+                      {faqs.length > 3 && (
+                        <li className="text-sm text-muted-foreground">
+                          +{faqs.length - 3} more...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </Link>
+              )}
 
-            <Link
-              href="/contact"
-              className={`group flex flex-col items-center p-8 rounded-xl border border-border hover:border-storefront-primary transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
-            >
-              <div className="w-16 h-16 rounded-full bg-storefront-primary/10 flex items-center justify-center mb-4 group-hover:bg-storefront-primary/20 transition-colors">
-                <MapPin className="h-8 w-8 text-storefront-primary" />
-              </div>
-              <h3 className="text-xl font-heading font-bold mb-2">Find Us</h3>
-              <p className="text-sm text-muted-foreground text-center">
-                Get directions and contact information
-              </p>
-            </Link>
+              {/* Find Us Card with Map */}
+              {hasVisibleAddress && contact.address && (
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                    `${contact.address.line1}, ${contact.address.city}, ${contact.address.state} ${contact.address.postalCode}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group flex flex-col rounded-xl border border-border hover:border-storefront-primary transition-colors overflow-hidden ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
+                >
+                  {/* Map embed */}
+                  <div className="aspect-video w-full pointer-events-none">
+                    <iframe
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                        `${contact.address.line1}, ${contact.address.city}, ${contact.address.state} ${contact.address.postalCode}`
+                      )}&t=m&z=14&output=embed&iwloc=near`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={`Map showing location of ${attraction.name}`}
+                    />
+                  </div>
+                  {/* Address info */}
+                  <div className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-storefront-primary/10 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="h-5 w-5 text-storefront-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-heading font-bold truncate">Find Us</h3>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {contact.address.line1}, {contact.address.city}
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Featured FAQs */}
-      {featuredFaqs.length > 0 && (
+      {/* Featured FAQs Section */}
+      {settings.features.showFaq && featuredFaqs.length > 0 && (
         <section className={`py-16 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-heading font-bold text-center mb-8">

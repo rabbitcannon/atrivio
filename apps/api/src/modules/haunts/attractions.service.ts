@@ -248,6 +248,28 @@ export class AttractionsService {
       icon: string;
     } | null;
 
+    // Build address object from flat columns
+    const address =
+      data.address_line1 || data.city || data.state || data.postal_code
+        ? {
+            line1: data.address_line1 || '',
+            line2: data.address_line2 || undefined,
+            city: data.city || '',
+            state: data.state || '',
+            postal_code: data.postal_code || '',
+            country: data.country || 'US',
+          }
+        : null;
+
+    // Build coordinates object from flat columns
+    const coordinates =
+      data.latitude != null && data.longitude != null
+        ? {
+            latitude: data.latitude,
+            longitude: data.longitude,
+          }
+        : null;
+
     return {
       ...data,
       type: attractionType?.key || null,
@@ -256,6 +278,8 @@ export class AttractionsService {
       zones_count: data.zones?.length || 0,
       amenities: amenities?.map((a: any) => a.amenity_types.key) || [],
       current_season: currentSeason,
+      address,
+      coordinates,
     };
   }
 
@@ -263,25 +287,44 @@ export class AttractionsService {
    * Update attraction
    */
   async update(orgId: OrgId, attractionId: AttractionId, dto: UpdateAttractionDto) {
+    // Build update object, mapping nested DTOs to flat database columns
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    // Simple fields
+    if (dto.name !== undefined) updateData['name'] = dto.name;
+    if (dto.description !== undefined) updateData['description'] = dto.description;
+    if (dto.website !== undefined) updateData['website'] = dto.website;
+    if (dto.email !== undefined) updateData['email'] = dto.email;
+    if (dto.phone !== undefined) updateData['phone'] = dto.phone;
+    if (dto.timezone !== undefined) updateData['timezone'] = dto.timezone;
+    if (dto.capacity !== undefined) updateData['capacity'] = dto.capacity;
+    if (dto.min_age !== undefined) updateData['min_age'] = dto.min_age;
+    if (dto.intensity_level !== undefined) updateData['intensity_level'] = dto.intensity_level;
+    if (dto.duration_minutes !== undefined) updateData['duration_minutes'] = dto.duration_minutes;
+    if (dto.settings !== undefined) updateData['settings'] = dto.settings;
+    if (dto.seo_metadata !== undefined) updateData['seo_metadata'] = dto.seo_metadata;
+
+    // Map address object to flat columns
+    if (dto.address) {
+      updateData['address_line1'] = dto.address.line1;
+      updateData['address_line2'] = dto.address.line2 || null;
+      updateData['city'] = dto.address.city;
+      updateData['state'] = dto.address.state;
+      updateData['postal_code'] = dto.address.postal_code;
+      updateData['country'] = dto.address.country || 'US';
+    }
+
+    // Map coordinates object to flat columns
+    if (dto.coordinates) {
+      updateData['latitude'] = dto.coordinates.latitude;
+      updateData['longitude'] = dto.coordinates.longitude;
+    }
+
     const { data, error } = await this.supabase.adminClient
       .from('attractions')
-      .update({
-        name: dto.name,
-        description: dto.description,
-        website: dto.website,
-        email: dto.email,
-        phone: dto.phone,
-        address: dto.address,
-        coordinates: dto.coordinates,
-        timezone: dto.timezone,
-        capacity: dto.capacity,
-        min_age: dto.min_age,
-        intensity_level: dto.intensity_level,
-        duration_minutes: dto.duration_minutes,
-        settings: dto.settings,
-        seo_metadata: dto.seo_metadata,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', attractionId)
       .eq('org_id', orgId)
       .select()

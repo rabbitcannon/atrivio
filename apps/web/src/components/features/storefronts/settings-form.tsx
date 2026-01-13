@@ -17,6 +17,7 @@ import {
   Eye,
   EyeOff,
   ImageIcon,
+  LayoutGrid,
   Loader2,
   MapPin,
   Palette,
@@ -267,6 +268,12 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
     showEmail: settings?.showEmail ?? false,
   });
 
+  // Homepage sections visibility state
+  const [sectionVisibility, setSectionVisibility] = useState({
+    showTickets: settings?.features?.showTickets ?? true,
+    showFaq: settings?.features?.showFaq ?? true,
+  });
+
   // Contact info state (from attraction)
   const [contactInfo, setContactInfo] = useState({
     email: attractionContact?.email ?? '',
@@ -365,6 +372,12 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
       payload['showPhone'] = contactVisibility.showPhone;
       payload['showEmail'] = contactVisibility.showEmail;
 
+      // Homepage section visibility settings (nested under features)
+      payload['features'] = {
+        showTickets: sectionVisibility.showTickets,
+        showFaq: sectionVisibility.showFaq,
+      };
+
       // Save storefront settings
       await apiClientDirect.patch(
         `/organizations/${orgId}/attractions/${attractionId}/storefront`,
@@ -384,7 +397,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
           line2: contactInfo.addressLine2 || undefined,
           city: contactInfo.city,
           state: contactInfo.state,
-          postalCode: contactInfo.postalCode,
+          postal_code: contactInfo.postalCode,
           country: 'US',
         };
       }
@@ -588,6 +601,54 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
                   rows={3}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Homepage Sections Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <CardTitle>Homepage Sections</CardTitle>
+                  <CardDescription>Control which sections appear on your storefront homepage</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showTickets">Show Tickets Section</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display ticket types and prices on the homepage
+                  </p>
+                </div>
+                <Switch
+                  id="showTickets"
+                  checked={sectionVisibility.showTickets}
+                  onCheckedChange={(checked) =>
+                    setSectionVisibility({ ...sectionVisibility, showTickets: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showFaq">Show FAQs Section</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display frequently asked questions on the homepage
+                  </p>
+                </div>
+                <Switch
+                  id="showFaq"
+                  checked={sectionVisibility.showFaq}
+                  onCheckedChange={(checked) =>
+                    setSectionVisibility({ ...sectionVisibility, showFaq: checked })
+                  }
+                />
+              </div>
+              <p className="text-xs text-muted-foreground pt-2 border-t">
+                Note: The &quot;Find Us&quot; section is controlled by the Location &amp; Contact settings below.
+              </p>
             </CardContent>
           </Card>
 

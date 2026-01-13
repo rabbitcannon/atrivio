@@ -56,6 +56,7 @@ export interface StorefrontSettings {
     showAttractions: boolean;
     showCalendar: boolean;
     showFaq: boolean;
+    showTickets: boolean;
     showReviews: boolean;
   };
   isPublished: boolean;
@@ -154,10 +155,30 @@ export interface StorefrontDomain {
   canonical: string;
 }
 
+export interface StorefrontContact {
+  showAddress: boolean;
+  showPhone: boolean;
+  showEmail: boolean;
+  address?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  phone?: string;
+  email?: string;
+}
+
 // What the API actually returns
 interface ApiStorefrontResponse {
   org: StorefrontOrg;
   attraction: StorefrontAttraction;
+  contact: StorefrontContact;
   storefront: StorefrontSettings;
   navigation: StorefrontNavigation;
   announcements: StorefrontAnnouncement[];
@@ -168,6 +189,7 @@ interface ApiStorefrontResponse {
 export interface PublicStorefront {
   org: StorefrontOrg;
   attraction: StorefrontAttraction;
+  contact: StorefrontContact;
   settings: StorefrontSettings;
   announcements: StorefrontAnnouncement[];
   navigation: StorefrontNavigation;
@@ -195,6 +217,7 @@ export async function getPublicStorefront(identifier: string): Promise<PublicSto
     return {
       org: data.org,
       attraction: data.attraction,
+      contact: data.contact,
       settings: data.storefront,
       announcements: data.announcements,
       navigation: data.navigation,

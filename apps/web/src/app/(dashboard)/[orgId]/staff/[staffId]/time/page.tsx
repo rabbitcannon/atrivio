@@ -1,8 +1,9 @@
-import { ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { TimeManager } from '@/components/features/staff/time-manager';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/ui/motion';
 import { getStaffMember, resolveOrgId } from '@/lib/api';
@@ -29,8 +30,35 @@ export default async function TimePage({ params }: TimePageProps) {
   }
 
   // Fetch staff member to get time summary
-  const staffResult = await getStaffMember(orgId, staffId);
-  const timeSummary = staffResult.data?.time_summary;
+  const { data: staffData, error: staffError } = await getStaffMember(orgId, staffId);
+
+  // If staff member not found, show error
+  if (staffError || !staffData) {
+    return (
+      <div className="space-y-6">
+        <AnimatedPageHeader className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <a href={`/${orgIdentifier}/staff`}>
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to staff</span>
+            </a>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Time Tracking</h1>
+          </div>
+        </AnimatedPageHeader>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Staff Member Not Found</AlertTitle>
+          <AlertDescription>
+            {staffError?.message || 'The staff member could not be found. They may have been removed or you may not have permission to view their time entries.'}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const timeSummary = staffData.time_summary;
 
   // Get current user's role to determine if they can approve
   const supabase = await createClient();

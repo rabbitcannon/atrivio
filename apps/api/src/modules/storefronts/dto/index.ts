@@ -240,6 +240,11 @@ class FeaturesConfigDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
+  showTickets?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
   showReviews?: boolean;
 
   @ApiPropertyOptional()

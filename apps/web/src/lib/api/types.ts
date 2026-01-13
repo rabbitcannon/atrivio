@@ -851,6 +851,7 @@ export interface StorefrontSettings {
     showAttractions: boolean | null;
     showCalendar: boolean | null;
     showFaq: boolean | null;
+    showTickets: boolean | null;
     showReviews: boolean | null;
     featuredAttractionIds: string[] | null;
   };

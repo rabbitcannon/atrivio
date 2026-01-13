@@ -152,6 +152,8 @@ export class StorefrontsService {
       if (dto.features.showCalendar !== undefined)
         updateData['show_calendar'] = dto.features.showCalendar;
       if (dto.features.showFaq !== undefined) updateData['show_faq'] = dto.features.showFaq;
+      if (dto.features.showTickets !== undefined)
+        updateData['show_tickets'] = dto.features.showTickets;
       if (dto.features.showReviews !== undefined)
         updateData['show_reviews'] = dto.features.showReviews;
       if (dto.features.featuredAttractionIds !== undefined)
@@ -1435,6 +1437,7 @@ export class StorefrontsService {
         showAttractions: row['show_attractions'] as boolean | null,
         showCalendar: row['show_calendar'] as boolean | null,
         showFaq: row['show_faq'] as boolean | null,
+        showTickets: row['show_tickets'] as boolean | null,
         showReviews: row['show_reviews'] as boolean | null,
         featuredAttractionIds: row['featured_attraction_ids'] as string[] | null,
       },
