@@ -505,10 +505,14 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
       </div>
 
       <Tabs defaultValue="theme" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="theme" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             <span className="hidden sm:inline">Theme</span>
+          </TabsTrigger>
+          <TabsTrigger value="sections" className="flex items-center gap-2">
+            <LayoutGrid className="h-4 w-4" />
+            <span className="hidden sm:inline">Sections</span>
           </TabsTrigger>
           <TabsTrigger value="seo" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
@@ -601,54 +605,6 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
                   rows={3}
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Homepage Sections Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <CardTitle>Homepage Sections</CardTitle>
-                  <CardDescription>Control which sections appear on your storefront homepage</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="showTickets">Show Tickets Section</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Display ticket types and prices on the homepage
-                  </p>
-                </div>
-                <Switch
-                  id="showTickets"
-                  checked={sectionVisibility.showTickets}
-                  onCheckedChange={(checked) =>
-                    setSectionVisibility({ ...sectionVisibility, showTickets: checked })
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="showFaq">Show FAQs Section</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Display frequently asked questions on the homepage
-                  </p>
-                </div>
-                <Switch
-                  id="showFaq"
-                  checked={sectionVisibility.showFaq}
-                  onCheckedChange={(checked) =>
-                    setSectionVisibility({ ...sectionVisibility, showFaq: checked })
-                  }
-                />
-              </div>
-              <p className="text-xs text-muted-foreground pt-2 border-t">
-                Note: The &quot;Find Us&quot; section is controlled by the Location &amp; Contact settings below.
-              </p>
             </CardContent>
           </Card>
 
@@ -1304,59 +1260,6 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-
-                {/* Visibility Toggles */}
-                <div className="space-y-4 rounded-lg border p-4">
-                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Visibility
-                  </h4>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="showAddress">Show Address</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Display your address with an interactive map
-                      </p>
-                    </div>
-                    <Switch
-                      id="showAddress"
-                      checked={contactVisibility.showAddress}
-                      onCheckedChange={(checked) =>
-                        setContactVisibility({ ...contactVisibility, showAddress: checked })
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="showPhone">Show Phone Number</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Display a clickable phone number
-                      </p>
-                    </div>
-                    <Switch
-                      id="showPhone"
-                      checked={contactVisibility.showPhone}
-                      onCheckedChange={(checked) =>
-                        setContactVisibility({ ...contactVisibility, showPhone: checked })
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="showEmail">Show Email</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Display a clickable email address
-                      </p>
-                    </div>
-                    <Switch
-                      id="showEmail"
-                      checked={contactVisibility.showEmail}
-                      onCheckedChange={(checked) =>
-                        setContactVisibility({ ...contactVisibility, showEmail: checked })
-                      }
-                    />
-                  </div>
-                </div>
-
                 {/* Contact Info Fields */}
                 <div className="space-y-4">
                   <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -1493,6 +1396,112 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
                 className="font-mono text-sm"
                 rows={6}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Sections Tab */}
+        <TabsContent value="sections" className="space-y-6">
+          {/* Homepage Sections Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Homepage Sections</CardTitle>
+              <CardDescription>Control which sections appear on your storefront homepage</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showTickets">Show Tickets Section</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display ticket types and prices on the homepage
+                  </p>
+                </div>
+                <Switch
+                  id="showTickets"
+                  checked={sectionVisibility.showTickets}
+                  onCheckedChange={(checked) =>
+                    setSectionVisibility({ ...sectionVisibility, showTickets: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showFaq">Show FAQs Section</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display frequently asked questions on the homepage
+                  </p>
+                </div>
+                <Switch
+                  id="showFaq"
+                  checked={sectionVisibility.showFaq}
+                  onCheckedChange={(checked) =>
+                    setSectionVisibility({ ...sectionVisibility, showFaq: checked })
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Location Visibility Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <CardTitle>Find Us Section</CardTitle>
+                  <CardDescription>Control what contact information appears in the &quot;Find Us&quot; card</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showAddress">Show Address</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display your address with an interactive map
+                  </p>
+                </div>
+                <Switch
+                  id="showAddress"
+                  checked={contactVisibility.showAddress}
+                  onCheckedChange={(checked) =>
+                    setContactVisibility({ ...contactVisibility, showAddress: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showPhone">Show Phone Number</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display a clickable phone number
+                  </p>
+                </div>
+                <Switch
+                  id="showPhone"
+                  checked={contactVisibility.showPhone}
+                  onCheckedChange={(checked) =>
+                    setContactVisibility({ ...contactVisibility, showPhone: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="showEmail">Show Email</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Display a clickable email address
+                  </p>
+                </div>
+                <Switch
+                  id="showEmail"
+                  checked={contactVisibility.showEmail}
+                  onCheckedChange={(checked) =>
+                    setContactVisibility({ ...contactVisibility, showEmail: checked })
+                  }
+                />
+              </div>
+              <p className="text-xs text-muted-foreground pt-2 border-t">
+                Tip: Configure your address and contact details in the Theme tab under &quot;Location &amp; Contact&quot;.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
