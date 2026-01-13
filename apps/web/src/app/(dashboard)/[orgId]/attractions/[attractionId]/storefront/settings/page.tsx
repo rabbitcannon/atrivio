@@ -37,6 +37,29 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
   let settings: StorefrontSettings | null = null;
   let domains: StorefrontDomain[] = [];
   let attractionName = '';
+  let attractionContact: {
+    email: string | null;
+    phone: string | null;
+    website: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    state: string | null;
+    postalCode: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  } = {
+    email: null,
+    phone: null,
+    website: null,
+    addressLine1: null,
+    addressLine2: null,
+    city: null,
+    state: null,
+    postalCode: null,
+    latitude: null,
+    longitude: null,
+  };
 
   try {
     const [settingsResult, domainsResult, attractionResult] = await Promise.all([
@@ -46,7 +69,22 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
     ]);
     settings = settingsResult.data?.settings ?? null;
     domains = domainsResult.data?.domains ?? [];
-    attractionName = attractionResult.data?.name ?? '';
+    const attraction = attractionResult.data;
+    attractionName = attraction?.name ?? '';
+    if (attraction) {
+      attractionContact = {
+        email: attraction.email,
+        phone: attraction.phone,
+        website: attraction.website,
+        addressLine1: attraction.address?.line1 ?? null,
+        addressLine2: attraction.address?.line2 ?? null,
+        city: attraction.address?.city ?? null,
+        state: attraction.address?.state ?? null,
+        postalCode: attraction.address?.postal_code ?? null,
+        latitude: attraction.coordinates?.latitude ?? null,
+        longitude: attraction.coordinates?.longitude ?? null,
+      };
+    }
   } catch {
     // Settings might not exist yet
   }
@@ -123,7 +161,12 @@ export default async function StorefrontSettingsPage({ params }: SettingsPagePro
 
       {/* Editable Settings Form */}
       <FadeIn delay={0.15}>
-        <StorefrontSettingsForm orgId={orgId} attractionId={attractionId} settings={settings} />
+        <StorefrontSettingsForm
+          orgId={orgId}
+          attractionId={attractionId}
+          settings={settings}
+          attractionContact={attractionContact}
+        />
       </FadeIn>
     </div>
   );

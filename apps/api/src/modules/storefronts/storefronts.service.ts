@@ -1159,6 +1159,59 @@ export class StorefrontsService {
       }))
     );
 
+    // Build contact info based on visibility settings (using attraction-level data)
+    const showAddress = settings.show_address ?? false;
+    const showPhone = settings.show_phone ?? false;
+    const showEmail = settings.show_email ?? false;
+
+    const contact: {
+      showAddress: boolean;
+      showPhone: boolean;
+      showEmail: boolean;
+      address?: {
+        line1: string;
+        line2?: string;
+        city: string;
+        state: string;
+        postalCode: string;
+      };
+      coordinates?: { latitude: number; longitude: number };
+      phone?: string;
+      email?: string;
+    } = {
+      showAddress,
+      showPhone,
+      showEmail,
+    };
+
+    // Only include address if visibility is enabled and data exists (from attraction)
+    if (showAddress && attraction.address_line1) {
+      contact.address = {
+        line1: attraction.address_line1,
+        line2: attraction.address_line2 || undefined,
+        city: attraction.city || '',
+        state: attraction.state || '',
+        postalCode: attraction.postal_code || '',
+      };
+      // Include coordinates if available for more precise map placement
+      if (attraction.latitude && attraction.longitude) {
+        contact.coordinates = {
+          latitude: parseFloat(attraction.latitude),
+          longitude: parseFloat(attraction.longitude),
+        };
+      }
+    }
+
+    // Only include phone if visibility is enabled and data exists (from attraction)
+    if (showPhone && attraction.phone) {
+      contact.phone = attraction.phone;
+    }
+
+    // Only include email if visibility is enabled and data exists (from attraction)
+    if (showEmail && attraction.email) {
+      contact.email = attraction.email;
+    }
+
     return {
       org: {
         id: org.id,
@@ -1166,14 +1219,6 @@ export class StorefrontsService {
         slug: org.slug,
         logoUrl: org.logo_url,
         website: org.website,
-        address: {
-          line1: org.address_line1,
-          city: org.city,
-          state: org.state,
-          postalCode: org.postal_code,
-        },
-        phone: org.phone,
-        email: org.email,
         timezone: org.timezone || 'America/New_York',
       },
       attraction: {
@@ -1183,6 +1228,7 @@ export class StorefrontsService {
         description: attraction.description,
         imageUrl: attraction.image_url,
       },
+      contact,
       storefront: this.mapSettings(settings),
       navigation: {
         header: headerNav,
@@ -1392,6 +1438,10 @@ export class StorefrontsService {
         showReviews: row['show_reviews'] as boolean | null,
         featuredAttractionIds: row['featured_attraction_ids'] as string[] | null,
       },
+      // Contact visibility
+      showAddress: row['show_address'] as boolean | null,
+      showPhone: row['show_phone'] as boolean | null,
+      showEmail: row['show_email'] as boolean | null,
       isPublished: row['is_published'] as boolean,
       publishedAt: row['published_at'] as string | null,
     };

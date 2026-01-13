@@ -854,6 +854,10 @@ export interface StorefrontSettings {
     showReviews: boolean | null;
     featuredAttractionIds: string[] | null;
   };
+  // Contact visibility
+  showAddress?: boolean;
+  showPhone?: boolean;
+  showEmail?: boolean;
   isPublished: boolean;
   publishedAt: string | null;
 }
@@ -937,18 +941,48 @@ export interface StorefrontNavigation {
   footer: StorefrontNavItem[];
 }
 
+export interface PublicStorefrontContact {
+  showAddress: boolean;
+  showPhone: boolean;
+  showEmail: boolean;
+  address?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  phone?: string;
+  email?: string;
+}
+
 export interface PublicStorefront {
-  attraction: {
+  org: {
     id: string;
     name: string;
     slug: string;
     logoUrl: string | null;
+    website: string | null;
+    timezone: string;
   };
+  attraction: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    imageUrl: string | null;
+    logoUrl?: string | null;
+  };
+  contact: PublicStorefrontContact;
   storefront: StorefrontSettings;
-  pages: StorefrontPage[];
+  pages?: StorefrontPage[];
   announcements: StorefrontAnnouncement[];
   navigation: StorefrontNavigation;
-  domain: string;
+  domain: string | { current: string; canonical: string };
 }
 
 export interface PublicTicketType {

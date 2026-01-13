@@ -18,6 +18,7 @@ import {
   EyeOff,
   ImageIcon,
   Loader2,
+  MapPin,
   Palette,
   RotateCcw,
   Save,
@@ -31,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -43,13 +45,27 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { apiClientDirect } from '@/lib/api/client';
+import { apiClientDirect, updateAttraction } from '@/lib/api/client';
 import type { StorefrontSettings } from '@/lib/api/types';
+
+interface AttractionContact {
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
 
 interface SettingsFormProps {
   orgId: string;
   attractionId: string;
   settings: StorefrontSettings | null;
+  attractionContact?: AttractionContact;
 }
 
 /**
@@ -85,7 +101,7 @@ function ThemePresetPreview({ preset }: { preset: ThemePreset }) {
   );
 }
 
-export function StorefrontSettingsForm({ orgId, attractionId, settings }: SettingsFormProps) {
+export function StorefrontSettingsForm({ orgId, attractionId, settings, attractionContact }: SettingsFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -244,6 +260,26 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
     description: settings?.description || '',
   });
 
+  // Contact visibility state
+  const [contactVisibility, setContactVisibility] = useState({
+    showAddress: settings?.showAddress ?? false,
+    showPhone: settings?.showPhone ?? false,
+    showEmail: settings?.showEmail ?? false,
+  });
+
+  // Contact info state (from attraction)
+  const [contactInfo, setContactInfo] = useState({
+    email: attractionContact?.email ?? '',
+    phone: attractionContact?.phone ?? '',
+    addressLine1: attractionContact?.addressLine1 ?? '',
+    addressLine2: attractionContact?.addressLine2 ?? '',
+    city: attractionContact?.city ?? '',
+    state: attractionContact?.state ?? '',
+    postalCode: attractionContact?.postalCode ?? '',
+    latitude: attractionContact?.latitude?.toString() ?? '',
+    longitude: attractionContact?.longitude?.toString() ?? '',
+  });
+
   // Helper to remove empty string values from an object
   const cleanObject = <T extends Record<string, unknown>>(obj: T): Partial<T> => {
     const result: Partial<T> = {};
@@ -324,10 +360,50 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
       });
       if (Object.keys(analyticsData).length > 0) payload['analytics'] = analyticsData;
 
+      // Contact visibility settings
+      payload['showAddress'] = contactVisibility.showAddress;
+      payload['showPhone'] = contactVisibility.showPhone;
+      payload['showEmail'] = contactVisibility.showEmail;
+
+      // Save storefront settings
       await apiClientDirect.patch(
         `/organizations/${orgId}/attractions/${attractionId}/storefront`,
         payload
       );
+
+      // Save attraction contact info
+      const attractionData: Parameters<typeof updateAttraction>[2] = {};
+
+      if (contactInfo.email) attractionData.email = contactInfo.email;
+      if (contactInfo.phone) attractionData.phone = contactInfo.phone;
+
+      // Build address if we have the required fields
+      if (contactInfo.addressLine1 && contactInfo.city && contactInfo.state && contactInfo.postalCode) {
+        attractionData.address = {
+          line1: contactInfo.addressLine1,
+          line2: contactInfo.addressLine2 || undefined,
+          city: contactInfo.city,
+          state: contactInfo.state,
+          postalCode: contactInfo.postalCode,
+          country: 'US',
+        };
+      }
+
+      // Build coordinates if we have both
+      if (contactInfo.latitude && contactInfo.longitude) {
+        attractionData.coordinates = {
+          latitude: parseFloat(contactInfo.latitude),
+          longitude: parseFloat(contactInfo.longitude),
+        };
+      }
+
+      // Only call updateAttraction if we have contact data to save
+      if (Object.keys(attractionData).length > 0) {
+        const result = await updateAttraction(orgId, attractionId, attractionData);
+        if (result.error) {
+          throw new Error(result.error.message || 'Failed to save contact information');
+        }
+      }
 
       toast({
         title: 'Settings saved',
@@ -436,105 +512,109 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
         </TabsList>
 
         {/* Theme Tab */}
-        <TabsContent value="theme">
+        <TabsContent value="theme" className="space-y-6">
+          {/* General Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Theme & Branding</CardTitle>
-              <CardDescription>Customize the look and feel of your storefront</CardDescription>
+              <CardTitle>General</CardTitle>
+              <CardDescription>Basic storefront information</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* General */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium">General</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="tagline">Tagline</Label>
-                    <Input
-                      id="tagline"
-                      value={general.tagline}
-                      onChange={(e) => setGeneral({ ...general, tagline: e.target.value })}
-                      placeholder="Your scary tagline..."
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="preset">Theme Preset</Label>
-                    <Select value={theme.preset} onValueChange={applyPreset}>
-                      <SelectTrigger>
-                        <SelectValue>
-                          {currentPreset && (
-                            <div className="flex items-center gap-2">
-                              <div className="flex gap-0.5">
-                                <div
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: currentPreset.colors.primary }}
-                                />
-                                <div
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: currentPreset.colors.background }}
-                                />
-                              </div>
-                              <span>{currentPreset.name}</span>
-                              {isCustomized && (
-                                <span className="text-xs text-muted-foreground">(customized)</span>
-                              )}
-                            </div>
-                          )}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="w-80">
-                        {THEME_CATEGORIES.map((category) => (
-                          <SelectGroup key={category.name}>
-                            <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">
-                              {category.name}
-                            </SelectLabel>
-                            {category.presets.map((presetKey) => {
-                              const preset = THEME_PRESETS[presetKey];
-                              return (
-                                <SelectItem key={presetKey} value={presetKey} className="py-3">
-                                  <ThemePresetPreview preset={preset} />
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectGroup>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Select a preset to apply colors and fonts automatically
-                    </p>
-                  </div>
-                </div>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={general.description}
-                    onChange={(e) => setGeneral({ ...general, description: e.target.value })}
-                    placeholder="Describe your attraction..."
-                    rows={3}
+                  <Label htmlFor="tagline">Tagline</Label>
+                  <Input
+                    id="tagline"
+                    value={general.tagline}
+                    onChange={(e) => setGeneral({ ...general, tagline: e.target.value })}
+                    placeholder="Your scary tagline..."
                   />
                 </div>
-              </div>
-
-              {/* Colors */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium">Colors</h3>
-                  {isCustomized && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={resetToPreset}
-                      className="text-xs"
-                    >
-                      <RotateCcw className="mr-1 h-3 w-3" />
-                      Reset to {currentPreset?.name || 'preset'}
-                    </Button>
-                  )}
+                <div className="space-y-2">
+                  <Label htmlFor="preset">Theme Preset</Label>
+                  <Select value={theme.preset} onValueChange={applyPreset}>
+                    <SelectTrigger>
+                      <SelectValue>
+                        {currentPreset && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-0.5">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: currentPreset.colors.primary }}
+                              />
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: currentPreset.colors.background }}
+                              />
+                            </div>
+                            <span>{currentPreset.name}</span>
+                            {isCustomized && (
+                              <span className="text-xs text-muted-foreground">(customized)</span>
+                            )}
+                          </div>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="w-80">
+                      {THEME_CATEGORIES.map((category) => (
+                        <SelectGroup key={category.name}>
+                          <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">
+                            {category.name}
+                          </SelectLabel>
+                          {category.presets.map((presetKey) => {
+                            const preset = THEME_PRESETS[presetKey];
+                            return (
+                              <SelectItem key={presetKey} value={presetKey} className="py-3">
+                                <ThemePresetPreview preset={preset} />
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Select a preset to apply colors and fonts automatically
+                  </p>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={general.description}
+                  onChange={(e) => setGeneral({ ...general, description: e.target.value })}
+                  placeholder="Describe your attraction..."
+                  rows={3}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* Live Theme Preview */}
+          {/* Colors & Typography Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Colors & Typography</CardTitle>
+                  <CardDescription>Customize your storefront&apos;s visual style</CardDescription>
+                </div>
+                {isCustomized && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetToPreset}
+                    className="text-xs"
+                  >
+                    <RotateCcw className="mr-1 h-3 w-3" />
+                    Reset to {currentPreset?.name || 'preset'}
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Live Theme Preview */}
                 <div
                   className="rounded-lg border overflow-hidden transition-colors"
                   style={{ backgroundColor: theme.backgroundColor }}
@@ -810,11 +890,10 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Fonts */}
+              {/* Typography */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium">Typography</h3>
+                <h4 className="text-sm font-medium">Typography</h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="fontHeading">Heading Font</Label>
@@ -919,82 +998,94 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Hero Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium">Hero Section</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="heroTitle">Hero Title</Label>
-                    <Input
-                      id="heroTitle"
-                      value={hero.title}
-                      onChange={(e) => setHero({ ...hero, title: e.target.value })}
-                      placeholder="Face Your Fears"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="heroSubtitle">Hero Subtitle</Label>
-                    <Input
-                      id="heroSubtitle"
-                      value={hero.subtitle}
-                      onChange={(e) => setHero({ ...hero, subtitle: e.target.value })}
-                      placeholder="A terrifying journey awaits..."
-                    />
-                  </div>
+          {/* Hero Section Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Hero Section</CardTitle>
+              <CardDescription>Configure the hero banner at the top of your storefront</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="heroTitle">Hero Title</Label>
+                  <Input
+                    id="heroTitle"
+                    value={hero.title}
+                    onChange={(e) => setHero({ ...hero, title: e.target.value })}
+                    placeholder="Face Your Fears"
+                  />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="heroImage">Hero Image URL</Label>
-                    <Input
-                      id="heroImage"
-                      value={hero.imageUrl}
-                      onChange={(e) => setHero({ ...hero, imageUrl: e.target.value })}
-                      placeholder="https://example.com/hero.jpg"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: 1920x1080 or larger
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="heroVideo">Hero Video URL (optional)</Label>
-                    <Input
-                      id="heroVideo"
-                      value={hero.videoUrl}
-                      onChange={(e) => setHero({ ...hero, videoUrl: e.target.value })}
-                      placeholder="https://example.com/hero.mp4"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Background video for the hero
-                    </p>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="heroSubtitle">Hero Subtitle</Label>
+                  <Input
+                    id="heroSubtitle"
+                    value={hero.subtitle}
+                    onChange={(e) => setHero({ ...hero, subtitle: e.target.value })}
+                    placeholder="A terrifying journey awaits..."
+                  />
                 </div>
               </div>
-
-              {/* Background Image */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-medium">Background Image</h3>
-                  </div>
-                  {theme.backgroundImageUrl && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => updateThemeField('backgroundImageUrl', '')}
-                      className="text-xs text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="mr-1 h-3 w-3" />
-                      Remove
-                    </Button>
-                  )}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="heroImage">Hero Image URL</Label>
+                  <Input
+                    id="heroImage"
+                    value={hero.imageUrl}
+                    onChange={(e) => setHero({ ...hero, imageUrl: e.target.value })}
+                    placeholder="https://example.com/hero.jpg"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: 1920x1080 or larger
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Add a background image to your storefront. Free tiers can link external images.
-                  Pro and Enterprise tiers can upload images via the Media library.
-                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="heroVideo">Hero Video URL (optional)</Label>
+                  <Input
+                    id="heroVideo"
+                    value={hero.videoUrl}
+                    onChange={(e) => setHero({ ...hero, videoUrl: e.target.value })}
+                    placeholder="https://example.com/hero.mp4"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Background video for the hero
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Background Image Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <CardTitle>Background Image</CardTitle>
+                    <CardDescription>Add a background image to your storefront</CardDescription>
+                  </div>
+                </div>
+                {theme.backgroundImageUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateThemeField('backgroundImageUrl', '')}
+                    className="text-xs text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="mr-1 h-3 w-3" />
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Free tiers can link external images. Pro and Enterprise tiers can upload images via the Media library.
+              </p>
 
                 {/* Background Image Preview */}
                 {theme.backgroundImageUrl && (
@@ -1129,31 +1220,218 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings }: Settin
                         onChange={(e) => updateThemeField('backgroundOverlay', e.target.value)}
                         placeholder="rgba(0, 0, 0, 0.5)"
                       />
+                    <p className="text-xs text-muted-foreground">
+                      Add a semi-transparent overlay for better text readability. Example:{' '}
+                      <code className="bg-muted px-1 rounded">rgba(0, 0, 0, 0.5)</code> for a
+                      50% black overlay.
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Location & Contact Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <CardTitle>Location & Contact</CardTitle>
+                  <CardDescription>Set up your location and contact information for the &quot;Find Us&quot; card</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+
+                {/* Visibility Toggles */}
+                <div className="space-y-4 rounded-lg border p-4">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Visibility
+                  </h4>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="showAddress">Show Address</Label>
                       <p className="text-xs text-muted-foreground">
-                        Add a semi-transparent overlay for better text readability. Example:{' '}
-                        <code className="bg-muted px-1 rounded">rgba(0, 0, 0, 0.5)</code> for a
-                        50% black overlay.
+                        Display your address with an interactive map
                       </p>
                     </div>
-                  </>
-                )}
-              </div>
+                    <Switch
+                      id="showAddress"
+                      checked={contactVisibility.showAddress}
+                      onCheckedChange={(checked) =>
+                        setContactVisibility({ ...contactVisibility, showAddress: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="showPhone">Show Phone Number</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Display a clickable phone number
+                      </p>
+                    </div>
+                    <Switch
+                      id="showPhone"
+                      checked={contactVisibility.showPhone}
+                      onCheckedChange={(checked) =>
+                        setContactVisibility({ ...contactVisibility, showPhone: checked })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="showEmail">Show Email</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Display a clickable email address
+                      </p>
+                    </div>
+                    <Switch
+                      id="showEmail"
+                      checked={contactVisibility.showEmail}
+                      onCheckedChange={(checked) =>
+                        setContactVisibility({ ...contactVisibility, showEmail: checked })
+                      }
+                    />
+                  </div>
+                </div>
 
-              {/* Custom CSS */}
-              <div className="space-y-2">
-                <Label htmlFor="customCss">Custom CSS</Label>
-                <Textarea
-                  id="customCss"
-                  value={theme.customCss}
-                  onChange={(e) => setTheme({ ...theme, customCss: e.target.value })}
-                  placeholder="/* Add custom styles here */"
-                  className="font-mono text-sm"
-                  rows={6}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Advanced: Add custom CSS to override default styles.
-                </p>
+                {/* Contact Info Fields */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Contact Information
+                  </h4>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactEmail">Email</Label>
+                      <Input
+                        id="contactEmail"
+                        type="email"
+                        value={contactInfo.email}
+                        onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
+                        placeholder="info@yourattraction.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPhone">Phone</Label>
+                      <Input
+                        id="contactPhone"
+                        type="tel"
+                        value={contactInfo.phone}
+                        onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Address Fields */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Address
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="addressLine1">Street Address</Label>
+                      <Input
+                        id="addressLine1"
+                        value={contactInfo.addressLine1}
+                        onChange={(e) => setContactInfo({ ...contactInfo, addressLine1: e.target.value })}
+                        placeholder="123 Haunted Lane"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="addressLine2">Address Line 2 (optional)</Label>
+                      <Input
+                        id="addressLine2"
+                        value={contactInfo.addressLine2}
+                        onChange={(e) => setContactInfo({ ...contactInfo, addressLine2: e.target.value })}
+                        placeholder="Suite 100"
+                      />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={contactInfo.city}
+                          onChange={(e) => setContactInfo({ ...contactInfo, city: e.target.value })}
+                          placeholder="Salem"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          value={contactInfo.state}
+                          onChange={(e) => setContactInfo({ ...contactInfo, state: e.target.value })}
+                          placeholder="MA"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">ZIP Code</Label>
+                        <Input
+                          id="postalCode"
+                          value={contactInfo.postalCode}
+                          onChange={(e) => setContactInfo({ ...contactInfo, postalCode: e.target.value })}
+                          placeholder="01970"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coordinates */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Map Coordinates (Optional)
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    For precise map placement. If not set, the map will use your street address.
+                  </p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="latitude">Latitude</Label>
+                      <Input
+                        id="latitude"
+                        type="number"
+                        step="any"
+                        value={contactInfo.latitude}
+                        onChange={(e) => setContactInfo({ ...contactInfo, latitude: e.target.value })}
+                        placeholder="42.5195"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="longitude">Longitude</Label>
+                      <Input
+                        id="longitude"
+                        type="number"
+                        step="any"
+                        value={contactInfo.longitude}
+                        onChange={(e) => setContactInfo({ ...contactInfo, longitude: e.target.value })}
+                        placeholder="-70.8967"
+                      />
+                  </div>
+                </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Custom CSS Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom CSS</CardTitle>
+              <CardDescription>Advanced: Add custom CSS to override default styles</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                id="customCss"
+                value={theme.customCss}
+                onChange={(e) => setTheme({ ...theme, customCss: e.target.value })}
+                placeholder="/* Add custom styles here */"
+                className="font-mono text-sm"
+                rows={6}
+              />
             </CardContent>
           </Card>
         </TabsContent>

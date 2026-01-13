@@ -1,6 +1,7 @@
 import { getPublicStorefront, getPublicTicketTypes, type PublicTicketType } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import { StorefrontTickets } from './_components/storefront-tickets';
+import { FindUsCard } from './_components/find-us-card';
 
 interface StorefrontPageProps {
   params: Promise<{ identifier: string }>;
@@ -53,19 +54,31 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
           </p>
         </div>
 
-        {availableTickets.length === 0 ? (
-          <div className="rounded-lg border bg-card p-8 text-center">
-            <p className="text-muted-foreground">
-              No tickets are currently available for purchase.
-            </p>
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            {availableTickets.length === 0 ? (
+              <div className="rounded-lg border bg-card p-8 text-center">
+                <p className="text-muted-foreground">
+                  No tickets are currently available for purchase.
+                </p>
+              </div>
+            ) : (
+              <StorefrontTickets
+                identifier={identifier}
+                ticketTypes={availableTickets}
+                attractionName={storefront.attraction.name}
+              />
+            )}
           </div>
-        ) : (
-          <StorefrontTickets
-            identifier={identifier}
-            ticketTypes={availableTickets}
-            attractionName={storefront.attraction.name}
-          />
-        )}
+
+          {/* Sidebar with Find Us card */}
+          <div className="space-y-6">
+            <FindUsCard
+              contact={storefront.contact}
+              attractionName={storefront.attraction.name}
+            />
+          </div>
+        </div>
       </main>
 
       {/* Footer */}

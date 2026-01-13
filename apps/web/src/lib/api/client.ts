@@ -364,6 +364,21 @@ export async function updateAttraction(
     min_age?: number;
     intensity_level?: number;
     duration_minutes?: number;
+    email?: string;
+    phone?: string;
+    website?: string;
+    address?: {
+      line1: string;
+      line2?: string;
+      city: string;
+      state: string;
+      postalCode: string;
+      country?: string;
+    };
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
   }
 ) {
   return api.patch<Attraction>(`/organizations/${orgId}/attractions/${attractionId}`, data);

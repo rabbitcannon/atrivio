@@ -680,6 +680,10 @@ export interface StorefrontSettingsResponse {
   seo: SeoConfigResponse;
   analytics: AnalyticsConfigResponse;
   features: FeaturesConfigResponse;
+  // Contact visibility
+  showAddress: boolean | null;
+  showPhone: boolean | null;
+  showEmail: boolean | null;
   isPublished: boolean;
   publishedAt: string | null;
 }
@@ -763,6 +767,26 @@ export interface NavigationResponse {
   }>;
 }
 
+// Contact visibility info for public storefront
+export interface PublicStorefrontContactResponse {
+  showAddress: boolean;
+  showPhone: boolean;
+  showEmail: boolean;
+  address?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  phone?: string;
+  email?: string;
+}
+
 // Public storefront response (aggregated, per-attraction)
 export interface PublicStorefrontResponse {
   org: {
@@ -771,14 +795,6 @@ export interface PublicStorefrontResponse {
     slug: string;
     logoUrl: string | null;
     website: string | null;
-    address: {
-      line1: string | null;
-      city: string | null;
-      state: string | null;
-      postalCode: string | null;
-    };
-    phone: string | null;
-    email: string | null;
     timezone: string;
   };
   attraction: {
@@ -788,6 +804,7 @@ export interface PublicStorefrontResponse {
     description: string | null;
     imageUrl: string | null;
   };
+  contact: PublicStorefrontContactResponse;
   storefront: {
     tagline: string | null;
     description: string | null;

@@ -3,7 +3,6 @@ import {
   Calendar,
   ChevronRight,
   MapPin,
-  Settings,
   Store,
   Users,
 } from 'lucide-react';
@@ -13,7 +12,6 @@ import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { getAttraction, resolveOrgId } from '@/lib/api';
@@ -86,7 +84,7 @@ export default async function AttractionDetailPage({ params }: AttractionDetailP
   return (
     <div className="space-y-8">
       {/* Header */}
-      <AnimatedPageHeader className="flex items-start justify-between">
+      <AnimatedPageHeader>
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{attraction.name}</h1>
@@ -98,12 +96,6 @@ export default async function AttractionDetailPage({ params }: AttractionDetailP
             {attraction.description || 'No description provided'}
           </p>
         </div>
-        <Button variant="outline" asChild>
-          <Link href={`${basePath}/settings`}>
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Link>
-        </Button>
       </AnimatedPageHeader>
 
       {/* Stats */}

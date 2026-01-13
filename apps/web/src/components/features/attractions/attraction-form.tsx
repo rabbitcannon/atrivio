@@ -37,6 +37,16 @@ interface AttractionFormProps {
     min_age?: number | null;
     intensity_level?: number | null;
     duration_minutes?: number | null;
+    email?: string | null;
+    phone?: string | null;
+    website?: string | null;
+    address_line1?: string | null;
+    address_line2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postal_code?: string | null;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
   };
 }
 
@@ -99,6 +109,44 @@ export function AttractionForm({ orgId, attractionTypes, attraction }: Attractio
 
       const durationMinutes = formData.get('duration_minutes') as string;
       if (durationMinutes) data.duration_minutes = parseInt(durationMinutes, 10);
+
+      // Contact info
+      const email = formData.get('email') as string;
+      if (email !== undefined) data.email = email || undefined;
+
+      const phone = formData.get('phone') as string;
+      if (phone !== undefined) data.phone = phone || undefined;
+
+      const website = formData.get('website') as string;
+      if (website !== undefined) data.website = website || undefined;
+
+      // Address
+      const addressLine1 = formData.get('address_line1') as string;
+      const city = formData.get('city') as string;
+      const state = formData.get('state') as string;
+      const postalCode = formData.get('postal_code') as string;
+      const addressLine2 = formData.get('address_line2') as string;
+
+      if (addressLine1 && city && state && postalCode) {
+        data.address = {
+          line1: addressLine1,
+          line2: addressLine2 || undefined,
+          city,
+          state,
+          postalCode,
+          country: 'US',
+        };
+      }
+
+      // Coordinates
+      const latitude = formData.get('latitude') as string;
+      const longitude = formData.get('longitude') as string;
+      if (latitude && longitude) {
+        data.coordinates = {
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+        };
+      }
 
       const result = await updateAttraction(orgId, attraction.id, data);
 
@@ -321,6 +369,146 @@ export function AttractionForm({ orgId, attractionTypes, attraction }: Attractio
               />
             </div>
           </div>
+
+          {/* Location & Contact Section - Only show when editing */}
+          {isEditing && (
+            <>
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-medium mb-4">Location & Contact</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  This information is used for the &quot;Find Us&quot; card on your storefront.
+                </p>
+              </div>
+
+              {/* Contact Info */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="info@yourattraction.com"
+                    defaultValue={attraction?.email ?? ''}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    defaultValue={attraction?.phone ?? ''}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  name="website"
+                  type="url"
+                  placeholder="https://yourattraction.com"
+                  defaultValue={attraction?.website ?? ''}
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Address */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="address_line1">Street Address</Label>
+                  <Input
+                    id="address_line1"
+                    name="address_line1"
+                    placeholder="123 Haunted Lane"
+                    defaultValue={attraction?.address_line1 ?? ''}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address_line2">Address Line 2 (optional)</Label>
+                  <Input
+                    id="address_line2"
+                    name="address_line2"
+                    placeholder="Suite 100"
+                    defaultValue={attraction?.address_line2 ?? ''}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      placeholder="Salem"
+                      defaultValue={attraction?.city ?? ''}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State</Label>
+                    <Input
+                      id="state"
+                      name="state"
+                      placeholder="MA"
+                      defaultValue={attraction?.state ?? ''}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code">ZIP Code</Label>
+                    <Input
+                      id="postal_code"
+                      name="postal_code"
+                      placeholder="01970"
+                      defaultValue={attraction?.postal_code ?? ''}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Coordinates */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="latitude">Latitude (optional)</Label>
+                  <Input
+                    id="latitude"
+                    name="latitude"
+                    type="number"
+                    step="any"
+                    placeholder="42.5195"
+                    defaultValue={attraction?.latitude ?? ''}
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    For precise map placement
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="longitude">Longitude (optional)</Label>
+                  <Input
+                    id="longitude"
+                    name="longitude"
+                    type="number"
+                    step="any"
+                    placeholder="-70.8967"
+                    defaultValue={attraction?.longitude ?? ''}
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    For precise map placement
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button
