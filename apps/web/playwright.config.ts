@@ -111,6 +111,15 @@ export default defineConfig({
         viewport: { width: 1280, height: 800 },
       },
     },
+
+    // Smoke tests (quick verification suite)
+    {
+      name: 'smoke',
+      testDir: './e2e/smoke',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
   ],
 
   // Run local dev servers before tests (API + Web)
