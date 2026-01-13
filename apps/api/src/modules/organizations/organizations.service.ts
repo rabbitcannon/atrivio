@@ -104,22 +104,39 @@ export class OrganizationsService {
     }
 
     // Create owner membership
-    const { error: memberError } = await this.supabase.adminClient.from('org_memberships').insert({
-      org_id: org.id,
-      user_id: userId,
-      role: 'owner',
-      is_owner: true,
-      status: 'active',
-    });
+    const { data: membership, error: memberError } = await this.supabase.adminClient
+      .from('org_memberships')
+      .insert({
+        org_id: org.id,
+        user_id: userId,
+        role: 'owner',
+        is_owner: true,
+        status: 'active',
+      })
+      .select('id')
+      .single();
 
-    if (memberError) {
+    if (memberError || !membership) {
       // Rollback org creation
       await this.supabase.adminClient.from('organizations').delete().eq('id', org.id);
 
       throw new BadRequestException({
         code: 'ORG_CREATE_FAILED',
-        message: memberError.message,
+        message: memberError?.message || 'Failed to create membership',
       });
+    }
+
+    // Create staff profile for the owner (required for time tracking and staff features)
+    const { error: staffError } = await this.supabase.adminClient.from('staff_profiles').insert({
+      id: membership.id,
+      org_id: org.id,
+      status: 'active',
+      employment_type: 'full_time',
+    });
+
+    if (staffError) {
+      // Log but don't fail - staff profile can be created later
+      console.warn(`Failed to create staff profile for owner: ${staffError.message}`);
     }
 
     return {

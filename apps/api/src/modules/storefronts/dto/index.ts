@@ -672,6 +672,7 @@ export interface FeaturesConfigResponse {
   showCalendar: boolean | null;
   showFaq: boolean | null;
   showReviews: boolean | null;
+  showTickets: boolean | null;
   featuredAttractionIds: string[] | null;
 }
 

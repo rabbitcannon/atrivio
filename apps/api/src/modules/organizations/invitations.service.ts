@@ -408,20 +408,37 @@ Atrivio Platform`;
     }
 
     // Create membership
-    const { error: memberError } = await this.supabase.adminClient.from('org_memberships').insert({
-      org_id: invite.org_id,
-      user_id: userId,
-      role: invite.role,
-      is_owner: false,
-      status: 'active',
-      invited_by: invite.invited_by,
-    });
+    const { data: membership, error: memberError } = await this.supabase.adminClient
+      .from('org_memberships')
+      .insert({
+        org_id: invite.org_id,
+        user_id: userId,
+        role: invite.role,
+        is_owner: false,
+        status: 'active',
+        invited_by: invite.invited_by,
+      })
+      .select('id')
+      .single();
 
-    if (memberError) {
+    if (memberError || !membership) {
       throw new BadRequestException({
         code: 'INVITATION_ACCEPT_FAILED',
-        message: memberError.message,
+        message: memberError?.message || 'Failed to create membership',
       });
+    }
+
+    // Create staff profile (required for time tracking and staff features)
+    const { error: staffError } = await this.supabase.adminClient.from('staff_profiles').insert({
+      id: membership.id,
+      org_id: invite.org_id,
+      status: 'active',
+      employment_type: 'seasonal', // Default for invited staff
+    });
+
+    if (staffError) {
+      // Log but don't fail - staff profile can be created later
+      this.logger.warn(`Failed to create staff profile for invited user: ${staffError.message}`);
     }
 
     // Update invitation status

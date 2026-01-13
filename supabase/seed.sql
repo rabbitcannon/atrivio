@@ -912,6 +912,8 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.staff_profiles (id, org_id, employee_id, emergency_contact_name, emergency_contact_phone, emergency_contact_relation, hire_date, hourly_rate, employment_type, status, shirt_size)
 VALUES
+  -- Owner (Marcus Holloway) - d0000000-0000-0000-0000-000000000001
+  ('d0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'NM-OWN-001', 'Jennifer Holloway', '555-0200', 'spouse', '2020-01-01', NULL, 'full_time', 'active', 'L'),
   -- Manager (Sarah Chen) - d0000000-0000-0000-0000-000000000002
   ('d0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'NM-MGR-001', 'David Chen', '555-0201', 'spouse', '2022-08-15', 2500, 'full_time', 'active', 'M'),
   -- Actor 1 (Jake Morrison) - d0000000-0000-0000-0000-000000000003
@@ -1055,6 +1057,8 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.staff_profiles (id, org_id, employee_id, emergency_contact_name, emergency_contact_phone, emergency_contact_relation, hire_date, hourly_rate, employment_type, status, shirt_size)
 VALUES
+  -- Owner (Ben Crawford) - d1000000-0000-0000-0000-000000000001
+  ('d1000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000002', 'SH-OWN-001', 'Sarah Crawford', '555-1200', 'spouse', '2023-06-01', NULL, 'full_time', 'active', 'M'),
   -- Part-time Actor 1 (Jenny Adams) - d1000000-0000-0000-0000-000000000002
   ('d1000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002', 'SH-ACT-001', 'Robert Adams', '555-1201', 'father', '2024-09-01', 1200, 'seasonal', 'active', 'S'),
   -- Weekend Actor (Chris Baker) - d1000000-0000-0000-0000-000000000003
@@ -1077,6 +1081,8 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.staff_profiles (id, org_id, employee_id, emergency_contact_name, emergency_contact_phone, emergency_contact_relation, hire_date, hourly_rate, employment_type, status, shirt_size)
 VALUES
+  -- Owner/CEO (Victoria Sterling) - d3000000-0000-0000-0000-000000000001
+  ('d3000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003', 'TC-CEO-001', 'Richard Sterling', '555-3200', 'spouse', '2018-01-01', NULL, 'full_time', 'active', 'S'),
   -- Venue 1 Manager (Derek Stone) - d3000000-0000-0000-0000-000000000003
   ('d3000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000003', 'TC-V1-MGR', 'Lisa Stone', '555-3201', 'spouse', '2020-03-01', 3500, 'full_time', 'active', 'L'),
   -- Venue 2 Manager (Nina Reyes) - d3000000-0000-0000-0000-000000000004
