@@ -13,10 +13,17 @@ import {
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatedPageHeader } from '@/components/features/attractions';
+import { UpgradePrompt } from '@/components/features/upgrade-prompt';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getInventorySummary, type InventorySummary } from '@/lib/api/client';
+import {
+  getInventorySummary,
+  getRequiredTier,
+  isFeatureNotEnabledError,
+  type ApiError,
+  type InventorySummary,
+} from '@/lib/api/client';
 
 interface InventoryDashboardProps {
   orgId: string;
@@ -53,11 +60,15 @@ const NAV_ITEMS = [
 export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardProps) {
   const [summary, setSummary] = useState<InventorySummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [featureError, setFeatureError] = useState<ApiError | null>(null);
 
   const loadSummary = useCallback(async () => {
     setLoading(true);
-    const { data } = await getInventorySummary(orgId);
-    if (data) {
+    setFeatureError(null);
+    const { data, error } = await getInventorySummary(orgId);
+    if (error && isFeatureNotEnabledError(error)) {
+      setFeatureError(error);
+    } else if (data) {
       setSummary(data);
     }
     setLoading(false);
@@ -66,6 +77,25 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
   useEffect(() => {
     loadSummary();
   }, [loadSummary]);
+
+  // Show upgrade prompt if feature not enabled
+  if (featureError) {
+    return (
+      <div className="space-y-6">
+        <AnimatedPageHeader>
+          <h1 className="text-3xl font-bold">Inventory</h1>
+          <p className="text-muted-foreground">
+            Track costumes, props, equipment, and supplies across your attractions.
+          </p>
+        </AnimatedPageHeader>
+        <UpgradePrompt
+          feature="Inventory Management"
+          description="Track costumes, props, equipment, and supplies with checkout tracking and low stock alerts."
+          requiredTier={getRequiredTier(featureError)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

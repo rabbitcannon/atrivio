@@ -60,8 +60,25 @@ const navigation: NavItem[] = [
         title: 'Attractions',
         icon: <MapPin className="h-4 w-4" />,
         items: [
+          { title: 'Overview', href: '/docs/user-guides/attractions/overview' },
+          { title: 'Creating', href: '/docs/user-guides/attractions/creating' },
+          { title: 'Managing', href: '/docs/user-guides/attractions/managing' },
           { title: 'Zones', href: '/docs/user-guides/attractions/zones' },
           { title: 'Seasons', href: '/docs/user-guides/attractions/seasons' },
+        ],
+      },
+      {
+        title: 'My Time',
+        icon: <Clock className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/user-guides/my-time/overview' },
+        ],
+      },
+      {
+        title: 'My Schedule',
+        icon: <Calendar className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/user-guides/my-schedule/overview' },
         ],
       },
       {
@@ -108,6 +125,7 @@ const navigation: NavItem[] = [
           { title: 'Time Slots', href: '/docs/user-guides/ticketing/time-slots' },
           { title: 'Promo Codes', href: '/docs/user-guides/ticketing/promo-codes' },
           { title: 'Orders', href: '/docs/user-guides/ticketing/orders' },
+          { title: 'Analytics', href: '/docs/user-guides/ticketing/analytics' },
         ],
       },
       {
@@ -137,11 +155,19 @@ const navigation: NavItem[] = [
         ],
       },
       {
+        title: 'Billing',
+        icon: <CreditCard className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/admin-guides/billing' },
+        ],
+      },
+      {
         title: 'Payments',
         icon: <CreditCard className="h-4 w-4" />,
         items: [
           { title: 'Stripe Setup', href: '/docs/admin-guides/payments/stripe-setup' },
           { title: 'Payouts', href: '/docs/admin-guides/payments/payouts' },
+          { title: 'Transactions', href: '/docs/admin-guides/payments/transactions' },
         ],
       },
       {

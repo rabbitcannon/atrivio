@@ -2004,3 +2004,87 @@ export async function getAnalyticsTickets(orgId: string, params?: AnalyticsQuery
     `/organizations/${orgId}/analytics/tickets${buildAnalyticsQuery(params)}`
   );
 }
+
+// ============================================================================
+// Subscription API - Client-side
+// ============================================================================
+
+export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
+
+export interface TierLimits {
+  customDomains: number;
+  attractions: number;
+  staffMembers: number;
+  monthlyOrders: number;
+  features: string[];
+}
+
+export interface SubscriptionInfo {
+  tier: SubscriptionTier;
+  status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete' | 'unpaid' | 'incomplete_expired';
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  limits: TierLimits;
+}
+
+interface UsageEntry {
+  current: number;
+  limit: number;
+  remaining: number | 'unlimited';
+}
+
+export interface SubscriptionWithUsage extends SubscriptionInfo {
+  usage: {
+    attractions: UsageEntry;
+    staffMembers: UsageEntry;
+    customDomains: UsageEntry;
+  };
+}
+
+export interface CheckoutSessionResponse {
+  url: string;
+  sessionId: string;
+}
+
+export interface BillingPortalResponse {
+  url: string;
+}
+
+/**
+ * Get subscription info for an organization
+ */
+export async function getSubscription(orgId: string) {
+  return api.get<SubscriptionInfo>(`/organizations/${orgId}/subscription`);
+}
+
+/**
+ * Get subscription info with current usage
+ */
+export async function getSubscriptionWithUsage(orgId: string) {
+  return api.get<SubscriptionWithUsage>(`/organizations/${orgId}/subscription/limits`);
+}
+
+/**
+ * Create a Stripe checkout session for subscription upgrade
+ */
+export async function createCheckoutSession(
+  orgId: string,
+  data: {
+    tier: 'pro' | 'enterprise';
+    successUrl: string;
+    cancelUrl: string;
+  }
+) {
+  return api.post<CheckoutSessionResponse>(`/organizations/${orgId}/subscription/checkout`, data);
+}
+
+/**
+ * Create a Stripe billing portal session for subscription management
+ */
+export async function createBillingPortalSession(orgId: string, returnUrl: string) {
+  return api.post<BillingPortalResponse>(`/organizations/${orgId}/subscription/billing-portal`, {
+    returnUrl,
+  });
+}

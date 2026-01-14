@@ -13,6 +13,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
+import { UpgradePrompt } from '@/components/features/upgrade-prompt';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
@@ -61,8 +62,22 @@ export default async function QueuePage({ params }: QueuePageProps) {
 
   // Check if virtual_queue feature is enabled (Enterprise tier only)
   const hasVirtualQueue = await isFeatureEnabled(orgId, 'virtual_queue');
+
+  // Show upgrade prompt if feature not enabled
   if (!hasVirtualQueue) {
-    notFound();
+    return (
+      <div className="space-y-6">
+        <AnimatedPageHeader>
+          <h1 className="text-3xl font-bold">Virtual Queue</h1>
+          <p className="text-muted-foreground">Manage virtual queues for your attractions.</p>
+        </AnimatedPageHeader>
+        <UpgradePrompt
+          feature="Virtual Queue"
+          description="Manage guest lines with virtual queuing, real-time position tracking, and SMS notifications."
+          requiredTier="enterprise"
+        />
+      </div>
+    );
   }
 
   // Get the first attraction to show queue stats

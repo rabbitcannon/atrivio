@@ -384,3 +384,150 @@ export async function verifyCheckoutSession(
 
   return res.json();
 }
+
+// =====================
+// Virtual Queue API (Public)
+// =====================
+
+export interface QueueInfo {
+  isOpen: boolean;
+  isPaused: boolean;
+  currentWaitMinutes: number;
+  peopleInQueue: number;
+  queueSize: number;
+  status: 'accepting' | 'paused' | 'full' | 'closed';
+  message: string;
+}
+
+export interface JoinQueueRequest {
+  guestName: string;
+  guestPhone?: string;
+  guestEmail?: string;
+  partySize?: number;
+  ticketId?: string;
+}
+
+export interface JoinQueueResponse {
+  confirmationCode: string;
+  position: number;
+  estimatedWaitMinutes: number;
+  estimatedTime: string;
+  partySize: number;
+  status: string;
+  checkStatusUrl: string;
+}
+
+export interface QueuePosition {
+  confirmationCode: string;
+  position: number;
+  status: 'waiting' | 'notified' | 'called' | 'checked_in' | 'expired' | 'left' | 'no_show';
+  partySize: number;
+  peopleAhead: number;
+  estimatedWaitMinutes: number;
+  estimatedTime: string;
+  joinedAt: string;
+  queueName: string;
+  attractionName: string;
+}
+
+export interface QueueApiError {
+  message: string;
+  statusCode: number;
+  code?: string;
+  existingCode?: string;
+}
+
+/**
+ * Get queue info for an attraction (availability, wait time)
+ */
+export async function getQueueInfo(attractionSlug: string): Promise<QueueInfo | null> {
+  try {
+    const res = await fetch(
+      `${API_URL}/attractions/${encodeURIComponent(attractionSlug)}/queue/info`,
+      { next: { revalidate: 0 } } // No cache - always fresh
+    );
+
+    if (!res.ok) {
+      if (res.status === 404 || res.status === 403) return null;
+      throw new Error(`Failed to fetch queue info: ${res.status}`);
+    }
+
+    return res.json();
+  } catch (_error) {
+    return null;
+  }
+}
+
+/**
+ * Join the virtual queue
+ */
+export async function joinQueue(
+  attractionSlug: string,
+  data: JoinQueueRequest
+): Promise<{ data?: JoinQueueResponse; error?: QueueApiError }> {
+  try {
+    const res = await fetch(
+      `${API_URL}/attractions/${encodeURIComponent(attractionSlug)}/queue/join`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Failed to join queue', statusCode: res.status }));
+      return { error: { ...error, statusCode: res.status } };
+    }
+
+    return { data: await res.json() };
+  } catch (_error) {
+    return { error: { message: 'Failed to join queue', statusCode: 500 } };
+  }
+}
+
+/**
+ * Check queue position by confirmation code
+ */
+export async function getQueuePosition(confirmationCode: string): Promise<QueuePosition | null> {
+  try {
+    // The API expects the attractionSlug in the path, but the confirmation code lookup
+    // works globally, so we use a placeholder. The API will find the right entry.
+    const res = await fetch(
+      `${API_URL}/attractions/_/queue/status/${encodeURIComponent(confirmationCode.toUpperCase())}`,
+      { next: { revalidate: 0 } } // No cache - always fresh
+    );
+
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error(`Failed to fetch queue position: ${res.status}`);
+    }
+
+    return res.json();
+  } catch (_error) {
+    return null;
+  }
+}
+
+/**
+ * Leave the virtual queue
+ */
+export async function leaveQueue(
+  confirmationCode: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(
+      `${API_URL}/attractions/_/queue/${encodeURIComponent(confirmationCode.toUpperCase())}`,
+      { method: 'DELETE' }
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Failed to leave queue' }));
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (_error) {
+    return { success: false, error: 'Failed to leave queue' };
+  }
+}
