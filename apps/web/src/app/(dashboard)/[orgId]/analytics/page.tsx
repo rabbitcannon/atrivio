@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AnimatedNumber } from '@/components/features/dashboard';
 import { UpgradePrompt } from '@/components/features/upgrade-prompt';
 import {
   getAnalyticsDashboard,
@@ -250,11 +251,13 @@ function ChangeIndicator({ comparison }: { comparison: { trend: 'up' | 'down' | 
 }
 
 /**
- * Stats card component
+ * Stats card component with animated numbers
  */
 function StatsCard({
   title,
   value,
+  numericValue,
+  formatFn,
   subtitle,
   icon: Icon,
   iconColor,
@@ -262,6 +265,8 @@ function StatsCard({
 }: {
   title: string;
   value: string | number;
+  numericValue?: number;
+  formatFn?: (value: number) => string;
   subtitle: string;
   icon: React.ElementType;
   iconColor: string;
@@ -275,7 +280,16 @@ function StatsCard({
       </CardHeader>
       <CardContent>
         <div className="flex items-center">
-          <div className="text-2xl font-bold">{value}</div>
+          {numericValue !== undefined ? (
+            <AnimatedNumber
+              value={numericValue}
+              formatFn={formatFn}
+              duration={1.5}
+              className="text-2xl font-bold"
+            />
+          ) : (
+            <div className="text-2xl font-bold">{value}</div>
+          )}
           {comparison && <ChangeIndicator comparison={comparison} />}
         </div>
         <p className="text-xs text-muted-foreground">{subtitle}</p>
@@ -496,6 +510,8 @@ export default function AnalyticsPage() {
             <StatsCard
               title="Total Revenue"
               value={formatCurrency(dashboard.summary.grossRevenue)}
+              numericValue={dashboard.summary.grossRevenue}
+              formatFn={(cents) => formatCurrency(cents)}
               subtitle={`${dashboard.summary.totalOrders} orders`}
               icon={DollarSign}
               iconColor="text-green-500"
@@ -504,6 +520,7 @@ export default function AnalyticsPage() {
             <StatsCard
               title="Orders"
               value={dashboard.summary.totalOrders.toLocaleString()}
+              numericValue={dashboard.summary.totalOrders}
               subtitle={`Avg ${formatCurrency(dashboard.summary.avgOrderValue)}/order`}
               icon={ShoppingCart}
               iconColor="text-blue-500"
@@ -512,6 +529,7 @@ export default function AnalyticsPage() {
             <StatsCard
               title="Tickets Sold"
               value={dashboard.summary.ticketsSold.toLocaleString()}
+              numericValue={dashboard.summary.ticketsSold}
               subtitle="Total tickets"
               icon={Ticket}
               iconColor="text-purple-500"
@@ -520,6 +538,7 @@ export default function AnalyticsPage() {
             <StatsCard
               title="Check-Ins"
               value={dashboard.summary.ticketsCheckedIn.toLocaleString()}
+              numericValue={dashboard.summary.ticketsCheckedIn}
               subtitle={`${dashboard.summary.checkInRate.toFixed(1)}% rate`}
               icon={Users}
               iconColor="text-orange-500"

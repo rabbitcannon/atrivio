@@ -17,6 +17,7 @@ import { useParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TicketPreview } from '@/components/features/ticketing';
 import { apiClientDirect as apiClient, resolveOrgId, getAnalyticsDashboard } from '@/lib/api/client';
 import type { TimeSeriesDataPoint } from '@/lib/api/types';
 
@@ -270,8 +271,111 @@ function formatMoney(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
+const DIGIT_HEIGHT_PX = 32;
+
 /**
- * Stat card with loading state
+ * Single scrolling digit - rolls through 0→target like an odometer
+ */
+function ScrollingDigit({
+  digit,
+  delay = 0,
+  duration = 1,
+}: {
+  digit: string;
+  delay?: number;
+  duration?: number;
+}) {
+  const isNumber = /\d/.test(digit);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldAnimate(true);
+    }, delay * 1000);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  // Non-digits (commas, $, %, etc.) - render inline with same height for alignment
+  if (!isNumber) {
+    return (
+      <span
+        className="inline-flex items-center justify-center"
+        style={{ height: DIGIT_HEIGHT_PX }}
+      >
+        {digit}
+      </span>
+    );
+  }
+
+  const targetDigit = parseInt(digit, 10);
+  const scrollDistance = targetDigit * DIGIT_HEIGHT_PX;
+  const animDuration = duration * (0.4 + targetDigit * 0.1);
+
+  return (
+    <span
+      className="relative inline-block overflow-hidden align-bottom"
+      style={{ width: '0.65em', height: DIGIT_HEIGHT_PX }}
+    >
+      <motion.div
+        className="absolute left-0 right-0 flex flex-col items-center"
+        animate={{ y: shouldAnimate ? -scrollDistance : 0 }}
+        transition={{
+          duration: animDuration,
+          ease: [0.33, 1, 0.68, 1],
+        }}
+      >
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+          <span
+            key={num}
+            className="flex items-center justify-center leading-none"
+            style={{ height: DIGIT_HEIGHT_PX }}
+          >
+            {num}
+          </span>
+        ))}
+      </motion.div>
+    </span>
+  );
+}
+
+/**
+ * Animated stat value with odometer/slot machine effect
+ */
+function AnimatedStatValue({
+  value,
+  format = 'number',
+}: {
+  value: number;
+  format?: 'number' | 'money';
+}) {
+  const shouldReduceMotion = useReducedMotion();
+  const formatFn = format === 'money' ? formatMoney : (v: number) => Math.round(v).toLocaleString();
+  const formattedValue = formatFn(value);
+  const characters = formattedValue.split('');
+
+  if (shouldReduceMotion) {
+    return <span>{formattedValue}</span>;
+  }
+
+  return (
+    <span
+      className="inline-flex items-center tabular-nums"
+      style={{ height: DIGIT_HEIGHT_PX }}
+    >
+      {characters.map((char, index) => (
+        <ScrollingDigit
+          key={`${index}-${char}`}
+          digit={char}
+          delay={0.2 + index * 0.06}
+          duration={1.2}
+        />
+      ))}
+    </span>
+  );
+}
+
+/**
+ * Stat card with loading state and animated value
  */
 function StatCard({
   title,
@@ -303,7 +407,7 @@ function StatCard({
         ) : (
           <>
             <div className="text-2xl font-bold">
-              {format === 'money' ? formatMoney(value) : value.toLocaleString()}
+              <AnimatedStatValue value={value} format={format} />
             </div>
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </>
@@ -457,6 +561,28 @@ export default function TicketingPage() {
           </AnimatedNavCard>
         ))}
       </AnimatedNavGrid>
+
+      {/* Sample Ticket Preview */}
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: EASE, delay: 0.35 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Ticket className="h-5 w-5" />
+              Sample Ticket Preview
+            </CardTitle>
+            <CardDescription>
+              This is how your tickets will appear to customers
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg py-8">
+            <TicketPreview animate={!shouldReduceMotion} />
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

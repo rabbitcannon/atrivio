@@ -149,6 +149,41 @@ export async function isFeatureEnabled(orgId: string, featureKey: string): Promi
 }
 
 // ============================================================================
+// Analytics API (Server-side)
+// ============================================================================
+
+export interface AnalyticsSummary {
+  ticketsSold: number;
+  grossRevenue: number;
+  netRevenue: number;
+  refunds: number;
+  averageOrderValue: number;
+}
+
+export interface AnalyticsDashboardResponse {
+  summary: AnalyticsSummary;
+  revenueChart?: Array<{ date: string; value: number }>;
+  ticketChart?: Array<{ date: string; value: number }>;
+}
+
+/**
+ * Get analytics dashboard for an organization
+ */
+export async function getAnalyticsDashboard(
+  orgId: string,
+  params?: { period?: 'today' | 'week' | 'month' | 'year'; startDate?: string; endDate?: string }
+) {
+  const query = new URLSearchParams();
+  if (params?.period) query.set('period', params.period);
+  if (params?.startDate) query.set('start_date', params.startDate);
+  if (params?.endDate) query.set('end_date', params.endDate);
+  const queryStr = query.toString();
+  return serverApi.get<AnalyticsDashboardResponse>(
+    `/organizations/${orgId}/analytics/dashboard${queryStr ? `?${queryStr}` : ''}`
+  );
+}
+
+// ============================================================================
 // Organizations API (Server-side)
 // ============================================================================
 

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { DemoModeWrapper } from '@/components/features/demo-mode';
 import { DemoTourWrapper } from '@/components/features/demo-tour';
 import { AnnouncementBanner } from '@/components/features/platform/announcement-banner';
 import { DashboardHeader } from '@/components/layouts/dashboard-header';
@@ -28,6 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </main>
         </div>
       </div>
+      <DemoModeWrapper />
     </DemoTourWrapper>
   );
 }

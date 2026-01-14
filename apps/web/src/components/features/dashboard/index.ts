@@ -2,6 +2,7 @@ export {
   AnimatedCardGrid,
   AnimatedContainer,
   AnimatedDashboardHeader,
+  AnimatedNumber,
   AnimatedQuickLink,
   AnimatedStatsGrid,
 } from './animated-dashboard';

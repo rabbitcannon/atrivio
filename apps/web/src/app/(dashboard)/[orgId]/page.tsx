@@ -16,7 +16,7 @@ import {
 import { TimeClockWidget } from '@/components/features/time-clock';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getCurrentUserRole, getOrganization, getStaff, resolveOrgId } from '@/lib/api';
+import { getAnalyticsDashboard, getCurrentUserRole, getOrganization, getStaff, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -48,13 +48,17 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
   // Check if user has management role
   const isManagement = userRole && MANAGEMENT_ROLES.includes(userRole);
 
-  // For management users, also fetch staff data
+  // For management users, also fetch staff data and analytics
   let staffResult = null;
+  let analyticsResult = null;
   let hasError = !!orgResult.error;
   let errorMessage = orgResult.error?.message || null;
 
   if (isManagement) {
-    staffResult = await getStaff(orgId, { status: 'active' });
+    [staffResult, analyticsResult] = await Promise.all([
+      getStaff(orgId, { status: 'active' }),
+      getAnalyticsDashboard(orgId, { period: 'month' }).catch(() => null),
+    ]);
     if (staffResult.error) {
       hasError = true;
       errorMessage = staffResult.error.message || errorMessage;
@@ -69,29 +73,35 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
     const attractionCount = orgResult.data?.stats?.attraction_count ?? 0;
     const memberCount = orgResult.data?.stats?.member_count ?? 0;
     const staffCount = staffResult?.data?.meta?.total ?? 0;
+    const monthlyRevenue = analyticsResult?.data?.summary?.grossRevenue ?? 0;
 
     const stats = [
       {
         title: 'Attractions',
         value: attractionCount.toString(),
+        numericValue: attractionCount,
         description: 'Total attractions',
         icon: <Ghost className="h-4 w-4" />,
       },
       {
         title: 'Members',
         value: memberCount.toString(),
+        numericValue: memberCount,
         description: 'Organization members',
         icon: <Users className="h-4 w-4" />,
       },
       {
         title: 'Staff',
         value: staffCount.toString(),
+        numericValue: staffCount,
         description: 'Active staff',
         icon: <Users className="h-4 w-4" />,
       },
       {
         title: 'Revenue',
-        value: '$0',
+        value: `$${(monthlyRevenue / 100).toLocaleString()}`,
+        numericValue: monthlyRevenue,
+        formatType: 'currency' as const,
         description: 'This month',
         icon: <DollarSign className="h-4 w-4" />,
       },

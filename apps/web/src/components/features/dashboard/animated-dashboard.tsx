@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion, useReducedMotion, useSpring, useTransform } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils/cn';
@@ -8,9 +8,17 @@ import { cn } from '@/lib/utils/cn';
 // Material Design ease curve
 const EASE = [0.4, 0, 0.2, 1] as const;
 
+/** Format type for animated numbers */
+type StatFormatType = 'number' | 'currency' | 'percent';
+
 interface StatItem {
   title: string;
+  /** Display value (used when numericValue is not provided) */
   value: string;
+  /** Optional numeric value - when provided, will animate from 0 */
+  numericValue?: number;
+  /** Format type for numeric values (default: 'number') */
+  formatType?: StatFormatType;
   description: string;
   /** Pre-rendered icon element (render in server component before passing) */
   icon: React.ReactNode;
@@ -52,6 +60,41 @@ interface AnimatedStatsGridProps {
   stats: StatItem[];
 }
 
+/** Get format function based on format type */
+function getFormatFn(formatType: StatFormatType = 'number'): (value: number) => string {
+  switch (formatType) {
+    case 'currency':
+      return (cents: number) =>
+        new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(cents / 100);
+    case 'percent':
+      return (value: number) => `${Math.round(value)}%`;
+    default:
+      return (value: number) => Math.round(value).toLocaleString();
+  }
+}
+
+/**
+ * Renders stat value - animated if numericValue provided, otherwise static
+ */
+function StatValue({ stat }: { stat: StatItem }) {
+  if (stat.numericValue !== undefined) {
+    return (
+      <AnimatedNumber
+        value={stat.numericValue}
+        formatFn={getFormatFn(stat.formatType)}
+        duration={2.5}
+        className="text-2xl font-bold"
+      />
+    );
+  }
+  return <div className="text-2xl font-bold">{stat.value}</div>;
+}
+
 /**
  * Animated stats grid with staggered card animations
  */
@@ -68,7 +111,7 @@ export function AnimatedStatsGrid({ stats }: AnimatedStatsGridProps) {
               <div className="text-muted-foreground">{stat.icon}</div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <StatValue stat={stat} />
               <p className="text-xs text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
@@ -120,7 +163,7 @@ export function AnimatedStatsGrid({ stats }: AnimatedStatsGridProps) {
               <div className="text-muted-foreground">{stat.icon}</div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <StatValue stat={stat} />
               <p className="text-xs text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
@@ -257,7 +300,7 @@ export function AnimatedContainer({ children, className }: AnimatedContainerProp
 }
 
 // ============================================================================
-// ANIMATED NUMBER (Counter Animation)
+// ANIMATED NUMBER (Odometer/Slot Machine Animation)
 // ============================================================================
 
 interface AnimatedNumberProps {
@@ -271,35 +314,112 @@ interface AnimatedNumberProps {
   className?: string;
 }
 
+const DIGIT_HEIGHT_PX = 28; // Match line height
+
 /**
- * Animated number counter that animates from 0 to the target value
+ * Single scrolling digit - rolls through 0→target like an odometer
+ */
+function ScrollingDigit({
+  digit,
+  delay = 0,
+  duration = 1,
+}: {
+  digit: string;
+  delay?: number;
+  duration?: number;
+}) {
+  const isNumber = /\d/.test(digit);
+  const [shouldAnimate, setShouldAnimate] = React.useState(false);
+
+  // Trigger animation after mount with delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldAnimate(true);
+    }, delay * 1000);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  // Non-digits (commas, $, %, etc.) - render inline with same height
+  if (!isNumber) {
+    return (
+      <span
+        className="inline-flex items-center justify-center"
+        style={{ height: DIGIT_HEIGHT_PX }}
+      >
+        {digit}
+      </span>
+    );
+  }
+
+  const targetDigit = parseInt(digit, 10);
+  const scrollDistance = targetDigit * DIGIT_HEIGHT_PX;
+  const animDuration = duration * (0.4 + targetDigit * 0.1);
+
+  return (
+    <span
+      className="relative inline-block overflow-hidden align-bottom"
+      style={{
+        width: '0.6em',
+        height: DIGIT_HEIGHT_PX,
+      }}
+    >
+      <motion.div
+        className="absolute left-0 right-0 flex flex-col items-center"
+        animate={{
+          y: shouldAnimate ? -scrollDistance : 0,
+        }}
+        transition={{
+          duration: animDuration,
+          ease: [0.33, 1, 0.68, 1],
+        }}
+      >
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+          <span
+            key={num}
+            className="flex items-center justify-center"
+            style={{ height: DIGIT_HEIGHT_PX }}
+          >
+            {num}
+          </span>
+        ))}
+      </motion.div>
+    </span>
+  );
+}
+
+/**
+ * Animated number with odometer/slot machine effect
+ * Each digit scrolls up from 0 to its target value
  */
 export function AnimatedNumber({
   value,
-  duration = 1,
+  duration = 1.2,
   formatFn = (v) => Math.round(v).toLocaleString(),
   className,
 }: AnimatedNumberProps) {
   const shouldReduceMotion = useReducedMotion();
-  const spring = useSpring(0, { duration: duration * 1000 });
-  const display = useTransform(spring, (current) => formatFn(current));
-  const [displayValue, setDisplayValue] = React.useState(formatFn(0));
+  const formattedValue = formatFn(value);
+  const characters = formattedValue.split('');
 
-  React.useEffect(() => {
-    if (shouldReduceMotion) {
-      setDisplayValue(formatFn(value));
-      return;
-    }
-    spring.set(value);
-  }, [value, spring, shouldReduceMotion, formatFn]);
+  if (shouldReduceMotion) {
+    return <span className={className}>{formattedValue}</span>;
+  }
 
-  React.useEffect(() => {
-    if (shouldReduceMotion) return;
-    const unsubscribe = display.on('change', (v) => setDisplayValue(v));
-    return () => unsubscribe();
-  }, [display, shouldReduceMotion]);
-
-  return <span className={className}>{displayValue}</span>;
+  return (
+    <span
+      className={cn('inline-flex items-center tabular-nums', className)}
+      style={{ height: DIGIT_HEIGHT_PX }}
+    >
+      {characters.map((char, index) => (
+        <ScrollingDigit
+          key={`${index}-${char}`}
+          digit={char}
+          delay={0.3 + index * 0.08}
+          duration={duration}
+        />
+      ))}
+    </span>
+  );
 }
 
 // ============================================================================
