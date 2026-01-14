@@ -72,7 +72,7 @@ export class StorefrontPage extends BasePage {
   /**
    * Navigate to the storefront home page
    */
-  async goto(): Promise<void> {
+  override async goto(): Promise<void> {
     const routes = ROUTES.storefront(this.identifier);
     await super.goto(routes.home);
   }

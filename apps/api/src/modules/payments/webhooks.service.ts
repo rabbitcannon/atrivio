@@ -565,23 +565,46 @@ export class WebhooksService {
   }
 
   /**
-   * Handle refund
+   * Handle refund - updates both stripe_transactions and orders tables
    */
   private async handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
     const amountRefunded = charge.amount_refunded;
     const amount = charge.amount;
     const chargeId = charge.id;
+    const paymentIntentId =
+      typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
 
     // Update existing transaction status
-    const { error } = await this.supabase.adminClient
+    const { error: txError } = await this.supabase.adminClient
       .from('stripe_transactions')
       .update({
         status: amountRefunded === amount ? 'refunded' : 'partially_refunded',
       })
       .eq('stripe_charge_id', chargeId);
 
-    if (error) {
-      this.logger.warn(`Failed to update refunded transaction: ${error.message}`);
+    if (txError) {
+      this.logger.warn(`Failed to update refunded transaction: ${txError.message}`);
+    }
+
+    // Update order with refund amount and status
+    if (paymentIntentId) {
+      const isFullRefund = amountRefunded === amount;
+      const { error: orderError } = await this.supabase.adminClient
+        .from('orders')
+        .update({
+          refund_amount: amountRefunded,
+          status: isFullRefund ? 'refunded' : 'completed', // Keep completed for partial refunds
+          refunded_at: new Date().toISOString(),
+        })
+        .eq('stripe_payment_intent_id', paymentIntentId);
+
+      if (orderError) {
+        this.logger.warn(`Failed to update order refund amount: ${orderError.message}`);
+      } else {
+        this.logger.log(
+          `Updated order refund: ${paymentIntentId}, amount: ${amountRefunded}, full: ${isFullRefund}`
+        );
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  BarChart3,
   Bell,
   Building2,
   Calendar,
@@ -57,6 +58,12 @@ const adminNavItems: NavItem[] = [
   },
   { label: 'Queue', href: '/queue', icon: ListOrdered, roles: ['owner', 'admin', 'manager'] },
   { label: 'Inventory', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager'] },
+  {
+    label: 'Analytics',
+    href: '/analytics',
+    icon: BarChart3,
+    roles: ['owner', 'admin', 'manager', 'finance'],
+  },
 ];
 
 // Staff-only navigation - for actors, scanners, box_office, finance

@@ -72,7 +72,7 @@ export class CheckoutSuccessPage extends BasePage {
   /**
    * Navigate to checkout success page with session ID
    */
-  async goto(sessionId: string): Promise<void> {
+  override async goto(sessionId: string): Promise<void> {
     const routes = ROUTES.storefront(this.identifier);
     await super.goto(`${routes.checkoutSuccess}?session_id=${sessionId}`);
   }

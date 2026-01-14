@@ -1483,6 +1483,7 @@ DECLARE
   v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
   v_mansion_id UUID := 'c0000000-0000-0000-0000-000000000001';
   v_trail_id UUID := 'c0000000-0000-0000-0000-000000000002';
+  v_asylum_id UUID := 'c0000000-0000-0000-0000-000000000003';
   v_season_id UUID := 'f0000000-0000-0000-0000-000000000002'; -- Halloween 2025
   v_general_cat_id UUID;
   v_vip_cat_id UUID;
@@ -1572,6 +1573,21 @@ BEGIN
      8500, 10000, v_vip_cat_id, 4,
      ARRAY['VIP access to both attractions', 'Reserved parking', 'Dinner at Cryptkeeper Cafe', 'Exclusive merchandise', 'Professional photo package'],
      '{"min_age": 16}'::JSONB, 6, TRUE,
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
+
+  -- Escape the Asylum Tickets
+    ('80000000-0000-0000-0000-000000000009', v_org_id, v_asylum_id, v_season_id,
+     'Escape Room Standard', 'Standard escape room experience for groups of 2-8.',
+     3500, NULL, v_general_cat_id, 8,
+     ARRAY['60-minute escape challenge', '2-8 players per group', 'Private room booking', 'Hint system included'],
+     '{"min_age": 12, "min_quantity": 2, "max_quantity": 8}'::JSONB, 1, TRUE,
+     '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
+
+    ('80000000-0000-0000-0000-000000000010', v_org_id, v_asylum_id, v_season_id,
+     'Escape Room Premium', 'Premium escape experience with extra puzzles and scares.',
+     5500, NULL, v_vip_cat_id, 6,
+     ARRAY['75-minute extended challenge', '2-6 players per group', 'Private room', 'Premium puzzles', 'Photo package included'],
+     '{"min_age": 14, "min_quantity": 2, "max_quantity": 6}'::JSONB, 2, TRUE,
      '2026-01-01 00:00:00', '2026-12-31 23:59:59')
   ON CONFLICT (id) DO NOTHING;
 
@@ -1625,7 +1641,24 @@ BEGIN
     ('81000000-0000-0000-0000-000000000113', v_org_id, v_trail_id, '2025-10-05', '19:00', '19:30', 15, 5, 'available', 0),
     ('81000000-0000-0000-0000-000000000114', v_org_id, v_trail_id, '2025-10-05', '19:30', '20:00', 15, 3, 'available', 0),
     ('81000000-0000-0000-0000-000000000115', v_org_id, v_trail_id, '2025-10-05', '20:00', '20:30', 15, 0, 'available', 0),
-    ('81000000-0000-0000-0000-000000000116', v_org_id, v_trail_id, '2025-10-05', '20:30', '21:00', 15, 0, 'available', 0)
+    ('81000000-0000-0000-0000-000000000116', v_org_id, v_trail_id, '2025-10-05', '20:30', '21:00', 15, 0, 'available', 0),
+
+    -- Escape the Asylum time slots (hourly bookings, 8 person groups)
+    -- Friday Oct 3, 2025
+    ('81000000-0000-0000-0000-000000000201', v_org_id, v_asylum_id, '2025-10-03', '18:00', '19:00', 8, 6, 'available', 0),
+    ('81000000-0000-0000-0000-000000000202', v_org_id, v_asylum_id, '2025-10-03', '19:00', '20:00', 8, 8, 'sold_out', 0),
+    ('81000000-0000-0000-0000-000000000203', v_org_id, v_asylum_id, '2025-10-03', '20:00', '21:00', 8, 4, 'available', 0),
+    ('81000000-0000-0000-0000-000000000204', v_org_id, v_asylum_id, '2025-10-03', '21:00', '22:00', 8, 0, 'available', 500),
+    -- Saturday Oct 4, 2025
+    ('81000000-0000-0000-0000-000000000205', v_org_id, v_asylum_id, '2025-10-04', '17:00', '18:00', 8, 8, 'sold_out', 0),
+    ('81000000-0000-0000-0000-000000000206', v_org_id, v_asylum_id, '2025-10-04', '18:00', '19:00', 8, 6, 'available', 0),
+    ('81000000-0000-0000-0000-000000000207', v_org_id, v_asylum_id, '2025-10-04', '19:00', '20:00', 8, 5, 'available', 0),
+    ('81000000-0000-0000-0000-000000000208', v_org_id, v_asylum_id, '2025-10-04', '20:00', '21:00', 8, 3, 'available', 500),
+    ('81000000-0000-0000-0000-000000000209', v_org_id, v_asylum_id, '2025-10-04', '21:00', '22:00', 8, 0, 'available', 500),
+    -- Sunday Oct 5, 2025
+    ('81000000-0000-0000-0000-000000000210', v_org_id, v_asylum_id, '2025-10-05', '18:00', '19:00', 8, 4, 'available', 0),
+    ('81000000-0000-0000-0000-000000000211', v_org_id, v_asylum_id, '2025-10-05', '19:00', '20:00', 8, 2, 'available', 0),
+    ('81000000-0000-0000-0000-000000000212', v_org_id, v_asylum_id, '2025-10-05', '20:00', '21:00', 8, 0, 'available', 0)
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================
@@ -1686,7 +1719,51 @@ BEGIN
      'NIG-00000005', 'refund@example.com', 'Tom Brown', '555-1005',
      5000, 0, 313, 5313, 'refunded',
      NULL, v_online_source_id,
-     NOW() - INTERVAL '10 days', NOW() - INTERVAL '10 days')
+     NOW() - INTERVAL '10 days', NOW() - INTERVAL '10 days'),
+
+    -- TERROR TRAIL ORDERS
+    -- Trail group order (4 GA tickets)
+    ('83000000-0000-0000-0000-000000000006', v_org_id, v_trail_id,
+     'NIG-00000006', 'trailgroup@example.com', 'Alex Turner', '555-2001',
+     12000, 0, 750, 12750, 'completed',
+     NULL, v_online_source_id,
+     NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days'),
+
+    -- Trail VIP order (2 VIP tickets)
+    ('83000000-0000-0000-0000-000000000007', v_org_id, v_trail_id,
+     'NIG-00000007', 'trailvip@example.com', 'Jessica Moore', '555-2002',
+     11000, 0, 688, 11688, 'completed',
+     NULL, v_online_source_id,
+     NOW() - INTERVAL '6 days', NOW() - INTERVAL '6 days'),
+
+    -- Trail GA order (3 tickets)
+    ('83000000-0000-0000-0000-000000000008', v_org_id, v_trail_id,
+     'NIG-00000008', 'trailguest@example.com', 'Ryan Cooper', '555-2003',
+     9000, 1000, 500, 8500, 'completed',
+     '82000000-0000-0000-0000-000000000002', v_box_office_source_id,
+     NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+
+    -- ESCAPE THE ASYLUM ORDERS
+    -- Escape room group booking (6 person group)
+    ('83000000-0000-0000-0000-000000000009', v_org_id, v_asylum_id,
+     'NIG-00000009', 'escapegroup@example.com', 'Team Escape', '555-3001',
+     21000, 0, 1313, 22313, 'completed',
+     NULL, v_online_source_id,
+     NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days'),
+
+    -- Escape room premium booking (4 person group)
+    ('83000000-0000-0000-0000-000000000010', v_org_id, v_asylum_id,
+     'NIG-00000010', 'escapepremium@example.com', 'Premium Squad', '555-3002',
+     22000, 2200, 1238, 21038, 'completed',
+     '82000000-0000-0000-0000-000000000001', v_online_source_id,
+     NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'),
+
+    -- Escape room standard booking (5 person group)
+    ('83000000-0000-0000-0000-000000000011', v_org_id, v_asylum_id,
+     'NIG-00000011', 'escapefamily@example.com', 'The Puzzle Family', '555-3003',
+     17500, 0, 1094, 18594, 'completed',
+     NULL, v_box_office_source_id,
+     NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day')
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================
@@ -1708,7 +1785,25 @@ BEGIN
     ('84000000-0000-0000-0000-000000000004', '83000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000002', '81000000-0000-0000-0000-000000000015', 2, 4500, 9000),
 
     -- Order 5: 2 GA tickets (refunded)
-    ('84000000-0000-0000-0000-000000000005', '83000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002', 2, 2500, 5000)
+    ('84000000-0000-0000-0000-000000000005', '83000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002', 2, 2500, 5000),
+
+    -- Order 6: Terror Trail - 4 GA tickets @ $30
+    ('84000000-0000-0000-0000-000000000006', '83000000-0000-0000-0000-000000000006', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000101', 4, 3000, 12000),
+
+    -- Order 7: Terror Trail - 2 VIP tickets @ $55
+    ('84000000-0000-0000-0000-000000000007', '83000000-0000-0000-0000-000000000007', '80000000-0000-0000-0000-000000000006', '81000000-0000-0000-0000-000000000108', 2, 5500, 11000),
+
+    -- Order 8: Terror Trail - 3 GA tickets @ $30 (with discount)
+    ('84000000-0000-0000-0000-000000000008', '83000000-0000-0000-0000-000000000008', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000113', 3, 3000, 9000),
+
+    -- Order 9: Escape the Asylum - 6 Standard tickets @ $35
+    ('84000000-0000-0000-0000-000000000009', '83000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201', 6, 3500, 21000),
+
+    -- Order 10: Escape the Asylum - 4 Premium tickets @ $55 (with discount)
+    ('84000000-0000-0000-0000-000000000010', '83000000-0000-0000-0000-000000000010', '80000000-0000-0000-0000-000000000010', '81000000-0000-0000-0000-000000000205', 4, 5500, 22000),
+
+    -- Order 11: Escape the Asylum - 5 Standard tickets @ $35
+    ('84000000-0000-0000-0000-000000000011', '83000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000210', 5, 3500, 17500)
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================
@@ -1741,7 +1836,67 @@ BEGIN
     ('85000000-0000-0000-0000-000000000008', v_org_id, '83000000-0000-0000-0000-000000000005', '84000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002',
      'TNIG-0000008', 'VOID1234567890VOID123456', 'Tom Brown', 'voided', NULL, NULL),
     ('85000000-0000-0000-0000-000000000009', v_org_id, '83000000-0000-0000-0000-000000000005', '84000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000002',
-     'TNIG-0000009', 'VOID0987654321VOID098765', 'Guest Refund', 'voided', NULL, NULL)
+     'TNIG-0000009', 'VOID0987654321VOID098765', 'Guest Refund', 'voided', NULL, NULL),
+
+    -- Order 6 tickets (4 Terror Trail GA - 2 used, 2 valid)
+    ('85000000-0000-0000-0000-000000000010', v_org_id, '83000000-0000-0000-0000-000000000006', '84000000-0000-0000-0000-000000000006', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000101',
+     'TNIG-0000010', 'TRAIL001A1B2C3D4E5F6G7H8', 'Alex Turner', 'used', NOW() - INTERVAL '3 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000011', v_org_id, '83000000-0000-0000-0000-000000000006', '84000000-0000-0000-0000-000000000006', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000101',
+     'TNIG-0000011', 'TRAIL002B2C3D4E5F6G7H8I9', 'Guest Trail 1', 'used', NOW() - INTERVAL '3 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000012', v_org_id, '83000000-0000-0000-0000-000000000006', '84000000-0000-0000-0000-000000000006', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000101',
+     'TNIG-0000012', 'TRAIL003C3D4E5F6G7H8I9J0', 'Guest Trail 2', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000013', v_org_id, '83000000-0000-0000-0000-000000000006', '84000000-0000-0000-0000-000000000006', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000101',
+     'TNIG-0000013', 'TRAIL004D4E5F6G7H8I9J0K1', 'Guest Trail 3', 'valid', NULL, NULL),
+
+    -- Order 7 tickets (2 Terror Trail VIP - both used)
+    ('85000000-0000-0000-0000-000000000014', v_org_id, '83000000-0000-0000-0000-000000000007', '84000000-0000-0000-0000-000000000007', '80000000-0000-0000-0000-000000000006', '81000000-0000-0000-0000-000000000108',
+     'TNIG-0000014', 'TRAILVIP01E5F6G7H8I9J0K1', 'Jessica Moore', 'used', NOW() - INTERVAL '5 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000015', v_org_id, '83000000-0000-0000-0000-000000000007', '84000000-0000-0000-0000-000000000007', '80000000-0000-0000-0000-000000000006', '81000000-0000-0000-0000-000000000108',
+     'TNIG-0000015', 'TRAILVIP02F6G7H8I9J0K1L2', 'Guest Trail VIP', 'used', NOW() - INTERVAL '5 days', 'a0000000-0000-0000-0000-000000000007'),
+
+    -- Order 8 tickets (3 Terror Trail GA - all valid)
+    ('85000000-0000-0000-0000-000000000016', v_org_id, '83000000-0000-0000-0000-000000000008', '84000000-0000-0000-0000-000000000008', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000113',
+     'TNIG-0000016', 'TRAIL005G7H8I9J0K1L2M3N4', 'Ryan Cooper', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000017', v_org_id, '83000000-0000-0000-0000-000000000008', '84000000-0000-0000-0000-000000000008', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000113',
+     'TNIG-0000017', 'TRAIL006H8I9J0K1L2M3N4O5', 'Guest Trail 4', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000018', v_org_id, '83000000-0000-0000-0000-000000000008', '84000000-0000-0000-0000-000000000008', '80000000-0000-0000-0000-000000000005', '81000000-0000-0000-0000-000000000113',
+     'TNIG-0000018', 'TRAIL007I9J0K1L2M3N4O5P6', 'Guest Trail 5', 'valid', NULL, NULL),
+
+    -- Order 9 tickets (6 Escape the Asylum Standard - 4 used, 2 valid)
+    ('85000000-0000-0000-0000-000000000019', v_org_id, '83000000-0000-0000-0000-000000000009', '84000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201',
+     'TNIG-0000019', 'ESCAPE001J0K1L2M3N4O5P6Q7', 'Team Escape Leader', 'used', NOW() - INTERVAL '2 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000020', v_org_id, '83000000-0000-0000-0000-000000000009', '84000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201',
+     'TNIG-0000020', 'ESCAPE002K1L2M3N4O5P6Q7R8', 'Team Member 1', 'used', NOW() - INTERVAL '2 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000021', v_org_id, '83000000-0000-0000-0000-000000000009', '84000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201',
+     'TNIG-0000021', 'ESCAPE003L2M3N4O5P6Q7R8S9', 'Team Member 2', 'used', NOW() - INTERVAL '2 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000022', v_org_id, '83000000-0000-0000-0000-000000000009', '84000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201',
+     'TNIG-0000022', 'ESCAPE004M3N4O5P6Q7R8S9T0', 'Team Member 3', 'used', NOW() - INTERVAL '2 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000023', v_org_id, '83000000-0000-0000-0000-000000000009', '84000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201',
+     'TNIG-0000023', 'ESCAPE005N4O5P6Q7R8S9T0U1', 'Team Member 4', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000024', v_org_id, '83000000-0000-0000-0000-000000000009', '84000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000201',
+     'TNIG-0000024', 'ESCAPE006O5P6Q7R8S9T0U1V2', 'Team Member 5', 'valid', NULL, NULL),
+
+    -- Order 10 tickets (4 Escape the Asylum Premium - all used)
+    ('85000000-0000-0000-0000-000000000025', v_org_id, '83000000-0000-0000-0000-000000000010', '84000000-0000-0000-0000-000000000010', '80000000-0000-0000-0000-000000000010', '81000000-0000-0000-0000-000000000205',
+     'TNIG-0000025', 'ESCAPEVIP01P6Q7R8S9T0U1V2', 'Premium Squad Leader', 'used', NOW() - INTERVAL '4 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000026', v_org_id, '83000000-0000-0000-0000-000000000010', '84000000-0000-0000-0000-000000000010', '80000000-0000-0000-0000-000000000010', '81000000-0000-0000-0000-000000000205',
+     'TNIG-0000026', 'ESCAPEVIP02Q7R8S9T0U1V2W3', 'Premium Member 1', 'used', NOW() - INTERVAL '4 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000027', v_org_id, '83000000-0000-0000-0000-000000000010', '84000000-0000-0000-0000-000000000010', '80000000-0000-0000-0000-000000000010', '81000000-0000-0000-0000-000000000205',
+     'TNIG-0000027', 'ESCAPEVIP03R8S9T0U1V2W3X4', 'Premium Member 2', 'used', NOW() - INTERVAL '4 days', 'a0000000-0000-0000-0000-000000000007'),
+    ('85000000-0000-0000-0000-000000000028', v_org_id, '83000000-0000-0000-0000-000000000010', '84000000-0000-0000-0000-000000000010', '80000000-0000-0000-0000-000000000010', '81000000-0000-0000-0000-000000000205',
+     'TNIG-0000028', 'ESCAPEVIP04S9T0U1V2W3X4Y5', 'Premium Member 3', 'used', NOW() - INTERVAL '4 days', 'a0000000-0000-0000-0000-000000000007'),
+
+    -- Order 11 tickets (5 Escape the Asylum Standard - all valid)
+    ('85000000-0000-0000-0000-000000000029', v_org_id, '83000000-0000-0000-0000-000000000011', '84000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000210',
+     'TNIG-0000029', 'ESCAPE007T0U1V2W3X4Y5Z6A7', 'Puzzle Family 1', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000030', v_org_id, '83000000-0000-0000-0000-000000000011', '84000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000210',
+     'TNIG-0000030', 'ESCAPE008U1V2W3X4Y5Z6A7B8', 'Puzzle Family 2', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000031', v_org_id, '83000000-0000-0000-0000-000000000011', '84000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000210',
+     'TNIG-0000031', 'ESCAPE009V2W3X4Y5Z6A7B8C9', 'Puzzle Family 3', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000032', v_org_id, '83000000-0000-0000-0000-000000000011', '84000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000210',
+     'TNIG-0000032', 'ESCAPE010W3X4Y5Z6A7B8C9D0', 'Puzzle Family 4', 'valid', NULL, NULL),
+    ('85000000-0000-0000-0000-000000000033', v_org_id, '83000000-0000-0000-0000-000000000011', '84000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000009', '81000000-0000-0000-0000-000000000210',
+     'TNIG-0000033', 'ESCAPE011X4Y5Z6A7B8C9D0E1', 'Puzzle Family 5', 'valid', NULL, NULL)
   ON CONFLICT (id) DO NOTHING;
 
   RAISE NOTICE 'F8 ticketing seed data created successfully';
@@ -1750,12 +1905,15 @@ END $$;
 -- ============================================================================
 -- F8 SEED SUMMARY
 -- ============================================================================
--- Ticket Types: 8 (GA, VIP, Fast Pass, Group, Trail GA/VIP, Combos)
--- Time Slots: 20 (Oct 3-5, 2025 - mix of available/limited/sold_out)
+-- Ticket Types: 10 (GA, VIP, Fast Pass, Group, Trail GA/VIP, Escape Standard/Premium, Combos)
+-- Time Slots: 36 (Oct 3-5, 2025 - mix of available/limited/sold_out across all attractions)
 -- Promo Codes: 5 (4 active, 1 expired)
--- Orders: 5 (3 completed, 1 pending, 1 refunded)
--- Order Items: 5
--- Tickets: 9 (2 used, 5 valid, 2 voided)
+-- Orders: 11 (9 completed, 1 pending, 1 refunded)
+--   - Haunted Mansion: 5 orders
+--   - Terror Trail: 3 orders
+--   - Escape the Asylum: 3 orders
+-- Order Items: 11
+-- Tickets: 33 (14 used, 17 valid, 2 voided)
 
 -- ============================================================================
 -- F9: CHECK-IN SEED DATA
@@ -1765,6 +1923,8 @@ DO $$
 DECLARE
   v_org_id UUID := 'b0000000-0000-0000-0000-000000000001';
   v_attraction_id UUID := 'c0000000-0000-0000-0000-000000000001';
+  v_trail_id UUID := 'c0000000-0000-0000-0000-000000000002';
+  v_asylum_id UUID := 'c0000000-0000-0000-0000-000000000003';
   v_owner_id UUID := 'a0000000-0000-0000-0000-000000000002';
   v_scanner_id UUID := 'a0000000-0000-0000-0000-000000000007';
 BEGIN
@@ -1774,10 +1934,17 @@ BEGIN
 
   INSERT INTO check_in_stations (id, org_id, attraction_id, name, location, device_id, is_active)
   VALUES
+    -- Haunted Mansion stations
     ('e1000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, 'Main Entrance', 'Front Gate', 'IPAD-001', TRUE),
     ('e1000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, 'VIP Gate', 'Side Entrance', 'IPAD-002', TRUE),
     ('e1000000-0000-0000-0000-000000000003', v_org_id, v_attraction_id, 'Box Office', 'Ticket Booth', 'POS-001', TRUE),
-    ('e1000000-0000-0000-0000-000000000004', v_org_id, v_attraction_id, 'Mobile Scanner', 'Roaming', NULL, TRUE)
+    ('e1000000-0000-0000-0000-000000000004', v_org_id, v_attraction_id, 'Mobile Scanner', 'Roaming', NULL, TRUE),
+    -- Terror Trail stations
+    ('e1000000-0000-0000-0000-000000000005', v_org_id, v_trail_id, 'Trail Entrance', 'Trailhead', 'IPAD-005', TRUE),
+    ('e1000000-0000-0000-0000-000000000006', v_org_id, v_trail_id, 'Trail VIP Entry', 'VIP Trailhead', 'IPAD-006', TRUE),
+    -- Escape the Asylum stations
+    ('e1000000-0000-0000-0000-000000000007', v_org_id, v_asylum_id, 'Asylum Lobby', 'Main Lobby', 'IPAD-007', TRUE),
+    ('e1000000-0000-0000-0000-000000000008', v_org_id, v_asylum_id, 'Asylum Premium', 'VIP Waiting Area', 'IPAD-008', TRUE)
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================
@@ -1787,9 +1954,29 @@ BEGIN
   -- Only insert check-ins for tickets that exist (85000000-... series from F8)
   INSERT INTO check_ins (id, org_id, attraction_id, ticket_id, station_id, checked_in_by, check_in_time, check_in_method, guest_count, waiver_signed)
   VALUES
-    -- Check-in for Order 1 tickets (already marked as used in F8 seed)
+    -- Check-in for Order 1 tickets (Haunted Mansion - already marked as used in F8 seed)
     ('e2000000-0000-0000-0000-000000000001', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', v_scanner_id, NOW() - INTERVAL '4 days', 'qr_scan', 1, TRUE),
-    ('e2000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000001', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE)
+    ('e2000000-0000-0000-0000-000000000002', v_org_id, v_attraction_id, '85000000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000001', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE),
+
+    -- Check-ins for Order 6 tickets (Terror Trail GA - 2 used)
+    ('e2000000-0000-0000-0000-000000000010', v_org_id, v_trail_id, '85000000-0000-0000-0000-000000000010', 'e1000000-0000-0000-0000-000000000005', v_scanner_id, NOW() - INTERVAL '3 days', 'qr_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000011', v_org_id, v_trail_id, '85000000-0000-0000-0000-000000000011', 'e1000000-0000-0000-0000-000000000005', v_scanner_id, NOW() - INTERVAL '3 days', 'qr_scan', 1, TRUE),
+
+    -- Check-ins for Order 7 tickets (Terror Trail VIP - both used)
+    ('e2000000-0000-0000-0000-000000000014', v_org_id, v_trail_id, '85000000-0000-0000-0000-000000000014', 'e1000000-0000-0000-0000-000000000006', v_scanner_id, NOW() - INTERVAL '5 days', 'barcode_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000015', v_org_id, v_trail_id, '85000000-0000-0000-0000-000000000015', 'e1000000-0000-0000-0000-000000000006', v_scanner_id, NOW() - INTERVAL '5 days', 'barcode_scan', 1, TRUE),
+
+    -- Check-ins for Order 9 tickets (Escape the Asylum Standard - 4 used)
+    ('e2000000-0000-0000-0000-000000000019', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000019', 'e1000000-0000-0000-0000-000000000007', v_scanner_id, NOW() - INTERVAL '2 days', 'qr_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000020', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000020', 'e1000000-0000-0000-0000-000000000007', v_scanner_id, NOW() - INTERVAL '2 days', 'qr_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000021', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000021', 'e1000000-0000-0000-0000-000000000007', v_scanner_id, NOW() - INTERVAL '2 days', 'qr_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000022', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000022', 'e1000000-0000-0000-0000-000000000007', v_scanner_id, NOW() - INTERVAL '2 days', 'qr_scan', 1, TRUE),
+
+    -- Check-ins for Order 10 tickets (Escape the Asylum Premium - all used)
+    ('e2000000-0000-0000-0000-000000000025', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000025', 'e1000000-0000-0000-0000-000000000008', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000026', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000026', 'e1000000-0000-0000-0000-000000000008', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000027', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000027', 'e1000000-0000-0000-0000-000000000008', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE),
+    ('e2000000-0000-0000-0000-000000000028', v_org_id, v_asylum_id, '85000000-0000-0000-0000-000000000028', 'e1000000-0000-0000-0000-000000000008', v_scanner_id, NOW() - INTERVAL '4 days', 'barcode_scan', 1, TRUE)
   ON CONFLICT (id) DO NOTHING;
 
   -- ============================================================================
@@ -1821,8 +2008,14 @@ END $$;
 -- ============================================================================
 -- F9 SEED SUMMARY
 -- ============================================================================
--- Check-In Stations: 4 (Main Entrance, VIP Gate, Box Office, Mobile Scanner)
--- Check-Ins: 2 (for used tickets from F8)
+-- Check-In Stations: 8
+--   - Haunted Mansion: 4 (Main Entrance, VIP Gate, Box Office, Mobile Scanner)
+--   - Terror Trail: 2 (Trail Entrance, Trail VIP Entry)
+--   - Escape the Asylum: 2 (Asylum Lobby, Asylum Premium)
+-- Check-Ins: 14 (for used tickets from F8)
+--   - Haunted Mansion: 2
+--   - Terror Trail: 4
+--   - Escape the Asylum: 8
 -- Capacity Snapshots: 4 (hourly snapshots)
 -- Guest Waivers: 4 (3 adult, 1 minor with guardian)
 

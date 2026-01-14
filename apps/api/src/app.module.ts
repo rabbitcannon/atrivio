@@ -37,6 +37,8 @@ import { StorefrontsModule } from './modules/storefronts/storefronts.module.js';
 import { TicketingModule } from './modules/ticketing/ticketing.module.js';
 // Media (F15 Media)
 import { MediaModule } from './modules/media/media.module.js';
+// Analytics (F13 Analytics)
+import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 // Shared modules
 import { DatabaseModule } from './shared/database/database.module.js';
 import { StorageModule } from './shared/storage/storage.module.js';
@@ -45,7 +47,6 @@ import { StorageModule } from './shared/storage/storage.module.js';
 // import { AuditModule } from './core/audit/audit.module.js';
 // import { OperationsModule } from './modules/operations/operations.module.js';
 // import { MarketingModule } from './modules/marketing/marketing.module.js';
-// import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 // import { EventBusModule } from './shared/events/event-bus.module.js';
 
 @Module({
@@ -104,6 +105,9 @@ import { StorageModule } from './shared/storage/storage.module.js';
 
     // Media (F15 Media)
     MediaModule,
+
+    // Analytics (F13 Analytics)
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

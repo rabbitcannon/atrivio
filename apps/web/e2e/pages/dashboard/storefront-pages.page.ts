@@ -151,7 +151,7 @@ export class StorefrontPagesPage extends BasePage {
   /**
    * Navigate to the storefront pages list
    */
-  async goto(): Promise<void> {
+  override async goto(): Promise<void> {
     await super.goto(`/${this.orgSlug}/attractions/${this.attractionId}/storefront/pages`);
   }
 

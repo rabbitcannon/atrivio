@@ -24,6 +24,23 @@ export interface ApiError {
   message: string;
   statusCode: number;
   error?: string;
+  code?: string;
+  tier?: string;
+  features?: string[];
+}
+
+/**
+ * Check if an error is due to a feature requiring a higher tier
+ */
+export function isFeatureNotEnabledError(error: ApiError | null): boolean {
+  return error?.code === 'FEATURE_NOT_ENABLED' || error?.statusCode === 403;
+}
+
+/**
+ * Get required tier from a feature error
+ */
+export function getRequiredTier(error: ApiError | null): string | null {
+  return error?.tier || null;
 }
 
 export interface ApiResponse<T> {
@@ -1911,5 +1928,79 @@ export async function reorderStorefrontFaqsClient(
   return api.post<{ success: boolean }>(
     `/organizations/${orgId}/attractions/${attractionId}/storefront/faqs/reorder`,
     { order }
+  );
+}
+
+// ============================================================================
+// Analytics API (F13) - Client-side
+// ============================================================================
+
+import type {
+  AnalyticsQueryParams,
+  AttendanceResponse,
+  DashboardResponse,
+  RevenueResponse,
+  TicketAnalyticsResponse,
+} from './types';
+
+export type {
+  AnalyticsQueryParams,
+  DashboardResponse,
+  RevenueResponse,
+  AttendanceResponse,
+  TicketAnalyticsResponse,
+};
+
+/**
+ * Build query string from analytics params
+ */
+function buildAnalyticsQuery(params?: AnalyticsQueryParams): string {
+  if (!params) return '';
+  const searchParams = new URLSearchParams();
+  if (params.attractionId) searchParams.set('attractionId', params.attractionId);
+  if (params.period) searchParams.set('period', params.period);
+  if (params.startDate) searchParams.set('startDate', params.startDate);
+  if (params.endDate) searchParams.set('endDate', params.endDate);
+  if (params.groupBy) searchParams.set('groupBy', params.groupBy);
+  if (params.includeComparison !== undefined) {
+    searchParams.set('includeComparison', String(params.includeComparison));
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : '';
+}
+
+/**
+ * Get analytics dashboard overview
+ */
+export async function getAnalyticsDashboard(orgId: string, params?: AnalyticsQueryParams) {
+  return api.get<DashboardResponse>(
+    `/organizations/${orgId}/analytics/dashboard${buildAnalyticsQuery(params)}`
+  );
+}
+
+/**
+ * Get detailed revenue analytics
+ */
+export async function getAnalyticsRevenue(orgId: string, params?: AnalyticsQueryParams) {
+  return api.get<RevenueResponse>(
+    `/organizations/${orgId}/analytics/revenue${buildAnalyticsQuery(params)}`
+  );
+}
+
+/**
+ * Get attendance analytics
+ */
+export async function getAnalyticsAttendance(orgId: string, params?: AnalyticsQueryParams) {
+  return api.get<AttendanceResponse>(
+    `/organizations/${orgId}/analytics/attendance${buildAnalyticsQuery(params)}`
+  );
+}
+
+/**
+ * Get ticket type performance analytics
+ */
+export async function getAnalyticsTickets(orgId: string, params?: AnalyticsQueryParams) {
+  return api.get<TicketAnalyticsResponse>(
+    `/organizations/${orgId}/analytics/tickets${buildAnalyticsQuery(params)}`
   );
 }

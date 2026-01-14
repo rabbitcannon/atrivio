@@ -88,11 +88,11 @@ Use double curly braces: `{{variable_name}}`
 
 ### Example Template
 
-**Subject:** Your tickets for {{attraction_name}}
+**Subject:** Your tickets for `{"{{"}attraction_name{"}}"}`
 
 **Body:**
-```
-Hi {{first_name}},
+
+<pre>{`Hi {{first_name}},
 
 Thank you for your purchase! Here are your ticket details:
 
@@ -103,8 +103,7 @@ Time: {{event_time}}
 
 We look forward to seeing you!
 
-{{org_name}}
-```
+{{org_name}}`}</pre>
 
 ## Template Status
 
@@ -183,34 +182,31 @@ Use clear, descriptive names:
 
 ### Order Confirmation (Email)
 
-**Subject:** Order #{{order_number}} Confirmed
+**Subject:** Order #`{"{{"}order_number{"}}"}` Confirmed
 
 **Body:**
-```
-Your order has been confirmed!
+
+<pre>{`Your order has been confirmed!
 
 Order: #{{order_number}}
 Tickets: {{ticket_count}}
 Event: {{event_date}} at {{event_time}}
 
-Check your email for tickets.
-```
+Check your email for tickets.`}</pre>
 
 ### Queue Ready (SMS)
 
 **Body:**
-```
-{{attraction_name}}: Your group is ready!
+
+<pre>{`{{attraction_name}}: Your group is ready!
 Please proceed to the entrance within 10 minutes.
-Position: {{queue_position}}
-```
+Position: {{queue_position}}`}</pre>
 
 ### Shift Reminder (Push)
 
 **Body:**
-```
-Reminder: You have a shift tomorrow at {{shift_time}}
-```
+
+<pre>{`Reminder: You have a shift tomorrow at {{shift_time}}`}</pre>
 
 ## Troubleshooting
 

@@ -38,9 +38,9 @@ export default async function NewStorefrontPage({ params }: NewPageProps) {
   }
 
   // Create a bound server action with the orgId and attractionId
-  async function handleSave(data: PageFormData) {
+  async function handleSave(data: PageFormData): Promise<void> {
     'use server';
-    return createPageAction(orgId, attractionId, data);
+    await createPageAction(orgId, attractionId, data);
   }
 
   const breadcrumbs = [

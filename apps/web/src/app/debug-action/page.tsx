@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/supabase/server';
 import { TestSessionClient } from './client';
 
-async function debugAction() {
+async function debugAction(): Promise<void> {
   'use server';
 
   const session = await getSession();
@@ -9,12 +9,11 @@ async function debugAction() {
   console.log('[debugAction] Session exists:', !!session);
   console.log('[debugAction] User ID:', session?.user?.id);
   console.log('[debugAction] Has access token:', !!session?.access_token);
-
-  return JSON.stringify({
+  console.log('[debugAction] Result:', JSON.stringify({
     hasSession: !!session,
     userId: session?.user?.id || null,
     hasAccessToken: !!session?.access_token,
-  });
+  }));
 }
 
 export default function DebugActionPage() {

@@ -337,7 +337,7 @@ export class TicketingPage extends BasePage {
   // ============================================================================
 
   /** Navigate to the main ticketing page */
-  async goto(): Promise<void> {
+  override async goto(): Promise<void> {
     await super.goto(`/${this.orgSlug}/ticketing`);
   }
 

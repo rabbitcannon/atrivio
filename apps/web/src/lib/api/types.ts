@@ -1174,3 +1174,132 @@ export interface CheckInRecord {
   stationName: string | null;
   method: CheckInMethod;
 }
+
+// ============================================================================
+// Analytics Types (F13)
+// ============================================================================
+
+export type AnalyticsPeriod =
+  | 'today'
+  | 'yesterday'
+  | 'week'
+  | 'month'
+  | 'quarter'
+  | 'year'
+  | 'custom';
+
+export type AnalyticsGroupBy = 'hour' | 'day' | 'week' | 'month';
+
+export interface AnalyticsQueryParams {
+  attractionId?: string;
+  period?: AnalyticsPeriod;
+  startDate?: string;
+  endDate?: string;
+  groupBy?: AnalyticsGroupBy;
+  includeComparison?: boolean;
+}
+
+export interface TimeSeriesDataPoint {
+  date: string;
+  value: number;
+  label?: string;
+}
+
+export interface PeriodComparison {
+  current: number;
+  previous: number;
+  change: number;
+  changePercent: number;
+  trend: 'up' | 'down' | 'flat';
+}
+
+export interface DashboardSummary {
+  ticketsSold: number;
+  ticketsCheckedIn: number;
+  checkInRate: number;
+  totalOrders: number;
+  grossRevenue: number;
+  netRevenue: number;
+  totalRefunds: number;
+  totalDiscounts: number;
+  avgOrderValue: number;
+  uniqueCustomers: number;
+}
+
+export interface DashboardComparison {
+  ticketsSold?: PeriodComparison;
+  grossRevenue?: PeriodComparison;
+  totalOrders?: PeriodComparison;
+  checkInRate?: PeriodComparison;
+}
+
+export interface DashboardResponse {
+  summary: DashboardSummary;
+  comparison?: DashboardComparison;
+  revenueChart: TimeSeriesDataPoint[];
+  ordersChart: TimeSeriesDataPoint[];
+  checkInsChart: TimeSeriesDataPoint[];
+  startDate: string;
+  endDate: string;
+}
+
+export interface RevenueBreakdownItem {
+  id: string;
+  name: string;
+  revenue: number;
+  percentage: number;
+  orders: number;
+}
+
+export interface RevenueResponse {
+  grossRevenue: number;
+  netRevenue: number;
+  refunds: number;
+  discounts: number;
+  byAttraction: RevenueBreakdownItem[];
+  byTicketType: RevenueBreakdownItem[];
+  trend: TimeSeriesDataPoint[];
+  startDate: string;
+  endDate: string;
+}
+
+export interface AttendanceBreakdownItem {
+  id: string;
+  name: string;
+  revenue: number; // Actually count, using revenue field
+  percentage: number;
+  orders: number; // Actually count
+}
+
+export interface AttendanceResponse {
+  totalCheckIns: number;
+  totalTicketsSold: number;
+  checkInRate: number;
+  peakAttendance: number;
+  peakAttendanceTime: string | null;
+  checkInsTrend: TimeSeriesDataPoint[];
+  byAttraction: AttendanceBreakdownItem[];
+  startDate: string;
+  endDate: string;
+}
+
+export interface TicketTypePerformance {
+  id: string;
+  name: string;
+  attractionName: string;
+  quantitySold: number;
+  revenue: number;
+  checkedIn: number;
+  checkInRate: number;
+  avgPerOrder: number;
+  refunded: number;
+}
+
+export interface TicketAnalyticsResponse {
+  totalTicketTypes: number;
+  totalQuantitySold: number;
+  totalRevenue: number;
+  ticketTypes: TicketTypePerformance[];
+  startDate: string;
+  endDate: string;
+}

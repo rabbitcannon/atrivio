@@ -397,7 +397,7 @@ export function StorefrontSettingsForm({ orgId, attractionId, settings, attracti
           line2: contactInfo.addressLine2 || undefined,
           city: contactInfo.city,
           state: contactInfo.state,
-          postal_code: contactInfo.postalCode,
+          postalCode: contactInfo.postalCode,
           country: 'US',
         };
       }

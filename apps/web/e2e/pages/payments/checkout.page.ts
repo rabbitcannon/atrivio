@@ -1,4 +1,4 @@
-import { type Page, type Locator, expect } from '@playwright/test';
+import { type Page, type Locator, type FrameLocator, expect } from '@playwright/test';
 import { BasePage } from '../base.page';
 import { ROUTES, TIMEOUTS, STRIPE_TEST_CARDS } from '../../helpers/fixtures';
 
@@ -71,7 +71,7 @@ export class CheckoutPage extends BasePage {
    * Card number input in Stripe checkout
    * Stripe uses iframes, so we need to access the frame first
    */
-  private get stripeCardFrame(): Locator {
+  private get stripeCardFrame(): FrameLocator {
     return this.page.frameLocator('iframe[name*="stripe"], iframe[src*="stripe"]').first();
   }
 
@@ -107,7 +107,7 @@ export class CheckoutPage extends BasePage {
   /**
    * Navigate to the checkout page
    */
-  async goto(): Promise<void> {
+  override async goto(): Promise<void> {
     const routes = ROUTES.storefront(this.identifier);
     await super.goto(routes.checkout);
   }
@@ -115,7 +115,7 @@ export class CheckoutPage extends BasePage {
   /**
    * Go back to storefront
    */
-  async goBack(): Promise<void> {
+  override async goBack(): Promise<void> {
     await this.backButton.click();
     await this.waitForUrl(new RegExp(`/s/${this.identifier}$`));
   }

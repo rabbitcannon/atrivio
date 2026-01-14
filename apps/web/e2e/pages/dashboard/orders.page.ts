@@ -66,7 +66,7 @@ export class OrdersPage extends BasePage {
   /**
    * Navigate to the orders page
    */
-  async goto(): Promise<void> {
+  override async goto(): Promise<void> {
     await super.goto(ROUTES.dashboard(this.orgSlug).ticketingOrders);
   }
 

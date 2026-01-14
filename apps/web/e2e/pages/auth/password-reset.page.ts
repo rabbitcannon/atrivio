@@ -55,7 +55,7 @@ export class PasswordResetPage extends BasePage {
   /**
    * Navigate to the forgot password page
    */
-  async goto(): Promise<void> {
+  override async goto(): Promise<void> {
     await super.goto(ROUTES.auth.forgotPassword);
   }
 
