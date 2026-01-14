@@ -7,9 +7,11 @@ import {
   AnimatedDashboardHeader,
   AnimatedQuickLink,
   AnimatedStatsGrid,
+  DashboardTourPrompt,
   MyCheckoutsWidget,
   MyHoursWidget,
   MyScheduleWidget,
+  RecentActivityWidget,
 } from '@/components/features/dashboard';
 import { TimeClockWidget } from '@/components/features/time-clock';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -102,6 +104,9 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
           subtitle={`Welcome back to ${orgName}! Here is your organization overview.`}
         />
 
+        {/* Tour Prompt for first-time users */}
+        <DashboardTourPrompt />
+
         {hasError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -113,21 +118,17 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
         )}
 
         {/* Stats Grid */}
-        <AnimatedStatsGrid stats={stats} />
+        <div id="dashboard-stats">
+          <AnimatedStatsGrid stats={stats} />
+        </div>
 
         {/* Recent Activity and Time Clock */}
         <AnimatedCardGrid className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" baseDelay={0.5}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest updates from your organization</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">No recent activity to display.</p>
-            </CardContent>
-          </Card>
+          <div id="dashboard-activity">
+            <RecentActivityWidget orgId={orgId} />
+          </div>
 
-          <Card>
+          <Card id="dashboard-quick-actions">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common tasks and shortcuts</CardDescription>
@@ -155,7 +156,9 @@ export default async function OrgDashboardPage({ params }: OrgDashboardPageProps
           </Card>
 
           {/* Time Clock Widget */}
-          <TimeClockWidget orgId={orgId} orgSlug={orgSlug} />
+          <div id="dashboard-time-clock">
+            <TimeClockWidget orgId={orgId} orgSlug={orgSlug} />
+          </div>
         </AnimatedCardGrid>
       </AnimatedContainer>
     );

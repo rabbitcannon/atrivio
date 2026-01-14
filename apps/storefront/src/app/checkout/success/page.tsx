@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { AlertCircle, Calendar, CheckCircle, Loader2, Mail, Ticket } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useStorefront } from '@/lib/storefront-context';
+import { StorefrontLink } from '@/components/storefront-link';
 import { verifyCheckoutSession } from '@/lib/api';
 
 interface VerifiedOrder {
@@ -114,12 +114,12 @@ export default function CheckoutSuccessPage() {
             </div>
 
             <div className="flex justify-center">
-              <Link
+              <StorefrontLink
                 href="/tickets"
                 className={`rounded-lg border border-border px-6 py-3 font-semibold hover:bg-muted transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
               >
                 Return to Tickets
-              </Link>
+              </StorefrontLink>
             </div>
           </div>
         </div>
@@ -233,12 +233,12 @@ export default function CheckoutSuccessPage() {
 
           {/* Actions */}
           <div className="flex justify-center">
-            <Link
+            <StorefrontLink
               href="/tickets"
               className={`rounded-lg border border-border px-6 py-3 font-semibold hover:bg-muted transition-colors ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
             >
               Buy More Tickets
-            </Link>
+            </StorefrontLink>
           </div>
         </div>
       </div>

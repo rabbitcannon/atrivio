@@ -11,11 +11,28 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { apiClientDirect as apiClient, resolveOrgId, getAnalyticsDashboard } from '@/lib/api/client';
+import type { TimeSeriesDataPoint } from '@/lib/api/types';
+
+// Dynamically import chart to avoid SSR issues
+const SparkLineChart = dynamic(
+  () => import('@mui/x-charts/SparkLineChart').then((m) => m.SparkLineChart),
+  { ssr: false, loading: () => <Skeleton className="h-16 w-full" /> }
+);
+
+interface TicketingStats {
+  todaysSales: number;
+  weeklyRevenue: number;
+  activeTicketTypes: number;
+  activePromos: number;
+  revenueChart: TimeSeriesDataPoint[];
+}
 
 // Material Design ease curve
 const EASE = [0.4, 0, 0.2, 1] as const;
@@ -246,10 +263,110 @@ function AnimatedNavCard({
   );
 }
 
+/**
+ * Format cents to dollars
+ */
+function formatMoney(cents: number): string {
+  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
+/**
+ * Stat card with loading state
+ */
+function StatCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  isLoading,
+  format = 'number',
+}: {
+  title: string;
+  value: number;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+  isLoading: boolean;
+  format?: 'number' | 'money';
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <>
+            <Skeleton className="h-8 w-16 mb-1" />
+            <Skeleton className="h-3 w-24" />
+          </>
+        ) : (
+          <>
+            <div className="text-2xl font-bold">
+              {format === 'money' ? formatMoney(value) : value.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function TicketingPage() {
   const params = useParams();
   const shouldReduceMotion = useReducedMotion();
   const orgIdentifier = params['orgId'] as string;
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<TicketingStats>({
+    todaysSales: 0,
+    weeklyRevenue: 0,
+    activeTicketTypes: 0,
+    activePromos: 0,
+    revenueChart: [],
+  });
+
+  const loadStats = useCallback(async (orgId: string) => {
+    try {
+      // Fetch all stats in parallel
+      const [ticketTypes, promoCodes, todayResponse, weekResponse] = await Promise.all([
+        apiClient.get<{ id: string; is_active: boolean }[]>(
+          `/organizations/${orgId}/ticket-types`
+        ).catch(() => []),
+        apiClient.get<{ id: string; is_active: boolean }[]>(
+          `/organizations/${orgId}/promo-codes`
+        ).catch(() => []),
+        getAnalyticsDashboard(orgId, { period: 'today' }).catch(() => null),
+        getAnalyticsDashboard(orgId, { period: 'week' }).catch(() => null),
+      ]);
+
+      setStats({
+        todaysSales: todayResponse?.data?.summary?.ticketsSold ?? 0,
+        weeklyRevenue: weekResponse?.data?.summary?.grossRevenue ?? 0,
+        activeTicketTypes: Array.isArray(ticketTypes)
+          ? ticketTypes.filter((t) => t.is_active).length
+          : 0,
+        activePromos: Array.isArray(promoCodes)
+          ? promoCodes.filter((p) => p.is_active).length
+          : 0,
+        revenueChart: weekResponse?.data?.revenueChart ?? [],
+      });
+    } catch {
+      // Stats remain at 0 on error
+    }
+  }, []);
+
+  useEffect(() => {
+    async function init() {
+      const orgId = await resolveOrgId(orgIdentifier);
+      if (orgId) {
+        await loadStats(orgId);
+      }
+      setIsLoading(false);
+    }
+    init();
+  }, [orgIdentifier, loadStats]);
 
   return (
     <div className="space-y-6">
@@ -257,47 +374,70 @@ export default function TicketingPage() {
 
       {/* Quick Stats */}
       <AnimatedStatsGrid shouldReduceMotion={shouldReduceMotion}>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Today&apos;s Sales</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">Tickets sold today</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$--</div>
-            <p className="text-xs text-muted-foreground">This week</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Ticket Types</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">Active types</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Promos</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground">Promo codes</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Today's Sales"
+          value={stats.todaysSales}
+          subtitle="Tickets sold today"
+          icon={DollarSign}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Revenue"
+          value={stats.weeklyRevenue}
+          subtitle="This week"
+          icon={TrendingUp}
+          isLoading={isLoading}
+          format="money"
+        />
+        <StatCard
+          title="Ticket Types"
+          value={stats.activeTicketTypes}
+          subtitle="Active types"
+          icon={Package}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Active Promos"
+          value={stats.activePromos}
+          subtitle="Promo codes"
+          icon={Tag}
+          isLoading={isLoading}
+        />
       </AnimatedStatsGrid>
+
+      {/* Revenue Trend Sparkline */}
+      {!isLoading && stats.revenueChart.length > 0 && (
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: EASE, delay: 0.25 }}
+        >
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Revenue Trend
+              </CardTitle>
+              <CardDescription>Last 7 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SparkLineChart
+                data={stats.revenueChart.map((d) => d.value / 100)}
+                height={60}
+                curve="natural"
+                area
+                showHighlight
+                showTooltip
+                color="#22c55e"
+                sx={{
+                  '.MuiLineElement-root': { strokeWidth: 2 },
+                  '.MuiAreaElement-root': { fillOpacity: 0.15 },
+                }}
+              />
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Navigation Cards */}
       <AnimatedNavGrid shouldReduceMotion={shouldReduceMotion}>

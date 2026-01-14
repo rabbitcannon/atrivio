@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, Minus, Plus, ShoppingCart, Ticket } from 'lucide-react';
 import { useStorefront } from '@/lib/storefront-context';
 import type { StorefrontTicketType } from '@/lib/api';
@@ -18,9 +18,11 @@ interface TicketSelectorProps {
 
 export function TicketSelector({ ticketTypes }: TicketSelectorProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const storefront = useStorefront();
   const [cart, setCart] = useState<Map<string, CartItem>>(new Map());
   const hasBackgroundImage = !!storefront.settings.theme.backgroundImageUrl;
+  const storefrontParam = searchParams.get('storefront');
 
   const updateQuantity = (ticketType: StorefrontTicketType, delta: number) => {
     setCart((prev) => {
@@ -59,7 +61,9 @@ export function TicketSelector({ ticketTypes }: TicketSelectorProps) {
       quantity: item.quantity,
     }));
     sessionStorage.setItem(`cart-${storefront.attraction.slug}`, JSON.stringify(cartData));
-    router.push('/checkout');
+    // Preserve storefront param for local development
+    const checkoutUrl = storefrontParam ? `/checkout?storefront=${storefrontParam}` : '/checkout';
+    router.push(checkoutUrl);
   };
 
   // Group tickets by category

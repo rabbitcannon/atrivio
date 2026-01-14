@@ -6,6 +6,7 @@ import {
   BarChart3,
   Calendar,
   DollarSign,
+  Download,
   Loader2,
   MinusIcon,
   ShoppingCart,
@@ -39,6 +40,7 @@ import {
 } from '@/lib/api/client';
 import type { AttractionListItem, AnalyticsPeriod, DashboardResponse } from '@/lib/api/types';
 import { formatCurrency } from '@atrivio/shared/utils/money';
+import { exportToPDF } from '@/lib/utils/pdf-export';
 
 // Lazy load MUI X Charts to reduce initial bundle
 import dynamic from 'next/dynamic';
@@ -291,6 +293,7 @@ export default function AnalyticsPage() {
   const [selectedAttraction, setSelectedAttraction] = useState<string>('all');
   const [period, setPeriod] = useState<AnalyticsPeriod>('week');
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [featureError, setFeatureError] = useState<ApiError | null>(null);
@@ -345,6 +348,32 @@ export default function AnalyticsPage() {
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  // Handle PDF export
+  const handleExportPDF = useCallback(async () => {
+    const element = document.getElementById('analytics-content');
+    if (!element || !dashboard) return;
+
+    setIsExporting(true);
+    try {
+      const periodLabel = PERIOD_OPTIONS.find((p) => p.value === period)?.label || period;
+      const attractionName =
+        selectedAttraction === 'all'
+          ? 'All Attractions'
+          : attractions.find((a) => a.id === selectedAttraction)?.name || '';
+
+      await exportToPDF(element, {
+        filename: `analytics-report-${period}-${new Date().toISOString().split('T')[0]}`,
+        title: 'Analytics Report',
+        subtitle: `${periodLabel} • ${attractionName} • ${dashboard.startDate} to ${dashboard.endDate}`,
+        orientation: 'landscape',
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [dashboard, period, selectedAttraction, attractions]);
 
   // Prepare chart data
   const revenueChartData = dashboard?.revenueChart || [];
@@ -420,6 +449,21 @@ export default function AnalyticsPage() {
           {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           Refresh
         </Button>
+
+        {dashboard && (
+          <Button
+            variant="outline"
+            onClick={handleExportPDF}
+            disabled={isExporting || isLoading}
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
+            Export PDF
+          </Button>
+        )}
       </motion.div>
 
       {featureError && (
@@ -446,7 +490,7 @@ export default function AnalyticsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : dashboard ? (
-        <>
+        <div id="analytics-content" className="space-y-6">
           {/* Summary Stats */}
           <AnimatedStatsGrid shouldReduceMotion={shouldReduceMotion}>
             <StatsCard
@@ -612,7 +656,7 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </motion.div>
-        </>
+        </div>
       ) : null}
     </div>
   );

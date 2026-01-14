@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, CreditCard, Loader2, ShoppingCart } from 'lucide-react';
 import { useStorefront } from '@/lib/storefront-context';
+import { StorefrontLink } from '@/components/storefront-link';
 import { createCheckoutSession } from '@/lib/api';
 import { formatCurrency } from '@atrivio/shared/utils/money';
 
@@ -17,7 +17,9 @@ interface CartItem {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const storefront = useStorefront();
+  const storefrontParam = searchParams.get('storefront');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +31,11 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
 
+  // Build URL with storefront param preserved
+  const buildUrl = (path: string) => {
+    return storefrontParam ? `${path}?storefront=${storefrontParam}` : path;
+  };
+
   // Load cart from sessionStorage
   useEffect(() => {
     const cartData = sessionStorage.getItem(`cart-${storefront.attraction.slug}`);
@@ -37,13 +44,13 @@ export default function CheckoutPage() {
         setCart(JSON.parse(cartData));
       } catch {
         // Invalid cart data, redirect back
-        router.push('/tickets');
+        router.push(buildUrl('/tickets'));
       }
     } else {
       // No cart, redirect back
-      router.push('/tickets');
+      router.push(buildUrl('/tickets'));
     }
-  }, [storefront.attraction.slug, router]);
+  }, [storefront.attraction.slug, router, storefrontParam]);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalTickets = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -56,8 +63,9 @@ export default function CheckoutPage() {
     try {
       // Get the current URL origin for redirect URLs
       const origin = window.location.origin;
-      const successUrl = `${origin}/checkout/success`;
-      const cancelUrl = `${origin}/checkout`;
+      const queryString = storefrontParam ? `?storefront=${storefrontParam}` : '';
+      const successUrl = `${origin}/checkout/success${queryString}`;
+      const cancelUrl = `${origin}/checkout${queryString}`;
 
       const checkoutData = {
         customerEmail: email,
@@ -107,13 +115,13 @@ export default function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Checkout Form */}
           <div className="lg:col-span-2">
-            <Link
+            <StorefrontLink
               href="/tickets"
               className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to tickets
-            </Link>
+            </StorefrontLink>
 
             <div className={`rounded-xl border border-border p-6 ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}>
               <h2 className="text-xl font-heading font-bold mb-6">Your Information</h2>
@@ -175,13 +183,13 @@ export default function CheckoutPage() {
                   />
                   <label htmlFor="terms" className="text-sm leading-tight">
                     I agree to the{' '}
-                    <Link href="/terms" className="text-storefront-primary hover:underline">
+                    <StorefrontLink href="/terms" className="text-storefront-primary hover:underline">
                       terms and conditions
-                    </Link>{' '}
+                    </StorefrontLink>{' '}
                     and{' '}
-                    <Link href="/waiver" className="text-storefront-primary hover:underline">
+                    <StorefrontLink href="/waiver" className="text-storefront-primary hover:underline">
                       liability waiver
-                    </Link>
+                    </StorefrontLink>
                   </label>
                 </div>
 

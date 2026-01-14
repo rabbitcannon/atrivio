@@ -2,15 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, useReducedMotion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Loader2, ShoppingCart, CreditCard } from 'lucide-react';
+import { ArrowLeft, Loader2, ShoppingCart, CreditCard, Lock, Shield, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { createCheckoutSession } from '@/lib/api/public';
 import { formatCurrency } from '@atrivio/shared/utils/money';
+
+// Material Design ease curve
+const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface CartItem {
   ticketTypeId: string;
@@ -27,6 +31,7 @@ interface CheckoutFormProps {
 export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const shouldReduceMotion = useReducedMotion();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,13 +125,22 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
     );
   }
 
+  const MotionDiv = shouldReduceMotion ? 'div' : motion.div;
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       {/* Checkout Form */}
-      <div className="lg:col-span-2">
+      <MotionDiv
+        className="lg:col-span-2"
+        {...(!shouldReduceMotion && {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.4, ease: EASE },
+        })}
+      >
         <Link
           href={ticketsUrl}
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to tickets
@@ -147,6 +161,7 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
+                  className="transition-all focus:ring-2 focus:ring-primary/20"
                 />
                 <p className="text-xs text-muted-foreground">
                   Your tickets will be sent to this email
@@ -161,6 +176,7 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="John Doe"
+                  className="transition-all focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -172,6 +188,7 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
+                  className="transition-all focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -194,14 +211,21 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
               </div>
 
               {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                <MotionDiv
+                  className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+                  {...(!shouldReduceMotion && {
+                    initial: { opacity: 0, scale: 0.95 },
+                    animate: { opacity: 1, scale: 1 },
+                    transition: { duration: 0.2 },
+                  })}
+                >
                   {error}
-                </div>
+                </MotionDiv>
               )}
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full transition-all hover:scale-[1.02] active:scale-[0.98]"
                 size="lg"
                 disabled={!acceptTerms || isLoading}
               >
@@ -213,39 +237,63 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
                 ) : (
                   <>
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Continue to Payment
+                    Continue to Payment • {formatCurrency(cartTotal)}
                   </>
                 )}
               </Button>
 
+              {/* Security Badges */}
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>SSL Encrypted</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Shield className="h-3.5 w-3.5" />
+                  <span>Secure Checkout</span>
+                </div>
+              </div>
+
               <p className="text-center text-xs text-muted-foreground">
-                You will be securely redirected to Stripe to complete your payment
+                Powered by <span className="font-medium">Stripe</span> • Your payment information is never stored on our servers
               </p>
             </form>
           </CardContent>
         </Card>
-      </div>
+      </MotionDiv>
 
       {/* Order Summary - Sticky */}
       <div className="lg:col-span-1">
-        <div className="sticky top-4">
-          <Card>
-            <CardHeader>
+        <MotionDiv
+          className="sticky top-4"
+          {...(!shouldReduceMotion && {
+            initial: { opacity: 0, x: 20 },
+            animate: { opacity: 1, x: 0 },
+            transition: { duration: 0.4, ease: EASE, delay: 0.1 },
+          })}
+        >
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/30">
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5" />
                 Order Summary
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <div className="space-y-4">
                 <p className="text-sm font-medium text-muted-foreground">
                   {attractionName}
                 </p>
 
-                {cart.map((item) => (
-                  <div
+                {cart.map((item, index) => (
+                  <MotionDiv
                     key={item.ticketTypeId}
                     className="flex items-center justify-between text-sm"
+                    {...(!shouldReduceMotion && {
+                      initial: { opacity: 0, y: 10 },
+                      animate: { opacity: 1, y: 0 },
+                      transition: { duration: 0.3, delay: 0.2 + index * 0.05, ease: EASE },
+                    })}
                   >
                     <div>
                       <p className="font-medium">{item.ticketTypeName}</p>
@@ -256,19 +304,27 @@ export function CheckoutForm({ identifier, attractionName }: CheckoutFormProps) 
                     <p className="font-medium">
                       {formatCurrency(item.price * item.quantity)}
                     </p>
-                  </div>
+                  </MotionDiv>
                 ))}
 
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between">
                     <p className="font-medium">Total ({totalTickets} tickets)</p>
-                    <p className="text-xl font-bold">{formatCurrency(cartTotal)}</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
                   </div>
+                </div>
+
+                {/* Urgency indicator */}
+                <div className="flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 p-3 text-sm">
+                  <Clock className="h-4 w-4 text-amber-600" />
+                  <span className="text-amber-700 dark:text-amber-500">
+                    Tickets are reserved for 10 minutes
+                  </span>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </MotionDiv>
       </div>
     </div>
   );

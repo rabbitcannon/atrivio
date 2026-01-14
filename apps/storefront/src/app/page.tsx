@@ -16,9 +16,23 @@ function formatPrice(cents: number): string {
   }).format(cents / 100);
 }
 
-export default async function HomePage() {
+/**
+ * Build a URL that preserves the storefront query param for local development
+ */
+function buildUrl(path: string, storefrontParam: string | null): string {
+  if (!storefrontParam) return path;
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}storefront=${storefrontParam}`;
+}
+
+interface HomePageProps {
+  searchParams: Promise<{ storefront?: string }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
   const headersList = await headers();
   const identifier = headersList.get('x-storefront-identifier');
+  const { storefront: storefrontParam } = await searchParams;
 
   if (!identifier) return null;
 
@@ -77,7 +91,7 @@ export default async function HomePage() {
           )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/tickets"
+              href={buildUrl('/tickets', storefrontParam ?? null)}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-storefront-primary px-8 py-4 text-lg font-bold text-white transition-all hover:scale-105 hover:shadow-lg"
             >
               <Ticket className="h-5 w-5" />
@@ -85,7 +99,7 @@ export default async function HomePage() {
             </Link>
             {settings.features.showCalendar && (
               <Link
-                href="/calendar"
+                href={buildUrl('/calendar', storefrontParam ?? null)}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-8 py-4 text-lg font-semibold transition-all hover:bg-accent"
               >
                 <Calendar className="h-5 w-5" />
@@ -113,7 +127,7 @@ export default async function HomePage() {
               {/* Tickets Card */}
               {showTicketsCard && (
                 <Link
-                  href="/tickets"
+                  href={buildUrl('/tickets', storefrontParam ?? null)}
                   className={`group flex flex-col rounded-xl border border-border hover:border-storefront-primary transition-colors overflow-hidden ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
                 >
                   {/* Header with icon */}
@@ -152,7 +166,7 @@ export default async function HomePage() {
               {/* FAQ Card */}
               {showFaqCard && (
                 <Link
-                  href="/faqs"
+                  href={buildUrl('/faq', storefrontParam ?? null)}
                   className={`group flex flex-col rounded-xl border border-border hover:border-storefront-primary transition-colors overflow-hidden ${hasBackgroundImage ? 'bg-card/80 backdrop-blur-sm' : 'bg-card'}`}
                 >
                   {/* Header with icon */}
@@ -252,7 +266,7 @@ export default async function HomePage() {
               ))}
             </div>
             <div className="text-center mt-8">
-              <Link href="/faqs" className="text-storefront-primary hover:underline font-medium">
+              <Link href={buildUrl('/faq', storefrontParam ?? null)} className="text-storefront-primary hover:underline font-medium">
                 View all FAQs →
               </Link>
             </div>
