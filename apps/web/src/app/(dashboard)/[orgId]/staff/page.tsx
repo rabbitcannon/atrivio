@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { StaffTable } from '@/components/features/staff/staff-table';
 import { Button } from '@/components/ui/button';
-import { resolveOrgId } from '@/lib/api';
+import { requireRole } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Staff',
@@ -17,11 +17,13 @@ interface StaffPageProps {
 export default async function StaffPage({ params }: StaffPageProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Resolve slug to UUID if needed
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
+  // Require owner, admin, manager, or hr role
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'hr']);
+  if (!auth) {
     notFound();
   }
+
+  const { orgId } = auth;
 
   return (
     <div className="space-y-6">

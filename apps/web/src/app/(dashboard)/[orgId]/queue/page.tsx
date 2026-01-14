@@ -16,7 +16,7 @@ import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
-import { getAttractions, getQueueConfig, getQueueEntries, resolveOrgId } from '@/lib/api';
+import { getAttractions, getQueueConfig, getQueueEntries, isFeatureEnabled, requireRole } from '@/lib/api';
 import type { QueueConfig, QueueEntriesResponse } from '@/lib/api/types';
 
 export const metadata: Metadata = {
@@ -51,8 +51,17 @@ const NAV_ITEMS = [
 export default async function QueuePage({ params }: QueuePageProps) {
   const { orgId: orgIdentifier } = await params;
 
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
+  // Require owner, admin, or manager role
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager']);
+  if (!auth) {
+    notFound();
+  }
+
+  const { orgId } = auth;
+
+  // Check if virtual_queue feature is enabled (Enterprise tier only)
+  const hasVirtualQueue = await isFeatureEnabled(orgId, 'virtual_queue');
+  if (!hasVirtualQueue) {
     notFound();
   }
 

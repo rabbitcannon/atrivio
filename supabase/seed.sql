@@ -1245,11 +1245,11 @@ VALUES
   -- ============================================================================
 
   -- Virtual Queue (F11) - Enterprise tier
-  -- Enabled for: Terror Collective + Nightmare Manor (for testing)
+  -- Enabled for: Terror Collective (Enterprise only - tier enforced)
   ('1f000000-0000-0000-0000-00000000000b', 'virtual_queue', 'Virtual Queue',
    'Real-time virtual queue with position tracking and notifications (F11)',
    TRUE,
-   ARRAY['b0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003']::UUID[],
+   ARRAY['b0000000-0000-0000-0000-000000000003']::UUID[],
    '{}',
    '{"tier": "enterprise", "feature": "F11", "module": true}'),
 
@@ -1329,8 +1329,7 @@ ON CONFLICT (key) DO UPDATE SET
 -- Nightmare Manor (Pro):
 --   ✅ time_tracking, ticketing, checkin, notifications
 --   ✅ scheduling, inventory, analytics_pro, storefronts
---   ✅ virtual_queue (testing only)
---   ❌ sms_notifications, custom_domains
+--   ❌ virtual_queue, sms_notifications, custom_domains
 --
 -- Terror Collective (Enterprise):
 --   ✅ time_tracking, ticketing, checkin, notifications

@@ -98,6 +98,56 @@ export async function getCurrentUserRole(orgId: string): Promise<OrgRole | null>
   return (membership?.role as OrgRole) ?? null;
 }
 
+/**
+ * Server-side authorization check for pages.
+ * Resolves orgId and validates user has one of the allowed roles.
+ * Returns the resolved orgId and role if authorized, or null if not.
+ */
+export async function requireRole(
+  orgIdentifier: string,
+  allowedRoles: OrgRole[]
+): Promise<{ orgId: string; role: OrgRole } | null> {
+  // Resolve slug to UUID
+  const orgId = await resolveOrgId(orgIdentifier);
+  if (!orgId) return null;
+
+  // Get user's role in this org
+  const role = await getCurrentUserRole(orgId);
+  if (!role) return null;
+
+  // Check if user has one of the allowed roles
+  if (!allowedRoles.includes(role)) return null;
+
+  return { orgId, role };
+}
+
+/**
+ * Check if a feature flag is enabled for an organization.
+ * Uses the Supabase RPC function directly.
+ */
+export async function isFeatureEnabled(orgId: string, featureKey: string): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase.rpc('is_feature_enabled', {
+      p_flag_key: featureKey,
+      p_user_id: user?.id || null,
+      p_org_id: orgId,
+    });
+
+    if (error) {
+      return false;
+    }
+
+    return data === true;
+  } catch {
+    return false;
+  }
+}
+
 // ============================================================================
 // Organizations API (Server-side)
 // ============================================================================

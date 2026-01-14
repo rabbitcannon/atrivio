@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import { Separator } from '@/components/ui/separator';
-import { getPaymentStatus, getTransactionSummary, resolveOrgId } from '@/lib/api';
+import { getPaymentStatus, getTransactionSummary, requireRole } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Payments',
@@ -85,10 +85,13 @@ function getStatusBadgeClassName(status: string | null): string {
 export default async function PaymentsPage({ params }: PaymentsPageProps) {
   const { orgId: orgIdentifier } = await params;
 
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
+  // Require owner, admin, or finance role
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'finance']);
+  if (!auth) {
     notFound();
   }
+
+  const { orgId } = auth;
 
   const [statusResult, summaryResult] = await Promise.all([
     getPaymentStatus(orgId),

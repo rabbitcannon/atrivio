@@ -9,7 +9,7 @@ import {
 } from '@/components/features/attractions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { getAttractions, resolveOrgId } from '@/lib/api';
+import { getAttractions, requireRole } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Attractions',
@@ -22,12 +22,13 @@ interface AttractionsPageProps {
 export default async function AttractionsPage({ params }: AttractionsPageProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Resolve the org identifier (could be slug or UUID) to an actual UUID
-  const orgId = await resolveOrgId(orgIdentifier);
-
-  if (!orgId) {
+  // Require owner, admin, or manager role
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager']);
+  if (!auth) {
     notFound();
   }
+
+  const { orgId } = auth;
 
   // Fetch attractions from API
   const { data, error } = await getAttractions(orgId);

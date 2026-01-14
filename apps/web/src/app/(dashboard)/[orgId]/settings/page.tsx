@@ -5,7 +5,7 @@ import { AnimatedPageHeader } from '@/components/features/attractions';
 import { OrgSettingsForm } from '@/components/features/organizations/org-settings-form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FadeIn } from '@/components/ui/motion';
-import { getOrganization, resolveOrgId } from '@/lib/api';
+import { getOrganization, requireRole } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Organization Settings',
@@ -18,11 +18,13 @@ interface SettingsPageProps {
 export default async function SettingsPage({ params }: SettingsPageProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Resolve slug to UUID if needed
-  const orgId = await resolveOrgId(orgIdentifier);
-  if (!orgId) {
+  // Require owner or admin role
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin']);
+  if (!auth) {
     notFound();
   }
+
+  const { orgId } = auth;
 
   // Fetch organization data
   const result = await getOrganization(orgId);
