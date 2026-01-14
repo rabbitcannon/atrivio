@@ -681,6 +681,7 @@ export interface SubscriptionTierConfig {
   isActive: boolean;
   displayOrder: number;
   metadata: Record<string, unknown>;
+  stripePriceId: string | null;
   organizationsCount?: number;
   createdAt: string;
   updatedAt: string;
@@ -703,6 +704,7 @@ export interface UpdateSubscriptionTierParams {
   is_active?: boolean;
   display_order?: number;
   metadata?: Record<string, unknown>;
+  stripe_price_id?: string | null;
 }
 
 export async function getSubscriptionTiers() {

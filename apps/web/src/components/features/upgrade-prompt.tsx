@@ -13,16 +13,28 @@ import {
   Sparkles,
   Users,
   Zap,
+  type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getPricingTiers } from '@/lib/api/pricing';
 
-// Feature highlights by tier with icons
-const TIER_FEATURES = {
+interface TierConfig {
+  color: string;
+  borderColor: string;
+  badgeColor: string;
+  iconColor: string;
+  price: string;
+  highlights: Array<{ icon: LucideIcon; label: string }>;
+}
+
+// Default feature highlights by tier with icons (prices will be updated from API)
+const DEFAULT_TIER_FEATURES: Record<'pro' | 'enterprise', TierConfig> = {
   pro: {
     color: 'from-blue-500/10 via-indigo-500/5 to-purple-500/10',
     borderColor: 'border-blue-500/30',
@@ -117,9 +129,38 @@ interface UpgradePromptProps {
 export function UpgradePrompt({ feature, description, requiredTier, compact = false }: UpgradePromptProps) {
   const params = useParams();
   const orgId = params['orgId'] as string;
+  const [tierFeatures, setTierFeatures] = useState<Record<'pro' | 'enterprise', TierConfig>>(DEFAULT_TIER_FEATURES);
+
+  // Fetch dynamic pricing from API
+  useEffect(() => {
+    async function fetchPricing() {
+      try {
+        const apiTiers = await getPricingTiers();
+        if (apiTiers.length > 0) {
+          const proTier = apiTiers.find((t) => t.tier === 'pro');
+          const enterpriseTier = apiTiers.find((t) => t.tier === 'enterprise');
+
+          setTierFeatures((prev) => ({
+            pro: {
+              ...prev.pro,
+              price: proTier ? `${proTier.monthlyPrice}/mo` : prev.pro.price,
+            },
+            enterprise: {
+              ...prev.enterprise,
+              price: enterpriseTier ? `${enterpriseTier.monthlyPrice}/mo` : prev.enterprise.price,
+            },
+          }));
+        }
+      } catch (error) {
+        // Keep defaults on error
+        console.error('Failed to fetch pricing:', error);
+      }
+    }
+    fetchPricing();
+  }, []);
 
   const tier = requiredTier === 'enterprise' ? 'enterprise' : 'pro';
-  const tierConfig = TIER_FEATURES[tier];
+  const tierConfig = tierFeatures[tier];
   const tierLabel = tier === 'enterprise' ? 'Enterprise' : 'Pro';
   const featureBenefits = FEATURE_BENEFITS[feature] || [];
 

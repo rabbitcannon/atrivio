@@ -1,10 +1,14 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
+  Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
+import { SubscriptionsService, type SubscriptionTier } from '../../modules/payments/subscriptions.service.js';
 import type {
   CreateAnnouncementDto,
   CreateFeatureFlagDto,
@@ -33,9 +37,13 @@ type AnyRecord = Record<string, unknown>;
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     private supabase: SupabaseService,
-    private healthService: HealthService
+    private healthService: HealthService,
+    @Inject(forwardRef(() => SubscriptionsService))
+    private subscriptionsService: SubscriptionsService
   ) {}
 
   // ============================================================================
@@ -2416,6 +2424,7 @@ export class AdminService {
         isActive: tier.is_active,
         displayOrder: tier.display_order,
         metadata: tier.metadata || {},
+        stripePriceId: tier.stripe_price_id || null,
         createdAt: tier.created_at,
         updatedAt: tier.updated_at,
       })),
@@ -2457,6 +2466,7 @@ export class AdminService {
       isActive: data.is_active,
       displayOrder: data.display_order,
       metadata: data.metadata || {},
+      stripePriceId: data.stripe_price_id || null,
       organizationsCount: orgCount || 0,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
@@ -2493,6 +2503,33 @@ export class AdminService {
     if (dto['is_active'] !== undefined) updateData['is_active'] = dto['is_active'];
     if (dto['display_order'] !== undefined) updateData['display_order'] = dto['display_order'];
     if (dto['metadata'] !== undefined) updateData['metadata'] = dto['metadata'];
+    if (dto['stripe_price_id'] !== undefined) updateData['stripe_price_id'] = dto['stripe_price_id'];
+
+    // If the price is being changed for a paid tier, create a new Stripe price
+    // Stripe prices are immutable, so we need to create a new one when the amount changes
+    let newStripePriceId: string | null = null;
+    if (
+      dto['monthly_price_cents'] !== undefined &&
+      dto['monthly_price_cents'] !== existing.monthly_price_cents &&
+      tier !== 'free' &&
+      dto['monthly_price_cents'] > 0
+    ) {
+      try {
+        newStripePriceId = await this.subscriptionsService.createStripePrice(
+          tier as SubscriptionTier,
+          dto['monthly_price_cents']
+        );
+        updateData['stripe_price_id'] = newStripePriceId;
+        this.logger.log(
+          `Created new Stripe price ${newStripePriceId} for ${tier} tier (price changed from $${existing.monthly_price_cents / 100} to $${dto['monthly_price_cents'] / 100})`
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Failed to create Stripe price for ${tier}: ${err instanceof Error ? err.message : 'Unknown error'}. Price will be updated in database only.`
+        );
+        // Continue with database update even if Stripe fails - admin can manually set the price ID
+      }
+    }
 
     const { data, error } = await this.supabase.adminClient
       .from('subscription_tier_config')
@@ -2505,6 +2542,9 @@ export class AdminService {
       throw new BadRequestException(`Failed to update subscription tier: ${error.message}`);
     }
 
+    // Invalidate the tier config cache so pricing API returns fresh data
+    this.subscriptionsService.invalidateTierConfigCache();
+
     // Log admin action
     await this.supabase.adminClient.from('admin_audit_logs').insert({
       admin_id: adminId,
@@ -2514,11 +2554,14 @@ export class AdminService {
       details: {
         previous: existing,
         updates: dto,
+        stripe_price_created: newStripePriceId,
       },
     });
 
     return {
-      message: `Subscription tier '${tier}' updated successfully`,
+      message: newStripePriceId
+        ? `Subscription tier '${tier}' updated successfully. New Stripe price created: ${newStripePriceId}`
+        : `Subscription tier '${tier}' updated successfully`,
       tier: {
         tier: data.tier,
         name: data.name,
@@ -2534,6 +2577,7 @@ export class AdminService {
         features: data.features,
         isActive: data.is_active,
         displayOrder: data.display_order,
+        stripePriceId: data.stripe_price_id || null,
       },
     };
   }

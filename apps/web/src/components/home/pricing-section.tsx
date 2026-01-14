@@ -1,10 +1,11 @@
 'use client';
 
 import { motion, useInView } from 'motion/react';
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { getPricingTiers, type PricingTier as ApiPricingTier } from '@/lib/api/pricing';
 
-interface PricingTier {
+interface PricingTierDisplay {
   id: string;
   name: string;
   description: string;
@@ -16,7 +17,8 @@ interface PricingTier {
   ctaHref: string;
 }
 
-const tiers: PricingTier[] = [
+// Default tiers as fallback if API fails
+const defaultTiers: PricingTierDisplay[] = [
   {
     id: 'free',
     name: 'Free',
@@ -86,9 +88,62 @@ const tiers: PricingTier[] = [
   },
 ];
 
+/**
+ * Transform API pricing tier to display format with feature descriptions
+ */
+function transformApiTierToDisplay(apiTier: ApiPricingTier): PricingTierDisplay {
+  const tierConfig: Record<string, { ctaText: string; ctaHref: string; highlighted?: boolean }> = {
+    free: { ctaText: 'Get Started Free', ctaHref: '/signup' },
+    pro: { ctaText: 'Start Free Trial', ctaHref: '/signup?plan=pro', highlighted: true },
+    enterprise: { ctaText: 'Contact Sales', ctaHref: '/contact?plan=enterprise' },
+  };
+
+  const config = tierConfig[apiTier.tier] || tierConfig.free;
+
+  // Build feature list from API data and include the transaction fee
+  const features = [...apiTier.features, apiTier.transactionFee + ' per transaction'];
+
+  return {
+    id: apiTier.tier,
+    name: apiTier.name,
+    description: apiTier.description,
+    price: apiTier.monthlyPrice,
+    period: '/month',
+    features,
+    highlighted: config.highlighted,
+    ctaText: config.ctaText,
+    ctaHref: config.ctaHref,
+  };
+}
+
 export function PricingSection() {
+  const [tiers, setTiers] = useState<PricingTierDisplay[]>(defaultTiers);
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+
+  // Fetch pricing from API on mount
+  useEffect(() => {
+    async function fetchPricing() {
+      try {
+        const apiTiers = await getPricingTiers();
+        if (apiTiers.length > 0) {
+          // Sort by tier order: free, pro, enterprise
+          const tierOrder = ['free', 'pro', 'enterprise'];
+          const sortedTiers = apiTiers
+            .filter((t) => t.isActive)
+            .sort((a, b) => tierOrder.indexOf(a.tier) - tierOrder.indexOf(b.tier))
+            .map(transformApiTierToDisplay);
+          if (sortedTiers.length > 0) {
+            setTiers(sortedTiers);
+          }
+        }
+      } catch (error) {
+        // Keep default tiers on error
+        console.error('Failed to fetch pricing:', error);
+      }
+    }
+    fetchPricing();
+  }, []);
 
   return (
     <section

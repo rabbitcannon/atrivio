@@ -613,4 +613,9 @@ export class UpdateSubscriptionTierDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ description: 'Stripe Price ID for subscription checkout (e.g., price_xxxxx)' })
+  @IsString()
+  @IsOptional()
+  stripe_price_id?: string | null;
 }

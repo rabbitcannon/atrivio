@@ -40,6 +40,7 @@ export interface TierConfig {
   isActive: boolean;
   displayOrder: number;
   metadata: Record<string, unknown>;
+  stripePriceId: string | null;
 }
 
 export interface SubscriptionInfo {
@@ -82,9 +83,9 @@ export class SubscriptionsService {
   private readonly logger = new Logger(SubscriptionsService.name);
   private stripe: Stripe;
 
-  // Price IDs from environment
-  private readonly proPriceId = process.env['STRIPE_PRO_PRICE_ID'];
-  private readonly enterprisePriceId = process.env['STRIPE_ENTERPRISE_PRICE_ID'];
+  // Fallback price IDs from environment (deprecated - use admin panel instead)
+  private readonly fallbackProPriceId = process.env['STRIPE_PRO_PRICE_ID'];
+  private readonly fallbackEnterprisePriceId = process.env['STRIPE_ENTERPRISE_PRICE_ID'];
 
   // Cache for tier config (refreshed every 5 minutes)
   private tierConfigCache: Map<SubscriptionTier, TierConfig> = new Map();
@@ -136,11 +137,21 @@ export class SubscriptionsService {
         isActive: row.is_active,
         displayOrder: row.display_order,
         metadata: row.metadata || {},
+        stripePriceId: row.stripe_price_id || null,
       };
       this.tierConfigCache.set(config.tier, config);
     }
     this.tierConfigCacheExpiry = now + this.CACHE_TTL_MS;
     this.logger.debug(`Refreshed tier config cache with ${data.length} tiers`);
+  }
+
+  /**
+   * Invalidate the tier config cache (call after admin updates)
+   */
+  invalidateTierConfigCache(): void {
+    this.tierConfigCacheExpiry = 0;
+    this.tierConfigCache.clear();
+    this.logger.debug('Tier config cache invalidated');
   }
 
   /**
@@ -250,6 +261,73 @@ export class SubscriptionsService {
   }
 
   /**
+   * Create a new Stripe price for a subscription tier.
+   * Stripe prices are immutable, so this creates a new price when the admin changes the price amount.
+   * @param tier - The subscription tier (pro or enterprise)
+   * @param amountCents - The monthly price in cents
+   * @returns The new Stripe price ID
+   */
+  async createStripePrice(tier: SubscriptionTier, amountCents: number): Promise<string> {
+    this.ensureStripeConfigured();
+
+    if (tier === 'free' || amountCents === 0) {
+      throw new BadRequestException('Cannot create Stripe price for free tier');
+    }
+
+    // Get or create a product for this tier
+    const productId = await this.getOrCreateStripeProduct(tier);
+
+    // Create a new recurring price
+    const price = await this.stripe.prices.create({
+      product: productId,
+      unit_amount: amountCents,
+      currency: 'usd',
+      recurring: {
+        interval: 'month',
+      },
+      metadata: {
+        tier,
+        created_by: 'admin_panel',
+        created_at: new Date().toISOString(),
+      },
+    });
+
+    this.logger.log(`Created Stripe price ${price.id} for ${tier} tier at $${amountCents / 100}/mo`);
+    return price.id;
+  }
+
+  /**
+   * Get or create a Stripe product for a subscription tier
+   */
+  private async getOrCreateStripeProduct(tier: SubscriptionTier): Promise<string> {
+    const productMetadataKey = `atrivio_${tier}_product`;
+
+    // Search for existing product with our metadata
+    const existingProducts = await this.stripe.products.search({
+      query: `metadata['atrivio_tier']:'${tier}'`,
+      limit: 1,
+    });
+
+    const existingProduct = existingProducts.data[0];
+    if (existingProduct) {
+      return existingProduct.id;
+    }
+
+    // Create a new product
+    const tierConfig = await this.getTierConfig(tier);
+    const product = await this.stripe.products.create({
+      name: tierConfig?.name || `Atrivio ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
+      description: tierConfig?.description || `Atrivio ${tier} subscription plan`,
+      metadata: {
+        atrivio_tier: tier,
+      },
+    });
+
+    this.logger.log(`Created Stripe product ${product.id} for ${tier} tier`);
+    return product.id;
+  }
+
+  /**
    * Get subscription info for an organization
    */
   async getSubscription(orgId: OrgId): Promise<SubscriptionInfo> {
@@ -326,10 +404,14 @@ export class SubscriptionsService {
   ): Promise<{ url: string; sessionId: string }> {
     this.ensureStripeConfigured();
 
-    const priceId = tier === 'pro' ? this.proPriceId : this.enterprisePriceId;
+    // Get price ID from database config, fall back to env vars for backwards compatibility
+    await this.refreshTierConfigCache();
+    const tierConfig = this.tierConfigCache.get(tier);
+    const priceId = tierConfig?.stripePriceId
+      || (tier === 'pro' ? this.fallbackProPriceId : this.fallbackEnterprisePriceId);
 
     if (!priceId) {
-      throw new BadRequestException(`Price not configured for ${tier} tier`);
+      throw new BadRequestException(`Price not configured for ${tier} tier. Please set the Stripe Price ID in the admin panel.`);
     }
 
     const customerId = await this.getOrCreateCustomer(orgId);
@@ -658,12 +740,22 @@ export class SubscriptionsService {
   }
 
   /**
-   * Get tier from Stripe price ID
+   * Get tier from Stripe price ID (checks cached database values and fallback env vars)
    */
   private getTierFromPriceId(priceId: string | undefined): SubscriptionTier {
     if (!priceId) return 'free';
-    if (priceId === this.proPriceId) return 'pro';
-    if (priceId === this.enterprisePriceId) return 'enterprise';
+
+    // Check cached database values
+    for (const [tier, config] of this.tierConfigCache.entries()) {
+      if (config.stripePriceId === priceId) {
+        return tier;
+      }
+    }
+
+    // Fallback to env vars for backwards compatibility
+    if (priceId === this.fallbackProPriceId) return 'pro';
+    if (priceId === this.fallbackEnterprisePriceId) return 'enterprise';
+
     return 'pro'; // Default to pro if unknown paid price
   }
 

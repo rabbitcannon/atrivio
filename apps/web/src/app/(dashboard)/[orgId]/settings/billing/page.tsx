@@ -28,8 +28,20 @@ import {
   getSubscriptionWithUsage,
   type SubscriptionWithUsage,
 } from '@/lib/api/client';
+import { getPricingTiers, type PricingTier } from '@/lib/api/pricing';
 
-const TIER_CONFIG = {
+interface TierDisplayConfig {
+  name: string;
+  price: string;
+  period: string;
+  icon: typeof Building2;
+  color: string;
+  features: string[];
+  notIncluded: string[];
+}
+
+// Default tier config (will be updated with database prices)
+const DEFAULT_TIER_CONFIG: Record<'free' | 'pro' | 'enterprise', TierDisplayConfig> = {
   free: {
     name: 'Free',
     price: '$0',
@@ -132,6 +144,36 @@ export default function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const [tierConfig, setTierConfig] = useState<Record<'free' | 'pro' | 'enterprise', TierDisplayConfig>>(DEFAULT_TIER_CONFIG);
+
+  // Fetch pricing from database
+  useEffect(() => {
+    async function fetchPricing() {
+      try {
+        const apiTiers = await getPricingTiers();
+        if (apiTiers.length > 0) {
+          setTierConfig((prev) => {
+            const updated = { ...prev };
+            for (const apiTier of apiTiers) {
+              if (apiTier.tier in updated) {
+                const tierKey = apiTier.tier as 'free' | 'pro' | 'enterprise';
+                updated[tierKey] = {
+                  ...updated[tierKey],
+                  name: apiTier.name,
+                  price: apiTier.monthlyPrice,
+                };
+              }
+            }
+            return updated;
+          });
+        }
+      } catch (error) {
+        // Keep defaults on error
+        console.error('Failed to fetch pricing:', error);
+      }
+    }
+    fetchPricing();
+  }, []);
 
   useEffect(() => {
     async function fetchSubscription() {
@@ -227,7 +269,7 @@ export default function BillingPage() {
   const sub = subscription!;
 
   const currentTier = sub.tier;
-  const currentTierConfig = TIER_CONFIG[currentTier];
+  const currentTierConfig = tierConfig[currentTier];
   const TierIcon = currentTierConfig.icon;
 
   const canUpgradeToPro = currentTier === 'free';
@@ -321,7 +363,7 @@ export default function BillingPage() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Available Plans</h2>
           <div className="grid gap-6 md:grid-cols-3">
-            {(Object.entries(TIER_CONFIG) as [keyof typeof TIER_CONFIG, (typeof TIER_CONFIG)[keyof typeof TIER_CONFIG]][]).map(
+            {(Object.entries(tierConfig) as [keyof typeof tierConfig, (typeof tierConfig)[keyof typeof tierConfig]][]).map(
               ([tier, config]) => {
                 const Icon = config.icon;
                 const isCurrentTier = tier === currentTier;

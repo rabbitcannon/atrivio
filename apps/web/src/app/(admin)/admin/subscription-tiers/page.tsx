@@ -58,6 +58,7 @@ export default function AdminSubscriptionTiersPage() {
     staffMembersLimit: string;
     features: string;
     isActive: boolean;
+    stripePriceId: string;
   }>({
     name: '',
     description: '',
@@ -69,6 +70,7 @@ export default function AdminSubscriptionTiersPage() {
     staffMembersLimit: '',
     features: '',
     isActive: true,
+    stripePriceId: '',
   });
 
   async function fetchTiers() {
@@ -100,6 +102,7 @@ export default function AdminSubscriptionTiersPage() {
       staffMembersLimit: tier.limits.staffMembers.toString(),
       features: tier.features.join(', '),
       isActive: tier.isActive,
+      stripePriceId: tier.stripePriceId || '',
     });
     setIsEditOpen(true);
   };
@@ -152,6 +155,12 @@ export default function AdminSubscriptionTiersPage() {
 
     if (editForm.isActive !== selectedTier.isActive) {
       updates.is_active = editForm.isActive;
+    }
+
+    // Handle stripe_price_id (can be empty string to clear, or a price_xxx value)
+    const currentStripePriceId = selectedTier.stripePriceId || '';
+    if (editForm.stripePriceId !== currentStripePriceId) {
+      updates.stripe_price_id = editForm.stripePriceId || null;
     }
 
     // Only send if there are changes
@@ -463,6 +472,23 @@ export default function AdminSubscriptionTiersPage() {
                 Feature flag keys that are enabled for organizations on this tier
               </p>
             </div>
+
+            {/* Stripe Integration */}
+            {selectedTier?.tier !== 'free' && (
+              <div className="space-y-2">
+                <Label htmlFor="stripePriceId">Stripe Price ID</Label>
+                <Input
+                  id="stripePriceId"
+                  value={editForm.stripePriceId}
+                  onChange={(e) => setEditForm({ ...editForm, stripePriceId: e.target.value })}
+                  placeholder="price_xxxxxxxxxxxxx"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Create a recurring subscription product in Stripe Dashboard and paste the Price ID here.
+                  Required for subscription upgrades to this tier.
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
