@@ -1,0 +1,211 @@
+# Revenue Analytics
+
+Analyze your revenue streams with detailed breakdowns by attraction and ticket type.
+
+## Overview
+
+The **Revenue Analytics** page provides in-depth financial analysis:
+
+- Gross and net revenue tracking
+- Refund and discount monitoring
+- Revenue distribution by attraction
+- Revenue distribution by ticket type
+- Detailed performance tables
+
+![Revenue Analytics Dashboard](/docs/revenue-analytics.png)
+
+## Accessing Revenue Analytics
+
+1. Log in to your account
+2. Select your organization
+3. Click **Analytics** in the sidebar
+4. Select the **Revenue** tab
+
+**Note:** Revenue Analytics requires a **Pro** or **Enterprise** subscription.
+
+## Filters
+
+### Time Period
+
+Select the date range for your analysis:
+
+| Period | Description |
+|--------|-------------|
+| Today | Current day only |
+| Yesterday | Previous day |
+| Last 7 Days | Rolling week (default) |
+| Last 30 Days | Rolling month |
+| Last 90 Days | Rolling quarter |
+| Last 12 Months | Rolling year |
+
+### Attraction Filter
+
+Filter data by specific attraction:
+- **All Attractions** - Combined data across all venues
+- **[Specific Attraction]** - Data for one attraction only
+
+## Summary Cards
+
+Four financial metrics displayed at the top:
+
+### Gross Revenue
+
+Total revenue from all sales before any deductions:
+- Sum of all ticket purchases
+- Includes service fees charged to customers
+- Does not subtract refunds or discounts applied
+
+### Net Revenue
+
+Actual revenue after deductions:
+- Gross revenue minus refunds
+- Minus discounts from promo codes
+- This is your true earnings figure
+
+### Refunds
+
+Total amount refunded to customers:
+- Full refunds
+- Partial refunds
+- Chargebacks and disputes
+
+### Discounts
+
+Total discount value applied:
+- Promo code discounts
+- Automatic discounts
+- Percentage and fixed-amount discounts
+
+## Revenue Over Time Chart
+
+A line chart showing daily revenue trends:
+
+| Element | Description |
+|---------|-------------|
+| **X-axis** | Date within selected period |
+| **Y-axis** | Revenue amount in dollars |
+| **Line** | Daily gross revenue |
+| **Hover** | Exact revenue for each day |
+
+**Insights:**
+- Identify peak revenue days
+- Spot seasonal patterns
+- Track growth over time
+- Plan for high-demand periods
+
+## Distribution Charts
+
+### Revenue by Attraction
+
+A pie chart showing how revenue is distributed across your attractions:
+
+- Each slice represents one attraction
+- Percentage shows share of total revenue
+- Hover for exact revenue amounts
+- Color-coded legend for easy reference
+
+**Use cases:**
+- Identify your highest-earning attraction
+- Balance marketing efforts
+- Make investment decisions
+
+### Revenue by Ticket Type
+
+A pie chart showing revenue distribution by ticket category:
+
+- Standard vs. premium ticket performance
+- VIP and special experience revenue
+- General admission vs. specialty tickets
+- Time-slot based revenue (if applicable)
+
+**Use cases:**
+- Optimize pricing strategy
+- Understand customer preferences
+- Plan inventory and availability
+
+## Performance Tables
+
+### Attraction Details
+
+A detailed table with columns:
+
+| Column | Description |
+|--------|-------------|
+| **Attraction** | Name of the attraction |
+| **Revenue** | Total revenue generated |
+| **Orders** | Number of orders placed |
+| **%** | Percentage of total revenue |
+
+Sort by any column to rank attractions by different metrics.
+
+### Ticket Type Details
+
+A detailed table with columns:
+
+| Column | Description |
+|--------|-------------|
+| **Ticket Type** | Name of the ticket |
+| **Revenue** | Total revenue generated |
+| **Orders** | Number of orders containing this ticket |
+| **%** | Percentage of total revenue |
+
+## Revenue Analysis Tips
+
+### Calculating Average Order Value
+
+```
+Average Order Value = Gross Revenue / Total Orders
+```
+
+A higher AOV indicates customers are buying more per transaction.
+
+### Identifying Revenue Drivers
+
+1. **Top Attractions**: Focus marketing on high-performers
+2. **Premium Tickets**: Track if upsells are working
+3. **Time Trends**: Identify your most profitable days
+
+### Monitoring Refunds
+
+High refund rates may indicate:
+- Customer satisfaction issues
+- Pricing concerns
+- Weather-related cancellations
+- Process or product problems
+
+### Discount Effectiveness
+
+Track discount usage to understand:
+- Promo code effectiveness
+- Customer price sensitivity
+- Marketing campaign success
+
+## Common Questions
+
+### Why is net revenue lower than gross?
+
+Net revenue subtracts:
+- Refunds issued to customers
+- Discounts applied via promo codes
+- Any other deductions
+
+### How often does data update?
+
+Revenue data updates in real-time as:
+- New orders are placed
+- Refunds are processed
+- Promo codes are applied
+
+### Can I export revenue data?
+
+For detailed financial exports:
+1. Access your Stripe Dashboard for payment data
+2. Use the Orders page for order-level exports
+3. Export PDF from the Overview tab for reports
+
+## Related Pages
+
+- [Analytics Overview](/docs/admin-guides/analytics/overview) - High-level summary
+- [Attendance Analytics](/docs/admin-guides/analytics/attendance) - Check-in patterns
+- [Ticket Analytics](/docs/user-guides/ticketing/analytics) - Ticket performance
+- [Transactions](/docs/admin-guides/payments/transactions) - Payment history

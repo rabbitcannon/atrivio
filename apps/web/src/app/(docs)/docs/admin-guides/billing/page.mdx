@@ -1,0 +1,186 @@
+# Billing & Subscription
+
+Manage your organization's subscription plan and billing information.
+
+## Overview
+
+The **Billing & Subscription** page allows organization owners and admins to:
+
+- View current subscription plan and usage
+- Compare available plans
+- Upgrade or change subscription tiers
+- Monitor resource usage against plan limits
+
+## Accessing Billing
+
+1. Log in to your account
+2. Select your organization
+3. Go to **Settings** in the sidebar
+4. Click **Billing** (under Organization settings)
+
+**Note:** Only users with **Owner** or **Admin** roles can access billing settings.
+
+## Current Plan Overview
+
+![Billing Page Overview](/docs/billing-page.png)
+
+At the top of the page, you'll see your current subscription status:
+
+### Plan Status Card
+
+- **Plan Name** - Your current tier (Free, Pro, or Enterprise)
+- **Status Badge** - Shows "Active" when subscription is current
+- **Monthly Price** - Your current billing amount
+
+### Usage Progress Bars
+
+Monitor your resource consumption:
+
+| Resource | Description |
+|----------|-------------|
+| **Attractions** | Number of attractions created vs. plan limit |
+| **Staff Members** | Active staff profiles vs. plan limit |
+| **Custom Domains** | Configured domains vs. plan limit |
+
+Progress bars show:
+- **Green**: Well within limits
+- **Yellow**: Approaching limit (>75%)
+- **Red**: At or near limit (>90%)
+
+## Available Plans
+
+Three subscription tiers are available:
+
+### Free Plan - $0/month
+
+Perfect for getting started:
+- 1 attraction
+- 10 staff members
+- 100 orders/month
+- Basic ticketing
+- Check-in & scanning
+- Time tracking
+- Email notifications
+
+**Not included:**
+- Staff scheduling
+- Inventory management
+- Advanced analytics
+
+### Pro Plan - $149/month
+
+Ideal for growing operations:
+- Up to 5 attractions
+- Up to 50 staff members
+- 1,000 orders/month
+- Staff scheduling
+- Inventory management
+- Advanced analytics
+- Storefronts
+- Up to 5 custom domains
+- 500 MB media storage
+- Everything in Free
+
+**Not included:**
+- Virtual queue
+- SMS notifications
+- Unlimited resources
+
+### Enterprise Plan - $499/month
+
+For large-scale operations:
+- Unlimited attractions
+- Unlimited staff members
+- Unlimited orders
+- Virtual queue management
+- SMS notifications
+- Up to 10 custom domains
+- 5 GB media storage
+- API access
+- Priority support
+- Everything in Pro
+
+## Feature Comparison
+
+![Feature Comparison Table](/docs/billing-features.png)
+
+The feature comparison table provides a detailed breakdown:
+
+| Feature | Free | Pro | Enterprise |
+|---------|------|-----|------------|
+| Attractions | 1 | 5 | Unlimited |
+| Staff Members | 10 | 50 | Unlimited |
+| Orders/Month | 100 | 1,000 | Unlimited |
+| Staff Scheduling | - | Yes | Yes |
+| Inventory Management | - | Yes | Yes |
+| Advanced Analytics | - | Yes | Yes |
+| Virtual Queue | - | - | Yes |
+| SMS Notifications | - | - | Yes |
+| Custom Domains | 0 | 5 | 10 |
+| Media Storage | - | 500 MB | 5 GB |
+
+## Upgrading Your Plan
+
+To upgrade to a higher tier:
+
+1. Review the **Available Plans** section
+2. Click **Upgrade to [Plan Name]** on the desired plan
+3. You'll be redirected to Stripe's secure checkout
+4. Complete payment with your card details
+5. Your new plan activates immediately
+
+### What Happens on Upgrade
+
+- New features unlock instantly
+- Resource limits increase immediately
+- Billing cycle starts from upgrade date
+- Prorated charges for partial months
+
+## Downgrading
+
+To downgrade to a lower tier:
+
+1. Contact support before downgrading
+2. Ensure you're within the new plan's limits
+3. Excess resources will need to be removed or archived
+
+**Warning:** Downgrading may disable features and restrict access to data that exceeds new plan limits.
+
+## Billing FAQ
+
+### When am I charged?
+
+Subscriptions are billed monthly on the anniversary of your signup date.
+
+### Can I cancel anytime?
+
+Yes, you can cancel or downgrade at any time. Changes take effect at the next billing cycle.
+
+### What payment methods are accepted?
+
+We accept all major credit cards through Stripe:
+- Visa
+- Mastercard
+- American Express
+- Discover
+
+### How do I update my payment method?
+
+Click **Manage Billing** to access the Stripe customer portal where you can update payment details.
+
+### What happens if my payment fails?
+
+- You'll receive an email notification
+- A 7-day grace period is provided
+- After grace period, account reverts to Free tier
+- No data is deleted, but features are restricted
+
+### Can I get a receipt?
+
+Yes, Stripe automatically sends receipts for each payment. Access past invoices through the Stripe customer portal.
+
+## Related Pages
+
+- [Organization Settings](/docs/admin-guides/organization/settings) - General org configuration
+- [Payments](/docs/admin-guides/payments/stripe-setup) - Stripe Connect for ticket sales
+- [Members](/docs/admin-guides/organization/members) - Managing organization members

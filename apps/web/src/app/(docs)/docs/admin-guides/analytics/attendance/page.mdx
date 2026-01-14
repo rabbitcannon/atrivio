@@ -1,0 +1,212 @@
+# Attendance Analytics
+
+Track guest check-ins and identify attendance patterns across your attractions.
+
+## Overview
+
+The **Attendance Analytics** page helps you understand guest behavior:
+
+- Total check-in counts
+- Check-in rates (actual vs. expected)
+- Peak attendance times
+- Attendance distribution by attraction
+
+![Attendance Analytics Dashboard](/docs/attendance-analytics.png)
+
+## Accessing Attendance Analytics
+
+1. Log in to your account
+2. Select your organization
+3. Click **Analytics** in the sidebar
+4. Select the **Attendance** tab
+
+**Note:** Attendance Analytics requires a **Pro** or **Enterprise** subscription.
+
+## Filters
+
+### Time Period
+
+Select the date range for your analysis:
+
+| Period | Description |
+|--------|-------------|
+| Today | Current day only |
+| Yesterday | Previous day |
+| Last 7 Days | Rolling week (default) |
+| Last 30 Days | Rolling month |
+| Last 90 Days | Rolling quarter |
+| Last 12 Months | Rolling year |
+
+### Attraction Filter
+
+Filter data by specific attraction:
+- **All Attractions** - Combined data across all venues
+- **[Specific Attraction]** - Data for one attraction only
+
+## Summary Cards
+
+Four attendance metrics displayed at the top:
+
+### Total Check-Ins
+
+The actual number of tickets that have been scanned and checked in:
+- Counts each ticket scanned
+- Includes re-entries if allowed
+- Real-time count as guests arrive
+
+### Tickets Sold
+
+Total tickets purchased during the selected period:
+- Represents expected attendance
+- Compare with check-ins to measure show rate
+- Includes all ticket types
+
+### Check-In Rate
+
+Percentage of sold tickets that were actually used:
+
+```
+Check-In Rate = (Total Check-Ins / Tickets Sold) × 100
+```
+
+**Interpreting the rate:**
+- **90-100%**: Excellent show rate
+- **70-89%**: Good, typical range
+- **50-69%**: Moderate, some no-shows
+- **Below 50%**: High no-show rate, investigate
+
+### Peak Attendance
+
+The highest number of check-ins recorded in a single time period:
+- Shows your busiest moment
+- Includes the date and time
+- Useful for capacity planning
+
+## Check-Ins Over Time Chart
+
+A bar chart showing daily check-in counts:
+
+| Element | Description |
+|---------|-------------|
+| **X-axis** | Date within selected period |
+| **Y-axis** | Number of check-ins |
+| **Bars** | Daily check-in count |
+| **Hover** | Exact count for each day |
+
+**Insights:**
+- Identify your busiest days
+- Spot weekly patterns
+- Plan staffing accordingly
+- Compare weekdays vs. weekends
+
+## Attendance by Attraction
+
+Visual progress bars showing check-in distribution:
+
+For each attraction, you'll see:
+- **Attraction name**
+- **Check-in count** - Total guests checked in
+- **Percentage** - Share of total attendance
+- **Progress bar** - Visual representation
+
+**Use cases:**
+- Identify most popular attractions
+- Balance crowd flow between venues
+- Optimize staffing allocation
+
+## Attraction Details Table
+
+A detailed table with columns:
+
+| Column | Description |
+|--------|-------------|
+| **Attraction** | Name of the attraction |
+| **Check-Ins** | Total guests checked in |
+| **% of Total** | Share of overall attendance |
+
+Sort by any column to rank attractions by different metrics.
+
+## Understanding Attendance Patterns
+
+### High Check-In Rate (Above 90%)
+
+Indicates:
+- Strong customer commitment
+- Effective reminders working
+- Good weather/conditions
+- High-demand events
+
+### Moderate Check-In Rate (70-89%)
+
+This is typical and indicates:
+- Normal no-show rate
+- Room for improvement
+- Consider reminder systems
+
+### Low Check-In Rate (Below 70%)
+
+May indicate:
+- Recent sales not yet attended (future dates)
+- Weather cancellations
+- Customer satisfaction issues
+- Pricing/value concerns
+
+## Attendance Planning Tips
+
+### Staffing Optimization
+
+1. **Review peak times**: Staff heavily during peak attendance
+2. **Day-of-week patterns**: Adjust weekend vs. weekday staffing
+3. **Seasonal trends**: Plan for high-traffic seasons
+
+### Capacity Management
+
+1. **Track utilization**: Check-ins vs. capacity shows utilization
+2. **Identify constraints**: Find bottlenecks at high-traffic attractions
+3. **Balance flow**: Use data to spread guests across attractions
+
+### Reducing No-Shows
+
+1. **Send reminders**: Email/SMS before visit date
+2. **Easy rescheduling**: Allow date changes to reduce cancellations
+3. **Flexible policies**: Consider weather-related flexibility
+4. **Incentives**: Offer perks for confirmed attendance
+
+## Common Questions
+
+### Why are check-ins higher than tickets sold?
+
+This can happen when:
+- Re-entry is allowed and counted
+- Multiple check-ins per ticket
+- Group tickets scanned individually
+
+### Why is my check-in rate low?
+
+Possible reasons:
+- Tickets purchased for future dates
+- Weather-related no-shows
+- Customer cancellations
+- Technical issues with scanning
+
+### How do I improve attendance rates?
+
+Strategies:
+- Send reminder emails/SMS
+- Offer flexible rescheduling
+- Create urgency with limited availability
+- Improve the overall guest experience
+
+### Can I see hourly attendance?
+
+Peak attendance shows the busiest time. For detailed hourly data:
+- Use the Check-In Reports page
+- Filter by specific date ranges
+- Export for detailed analysis
+
+## Related Pages
+
+- [Analytics Overview](/docs/admin-guides/analytics/overview) - High-level summary
+- [Revenue Analytics](/docs/admin-guides/analytics/revenue) - Financial analysis
+- [Check-In Reports](/docs/user-guides/check-in/reports) - Detailed check-in data
+- [Ticket Analytics](/docs/user-guides/ticketing/analytics) - Ticket performance

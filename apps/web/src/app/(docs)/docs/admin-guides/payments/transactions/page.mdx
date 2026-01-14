@@ -1,0 +1,161 @@
+# Transactions
+
+View all payment transactions, charges, and refunds for your organization.
+
+## Overview
+
+The **Transactions** page provides a complete history of all payment activity:
+
+- Customer charges from ticket purchases
+- Refunds issued to customers
+- Stripe transfer details
+- Transaction status tracking
+
+![Transactions Page](/docs/transactions-page.png)
+
+## Accessing Transactions
+
+1. Log in to your account
+2. Select your organization
+3. Go to **Payments** in the sidebar
+4. Click **View All Transactions** or navigate to the Transactions section
+
+**Prerequisite:** Your organization must have Stripe Connect configured to view transactions.
+
+## Transaction History Table
+
+When you have payment activity, the transactions table displays:
+
+| Column | Description |
+|--------|-------------|
+| **Type** | Transaction type with icon indicator |
+| **Description** | Order or payment details |
+| **Customer** | Customer email address |
+| **Status** | Current transaction status |
+| **Amount** | Gross transaction amount |
+| **Net** | Amount after fees |
+| **Date** | Transaction timestamp |
+
+## Transaction Types
+
+### Charge
+
+A successful customer payment, typically from ticket purchases.
+
+- **Icon**: Green upward arrow
+- **Typical**: Ticket sales, add-ons, merchandise
+
+### Refund
+
+Money returned to a customer.
+
+- **Icon**: Red downward arrow
+- **Source**: Manual refunds, disputed charges
+
+### Transfer
+
+Funds moved between accounts (e.g., payouts to your bank).
+
+- **Icon**: Blue refresh icon
+- **Typical**: Weekly/monthly Stripe payouts
+
+## Transaction Statuses
+
+| Status | Description | Badge Color |
+|--------|-------------|-------------|
+| **Succeeded** | Payment completed successfully | Green |
+| **Pending** | Processing or awaiting confirmation | Yellow |
+| **Failed** | Payment was declined or errored | Red |
+| **Refunded** | Full amount returned to customer | Orange outline |
+| **Partially Refunded** | Partial amount returned | Orange outline |
+| **Disputed** | Customer initiated a chargeback | Red |
+
+## Understanding Amounts
+
+### Amount
+
+The gross transaction amount charged to the customer, including:
+- Ticket price
+- Add-ons
+- Service fees (if applicable)
+
+### Net Amount
+
+The amount you receive after Stripe fees are deducted:
+- Payment processing fees (typically 2.9% + $0.30)
+- Platform fees (if applicable)
+
+**Example:**
+- Customer pays: $50.00
+- Stripe fee: -$1.75
+- Net amount: $48.25
+
+For refunds, net amounts appear in red (negative) as they represent money leaving your account.
+
+## Empty State
+
+If you haven't processed any payments yet, you'll see:
+
+> "No transactions yet. Transactions will appear here once customers make payments."
+
+Transactions appear automatically when:
+1. Customers purchase tickets through your storefront
+2. Manual charges are processed
+3. Refunds are issued
+
+## Filtering and Search
+
+The transactions page displays the 50 most recent transactions. For more advanced filtering:
+
+1. Use the Stripe Dashboard directly for:
+   - Date range filtering
+   - Customer search
+   - Export to CSV/Excel
+   - Detailed transaction reports
+
+2. Access via **Payments** > **Manage Stripe Account**
+
+## Common Tasks
+
+### Finding a Specific Transaction
+
+1. Note the customer email or order number
+2. Search the Description or Customer columns
+3. Click the transaction for details
+
+### Investigating a Failed Payment
+
+1. Find transactions with "Failed" status
+2. Review the description for error details
+3. Contact the customer about payment issues
+4. They can retry with a different payment method
+
+### Tracking Refunds
+
+1. Filter for "Refund" type transactions
+2. Verify the net amount (negative)
+3. Check that the refund was processed
+
+## Stripe Integration
+
+All transaction data comes from your connected Stripe account:
+
+- **Real-time updates**: Transactions appear within seconds
+- **Accuracy**: Data synced directly from Stripe
+- **Security**: No sensitive card data stored in Atrivio
+
+### Not Connected?
+
+If you see a message that Stripe isn't connected:
+
+1. Go to **Payments** in the sidebar
+2. Click **Connect Stripe Account**
+3. Complete the Stripe onboarding process
+4. Return to view your transactions
+
+## Related Pages
+
+- [Stripe Setup](/docs/admin-guides/payments/stripe-setup) - Connect your Stripe account
+- [Payouts](/docs/admin-guides/payments/payouts) - Track your payouts
+- [Orders](/docs/user-guides/ticketing/orders) - View order details
+- [Billing](/docs/admin-guides/billing) - Manage your subscription

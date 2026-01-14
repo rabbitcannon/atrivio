@@ -213,6 +213,16 @@ const navigation: NavItem[] = [
           { title: 'Transactions', href: '/docs/admin-guides/inventory/transactions' },
         ],
       },
+      {
+        title: 'Analytics',
+        icon: <LayoutDashboard className="h-4 w-4" />,
+        items: [
+          { title: 'Overview', href: '/docs/admin-guides/analytics/overview' },
+          { title: 'Revenue', href: '/docs/admin-guides/analytics/revenue' },
+          { title: 'Attendance', href: '/docs/admin-guides/analytics/attendance' },
+          { title: 'Tickets', href: '/docs/user-guides/ticketing/analytics' },
+        ],
+      },
     ],
   },
 ];

@@ -1,0 +1,194 @@
+# Ticket Analytics
+
+Analyze ticket type sales performance, revenue metrics, and check-in rates.
+
+## Overview
+
+The **Ticket Performance** page provides detailed analytics on how your ticket types are performing:
+
+- Sales volume by ticket type
+- Revenue breakdown
+- Check-in rates and attendance
+- Top performing tickets
+- Performance comparisons
+
+![Ticket Analytics Dashboard](/docs/ticket-analytics.png)
+
+## Accessing Ticket Analytics
+
+1. Log in to your account
+2. Select your organization
+3. Click **Analytics** in the sidebar
+4. Select the **Tickets** tab
+
+**Note:** Ticket Analytics requires a **Pro** or **Enterprise** subscription.
+
+## Filters
+
+### Time Period
+
+Select the date range for your analysis:
+
+| Period | Description |
+|--------|-------------|
+| Today | Current day only |
+| Yesterday | Previous day |
+| Last 7 Days | Rolling week (default) |
+| Last 30 Days | Rolling month |
+| Last 90 Days | Rolling quarter |
+| Last 12 Months | Rolling year |
+
+### Attraction Filter
+
+Filter data by specific attraction:
+- **All Attractions** - Combined data across all venues
+- **[Specific Attraction]** - Data for one attraction only
+
+### Refresh
+
+Click **Refresh** to reload the latest data.
+
+## Summary Cards
+
+Four key metrics displayed at the top:
+
+### Ticket Types
+
+Total number of active ticket types configured across your attractions.
+
+### Total Sold
+
+Total quantity of tickets sold during the selected period.
+
+### Total Revenue
+
+Gross revenue from ticket sales (before fees and refunds).
+
+### Top Performer
+
+The ticket type generating the most revenue, with its check-in rate displayed.
+
+## Top Performing Ticket
+
+A highlighted card showcasing your best-selling ticket:
+
+| Metric | Description |
+|--------|-------------|
+| **Name** | Ticket type name |
+| **Attraction** | Which attraction it belongs to |
+| **Sold** | Number of tickets sold |
+| **Revenue** | Total revenue generated |
+| **Check-In Rate** | Percentage of sold tickets that were used |
+
+## Ticket Type Performance Table
+
+Detailed breakdown of each ticket type:
+
+| Column | Description |
+|--------|-------------|
+| **Ticket Type** | Name of the ticket (star icon indicates top performer) |
+| **Attraction** | Which attraction the ticket is for |
+| **Sold** | Quantity sold in period |
+| **Revenue** | Total revenue from this ticket type |
+| **Check-Ins** | Number of tickets actually used |
+| **Rate** | Check-in rate with visual progress bar |
+| **Avg/Order** | Average quantity per order |
+
+### Understanding Check-In Rate
+
+The check-in rate shows what percentage of purchased tickets were actually used:
+
+- **100%** - All sold tickets were checked in (excellent)
+- **70-99%** - Most tickets used (good)
+- **50-69%** - Moderate usage (review pricing/marketing)
+- **Below 50%** - Low usage (investigate no-shows)
+
+Low check-in rates may indicate:
+- No-shows or cancellations
+- Recent sales not yet attended
+- Issues with check-in process
+
+## Performance Summary Cards
+
+When you have multiple ticket types, three summary cards appear:
+
+### Highest Revenue
+
+The ticket type that generated the most revenue.
+
+### Best Check-In Rate
+
+The ticket type with the highest percentage of attendees showing up.
+
+### Most Popular
+
+The ticket type with the highest quantity sold (may differ from highest revenue if prices vary).
+
+## Using Analytics Effectively
+
+### Pricing Optimization
+
+Compare revenue vs. quantity sold:
+- High quantity, low revenue = Consider price increase
+- Low quantity, high revenue = Premium positioning working
+- Low both = Review marketing or discontinue
+
+### Inventory Planning
+
+Use average per order to forecast demand:
+- High avg/order = Group bookings common
+- Low avg/order = Individual purchases typical
+
+### Attendance Patterns
+
+Monitor check-in rates to:
+- Identify no-show patterns
+- Plan staffing levels
+- Adjust overbooking policies
+
+### Attraction Comparison
+
+Filter by attraction to compare:
+- Which venues drive most revenue
+- Performance differences between ticket types
+- Opportunities for cross-promotion
+
+## Common Questions
+
+### Why is my check-in rate low?
+
+Possible reasons:
+- Recent sales haven't attended yet
+- Guests purchased for future dates
+- No-shows or cancellations
+- Check-in process issues
+
+### Why don't I see any data?
+
+Check that:
+- You have tickets configured
+- Orders exist in the selected period
+- You're viewing the correct attraction
+- Your subscription includes analytics
+
+### How often does data update?
+
+Data updates in real-time as:
+- New orders are placed
+- Tickets are checked in
+- Refunds are processed
+
+Click **Refresh** to see the latest data.
+
+### Can I export this data?
+
+Currently, analytics are viewable in the dashboard. For detailed exports:
+1. Access your Stripe Dashboard for payment data
+2. Use the Orders page for order-level exports
+
+## Related Pages
+
+- [Ticket Types](/docs/user-guides/ticketing/ticket-types) - Configure your tickets
+- [Orders](/docs/user-guides/ticketing/orders) - View order details
+- [Check-In Reports](/docs/user-guides/check-in/reports) - Attendance analytics
+- [Billing](/docs/admin-guides/billing) - Upgrade for analytics access
