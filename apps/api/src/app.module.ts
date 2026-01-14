@@ -10,6 +10,9 @@ import { FeaturesModule } from './core/features/features.module.js';
 import { MetricsInterceptor } from './core/metrics/metrics.interceptor.js';
 // Metrics module (global)
 import { MetricsModule } from './core/metrics/metrics.module.js';
+// Rate monitoring (global)
+import { RateMonitorInterceptor } from './core/rate-monitor/rate-monitor.interceptor.js';
+import { RateMonitorModule } from './core/rate-monitor/rate-monitor.module.js';
 import { RbacModule } from './core/rbac/rbac.module.js';
 import { TenantGuard } from './core/tenancy/guards/tenant.guard.js';
 import { TenancyModule } from './core/tenancy/tenancy.module.js';
@@ -60,6 +63,9 @@ import { StorageModule } from './shared/storage/storage.module.js';
     // Metrics (global)
     MetricsModule,
 
+    // Rate monitoring (global)
+    RateMonitorModule,
+
     // Core modules
     AuthModule,
     TenancyModule,
@@ -105,6 +111,11 @@ import { StorageModule } from './shared/storage/storage.module.js';
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
+    },
+    // Global Rate Monitor Interceptor (logs traffic, doesn't block)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RateMonitorInterceptor,
     },
     // Global JWT Auth Guard (runs first - sets request.user)
     {

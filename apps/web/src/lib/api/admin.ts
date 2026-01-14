@@ -465,6 +465,65 @@ export async function deleteRateLimit(ruleId: string) {
   return api.delete<{ message: string; id: string }>(`/admin/rate-limits/${ruleId}`);
 }
 
+// ============================================================================
+// TRAFFIC MONITORING
+// ============================================================================
+
+export interface EndpointStats {
+  endpoint: string;
+  requestCount: number;
+  uniqueUsers: number;
+  uniqueIps: number;
+  requestsPerMinute: number;
+}
+
+export interface UserTrafficStats {
+  userId: string;
+  email?: string;
+  requestCount: number;
+  topEndpoints: { endpoint: string; count: number }[];
+  wouldBeThrottled: boolean;
+  throttleDetails?: {
+    endpoint: string;
+    limit: number;
+    actual: number;
+  };
+}
+
+export interface ThrottleEvent {
+  userId: string | null;
+  ip: string;
+  endpoint: string;
+  ruleName: string;
+  limit: number;
+  actual: number;
+  timestamp: number;
+}
+
+export interface TrafficStats {
+  totalRequests: number;
+  requestsPerMinute: number;
+  topEndpoints: EndpointStats[];
+  topUsers: UserTrafficStats[];
+  recentThrottleEvents: ThrottleEvent[];
+  trafficOverTime: { minute: number; count: number }[];
+}
+
+export interface RealTimeTrafficStats {
+  currentMinuteRequests: number;
+  activeUsers: number;
+  activeIps: number;
+  throttleEventsLastHour: number;
+}
+
+export async function getTrafficStats(windowMinutes: number = 60) {
+  return api.get<TrafficStats>(`/admin/traffic?window=${windowMinutes}`);
+}
+
+export async function getRealTimeTraffic() {
+  return api.get<RealTimeTrafficStats>('/admin/traffic/realtime');
+}
+
 // Platform Fee
 export interface OrgPlatformFee {
   org_id: string;

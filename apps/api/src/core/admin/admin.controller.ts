@@ -15,6 +15,7 @@ import type { FastifyReply } from 'fastify';
 import type { AuthUser } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { AdminService } from './admin.service.js';
+import { RateMonitorService } from '../rate-monitor/rate-monitor.service.js';
 import type {
   CreateAnnouncementDto,
   CreateFeatureFlagDto,
@@ -47,7 +48,10 @@ import { SuperAdminGuard } from './guards/super-admin.guard.js';
 @ApiBearerAuth()
 @UseGuards(SuperAdminGuard)
 export class AdminController {
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private rateMonitorService: RateMonitorService
+  ) {}
 
   // ============================================================================
   // DASHBOARD
@@ -414,6 +418,25 @@ export class AdminController {
   @ApiResponse({ status: 404, description: 'Rate limit rule not found' })
   async deleteRateLimit(@Param('ruleId') ruleId: string, @CurrentUser() admin: AuthUser) {
     return this.adminService.deleteRateLimit(ruleId, admin.id);
+  }
+
+  // ============================================================================
+  // TRAFFIC MONITORING
+  // ============================================================================
+
+  @Get('traffic')
+  @ApiOperation({ summary: 'Get traffic statistics for monitoring' })
+  @ApiResponse({ status: 200, description: 'Traffic stats retrieved' })
+  async getTrafficStats(@Query('window') window?: string) {
+    const windowMinutes = window ? parseInt(window, 10) : 60;
+    return this.rateMonitorService.getTrafficStats(windowMinutes);
+  }
+
+  @Get('traffic/realtime')
+  @ApiOperation({ summary: 'Get real-time traffic snapshot' })
+  @ApiResponse({ status: 200, description: 'Real-time stats retrieved' })
+  async getRealTimeTraffic() {
+    return this.rateMonitorService.getRealTimeStats();
   }
 
   // ============================================================================

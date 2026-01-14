@@ -7,6 +7,7 @@ import {
   DollarSign,
   FileText,
   Flag,
+  Gauge,
   LayoutDashboard,
   type LucideIcon,
   Megaphone,
@@ -42,6 +43,7 @@ const configNavItems: NavItem[] = [
   { label: 'Subscription Tiers', href: '/admin/subscription-tiers', icon: CreditCard },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
   { label: 'System Health', href: '/admin/health', icon: Activity },
+  { label: 'Traffic Monitor', href: '/admin/traffic', icon: Gauge },
   { label: 'Rate Limits', href: '/admin/rate-limits', icon: Shield },
 ];
 
