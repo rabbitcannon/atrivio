@@ -3,6 +3,7 @@
 import {
   Activity,
   AlertCircle,
+  ArrowRight,
   Building2,
   CheckCircle,
   Ghost,
@@ -10,12 +11,18 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { type AdminDashboardStats, getAdminDashboard } from '@/lib/api/admin';
+import {
+  type AdminDashboardStats,
+  type SystemHealth,
+  getAdminDashboard,
+  getSystemHealth,
+} from '@/lib/api/admin';
 
 function formatNumber(num: number): string {
   if (num >= 1000000) {
@@ -69,9 +76,24 @@ function getHealthBadgeVariant(
   }
 }
 
+// Helper to normalize services from object to array
+function normalizeServices(
+  services: SystemHealth['services']
+): Array<{ name: string; status: string; latency_ms?: number; message?: string }> {
+  if (Array.isArray(services)) {
+    return services;
+  }
+  return Object.entries(services).map(([name, service]) => ({
+    name,
+    ...service,
+  }));
+}
+
 export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminDashboardStats | null>(null);
+  const [health, setHealth] = useState<SystemHealth | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHealthLoading, setIsHealthLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -85,7 +107,16 @@ export default function AdminDashboardPage() {
       setIsLoading(false);
     }
 
+    async function fetchHealth() {
+      const result = await getSystemHealth();
+      if (result.data) {
+        setHealth(result.data);
+      }
+      setIsHealthLoading(false);
+    }
+
     fetchData();
+    fetchHealth();
   }, []);
 
   if (isLoading) {
@@ -183,26 +214,82 @@ export default function AdminDashboardPage() {
         {/* System Health */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              System Health
-            </CardTitle>
-            <CardDescription>Current status of platform services</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  System Health
+                </CardTitle>
+                <CardDescription>Current status of platform services</CardDescription>
+              </div>
+              {health && (
+                <Badge variant={getHealthBadgeVariant(health.status)}>
+                  {health.status.toUpperCase()}
+                </Badge>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            {Object.keys(data?.health ?? {}).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No health data available</p>
+            {isHealthLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-40" />
+                <div className="space-y-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-16" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : health ? (
+              <div className="space-y-4">
+                {/* Overall status message */}
+                <div className="flex items-center gap-2">
+                  {getHealthIcon(health.status)}
+                  <span className="text-sm">
+                    {health.status === 'healthy'
+                      ? 'All systems operational'
+                      : health.status === 'degraded'
+                        ? 'Some services experiencing issues'
+                        : 'Critical issues detected'}
+                  </span>
+                </div>
+
+                {/* Service list */}
+                <div className="space-y-2">
+                  {normalizeServices(health.services).map((service) => (
+                    <div key={service.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getHealthIcon(service.status)}
+                        <span className="text-sm capitalize">{service.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {service.latency_ms !== undefined ? `${service.latency_ms}ms` : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Link to full health page */}
+                <Link
+                  href="/admin/health"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  View details
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
             ) : (
               <div className="space-y-3">
-                {Object.entries(data?.health ?? {}).map(([service, status]) => (
-                  <div key={service} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {getHealthIcon(status)}
-                      <span className="text-sm font-medium capitalize">{service}</span>
-                    </div>
-                    <Badge variant={getHealthBadgeVariant(status)}>{status}</Badge>
-                  </div>
-                ))}
+                <p className="text-sm text-muted-foreground">Unable to load health data</p>
+                <Link
+                  href="/admin/health"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Check system health
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
               </div>
             )}
           </CardContent>

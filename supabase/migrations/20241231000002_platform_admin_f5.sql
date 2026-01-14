@@ -420,11 +420,32 @@ INSERT INTO platform_settings (key, value, description) VALUES
 -- ============================================================================
 
 INSERT INTO rate_limit_rules (name, endpoint_pattern, requests_per_minute, requests_per_hour, burst_limit, applies_to) VALUES
-  ('Login Rate Limit', '/api/v1/auth/login', 5, 30, 10, 'all'),
-  ('Registration Rate Limit', '/api/v1/auth/register', 3, 10, 5, 'all'),
-  ('Password Reset Rate Limit', '/api/v1/auth/forgot-password', 3, 10, 5, 'all'),
-  ('API General Rate Limit', '/api/v1/*', 60, 1000, 100, 'authenticated'),
-  ('Public API Rate Limit', '/api/v1/public/*', 30, 500, 50, 'anonymous');
+  -- Authentication (strict to prevent brute force/spam)
+  ('Login Rate Limit', '/api/v1/auth/login', 5, 50, 10, 'all'),
+  ('Registration Rate Limit', '/api/v1/auth/register', 3, 20, 5, 'all'),
+  ('Password Reset Rate Limit', '/api/v1/auth/forgot-password', 3, 15, 5, 'all'),
+
+  -- General API (realistic for SPA with multiple calls per page)
+  ('API General Rate Limit', '/api/v1/*', 200, 5000, 50, 'authenticated'),
+  ('Public API Rate Limit', '/api/v1/public/*', 60, 1000, 30, 'anonymous'),
+
+  -- Ticketing (prevent scalping/bot abuse)
+  ('Ticket Purchase Rate Limit', '/api/v1/*/orders', 10, 100, 15, 'all'),
+  ('Promo Code Validation', '/api/v1/*/promo-codes/validate', 20, 200, 10, 'all'),
+
+  -- Check-in (higher limits for busy scanning periods)
+  ('Check-In Scanning', '/api/v1/*/check-in/scan', 120, 10000, 30, 'authenticated'),
+  ('Check-In Status', '/api/v1/*/check-in/status', 60, 3000, 20, 'authenticated'),
+
+  -- Storefronts (public-facing, high traffic during sales)
+  ('Storefront Public Pages', '/api/v1/storefronts/*', 100, 3000, 50, 'anonymous'),
+
+  -- File uploads (prevent resource exhaustion)
+  ('File Upload Rate Limit', '/api/v1/*/media/upload', 10, 100, 5, 'authenticated'),
+
+  -- Virtual Queue (frequent polling expected)
+  ('Queue Position Updates', '/api/v1/*/queue/position', 30, 1800, 10, 'all'),
+  ('Queue Join Rate Limit', '/api/v1/*/queue/join', 5, 30, 3, 'all');
 
 -- ============================================================================
 -- COMPLETE
