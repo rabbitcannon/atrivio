@@ -3320,6 +3320,94 @@ VALUES (
 ) ON CONFLICT (org_id, user_id) DO NOTHING;
 
 -- ============================================================================
+-- ENTERPRISE TIER: VIRTUAL QUEUE DEMO DATA
+-- ============================================================================
+-- Virtual queue is an Enterprise-only feature. This data demonstrates
+-- the feature for Terror Collective with realistic queue entries.
+
+-- Queue configuration for Dread Factory
+INSERT INTO public.queue_configs (
+  id, org_id, attraction_id, name,
+  is_active, is_paused,
+  capacity_per_batch, batch_interval_minutes,
+  max_wait_minutes, max_queue_size,
+  allow_rejoin, require_check_in,
+  notification_lead_minutes, expiry_minutes,
+  settings
+) VALUES (
+  'a0000000-0000-0000-0000-000000000001',
+  'b0000000-0000-0000-0000-000000000003',
+  'c3000000-0000-0000-0000-000000000001',
+  'Dread Factory Virtual Line',
+  TRUE, FALSE,
+  15, 5, 90, 300, FALSE, TRUE, 10, 15,
+  '{"sms_enabled": true, "priority_boarding": true}'
+) ON CONFLICT (attraction_id) DO NOTHING;
+
+-- Queue configuration for Nightmare Kingdom
+INSERT INTO public.queue_configs (
+  id, org_id, attraction_id, name,
+  is_active, is_paused,
+  capacity_per_batch, batch_interval_minutes,
+  max_wait_minutes, max_queue_size,
+  allow_rejoin, require_check_in,
+  notification_lead_minutes, expiry_minutes,
+  settings
+) VALUES (
+  'a0000000-0000-0000-0000-000000000002',
+  'b0000000-0000-0000-0000-000000000003',
+  'c3000000-0000-0000-0000-000000000004',
+  'Kingdom Virtual Pass',
+  TRUE, FALSE,
+  20, 6, 120, 500, TRUE, TRUE, 15, 20,
+  '{"sms_enabled": true, "family_mode": true}'
+) ON CONFLICT (attraction_id) DO NOTHING;
+
+-- Sample queue entries for Dread Factory (active queue)
+INSERT INTO public.queue_entries (
+  id, org_id, queue_id, confirmation_code,
+  guest_name, guest_phone, guest_email,
+  party_size, position, status,
+  joined_at, estimated_time
+) VALUES
+  ('ae000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-A1B2C3', 'Michael Chen', '+1555-0101', 'mchen@example.com', 4, 1, 'waiting', NOW() - INTERVAL '25 minutes', NOW() + INTERVAL '5 minutes'),
+  ('ae000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-D4E5F6', 'Sarah Johnson', '+1555-0102', 'sjohnson@example.com', 2, 2, 'waiting', NOW() - INTERVAL '22 minutes', NOW() + INTERVAL '10 minutes'),
+  ('ae000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-G7H8I9', 'The Martinez Family', '+1555-0103', 'martinez@example.com', 6, 3, 'waiting', NOW() - INTERVAL '18 minutes', NOW() + INTERVAL '15 minutes'),
+  ('ae000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-J1K2L3', 'David Park', '+1555-0104', 'dpark@example.com', 2, 4, 'notified', NOW() - INTERVAL '15 minutes', NOW() + INTERVAL '2 minutes'),
+  ('ae000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-M4N5O6', 'Jessica Williams', '+1555-0105', 'jwilliams@example.com', 3, 5, 'waiting', NOW() - INTERVAL '12 minutes', NOW() + INTERVAL '20 minutes'),
+  ('ae000000-0000-0000-0000-000000000006', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-P7Q8R9', 'Alex & Friends', '+1555-0106', 'alex.group@example.com', 5, 6, 'waiting', NOW() - INTERVAL '8 minutes', NOW() + INTERVAL '25 minutes'),
+  ('ae000000-0000-0000-0000-000000000010', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
+   'DF-Y7Z8A1', 'Nicole Anderson', '+1555-0110', 'nanderson@example.com', 4, 0, 'called', NOW() - INTERVAL '35 minutes', NOW())
+ON CONFLICT (confirmation_code) DO NOTHING;
+
+-- Sample queue entries for Nightmare Kingdom
+INSERT INTO public.queue_entries (
+  id, org_id, queue_id, confirmation_code,
+  guest_name, guest_phone, guest_email,
+  party_size, position, status,
+  joined_at, estimated_time
+) VALUES
+  ('ae000000-0000-0000-0001-000000000001', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002',
+   'NK-A1B2C3', 'The Henderson Family', '+1555-0201', 'hendersons@example.com', 5, 1, 'waiting', NOW() - INTERVAL '30 minutes', NOW() + INTERVAL '6 minutes'),
+  ('ae000000-0000-0000-0001-000000000002', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002',
+   'NK-D4E5F6', 'Lisa & Tom Cooper', '+1555-0202', 'coopers@example.com', 4, 2, 'notified', NOW() - INTERVAL '28 minutes', NOW() + INTERVAL '3 minutes'),
+  ('ae000000-0000-0000-0001-000000000003', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002',
+   'NK-G7H8I9', 'Garcia Birthday Party', '+1555-0203', 'garciaparty@example.com', 8, 3, 'waiting', NOW() - INTERVAL '25 minutes', NOW() + INTERVAL '12 minutes'),
+  ('ae000000-0000-0000-0001-000000000004', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002',
+   'NK-J1K2L3', 'James Miller', '+1555-0204', 'jmiller@example.com', 2, 4, 'waiting', NOW() - INTERVAL '20 minutes', NOW() + INTERVAL '18 minutes'),
+  ('ae000000-0000-0000-0001-000000000005', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002',
+   'NK-M4N5O6', 'Nguyen Family', '+1555-0205', 'nguyens@example.com', 6, 5, 'waiting', NOW() - INTERVAL '15 minutes', NOW() + INTERVAL '24 minutes'),
+  ('ae000000-0000-0000-0001-000000000010', 'b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002',
+   'NK-V4W5X6', 'Peterson Party', '+1555-0210', 'petersons@example.com', 6, 0, 'called', NOW() - INTERVAL '40 minutes', NOW())
+ON CONFLICT (confirmation_code) DO NOTHING;
+
+-- ============================================================================
 -- SUBSCRIPTION TIER DEMO SUMMARY
 -- ============================================================================
 -- Organizations:
