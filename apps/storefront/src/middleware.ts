@@ -36,7 +36,8 @@ export function middleware(request: NextRequest) {
   // Production subdomain: xxx.atrivio.io
   else if (host.endsWith(`.${PLATFORM_DOMAIN}`)) {
     // Extract just the slug from subdomain (e.g., haunted-mansion.dev.atrivio.io → haunted-mansion)
-    storefrontIdentifier = host.replace(`.${PLATFORM_DOMAIN}`, '').split(':')[0];
+    const slug = host.replace(`.${PLATFORM_DOMAIN}`, '').split(':')[0];
+    storefrontIdentifier = slug || null;
   }
   // Custom domain: anything else
   else {
