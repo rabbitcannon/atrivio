@@ -35,7 +35,8 @@ export function middleware(request: NextRequest) {
   }
   // Production subdomain: xxx.atrivio.io
   else if (host.endsWith(`.${PLATFORM_DOMAIN}`)) {
-    storefrontIdentifier = host; // Full domain for lookup
+    // Extract just the slug from subdomain (e.g., haunted-mansion.dev.atrivio.io → haunted-mansion)
+    storefrontIdentifier = host.replace(`.${PLATFORM_DOMAIN}`, '').split(':')[0];
   }
   // Custom domain: anything else
   else {
