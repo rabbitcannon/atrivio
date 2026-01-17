@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useOrg } from '@/hooks/use-org';
 import {
   getOrganizationMembers,
   type OrganizationMember,
@@ -115,9 +116,13 @@ function MembersTableSkeleton() {
 
 export function MembersTable({ orgId }: MembersTableProps) {
   const router = useRouter();
+  const { currentOrg } = useOrg();
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Only owners and admins can manage member roles
+  const canManageMembers = currentOrg?.role === 'owner' || currentOrg?.role === 'admin';
 
   // Role change dialog state
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
@@ -288,7 +293,7 @@ export function MembersTable({ orgId }: MembersTableProps) {
                     {new Date(member.joined_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    {!member.is_owner && (
+                    {!member.is_owner && canManageMembers && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">

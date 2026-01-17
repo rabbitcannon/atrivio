@@ -18,6 +18,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TicketPreview } from '@/components/features/ticketing';
+import { useOrg } from '@/hooks/use-org';
 import { apiClientDirect as apiClient, resolveOrgId, getAnalyticsDashboard } from '@/lib/api/client';
 import type { TimeSeriesDataPoint } from '@/lib/api/types';
 
@@ -44,24 +45,28 @@ const NAV_ITEMS = [
     description: 'Configure ticket types, pricing, and availability',
     href: '/ticketing/types',
     icon: Ticket,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Time Slots',
     description: 'Manage timed entry slots and capacity',
     href: '/ticketing/slots',
     icon: Clock,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Orders',
     description: 'View and manage ticket orders',
     href: '/ticketing/orders',
     icon: ShoppingCart,
+    roles: ['owner', 'admin', 'manager', 'box_office', 'finance'],
   },
   {
     title: 'Promo Codes',
     description: 'Create and manage promotional codes',
     href: '/ticketing/promo-codes',
     icon: Percent,
+    roles: ['owner', 'admin', 'manager'],
   },
 ];
 
@@ -421,6 +426,12 @@ export default function TicketingPage() {
   const params = useParams();
   const shouldReduceMotion = useReducedMotion();
   const orgIdentifier = params['orgId'] as string;
+  const { currentOrg } = useOrg();
+
+  // Filter nav items based on user's role
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => currentOrg?.role && item.roles.includes(currentOrg.role)
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<TicketingStats>({
@@ -545,7 +556,7 @@ export default function TicketingPage() {
 
       {/* Navigation Cards */}
       <AnimatedNavGrid shouldReduceMotion={shouldReduceMotion}>
-        {NAV_ITEMS.map((item) => (
+        {visibleNavItems.map((item) => (
           <AnimatedNavCard
             key={item.href}
             href={`/${orgIdentifier}${item.href}`}

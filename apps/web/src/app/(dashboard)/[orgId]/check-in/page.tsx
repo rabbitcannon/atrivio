@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useOrg } from '@/hooks/use-org';
 import { getAttractions, getCapacity, getCheckInQueue, getCheckInStats } from '@/lib/api/client';
 import type {
   AttractionListItem,
@@ -350,24 +351,28 @@ const NAV_ITEMS = [
     description: 'Scan barcodes or QR codes to check in guests',
     href: '/check-in/scan',
     icon: QrCode,
+    roles: ['owner', 'admin', 'manager', 'scanner'],
   },
   {
     title: 'Stations',
     description: 'Manage check-in stations and devices',
     href: '/check-in/stations',
     icon: MonitorSmartphone,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Queue',
     description: 'View pending arrivals and late guests',
     href: '/check-in/queue',
     icon: Clock,
+    roles: ['owner', 'admin', 'manager', 'scanner'],
   },
   {
     title: 'Reports',
     description: 'Check-in statistics and analytics',
     href: '/check-in/reports',
     icon: Activity,
+    roles: ['owner', 'admin', 'manager'],
   },
 ];
 
@@ -375,6 +380,12 @@ export default function CheckInPage() {
   const params = useParams();
   const shouldReduceMotion = useReducedMotion();
   const orgIdentifier = params['orgId'] as string;
+  const { currentOrg } = useOrg();
+
+  // Filter nav items based on user's role
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => currentOrg?.role && item.roles.includes(currentOrg.role)
+  );
 
   const [attractions, setAttractions] = useState<AttractionListItem[]>([]);
   const [selectedAttractionId, setSelectedAttractionId] = useState<string | null>(null);
@@ -545,7 +556,7 @@ export default function CheckInPage() {
 
       {/* Navigation Cards */}
       <AnimatedNavGrid shouldReduceMotion={shouldReduceMotion}>
-        {NAV_ITEMS.map((item) => (
+        {visibleNavItems.map((item) => (
           <AnimatedNavCard
             key={item.href}
             href={`/${orgIdentifier}${item.href}?attractionId=${selectedAttractionId}`}

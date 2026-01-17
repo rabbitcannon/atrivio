@@ -57,7 +57,7 @@ const adminNavItems: NavItem[] = [
     roles: ['owner', 'admin', 'manager', 'scanner'],
   },
   { label: 'Queue', href: '/queue', icon: ListOrdered, roles: ['owner', 'admin', 'manager'] },
-  { label: 'Inventory', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager'] },
+  { label: 'Inventory', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager', 'actor'] },
   {
     label: 'Analytics',
     href: '/analytics',

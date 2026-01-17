@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { InventoryDashboard } from '@/components/features/inventory';
-import { resolveOrgId } from '@/lib/api';
+import { requireRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Inventory',
@@ -18,6 +18,9 @@ export default async function InventoryPage({ params }: InventoryPageProps) {
   if (!orgId) {
     notFound();
   }
+
+  // Owners, admins, managers, and actors can access inventory (actors for checkouts)
+  await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'actor']);
 
   return <InventoryDashboard orgId={orgId} orgIdentifier={orgIdentifier} />;
 }

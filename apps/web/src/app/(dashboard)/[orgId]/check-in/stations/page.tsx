@@ -56,6 +56,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useOrg } from '@/hooks/use-org';
 import { useToast } from '@/hooks/use-toast';
 import {
   createStation,
@@ -205,6 +206,8 @@ function AnimatedStationRow({
   onToggleActive,
   onEdit,
   onDelete,
+  canManage,
+  canDelete,
 }: {
   station: CheckInStation;
   index: number;
@@ -212,6 +215,8 @@ function AnimatedStationRow({
   onToggleActive: (station: CheckInStation) => void;
   onEdit: (station: CheckInStation) => void;
   onDelete: (station: CheckInStation) => void;
+  canManage: boolean;
+  canDelete: boolean;
 }) {
   const content = (
     <>
@@ -245,13 +250,19 @@ function AnimatedStationRow({
       <TableCell className="text-right font-mono">{station.todayCount ?? 0}</TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-2">
-          <Switch checked={station.isActive} onCheckedChange={() => onToggleActive(station)} />
-          <Button variant="ghost" size="icon" onClick={() => onEdit(station)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => onDelete(station)}>
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          {canManage && (
+            <Switch checked={station.isActive} onCheckedChange={() => onToggleActive(station)} />
+          )}
+          {canManage && (
+            <Button variant="ghost" size="icon" onClick={() => onEdit(station)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button variant="ghost" size="icon" onClick={() => onDelete(station)}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          )}
         </div>
       </TableCell>
     </>
@@ -428,6 +439,11 @@ function StationsPageContent() {
   const { toast } = useToast();
   const shouldReduceMotion = useReducedMotion();
   const orgId = params['orgId'] as string;
+  const { currentOrg } = useOrg();
+
+  // Role-based permissions
+  const canManage = ['owner', 'admin', 'manager'].includes(currentOrg?.role ?? '');
+  const canDelete = ['owner', 'admin'].includes(currentOrg?.role ?? '');
 
   // Get attractionId from URL or localStorage
   const urlAttractionId = searchParams.get('attractionId');
@@ -685,13 +701,14 @@ function StationsPageContent() {
               ))}
             </SelectContent>
           </Select>
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button disabled={!selectedAttractionId}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Station
-              </Button>
-            </DialogTrigger>
+          {canManage && (
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button disabled={!selectedAttractionId}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Station
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create Check-In Station</DialogTitle>
@@ -743,6 +760,7 @@ function StationsPageContent() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </AnimatedPageHeader>
 
@@ -786,6 +804,8 @@ function StationsPageContent() {
                     onToggleActive={handleToggleActive}
                     onEdit={handleEditClick}
                     onDelete={handleDeleteClick}
+                    canManage={canManage}
+                    canDelete={canDelete}
                   />
                 ))}
               </TableBody>

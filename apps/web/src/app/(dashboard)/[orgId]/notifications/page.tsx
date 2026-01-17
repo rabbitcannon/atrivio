@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
-import { resolveOrgId } from '@/lib/api';
+import { getCurrentUserRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Notifications',
@@ -21,18 +21,21 @@ const NAV_ITEMS = [
     description: 'Manage notification templates for email, SMS, and push',
     href: '/notifications/templates',
     icon: FileText,
+    roles: ['owner', 'admin'],
   },
   {
     title: 'Send Notification',
     description: 'Send a notification to staff or customers',
     href: '/notifications/send',
     icon: Send,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'History',
     description: 'View sent notifications and delivery status',
     href: '/notifications/history',
     icon: History,
+    roles: ['owner', 'admin', 'manager', 'finance'],
   },
 ];
 
@@ -43,6 +46,13 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
   if (!orgId) {
     notFound();
   }
+
+  const userRole = await getCurrentUserRole(orgId);
+
+  // Filter nav items based on user's role
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => userRole && item.roles.includes(userRole)
+  );
 
   return (
     <div className="space-y-6">
@@ -108,7 +118,7 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
       {/* Navigation Cards */}
       <FadeIn delay={0.15}>
         <div className="grid gap-4 md:grid-cols-3">
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link key={item.href} href={`/${orgIdentifier}${item.href}`}>
               <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
                 <CardHeader>

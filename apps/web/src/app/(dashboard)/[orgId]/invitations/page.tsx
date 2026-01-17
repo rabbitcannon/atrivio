@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { InviteMemberDialog } from '@/components/features/organizations/invite-member-dialog';
 import { FadeIn } from '@/components/ui/motion';
-import { resolveOrgId } from '@/lib/api';
+import { requireRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Invitations',
@@ -21,6 +21,9 @@ export default async function InvitationsPage({ params }: InvitationsPageProps) 
   if (!orgId) {
     notFound();
   }
+
+  // Only owner, admin, and hr can access invitations
+  await requireRole(orgIdentifier, ['owner', 'admin', 'hr']);
 
   return (
     <div className="space-y-6">

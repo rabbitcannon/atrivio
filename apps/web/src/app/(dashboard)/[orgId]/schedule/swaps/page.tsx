@@ -49,6 +49,7 @@ import {
   type ShiftSwapRequest,
   type SwapStatus,
 } from '@/lib/api/client';
+import { useOrg } from '@/hooks/use-org';
 
 // Material Design ease curve
 const EASE = [0.4, 0, 0.2, 1] as const;
@@ -308,12 +309,14 @@ function AnimatedSwapRow({
   swap,
   index,
   shouldReduceMotion,
+  canApprove,
   onApprove,
   onReject,
 }: {
   swap: ShiftSwapRequest;
   index: number;
   shouldReduceMotion: boolean | null;
+  canApprove: boolean;
   onApprove: (swap: ShiftSwapRequest) => void;
   onReject: (swap: ShiftSwapRequest) => void;
 }) {
@@ -370,7 +373,7 @@ function AnimatedSwapRow({
         )}
       </TableCell>
       <TableCell>
-        {swap.status === 'pending' && (
+        {swap.status === 'pending' && canApprove && (
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -414,6 +417,10 @@ export default function SwapRequestsPage() {
   const params = useParams<{ orgId: string }>();
   const shouldReduceMotion = useReducedMotion();
   const orgId = params.orgId;
+  const { currentOrg } = useOrg();
+
+  // Only owners, admins, and managers can approve/reject swap requests
+  const canApprove = ['owner', 'admin', 'manager'].includes(currentOrg?.role ?? '');
 
   const [swapRequests, setSwapRequests] = useState<ShiftSwapRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -573,6 +580,7 @@ export default function SwapRequestsPage() {
                     swap={swap}
                     index={index}
                     shouldReduceMotion={shouldReduceMotion}
+                    canApprove={canApprove}
                     onApprove={(s) => {
                       setSelectedSwap(s);
                       setDialogAction('approve');

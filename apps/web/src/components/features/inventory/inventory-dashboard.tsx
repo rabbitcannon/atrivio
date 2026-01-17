@@ -24,6 +24,7 @@ import {
   type ApiError,
   type InventorySummary,
 } from '@/lib/api/client';
+import { useOrg } from '@/hooks/use-org';
 
 interface InventoryDashboardProps {
   orgId: string;
@@ -36,31 +37,41 @@ const NAV_ITEMS = [
     description: 'Manage costumes, props, equipment, and supplies',
     href: '/inventory/items',
     icon: Package,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Categories',
     description: 'Organize items into hierarchical categories',
     href: '/inventory/categories',
     icon: FolderTree,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Checkouts',
     description: 'Track items checked out to staff members',
     href: '/inventory/checkouts',
     icon: ArrowRightLeft,
+    roles: ['owner', 'admin', 'manager', 'actor'],
   },
   {
     title: 'Transactions',
     description: 'View inventory transaction history',
     href: '/inventory/transactions',
     icon: History,
+    roles: ['owner', 'admin', 'manager'],
   },
 ];
 
 export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardProps) {
+  const { currentOrg } = useOrg();
   const [summary, setSummary] = useState<InventorySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [featureError, setFeatureError] = useState<ApiError | null>(null);
+
+  // Filter nav items based on user's role
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => currentOrg?.role && item.roles.includes(currentOrg.role)
+  );
 
   const loadSummary = useCallback(async () => {
     setLoading(true);
@@ -215,7 +226,7 @@ export function InventoryDashboard({ orgId, orgIdentifier }: InventoryDashboardP
       {/* Navigation Cards */}
       <FadeIn delay={0.2}>
         <div className="grid gap-4 md:grid-cols-2">
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link key={item.href} href={`/${orgIdentifier}${item.href}`}>
               <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
                 <CardHeader>
