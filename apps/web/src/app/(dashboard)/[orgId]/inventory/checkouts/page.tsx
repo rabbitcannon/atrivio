@@ -6,7 +6,7 @@ import { AnimatedPageHeader } from '@/components/features/attractions';
 import { CheckoutsList } from '@/components/features/inventory';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/ui/motion';
-import { resolveOrgId } from '@/lib/api';
+import { requireRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Inventory Checkouts',
@@ -23,6 +23,9 @@ export default async function CheckoutsPage({ params }: CheckoutsPageProps) {
   if (!orgId) {
     notFound();
   }
+
+  // Owner, admin, manager, and actor can access inventory checkouts
+  await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'actor']);
 
   return (
     <div className="space-y-6">
