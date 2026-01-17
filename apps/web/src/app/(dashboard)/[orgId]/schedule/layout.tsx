@@ -10,8 +10,8 @@ interface ScheduleLayoutProps {
 export default async function ScheduleLayout({ children, params }: ScheduleLayoutProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Require owner, admin, or manager role
-  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager']);
+  // Require scheduling-related roles (actors/scanners can view availability and swaps)
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'hr', 'actor', 'scanner']);
   if (!auth) {
     notFound();
   }

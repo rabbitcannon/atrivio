@@ -6,7 +6,7 @@ import { AnimatedPageHeader } from '@/components/features/attractions';
 import { ItemsList } from '@/components/features/inventory';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/ui/motion';
-import { resolveOrgId } from '@/lib/api';
+import { requireRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Inventory Items',
@@ -23,6 +23,9 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
   if (!orgId) {
     notFound();
   }
+
+  // Only owner, admin, and manager can manage inventory items
+  await requireRole(orgIdentifier, ['owner', 'admin', 'manager']);
 
   return (
     <div className="space-y-6">
