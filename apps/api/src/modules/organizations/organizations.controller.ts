@@ -60,7 +60,7 @@ export class OrganizationsController {
   @Roles('owner', 'admin')
   @ApiOperation({ summary: 'Update organization' })
   async update(@Tenant() ctx: TenantContext, @Body() dto: UpdateOrgDto) {
-    return this.orgsService.update(ctx.orgId, dto);
+    return this.orgsService.update(ctx.orgId, dto, ctx.userId);
   }
 
   @Delete(':orgId')

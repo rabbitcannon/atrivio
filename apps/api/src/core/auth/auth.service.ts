@@ -5,6 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { AuditService } from '../audit/audit.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type {
   ForgotPasswordDto,
@@ -29,7 +30,10 @@ export interface AuthSession {
 
 @Injectable()
 export class AuthService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private audit: AuditService
+  ) {}
 
   /**
    * Register a new user with email and password
@@ -56,6 +60,21 @@ export class AuthService {
       throw new BadRequestException({
         code: 'AUTH_REGISTRATION_FAILED',
         message: error.message,
+      });
+    }
+
+    // Log audit event for user registration
+    if (data.user?.id) {
+      await this.audit.log({
+        actorId: data.user.id as UserId,
+        action: 'user.registered',
+        resourceType: 'user',
+        resourceId: data.user.id,
+        metadata: {
+          email: data.user.email,
+          first_name: dto.first_name,
+          last_name: dto.last_name,
+        },
       });
     }
 

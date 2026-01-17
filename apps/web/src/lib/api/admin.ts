@@ -26,7 +26,12 @@ export interface AdminDashboardStats {
     action: string;
     resource_type: string;
     created_at: string;
-    actor: { first_name: string; last_name: string; email: string } | null;
+    actor_type: 'user' | 'system' | 'api_key' | 'webhook';
+    actor: {
+      id: string | null;
+      email: string | null;
+      display_name: string | null;
+    } | null;
   }>;
 }
 
@@ -418,6 +423,7 @@ export async function getAuditLogs(params?: {
   resource_type?: string;
   start_date?: string;
   end_date?: string;
+  platform_only?: boolean;
 }) {
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', params.page.toString());
@@ -429,6 +435,7 @@ export async function getAuditLogs(params?: {
   if (params?.resource_type) searchParams.set('resource_type', params.resource_type);
   if (params?.start_date) searchParams.set('start_date', params.start_date);
   if (params?.end_date) searchParams.set('end_date', params.end_date);
+  if (params?.platform_only) searchParams.set('platform_only', 'true');
   const query = searchParams.toString();
   return api.get<AuditLogListResponse>(`/admin/audit-logs${query ? `?${query}` : ''}`);
 }

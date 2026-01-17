@@ -6,10 +6,13 @@ import {
   ArrowRight,
   Building2,
   CheckCircle,
+  CreditCard,
   Ghost,
   TrendingUp,
+  UserPlus,
   Users,
   XCircle,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -74,6 +77,61 @@ function getHealthBadgeVariant(
     default:
       return 'outline';
   }
+}
+
+// Action labels for human-readable display
+const ACTION_LABELS: Record<string, string> = {
+  'organization.created': 'Organization created',
+  'organization.updated': 'Organization updated',
+  'organization.suspended': 'Organization suspended',
+  'organization.reactivated': 'Organization reactivated',
+  'organization.deleted': 'Organization deleted',
+  'subscription.created': 'Subscription started',
+  'subscription.upgraded': 'Subscription upgraded',
+  'subscription.downgraded': 'Subscription downgraded',
+  'subscription.canceled': 'Subscription canceled',
+  'subscription.renewed': 'Subscription renewed',
+  'stripe.account_connected': 'Stripe connected',
+  'stripe.account_restricted': 'Stripe account restricted',
+  'stripe.account_disabled': 'Stripe account disabled',
+  'stripe.payment_failed': 'Payment failed',
+  'user.registered': 'User registered',
+  'user.updated': 'User updated',
+  'user.super_admin_granted': 'Super admin granted',
+  'user.super_admin_revoked': 'Super admin revoked',
+  'user.deleted': 'User deleted',
+  'feature_flag.created': 'Feature flag created',
+  'feature_flag.updated': 'Feature flag updated',
+  'feature_flag.deleted': 'Feature flag deleted',
+  'platform.maintenance_mode_enabled': 'Maintenance mode enabled',
+  'platform.maintenance_mode_disabled': 'Maintenance mode disabled',
+  'platform.setting_updated': 'Platform setting updated',
+};
+
+function getActionLabel(action: string): string {
+  return ACTION_LABELS[action] || action.replace(/[._]/g, ' ');
+}
+
+function getActionIcon(action: string) {
+  if (action.startsWith('organization.')) {
+    return <Building2 className="h-4 w-4 text-blue-500" />;
+  }
+  if (action.startsWith('subscription.')) {
+    return <CreditCard className="h-4 w-4 text-purple-500" />;
+  }
+  if (action.startsWith('stripe.')) {
+    return <Zap className="h-4 w-4 text-yellow-500" />;
+  }
+  if (action.startsWith('user.')) {
+    return <UserPlus className="h-4 w-4 text-green-500" />;
+  }
+  if (action.startsWith('feature_flag.')) {
+    return <Activity className="h-4 w-4 text-orange-500" />;
+  }
+  if (action.startsWith('platform.')) {
+    return <AlertCircle className="h-4 w-4 text-red-500" />;
+  }
+  return <Activity className="h-4 w-4 text-muted-foreground" />;
 }
 
 // Helper to normalize services from object to array
@@ -298,27 +356,52 @@ export default function AdminDashboardPage() {
         {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest admin and system actions</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Latest platform events</CardDescription>
+              </div>
+              <Link
+                href="/admin/audit-logs"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              >
+                View all
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             {(data?.recent_activity ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No recent activity</p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">No recent platform activity</p>
+                <Link
+                  href="/admin/audit-logs"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  View all audit logs
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
             ) : (
               <div className="space-y-4">
                 {(data?.recent_activity ?? []).slice(0, 5).map((activity, index) => (
                   <div key={index} className="flex items-start gap-3 text-sm">
-                    <div className="flex-1">
-                      <p className="font-medium">
+                    <div className="mt-0.5 flex-shrink-0">
+                      {getActionIcon(activity.action)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{getActionLabel(activity.action)}</p>
+                      <p className="truncate text-muted-foreground">
                         {activity.actor
-                          ? `${activity.actor.first_name} ${activity.actor.last_name}`
-                          : 'System'}
-                      </p>
-                      <p className="text-muted-foreground">
-                        {activity.action} on {activity.resource_type}
+                          ? activity.actor.display_name || activity.actor.email || 'Unknown user'
+                          : activity.actor_type === 'webhook'
+                            ? 'Webhook'
+                            : activity.actor_type === 'system'
+                              ? 'System'
+                              : 'Unknown'}
                       </p>
                     </div>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="flex-shrink-0 text-xs text-muted-foreground">
                       {formatTimeAgo(activity.created_at)}
                     </span>
                   </div>

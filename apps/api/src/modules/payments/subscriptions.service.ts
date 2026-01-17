@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
+import { AuditService } from '../../core/audit/audit.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 
 export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
@@ -92,7 +93,10 @@ export class SubscriptionsService {
   private tierConfigCacheExpiry = 0;
   private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-  constructor(private supabase: SupabaseService) {
+  constructor(
+    private supabase: SupabaseService,
+    private audit: AuditService
+  ) {
     const stripeKey = process.env['STRIPE_SECRET_KEY'];
     if (!stripeKey) {
       this.logger.warn('STRIPE_SECRET_KEY not configured - Subscription operations will fail');
@@ -562,6 +566,30 @@ export class SubscriptionsService {
       },
     });
 
+    // Log audit event for subscription change
+    const auditAction =
+      eventType === 'created'
+        ? 'subscription.created'
+        : eventType === 'upgraded'
+          ? 'subscription.upgraded'
+          : 'subscription.downgraded';
+
+    await this.audit.log({
+      actorType: 'webhook',
+      action: auditAction,
+      resourceType: 'subscription',
+      resourceId: subscription.id,
+      orgId: orgId as OrgId,
+      changes: previousTier
+        ? { tier: { from: previousTier, to: newTier } }
+        : undefined,
+      metadata: {
+        new_tier: newTier,
+        previous_tier: previousTier,
+        stripe_status: subscription.status,
+      },
+    });
+
     this.logger.log(
       `Updated subscription for org ${orgId}: tier=${newTier}, status=${status}`
     );
@@ -605,6 +633,22 @@ export class SubscriptionsService {
       stripe_subscription_id: subscription.id,
       event_type: 'canceled',
       metadata: {
+        canceled_at: new Date().toISOString(),
+      },
+    });
+
+    // Log audit event for subscription cancellation
+    await this.audit.log({
+      actorType: 'webhook',
+      action: 'subscription.canceled',
+      resourceType: 'subscription',
+      resourceId: subscription.id,
+      orgId: orgId as OrgId,
+      changes: {
+        tier: { from: org?.subscription_tier || 'free', to: 'free' },
+      },
+      metadata: {
+        previous_tier: org?.subscription_tier || 'free',
         canceled_at: new Date().toISOString(),
       },
     });

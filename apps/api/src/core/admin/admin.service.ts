@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { SubscriptionsService, type SubscriptionTier } from '../../modules/payments/subscriptions.service.js';
+import { AuditService } from '../audit/audit.service.js';
 import type {
   CreateAnnouncementDto,
   CreateFeatureFlagDto,
@@ -43,7 +44,8 @@ export class AdminService {
     private supabase: SupabaseService,
     private healthService: HealthService,
     @Inject(forwardRef(() => SubscriptionsService))
-    private subscriptionsService: SubscriptionsService
+    private subscriptionsService: SubscriptionsService,
+    private auditService: AuditService
   ) {}
 
   // ============================================================================
@@ -141,17 +143,8 @@ export class AdminService {
       }
     }
 
-    // Get recent activity (audit logs)
-    const { data: recentActivity } = await client
-      .from('audit_logs')
-      .select(`
-        action,
-        resource_type,
-        created_at,
-        actor:profiles!actor_id(first_name, last_name, email)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(10);
+    // Get recent platform activity using AuditService (filters for platform-level events)
+    const recentActivity = await this.auditService.getRecentPlatformActivity(10);
 
     return {
       stats: {
@@ -169,7 +162,7 @@ export class AdminService {
         orgs_30d: orgs30d || 0,
       },
       health: healthStatus,
-      recent_activity: recentActivity || [],
+      recent_activity: recentActivity,
     };
   }
 
@@ -400,14 +393,27 @@ export class AdminService {
       });
     }
 
-    // Log audit event
-    await this.logAuditEvent({
-      actorId: adminId,
-      action: 'user.update',
-      resourceType: 'user',
-      resourceId: userId,
-      changes,
-    });
+    // Log specific audit events for super admin status changes
+    if (changes['is_super_admin']) {
+      const action = dto.is_super_admin ? 'user.super_admin_granted' : 'user.super_admin_revoked';
+      await this.logAuditEvent({
+        actorId: adminId,
+        action,
+        resourceType: 'user',
+        resourceId: userId,
+        changes,
+        metadata: { target_email: current.email },
+      });
+    } else {
+      // Log general user update
+      await this.logAuditEvent({
+        actorId: adminId,
+        action: 'user.updated',
+        resourceType: 'user',
+        resourceId: userId,
+        changes,
+      });
+    }
 
     return this.getUser(userId);
   }
@@ -464,7 +470,7 @@ export class AdminService {
     // Log audit event
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'user.delete',
+      action: 'user.deleted',
       resourceType: 'user',
       resourceId: userId,
       metadata: { reason: dto.reason, original_email: user.email },
@@ -492,7 +498,7 @@ export class AdminService {
     // Log audit event
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'user.impersonate',
+      action: 'user.impersonated',
       resourceType: 'user',
       resourceId: userId,
       metadata: { target_email: user.email },
@@ -747,7 +753,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'organization.update',
+      action: 'organization.updated',
       resourceType: 'organization',
       resourceId: orgId,
       orgId,
@@ -799,7 +805,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'organization.suspend',
+      action: 'organization.suspended',
       resourceType: 'organization',
       resourceId: orgId,
       orgId,
@@ -857,7 +863,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'organization.reactivate',
+      action: 'organization.reactivated',
       resourceType: 'organization',
       resourceId: orgId,
       orgId,
@@ -910,7 +916,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'organization.delete',
+      action: 'organization.deleted',
       resourceType: 'organization',
       resourceId: orgId,
       orgId,
@@ -960,7 +966,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'organization.platform_fee.update',
+      action: 'organization.updated',
       resourceType: 'organization',
       resourceId: orgId,
       orgId,
@@ -1242,7 +1248,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'feature_flag.create',
+      action: 'feature_flag.created',
       resourceType: 'feature_flag',
       resourceId: data.id,
       metadata: { key: dto.key },
@@ -1310,7 +1316,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'feature_flag.update',
+      action: 'feature_flag.updated',
       resourceType: 'feature_flag',
       resourceId: flagId,
       changes,
@@ -1347,7 +1353,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'feature_flag.delete',
+      action: 'feature_flag.deleted',
       resourceType: 'feature_flag',
       resourceId: flagId,
       metadata: { key: flag.key },
@@ -1489,7 +1495,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'setting.update',
+      action: 'setting.updated',
       resourceType: 'platform_setting',
       changes: { [key]: { from: current.value, to: dto.value } },
     });
@@ -1580,7 +1586,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'announcement.create',
+      action: 'announcement.created',
       resourceType: 'announcement',
       resourceId: data.id,
       metadata: { title: dto.title, type: dto.type },
@@ -1631,7 +1637,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'announcement.update',
+      action: 'announcement.updated',
       resourceType: 'announcement',
       resourceId: announcementId,
     });
@@ -1666,7 +1672,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'announcement.delete',
+      action: 'announcement.deleted',
       resourceType: 'announcement',
       resourceId: announcementId,
       metadata: { title: announcement.title },
@@ -1810,6 +1816,42 @@ export class AdminService {
   // AUDIT LOGS
   // ============================================================================
 
+  // Platform-level actions for filtering
+  private readonly PLATFORM_ACTIONS = [
+    'organization.created',
+    'organization.suspended',
+    'organization.reactivated',
+    'organization.deleted',
+    'subscription.created',
+    'subscription.upgraded',
+    'subscription.downgraded',
+    'subscription.canceled',
+    'subscription.payment_failed',
+    'stripe.account_created',
+    'stripe.account_connected',
+    'stripe.account_restricted',
+    'stripe.account_disabled',
+    'stripe.payout_failed',
+    'user.registered',
+    'user.super_admin_granted',
+    'user.super_admin_revoked',
+    'user.impersonated',
+    'user.deleted',
+    'feature_flag.created',
+    'feature_flag.updated',
+    'feature_flag.deleted',
+    'setting.updated',
+    'announcement.created',
+    'announcement.updated',
+    'announcement.deleted',
+    'rate_limit.created',
+    'rate_limit.updated',
+    'rate_limit.deleted',
+    'system.error',
+    'system.maintenance_enabled',
+    'system.maintenance_disabled',
+  ];
+
   async listAuditLogs(dto: ListAuditLogsDto) {
     const client = this.supabase.adminClient;
     const {
@@ -1821,6 +1863,7 @@ export class AdminService {
       resource_type,
       start_date,
       end_date,
+      platform_only,
     } = dto;
 
     let query = client.from('audit_logs').select(
@@ -1833,12 +1876,18 @@ export class AdminService {
         resource_id,
         org_id,
         changes,
+        metadata,
         ip_address,
         created_at,
         actor:profiles!actor_id(id, email, first_name, last_name)
       `,
       { count: 'exact' }
     );
+
+    // Filter for platform-level events only
+    if (platform_only) {
+      query = query.in('action', this.PLATFORM_ACTIONS);
+    }
 
     if (actor_id) query = query.eq('actor_id', actor_id);
     if (org_id) query = query.eq('org_id', org_id);
@@ -2019,7 +2068,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'rate_limit.create',
+      action: 'rate_limit.created',
       resourceType: 'rate_limit',
       resourceId: data.id,
       metadata: { name: dto.name, endpoint: dto.endpoint_pattern },
@@ -2072,7 +2121,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'rate_limit.update',
+      action: 'rate_limit.updated',
       resourceType: 'rate_limit',
       resourceId: ruleId,
     });
@@ -2107,7 +2156,7 @@ export class AdminService {
 
     await this.logAuditEvent({
       actorId: adminId,
-      action: 'rate_limit.delete',
+      action: 'rate_limit.deleted',
       resourceType: 'rate_limit',
       resourceId: ruleId,
       metadata: { name: rule.name },
@@ -2134,22 +2183,19 @@ export class AdminService {
     ipAddress?: string;
     userAgent?: string;
   }) {
-    const client = this.supabase.adminClient;
-
-    try {
-      await client.from('audit_logs').insert({
-        actor_id: params.actorId,
-        actor_type: 'user',
-        action: params.action,
-        resource_type: params.resourceType,
-        resource_id: params.resourceId || null,
-        org_id: params.orgId || null,
-        changes: params.changes || null,
-        metadata: params.metadata || {},
-        ip_address: params.ipAddress || null,
-        user_agent: params.userAgent || null,
-      });
-    } catch (_error) {}
+    // Use the centralized AuditService for consistent logging
+    await this.auditService.log({
+      actorId: params.actorId as import('@atrivio/shared').UserId,
+      actorType: 'user',
+      action: params.action as import('../audit/audit.service.js').AuditAction,
+      resourceType: params.resourceType as import('../audit/audit.service.js').ResourceType,
+      resourceId: params.resourceId || null,
+      orgId: (params.orgId as import('@atrivio/shared').OrgId) || null,
+      changes: params.changes || null,
+      metadata: params.metadata || {},
+      ipAddress: params.ipAddress || null,
+      userAgent: params.userAgent || null,
+    });
   }
 
   // ============================================================================

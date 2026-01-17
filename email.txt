@@ -1,0 +1,105 @@
+Subject: Atrivio Demo Access
+
+Hey!
+
+I wanted to share access to the Atrivio platform I've been working on. It's a multi-tenant SaaS for the attractions industry - think haunted houses, escape rooms, theme parks, etc.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEMO URL
+https://dev.atrivio.io/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TEST ACCOUNTS
+
+Password for all accounts: password123
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RECOMMENDED STARTING POINTS
+
+► pro@haunt.dev
+  Organization: Nightmare Manor (Pro tier)
+  Role: Owner
+  Best for: Full feature access - scheduling, ticketing, analytics
+
+► enterprise@haunt.dev
+  Organization: Terror Collective (Enterprise tier)
+  Role: Owner
+  Best for: All features including virtual queue, SMS
+
+► free@haunt.dev
+  Organization: Spooky Hollow (Free tier)
+  Role: Owner
+  Best for: Seeing basic tier limitations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADDITIONAL ACCOUNTS (same org as pro@)
+
+► owner@haunt.dev - Owner (same access as pro@, different user)
+► manager@haunt.dev - Manager (manager-level permissions)
+► actor1@haunt.dev - Actor (staff view, time clock)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PLATFORM ADMIN
+
+► admin@haunt.dev
+  Role: Super Admin
+  Access: Platform-wide admin dashboard (god mode)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY FEATURES TO EXPLORE
+
+As an Owner/Admin (pro@ or enterprise@):
+  • Dashboard - Overview of your organization
+  • Attractions - Manage your haunted houses/attractions
+  • Staff - Add team members, assign roles
+  • Scheduling - Create shifts, manage availability (Pro+)
+  • Ticketing - Create ticket types, promo codes, view orders
+  • Check-In - Scan tickets, manage capacity
+  • Analytics - Revenue and attendance insights (Pro+)
+  • Settings - Billing, integrations, organization settings
+
+As Staff (actor1@):
+  • Time Clock - Clock in/out
+  • My Schedule - View assigned shifts
+  • Availability - Set when you're available to work
+
+As Platform Admin (admin@):
+  • Admin Dashboard - Platform-wide statistics
+  • Organizations - View/manage all orgs
+  • Users - Platform user management
+  • Feature Flags - Control feature rollouts
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SUBSCRIPTION TIERS
+
+                        FREE        PRO ($149/mo)    ENTERPRISE ($499/mo)
+Ticketing & Orders       ✓              ✓                    ✓
+Check-In & Scanning      ✓              ✓                    ✓
+Time Tracking            ✓              ✓                    ✓
+Staff Scheduling         ✗              ✓                    ✓
+Advanced Analytics       ✗              ✓                    ✓
+Storefronts              ✗              ✓                    ✓
+Virtual Queue            ✗              ✗                    ✓
+SMS Notifications        ✗              ✗                    ✓
+API Access               ✗              ✗                    ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TESTING PAYMENTS
+
+Stripe is in test mode. Use these test cards:
+  • Success: 4242 4242 4242 4242
+  • Decline: 4000 0000 0000 0002
+
+Any future expiry date and any 3-digit CVC will work.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let me know what you think! Happy to walk you through anything.

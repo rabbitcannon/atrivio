@@ -5,12 +5,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { AuditService } from '../../core/audit/audit.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import type { CreateOrgDto, UpdateOrgDto } from './dto/organizations.dto.js';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private audit: AuditService
+  ) {}
 
   /**
    * Create a new organization
@@ -139,6 +143,20 @@ export class OrganizationsService {
       console.warn(`Failed to create staff profile for owner: ${staffError.message}`);
     }
 
+    // Log audit event for new organization
+    await this.audit.log({
+      actorId: userId,
+      action: 'organization.created',
+      resourceType: 'organization',
+      resourceId: org.id,
+      orgId: org.id as OrgId,
+      metadata: {
+        org_name: org.name,
+        org_slug: org.slug,
+        subscription_tier: 'free',
+      },
+    });
+
     return {
       ...org,
       membership: {
@@ -254,7 +272,14 @@ export class OrganizationsService {
   /**
    * Update organization
    */
-  async update(orgId: OrgId, dto: UpdateOrgDto) {
+  async update(orgId: OrgId, dto: UpdateOrgDto, userId?: UserId) {
+    // Get current values for change tracking
+    const { data: current } = await this.supabase.adminClient
+      .from('organizations')
+      .select('name, email, phone, website, address, timezone')
+      .eq('id', orgId)
+      .single();
+
     const { data, error } = await this.supabase.adminClient
       .from('organizations')
       .update({
@@ -276,6 +301,32 @@ export class OrganizationsService {
         code: 'ORG_UPDATE_FAILED',
         message: error.message,
       });
+    }
+
+    // Log audit event for organization update
+    if (userId && current) {
+      const changes: Record<string, { from: unknown; to: unknown }> = {};
+      if (dto.name !== undefined && dto.name !== current.name) {
+        changes['name'] = { from: current.name, to: dto.name };
+      }
+      if (dto.email !== undefined && dto.email !== current.email) {
+        changes['email'] = { from: current.email, to: dto.email };
+      }
+      if (dto.timezone !== undefined && dto.timezone !== current.timezone) {
+        changes['timezone'] = { from: current.timezone, to: dto.timezone };
+      }
+
+      if (Object.keys(changes).length > 0) {
+        await this.audit.log({
+          actorId: userId,
+          action: 'organization.updated',
+          resourceType: 'organization',
+          resourceId: orgId,
+          orgId,
+          changes,
+          metadata: { org_name: data.name },
+        });
+      }
     }
 
     return data;

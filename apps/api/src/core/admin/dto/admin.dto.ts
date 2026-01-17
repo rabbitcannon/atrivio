@@ -400,6 +400,12 @@ export class ListAuditLogsDto extends PaginationDto {
   @IsDateString()
   @IsOptional()
   end_date?: string;
+
+  @ApiPropertyOptional({ description: 'Filter for platform-level events only' })
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  platform_only?: boolean;
 }
 
 export class ExportAuditLogsDto extends ListAuditLogsDto {

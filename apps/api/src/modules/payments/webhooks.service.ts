@@ -1,3 +1,4 @@
+import type { OrgId } from '@atrivio/shared';
 import {
   BadRequestException,
   Injectable,
@@ -5,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import Stripe from 'stripe';
+import { AuditService } from '../../core/audit/audit.service.js';
 import { SupabaseService } from '../../shared/database/supabase.service.js';
 import { SubscriptionsService } from './subscriptions.service.js';
 
@@ -15,7 +17,8 @@ export class WebhooksService {
 
   constructor(
     private supabase: SupabaseService,
-    private subscriptions: SubscriptionsService
+    private subscriptions: SubscriptionsService,
+    private audit: AuditService
   ) {
     const stripeKey = process.env['STRIPE_SECRET_KEY'];
     if (!stripeKey) {
@@ -214,7 +217,14 @@ export class WebhooksService {
 
     if (!subscriptionId) return;
 
-    // Find org by subscription ID and update status
+    // Find org by subscription ID
+    const { data: org } = await this.supabase.adminClient
+      .from('organizations')
+      .select('id, name, subscription_tier')
+      .eq('stripe_subscription_id', subscriptionId)
+      .single();
+
+    // Update subscription status
     const { error } = await this.supabase.adminClient
       .from('organizations')
       .update({ subscription_status: 'past_due' })
@@ -224,6 +234,22 @@ export class WebhooksService {
       this.logger.error(`Failed to update subscription status: ${error.message}`);
     } else {
       this.logger.log(`Marked subscription ${subscriptionId} as past_due`);
+
+      // Log audit event for payment failure
+      if (org) {
+        await this.audit.log({
+          actorType: 'webhook',
+          action: 'subscription.payment_failed',
+          resourceType: 'subscription',
+          resourceId: subscriptionId,
+          orgId: org.id as OrgId,
+          metadata: {
+            org_name: org.name,
+            tier: org.subscription_tier,
+            invoice_id: invoice.id,
+          },
+        });
+      }
     }
   }
 
@@ -274,6 +300,41 @@ export class WebhooksService {
       throw new InternalServerErrorException(`Failed to update account: ${error.message}`);
     }
 
+    // Get org_id for this stripe account
+    const { data: stripeAccount } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .select('org_id')
+      .eq('stripe_account_id', stripeAccountId)
+      .single();
+
+    // Log audit event for Stripe account status change
+    if (status === 'active' && detailsSubmitted && chargesEnabled) {
+      await this.audit.log({
+        actorType: 'webhook',
+        action: 'stripe.account_connected',
+        resourceType: 'stripe_account',
+        resourceId: stripeAccountId,
+        orgId: stripeAccount?.org_id as OrgId | undefined,
+        metadata: {
+          charges_enabled: chargesEnabled,
+          payouts_enabled: payoutsEnabled,
+          country,
+          business_type: businessType,
+        },
+      });
+    } else if (status === 'restricted') {
+      await this.audit.log({
+        actorType: 'webhook',
+        action: 'stripe.account_restricted',
+        resourceType: 'stripe_account',
+        resourceId: stripeAccountId,
+        orgId: stripeAccount?.org_id as OrgId | undefined,
+        metadata: {
+          requirements: requirements?.currently_due || [],
+        },
+      });
+    }
+
     this.logger.log(`Updated account ${stripeAccountId} to status: ${status}`);
   }
 
@@ -283,6 +344,13 @@ export class WebhooksService {
   private async handleAccountDeauthorized(application: Stripe.Application): Promise<void> {
     const accountId = application.id;
 
+    // Get org_id before updating
+    const { data: stripeAccount } = await this.supabase.adminClient
+      .from('stripe_accounts')
+      .select('org_id')
+      .eq('stripe_account_id', accountId)
+      .single();
+
     const { error } = await this.supabase.adminClient
       .from('stripe_accounts')
       .update({ status: 'disabled' })
@@ -291,6 +359,18 @@ export class WebhooksService {
     if (error) {
       throw new InternalServerErrorException(`Failed to disable account: ${error.message}`);
     }
+
+    // Log audit event for account disabled
+    await this.audit.log({
+      actorType: 'webhook',
+      action: 'stripe.account_disabled',
+      resourceType: 'stripe_account',
+      resourceId: accountId,
+      orgId: stripeAccount?.org_id as OrgId | undefined,
+      metadata: {
+        reason: 'deauthorized',
+      },
+    });
 
     this.logger.log(`Disabled account ${accountId}`);
   }
