@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
-import { getCurrentUserRole, resolveOrgId } from '@/lib/api';
+import { getCurrentUserRole, requireRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Notifications',
@@ -46,6 +46,9 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
   if (!orgId) {
     notFound();
   }
+
+  // Notifications requires owner, admin, manager, or finance roles
+  await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'finance']);
 
   const userRole = await getCurrentUserRole(orgId);
 
