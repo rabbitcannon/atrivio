@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type * as React from 'react';
 import { Suspense } from 'react';
+import { ImpersonationBanner } from '@/components/layouts/impersonation-banner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
 
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
+        <ImpersonationBanner />
         {children}
       </ThemeProvider>
     </QueryClientProvider>

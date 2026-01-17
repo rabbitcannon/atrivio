@@ -45,7 +45,14 @@ export interface AdminUser {
   created_at: string;
   updated_at: string;
   org_count?: number;
-  organizations?: Array<{ id: string; name: string; role: string }>;
+  organizations?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    role: string;
+    is_owner: boolean;
+    joined_at: string;
+  }>;
   audit_summary?: {
     recent_actions: number;
     last_action_at: string | null;
@@ -282,6 +289,20 @@ export async function deleteAdminUser(
   _data: { confirm: boolean; reason?: string }
 ) {
   return api.delete<{ message: string; id: string }>(`/admin/users/${userId}`);
+}
+
+export interface ImpersonateResponse {
+  token: string | null;
+  token_hash: string;
+  email: string;
+  user_id: string;
+  user_name: string;
+  expires_at: string;
+  warning: string;
+}
+
+export async function impersonateUser(userId: string) {
+  return api.post<ImpersonateResponse>(`/admin/users/${userId}/impersonate`, {});
 }
 
 // Organizations

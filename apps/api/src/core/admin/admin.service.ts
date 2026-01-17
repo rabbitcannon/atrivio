@@ -485,8 +485,12 @@ export class AdminService {
   async impersonateUser(userId: string, adminId: string) {
     const client = this.supabase.adminClient;
 
-    // Check user exists
-    const { data: user } = await client.from('profiles').select('email').eq('id', userId).single();
+    // Check user exists and get their email
+    const { data: user } = await client
+      .from('profiles')
+      .select('email, first_name, last_name')
+      .eq('id', userId)
+      .single();
 
     if (!user) {
       throw new NotFoundException({
@@ -495,23 +499,62 @@ export class AdminService {
       });
     }
 
-    // Log audit event
+    // Prevent self-impersonation
+    if (userId === adminId) {
+      throw new BadRequestException({
+        code: 'CANNOT_IMPERSONATE_SELF',
+        message: 'Cannot impersonate yourself',
+      });
+    }
+
+    // Generate a magic link for the user (this doesn't send an email when using admin API)
+    const { data: linkData, error: linkError } = await client.auth.admin.generateLink({
+      type: 'magiclink',
+      email: user.email,
+    });
+
+    if (linkError || !linkData) {
+      this.logger.error('Failed to generate impersonation link', linkError);
+      throw new BadRequestException({
+        code: 'IMPERSONATION_FAILED',
+        message: 'Failed to generate impersonation session',
+      });
+    }
+
+    // Extract the token from the generated link
+    // The link format is: {site_url}/auth/v1/verify?token={token}&type=magiclink&redirect_to=...
+    const url = new URL(linkData.properties.action_link);
+    const token = url.searchParams.get('token');
+    const tokenHash = linkData.properties.hashed_token;
+
+    if (!token && !tokenHash) {
+      throw new BadRequestException({
+        code: 'IMPERSONATION_FAILED',
+        message: 'Failed to extract impersonation token',
+      });
+    }
+
+    // Log audit event BEFORE returning - this is critical for security tracking
     await this.logAuditEvent({
       actorId: adminId,
       action: 'user.impersonated',
       resourceType: 'user',
       resourceId: userId,
-      metadata: { target_email: user.email },
+      metadata: {
+        target_email: user.email,
+        target_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || null,
+      },
     });
 
-    // Note: Actual impersonation token generation would require
-    // Supabase admin API or custom JWT signing
-    // For now, return placeholder
+    // Return the token and user info for the frontend to use
     return {
-      token: null, // Would be generated JWT
+      token: token,
+      token_hash: tokenHash,
+      email: user.email,
+      user_id: userId,
+      user_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
       expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
-      warning: 'All actions will be logged',
-      note: 'Impersonation requires additional Supabase configuration',
+      warning: 'All actions performed while impersonating will be logged to your admin account',
     };
   }
 
