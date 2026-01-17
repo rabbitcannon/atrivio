@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/motion';
 import {
   getAttraction,
+  getCurrentUserRole,
   getStorefrontAnnouncements,
   getStorefrontDomains,
   getStorefrontFaqs,
@@ -47,42 +48,49 @@ interface StorefrontPageProps {
   params: Promise<{ orgId: string; attractionId: string }>;
 }
 
+// Role requirements for each nav item (based on API @Roles decorators)
 const NAV_ITEMS = [
   {
     title: 'Settings',
     description: 'Configure theme, SEO, analytics, and contact info',
     href: 'storefront/settings',
     icon: Settings,
+    roles: ['owner', 'admin'], // Settings endpoints require owner/admin only
   },
   {
     title: 'Pages',
     description: 'Create and manage content pages',
     href: 'storefront/pages',
     icon: FileText,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Domains',
     description: 'Manage custom domains and subdomains',
     href: 'storefront/domains',
     icon: Link2,
+    roles: ['owner', 'admin'], // Domain management requires owner/admin
   },
   {
     title: 'FAQs',
     description: 'Manage frequently asked questions',
     href: 'storefront/faqs',
     icon: HelpCircle,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Announcements',
     description: 'Create announcements and promotions',
     href: 'storefront/announcements',
     icon: Megaphone,
+    roles: ['owner', 'admin', 'manager'],
   },
   {
     title: 'Navigation',
     description: 'Configure header and footer navigation',
     href: 'storefront/navigation',
     icon: Navigation,
+    roles: ['owner', 'admin', 'manager'],
   },
 ];
 
@@ -96,9 +104,17 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
 
   const basePath = `/${orgIdentifier}/attractions/${attractionId}`;
 
-  // Fetch attraction and storefront data
-  const attractionResult = await getAttraction(orgId, attractionId);
+  // Fetch attraction, storefront data, and user role in parallel
+  const [attractionResult, userRole] = await Promise.all([
+    getAttraction(orgId, attractionId),
+    getCurrentUserRole(orgId),
+  ]);
   const attraction = attractionResult.data;
+
+  // Filter nav items based on user's role
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => userRole && item.roles.includes(userRole)
+  );
 
   if (!attraction) {
     notFound();
@@ -318,7 +334,7 @@ export default async function StorefrontDashboardPage({ params }: StorefrontPage
 
       {/* Navigation Cards */}
       <StaggerContainer className="grid gap-4 md:grid-cols-3" staggerDelay={0.06} delayChildren={0.15}>
-        {NAV_ITEMS.map((item) => (
+        {visibleNavItems.map((item) => (
           <StaggerItem key={item.href}>
             <Link href={`${basePath}/${item.href}`} className="block h-full">
               <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full">
