@@ -11,7 +11,7 @@
     "typecheck": "echo 'No TypeScript sources to check'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.89.0"
+    "@supabase/supabase-js": "^2.90.1"
   },
   "devDependencies": {
     "supabase": "^1.226.4",

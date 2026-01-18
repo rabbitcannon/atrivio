@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm update:*)"
+    ]
+  }
+}
