@@ -28,7 +28,7 @@ const NAV_ITEMS = [
     description: 'Send a notification to staff or customers',
     href: '/notifications/send',
     icon: Send,
-    roles: ['owner', 'admin', 'manager'],
+    roles: ['owner', 'admin', 'manager', 'hr'],
   },
   {
     title: 'History',
@@ -47,8 +47,9 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
     notFound();
   }
 
-  // Notifications requires owner, admin, manager, or finance roles
-  await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'finance']);
+  // Notifications requires owner, admin, manager, hr, or finance roles
+  // HR can send notifications to staff
+  await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'hr', 'finance']);
 
   const userRole = await getCurrentUserRole(orgId);
 

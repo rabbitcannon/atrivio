@@ -12,8 +12,9 @@ export default async function NotificationsLayout({
 }: NotificationsLayoutProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Notifications requires owner, admin, manager, or finance roles
-  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'finance']);
+  // Notifications requires owner, admin, manager, hr, or finance roles
+  // HR can send notifications to staff
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'hr', 'finance']);
   if (!auth) {
     notFound();
   }

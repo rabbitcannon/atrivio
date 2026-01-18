@@ -49,7 +49,7 @@ export class NotificationsController {
 
   @Post('send')
   @UseGuards(RolesGuard)
-  @Roles('owner', 'admin', 'manager')
+  @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Send notification using template' })
   async sendFromTemplate(@Tenant() ctx: TenantContext, @Body() dto: SendNotificationDto) {
     return this.notificationsService.sendFromTemplate(ctx.orgId, dto);
@@ -57,7 +57,7 @@ export class NotificationsController {
 
   @Post('send-direct')
   @UseGuards(RolesGuard)
-  @Roles('owner', 'admin', 'manager')
+  @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Send direct email or SMS without template' })
   async sendDirect(@Tenant() ctx: TenantContext, @Body() dto: SendDirectNotificationDto) {
     return this.notificationsService.sendDirect(ctx.orgId, dto);

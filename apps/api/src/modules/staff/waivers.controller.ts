@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
+import { Roles } from '../../core/rbac/decorators/roles.decorator.js';
+import { RolesGuard } from '../../core/rbac/guards/roles.guard.js';
 import { Tenant } from '../../core/tenancy/decorators/tenant.decorator.js';
 import { TenantInterceptor } from '../../core/tenancy/interceptors/tenant.interceptor.js';
 import type { TenantContext } from '../../core/tenancy/tenancy.service.js';
@@ -15,12 +17,16 @@ export class WaiversController {
   constructor(private waiversService: WaiversService) {}
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Get staff waivers' })
   async list(@Tenant() ctx: TenantContext, @Param('staffId') staffId: string) {
     return this.waiversService.findAll(ctx.orgId, staffId);
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin', 'manager', 'hr', 'actor')
   @ApiOperation({ summary: 'Record signed waiver' })
   async sign(
     @Tenant() ctx: TenantContext,
@@ -33,6 +39,8 @@ export class WaiversController {
   }
 
   @Get('status')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin', 'manager', 'hr')
   @ApiOperation({ summary: 'Check waiver status' })
   @ApiQuery({ name: 'type', required: true, description: 'Waiver type to check' })
   async checkStatus(
