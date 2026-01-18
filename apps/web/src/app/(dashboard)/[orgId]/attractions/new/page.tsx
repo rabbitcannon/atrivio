@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { AnimatedPageHeader } from '@/components/features/attractions';
 import { AttractionForm } from '@/components/features/attractions/attraction-form';
 import { FadeIn } from '@/components/ui/motion';
-import { getAttractionTypes, resolveOrgId } from '@/lib/api';
+import { getAttractionTypes, requireRole, resolveOrgId } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'New Attraction',
@@ -21,6 +21,9 @@ export default async function NewAttractionPage({ params }: NewAttractionPagePro
   if (!orgId) {
     notFound();
   }
+
+  // Creating attractions requires owner, admin, or manager roles
+  await requireRole(orgIdentifier, ['owner', 'admin', 'manager']);
 
   // Fetch attraction types for the form
   const attractionTypes = await getAttractionTypes();

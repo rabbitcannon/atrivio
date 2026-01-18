@@ -1,18 +1,18 @@
 import { notFound } from 'next/navigation';
 import { requireRole } from '@/lib/api';
 
-interface AnalyticsLayoutProps {
+interface NotificationsLayoutProps {
   children: React.ReactNode;
   params: Promise<{ orgId: string }>;
 }
 
-export default async function AnalyticsLayout({
+export default async function NotificationsLayout({
   children,
   params,
-}: AnalyticsLayoutProps) {
+}: NotificationsLayoutProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Analytics requires owner, admin, manager, or finance roles
+  // Notifications requires owner, admin, manager, or finance roles
   const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'finance']);
   if (!auth) {
     notFound();

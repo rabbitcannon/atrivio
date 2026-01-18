@@ -1,19 +1,19 @@
 import { notFound } from 'next/navigation';
 import { requireRole } from '@/lib/api';
 
-interface AnalyticsLayoutProps {
+interface PaymentsLayoutProps {
   children: React.ReactNode;
   params: Promise<{ orgId: string }>;
 }
 
-export default async function AnalyticsLayout({
+export default async function PaymentsLayout({
   children,
   params,
-}: AnalyticsLayoutProps) {
+}: PaymentsLayoutProps) {
   const { orgId: orgIdentifier } = await params;
 
-  // Analytics requires owner, admin, manager, or finance roles
-  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'manager', 'finance']);
+  // Payments requires owner, admin, or finance roles
+  const auth = await requireRole(orgIdentifier, ['owner', 'admin', 'finance']);
   if (!auth) {
     notFound();
   }

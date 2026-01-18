@@ -65,7 +65,7 @@ const NAV_ITEMS = [
     description: 'Create and manage promotional codes',
     href: '/ticketing/promo-codes',
     icon: Percent,
-    roles: ['owner', 'admin', 'manager'],
+    roles: ['owner', 'admin', 'manager', 'box_office', 'finance'],
   },
 ];
 

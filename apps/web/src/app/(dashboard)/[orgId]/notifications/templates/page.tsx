@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn } from '@/components/ui/motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getNotificationTemplates, resolveOrgId } from '@/lib/api';
+import { getNotificationTemplates, requireRole, resolveOrgId } from '@/lib/api';
 import type { NotificationChannel, NotificationTemplate } from '@/lib/api/types';
 
 export const metadata: Metadata = {
@@ -103,6 +103,9 @@ export default async function TemplatesPage({ params, searchParams }: TemplatesP
   if (!orgId) {
     notFound();
   }
+
+  // Notification templates requires owner or admin roles only
+  await requireRole(orgIdentifier, ['owner', 'admin']);
 
   const templatesResponse = await getNotificationTemplates(orgId, channel);
   const templates: NotificationTemplate[] = templatesResponse?.data?.data ?? [];
