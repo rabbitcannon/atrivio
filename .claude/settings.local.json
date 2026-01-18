@@ -2,7 +2,29 @@
   "permissions": {
     "allow": [
       "Bash(pnpm outdated:*)",
-      "Bash(pnpm update:*)"
+      "Bash(pnpm update:*)",
+      "Bash(pnpm --filter @atrivio/shared build:*)",
+      "Bash(pnpm --filter @atrivio/api typecheck:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm install)",
+      "Bash(pnpm test:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(pnpm --filter @atrivio/web add -D jsdom)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm rebuild:*)",
+      "Bash(pnpm --filter @atrivio/database exec supabase:*)",
+      "Bash(pnpm --filter @atrivio/api build:*)",
+      "Bash(pnpm --filter @atrivio/web build:*)",
+      "WebSearch",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm supabase:*)",
+      "Bash(npx supabase:*)",
+      "Bash(supabase status:*)",
+      "Bash(supabase db query:*)",
+      "Bash(curl:*)",
+      "Bash(docker run:*)",
+      "Bash(docker ps:*)"
     ]
   }
 }

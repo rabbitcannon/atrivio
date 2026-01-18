@@ -1,5 +1,4 @@
 import createMDX from '@next/mdx';
-import remarkGfm from 'remark-gfm';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -113,7 +112,8 @@ const nextConfig = {
 
 const withMDX = createMDX({
   options: {
-    remarkPlugins: [remarkGfm],
+    // Use string names for Turbopack compatibility (Next.js 16+)
+    remarkPlugins: ['remark-gfm'],
     rehypePlugins: [],
   },
 });

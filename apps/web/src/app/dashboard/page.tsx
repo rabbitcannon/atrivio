@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation';
 import { createClient, getUser } from '@/lib/supabase/server';
 
+// Force dynamic rendering - requires authentication
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardRedirectPage() {
   const user = await getUser();
 

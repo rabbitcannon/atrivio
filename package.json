@@ -35,7 +35,7 @@
   },
   "pnpm": {
     "overrides": {
-      "next": "^15.5.9",
+      "next": "^16.0.0",
       "react": "^19.2.3",
       "react-dom": "^19.2.3",
       "sonner": "^2.0.7",
@@ -45,6 +45,15 @@
       "nanoid@>=4.0.0 <5.0.9": ">=5.0.9",
       "diff@<8.0.3": ">=8.0.3",
       "tar@<=7.5.2": ">=7.5.3"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "@nestjs/core",
+      "@scarf/scarf",
+      "@swc/core",
+      "esbuild",
+      "msgpackr-extract",
+      "sharp",
+      "supabase"
+    ]
   }
 }

@@ -39,16 +39,16 @@
     "lint": "biome lint src",
     "lint:fix": "biome lint --write src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "dependencies": {
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@types/node": "^22.19.7",
+    "@types/node": "^25.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.0"
   }
 }
