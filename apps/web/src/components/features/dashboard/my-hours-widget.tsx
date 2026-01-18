@@ -123,7 +123,7 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">This Week</p>
-                <p className="text-2xl font-bold mt-1">
+                <div className="text-2xl font-bold mt-1 flex items-center">
                   {totalHours > 0 ? (
                     <>
                       <AnimatedNumber
@@ -131,23 +131,23 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
                         duration={0.8}
                         formatFn={(v) => Math.round(v).toString()}
                       />
-                      h
+                      <span className="inline-flex items-center h-7">h</span>
                       {totalHours % 1 > 0 && (
                         <>
-                          {' '}
+                          <span className="w-1" />
                           <AnimatedNumber
                             value={Math.round((totalHours % 1) * 60)}
                             duration={0.8}
                             formatFn={(v) => Math.round(v).toString()}
                           />
-                          m
+                          <span className="inline-flex items-center h-7">m</span>
                         </>
                       )}
                     </>
                   ) : (
                     '0h'
                   )}
-                </p>
+                </div>
               </div>
               <TrendingUp className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -166,14 +166,14 @@ export function MyHoursWidget({ orgId, orgSlug }: MyHoursWidgetProps) {
                   <p className="text-xs text-green-600 dark:text-green-400 uppercase tracking-wide">
                     Estimated Pay
                   </p>
-                  <p className="text-2xl font-bold text-green-700 dark:text-green-300 mt-1">
-                    $
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-300 mt-1 flex items-center">
+                    <span className="inline-flex items-center h-7">$</span>
                     <AnimatedNumber
                       value={estimatedPay / 100}
                       duration={1}
                       formatFn={(v) => v.toFixed(2)}
                     />
-                  </p>
+                  </div>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
